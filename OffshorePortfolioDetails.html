@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Offshore Portfolio Details — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  .bg-ink-100{background:#f1f5f9}.bg-ink-50{background:#f8fafc}
+  .border-ink-100{border-color:#f1f5f9}.border-ink-200{border-color:#e2e8f0}
+  .scroll-thin::-webkit-scrollbar{width:5px;height:5px}
+  .scroll-thin::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
+  .dot-pulse::after{content:'';position:absolute;inset:-3px;border-radius:999px;animation:pulse 1.8s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.55)}70%{box-shadow:0 0 0 10px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
+  /* Pill tabs */
+  .ds-tabs{position:relative;display:inline-flex;gap:4px;padding:4px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9999px}
+  .ds-tab{position:relative;font:inherit;font-size:12px;font-weight:600;padding:6px 14px;background:transparent;border:0;border-radius:9999px;color:#64748b;cursor:pointer;transition:color 140ms;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+  .ds-tab:hover{color:#0f172a}
+  .ds-tab[aria-selected="true"]{color:#fff}
+  .ds-tab-pill{position:absolute;top:4px;left:0;height:calc(100% - 8px);background:#2563eb;border-radius:9999px;box-shadow:0 1px 2px rgba(15,23,42,.12);z-index:0;transition:transform 300ms cubic-bezier(.34,1.2,.64,1),width 300ms cubic-bezier(.34,1.2,.64,1);pointer-events:none}
+  .ds-tab-pill.is-init{transition:none}
+  .ds-tab-label{position:relative;z-index:1}
+  /* Map */
+  #asset-map{position:absolute;inset:0;background:#0b2a3a}
+  .leaflet-control-zoom,.leaflet-bar{border:1px solid #e2e8f0 !important;box-shadow:0 1px 2px rgba(15,23,42,.08) !important;border-radius:8px !important;overflow:hidden}
+  .leaflet-bar a{background:#fff !important;color:#334155 !important}
+  .leaflet-bar a:hover{background:#f1f5f9 !important}
+  .map-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;color:#334155;box-shadow:0 1px 2px rgba(15,23,42,.08);cursor:pointer}
+  .map-btn:hover{background:#f1f5f9}
+  .asset-marker-dot{width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,.4)}
+  .asset-label{background:#1e293b;color:#fff;padding:2px 7px;border-radius:4px;font-size:10.5px;font-weight:600;white-space:nowrap;box-shadow:0 2px 4px rgba(0,0,0,.35);font-family:'Inter',sans-serif}
+  /* Policy table */
+  .pol-table{width:100%;border-collapse:collapse;font-size:12px}
+  .pol-table th{padding:9px 12px;text-align:left;font-size:11.5px;font-weight:600;color:#334155;border-bottom:1px solid #e2e8f0;white-space:nowrap;background:#fff;cursor:pointer}
+  .pol-table th:hover{color:#2563eb}
+  .pol-table td{padding:10px 12px;border-bottom:1px solid #f1f5f9;color:#334155;white-space:nowrap;vertical-align:middle}
+  .pol-table tbody tr:last-child td{border-bottom:0}
+  .pol-table tbody tr:hover td{background:#f8fafc}
+  .pol-table td.lnk{color:#2563eb;font-weight:600;cursor:pointer}
+  .pol-table td.lnk:hover{color:#1d4ed8}
+  .pol-table td.type-cell{color:#2563eb;font-size:12px}
+  .pol-table td.muted{color:#94a3b8}
+  .sort-ico{display:inline-flex;flex-direction:column;gap:1px;margin-left:3px;vertical-align:middle;opacity:.5}
+  .sort-ico svg{width:7px;height:7px}
+  /* Select */
+  .sel{border:1px solid #e2e8f0;border-radius:6px;padding:4px 22px 4px 8px;font-size:12px;color:#334155;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 5px center;-webkit-appearance:none;font-family:inherit;cursor:pointer}
+</style>
+</head>
+<body class="bg-ink-100 text-ink-900">
+<div id="app" class="min-h-screen w-full flex overflow-hidden"></div>
+
+<script>
+window.PAGE = { id:'energy', title:'Offshore/Energy', crumb:'Portfolio Details' };
+window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "density": "compact",
+  "accent": "blue",
+  "sidebarExpanded": false,
+  "showSparklines": true
+}/*EDITMODE-END*/;
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="shared/chrome.js?v=4"></script>
+<script>
+const SC = window.sharedChrome;
+const Ico = SC.I;
+
+/* ── Portfolio from session ── */
+const DEFAULT_PF = { name:'Venezuelan Offshore', assets:12, exposure:'$1.85B' };
+const PF = (() => { try { const r = sessionStorage.getItem('selectedOffshorePF'); return r ? {...DEFAULT_PF,...JSON.parse(r)} : DEFAULT_PF; } catch { return DEFAULT_PF; } })();
+
+/* ── Asset data ── */
+const ASSETS = [
+  { id:'Policy 1', name:'Perla Field Platform',    type:'Fixed Platform',          lat:11.52, lng:-70.08, color:'#a855f7', exposure:'$385.0M' },
+  { id:'Policy 2', name:'Cardón IV Platform',      type:'Fixed Platform',          lat:11.35, lng:-70.32, color:'#94a3b8', exposure:'$290.0M' },
+  { id:'Policy 3', name:'Corocoro Platform',       type:'Fixed Platform',          lat:10.28, lng:-70.68, color:'#a855f7', exposure:'$245.0M' },
+  { id:'Policy 4', name:'Dragon Field FPSO',       type:'Floating Storage (FSO)', lat:10.78, lng:-71.48, color:'#60a5fa', exposure:'$325.0M' },
+  { id:'Policy 5', name:'La Salina Platform',      type:'Fixed Platform',          lat:9.72,  lng:-70.98, color:'#a855f7', exposure:'$195.0M' },
+  { id:'Policy 6', name:'Loran-Manatee Platform',  type:'Fixed Platform',          lat:10.42, lng:-70.05, color:'#a855f7', exposure:'$215.0M' },
+  { id:'Policy 7', name:'Patao Platform',          type:'Fixed Platform',          lat:10.55, lng:-71.18, color:'#a855f7', exposure:'$185.0M' },
+];
+
+/* ── State ── */
+let pfTab = 'Portfolio Details';
+
+/* ── Pill positioning ── */
+function positionTabPills() {
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.ds-tabs').forEach(group => {
+      const pill   = group.querySelector('[data-tab-pill]');
+      const active = group.querySelector('.ds-tab[aria-selected="true"]');
+      if (!pill || !active) return;
+      const gRect = group.getBoundingClientRect();
+      const aRect = active.getBoundingClientRect();
+      if (!aRect.width) return;
+      pill.style.width     = aRect.width + 'px';
+      pill.style.transform = `translateX(${aRect.left - gRect.left}px)`;
+      requestAnimationFrame(() => pill.classList.remove('is-init'));
+    });
+  });
+}
+
+/* ── Sort icon ── */
+function sortIcon() {
+  return `<span class="sort-ico">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+  </span>`;
+}
+
+/* ── Left panel ── */
+function PanelDetails() {
+  return `
+  <div class="bg-white rounded-xl border border-ink-200 flex flex-col" style="box-shadow:0 1px 2px rgba(15,23,42,.07);">
+    <!-- Tabs -->
+    <div class="p-3 border-b border-ink-100">
+      <div class="ds-tabs" style="display:flex;" id="pf-tabs">
+        <span class="ds-tab-pill is-init" data-tab-pill></span>
+        <button class="ds-tab" style="flex:1;justify-content:center;" aria-selected="${pfTab==='Portfolio Details'}" data-pftab="Portfolio Details">
+          <span class="ds-tab-label">Portfolio Details</span>
+        </button>
+        <button class="ds-tab" style="flex:1;justify-content:center;" aria-selected="${pfTab==='Portfolio Groups'}" data-pftab="Portfolio Groups">
+          <span class="ds-tab-label">Portfolio Groups</span>
+        </button>
+      </div>
+    </div>
+    <!-- Exposure banner -->
+    <div class="mx-4 mt-3 mb-1 rounded-lg bg-blue-50 border border-blue-100 px-4 py-3 text-center">
+      <div class="text-[10px] font-semibold uppercase tracking-widest text-blue-600 mb-0.5">Our Aggregated Exposure</div>
+      <div class="text-2xl font-bold text-blue-600">${PF.exposure || '$148.5B'}</div>
+    </div>
+    <!-- Key-value rows -->
+    <div class="px-4 py-2 flex-1">
+      ${[
+        ['Name', PF.name],
+        ['Id', '0'],
+        ['Total number of Policies:', '2,475'],
+        ['Number of Active Policies:', '2,475'],
+      ].map(([k,v]) => `
+        <div class="flex items-center justify-between py-2.5 border-b border-ink-50 last:border-0 text-xs">
+          <span class="text-ink-500">${k}</span>
+          <span class="font-semibold text-ink-800">${v}</span>
+        </div>`).join('')}
+    </div>
+    <!-- Action buttons -->
+    <div class="px-4 pb-4 pt-2 flex gap-2 mt-auto">
+      <button class="flex-1 flex items-center justify-center gap-1.5 border border-ink-200 rounded-lg py-2 text-xs font-semibold text-ink-700 hover:bg-ink-50">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="5 12 12 5 19 12"/></svg>
+        + Add Policies
+      </button>
+      <button class="flex-1 flex items-center justify-center gap-1.5 border border-ink-200 rounded-lg py-2 text-xs font-semibold text-ink-700 hover:bg-ink-50">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
+    </div>
+  </div>`;
+}
+
+/* ── Map panel ── */
+function PanelMap() {
+  const toolIco = (path) => `<button class="map-btn">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">${path}</svg>
+  </button>`;
+  return `
+  <div class="bg-white rounded-xl border border-ink-200 flex flex-col overflow-hidden" style="box-shadow:0 1px 2px rgba(15,23,42,.07);">
+    <div class="px-4 py-2.5 border-b border-ink-100 flex items-center justify-between">
+      <span class="text-sm font-bold text-ink-900">Asset Locations</span>
+    </div>
+    <div class="relative flex-1" style="min-height:340px;">
+      <div id="asset-map"></div>
+      <!-- Zoom controls -->
+      <div class="absolute top-3 left-3 z-[400] flex flex-col gap-1">
+        <button id="map-fs-btn" class="map-btn" title="Fullscreen">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        </button>
+        <button id="zoom-in" class="map-btn font-bold text-base">+</button>
+        <button id="zoom-out" class="map-btn font-bold text-base">−</button>
+      </div>
+      <!-- Right tools -->
+      <div class="absolute top-3 right-3 z-[400] flex flex-col gap-1">
+        ${toolIco('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>')}
+        ${toolIco('<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>')}
+        ${toolIco('<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>')}
+        ${toolIco('<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>')}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── Policy table ── */
+function PolicyTable() {
+  const cols = ['Number','Asset','Type','Policy Ref','Contract Details Ref','Signed Line','Exposure','Year Exposure','Year Total Insured Value','Total Insured Value','Premium Details','Coverage Period','Policy'];
+  return `
+  <div class="bg-white rounded-xl border border-ink-200" style="box-shadow:0 1px 2px rgba(15,23,42,.07);overflow:hidden;">
+    <!-- Header bar -->
+    <div class="flex items-center justify-between px-4 py-3 border-b border-ink-100">
+      <span class="text-sm font-bold text-ink-900">Policy Details</span>
+      <div class="flex items-center gap-2">
+        <div class="relative">
+          <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Search" class="pl-7 pr-3 py-1.5 text-xs border border-ink-200 rounded-lg focus:outline-none focus:border-blue-400 w-48" />
+        </div>
+        <button class="flex items-center gap-1 text-xs border border-ink-200 rounded-lg px-3 py-1.5 text-ink-700 font-semibold hover:bg-ink-50">
+          Edit Columns
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+      </div>
+    </div>
+    <!-- Delete bar -->
+    <div class="flex items-center gap-3 px-4 py-2 border-b border-ink-100 bg-ink-50/40">
+      <button class="flex items-center gap-1.5 text-xs border border-ink-200 rounded-md px-3 py-1 text-ink-600 hover:bg-ink-100 font-medium">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        Delete
+      </button>
+      <span class="text-xs text-ink-400">0 selected</span>
+    </div>
+    <!-- Table -->
+    <div class="overflow-x-auto scroll-thin">
+      <table class="pol-table">
+        <thead>
+          <tr>
+            <th style="width:36px;font-weight:600;"><input type="checkbox" class="h-3.5 w-3.5 rounded accent-blue-600" /></th>
+            ${cols.map(c => `<th>${c} ${sortIcon()}</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>
+          ${ASSETS.map(a => `
+            <tr>
+              <td><input type="checkbox" class="h-3.5 w-3.5 rounded accent-blue-600" /></td>
+              <td class="lnk">${a.id}</td>
+              <td class="lnk">${a.name}</td>
+              <td class="type-cell">${a.type}</td>
+              <td class="muted">-</td>
+              <td class="muted">-</td>
+              <td class="muted">-</td>
+              <td style="font-weight:600;color:#0f172a;">${a.exposure}</td>
+              <td class="muted">-</td>
+              <td class="muted">-</td>
+              <td class="muted">-</td>
+              <td class="muted">-</td>
+              <td class="muted">-</td>
+              <td class="muted">-</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+/* ── Map init ── */
+let mapInstance = null;
+function initMap() {
+  const el = document.getElementById('asset-map');
+  if (!el || mapInstance) return;
+  mapInstance = L.map(el, { center:[10.6, -70.5], zoom:7, zoomControl:false, attributionControl:false });
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom:19 }).addTo(mapInstance);
+
+  ASSETS.forEach(a => {
+    const markerHtml = `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+        <div class="asset-marker-dot" style="background:${a.color};width:12px;height:12px;"></div>
+        <div class="asset-label">${a.name}</div>
+      </div>`;
+    const icon = L.divIcon({ html:markerHtml, className:'', iconSize:[120,36], iconAnchor:[60,6] });
+    L.marker([a.lat, a.lng], { icon }).addTo(mapInstance);
+  });
+
+  /* Manual zoom buttons */
+  const zi = document.getElementById('zoom-in');
+  const zo = document.getElementById('zoom-out');
+  if (zi) zi.onclick = () => mapInstance.zoomIn();
+  if (zo) zo.onclick = () => mapInstance.zoomOut();
+
+  /* Fullscreen */
+  const fsBtn = document.getElementById('map-fs-btn');
+  if (fsBtn) fsBtn.onclick = () => {
+    const el2 = fsBtn.closest('.relative');
+    if (!el2) return;
+    const isFs = el2.classList.toggle('fixed-fullscreen');
+    if (isFs) {
+      el2.style.cssText = 'position:fixed;inset:0;z-index:9999;min-height:100vh;';
+    } else {
+      el2.style.cssText = 'position:relative;flex:1;min-height:340px;';
+    }
+    setTimeout(() => mapInstance.invalidateSize(), 200);
+  };
+}
+
+/* ── Render ── */
+window.render = function() {
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
+      ${SC.Topbar()}
+      <main id="main-content" class="flex-1 overflow-y-auto scroll-thin bg-ink-100 px-4 lg:px-5 py-4">
+        <!-- Top row: details + map -->
+        <div style="display:grid;grid-template-columns:minmax(0,5fr) minmax(0,14fr);gap:12px;margin-bottom:12px;align-items:stretch;">
+          ${PanelDetails()}
+          ${PanelMap()}
+        </div>
+        <!-- Policy table -->
+        ${PolicyTable()}
+      </main>
+    </div>
+    ${SC.TweaksPanel()}
+  `;
+
+  SC.wireChrome();
+  requestAnimationFrame(positionTabPills);
+  setTimeout(positionTabPills, 150);
+  window.addEventListener('resize', positionTabPills, { passive:true });
+
+  /* Portfolio tab switch */
+  document.querySelectorAll('[data-pftab]').forEach(btn => {
+    btn.onclick = () => {
+      pfTab = btn.dataset.pftab;
+      const group = btn.closest('.ds-tabs');
+      if (group) {
+        group.querySelectorAll('.ds-tab').forEach(t => t.setAttribute('aria-selected', String(t===btn)));
+        positionTabPills();
+      }
+    };
+  });
+
+  /* Init map after DOM settles */
+  setTimeout(initMap, 80);
+};
+
+window.render();
+</script>
+</body>
+</html>

@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ports — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { height:100%; }
+  body { font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; }
+  .text-ink-900{color:#0f172a}.text-ink-700{color:#334155}
+  .text-ink-600{color:#475569}.text-ink-500{color:#64748b}.text-ink-400{color:#94a3b8}
+  .bg-ink-100{background:#f1f5f9}.bg-ink-50{background:#f8fafc}
+  .border-ink-100{border-color:#f1f5f9}.border-ink-200{border-color:#e2e8f0}
+  .shadow-card{box-shadow:0 1px 2px rgba(15,23,42,.08),0 0 0 1px rgba(15,23,42,.02)}
+  .scroll-thin::-webkit-scrollbar{width:5px}.scroll-thin::-webkit-scrollbar-track{background:transparent}
+  .scroll-thin::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
+
+  /* Map fills content area */
+  #ports-map { position:absolute; inset:0; background:#0b2a3a; }
+  .leaflet-control-zoom,.leaflet-bar { border:1px solid #e2e8f0 !important; box-shadow:0 1px 2px rgba(15,23,42,.08) !important; border-radius:8px !important; overflow:hidden; }
+  .leaflet-bar a { background:#fff !important; color:#334155 !important; line-height:30px !important; }
+  .leaflet-bar a:hover { background:#f1f5f9 !important; }
+  .leaflet-top.leaflet-left { top:52px !important; }
+  .map-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:#fff; border:1px solid #e2e8f0; border-radius:8px; color:#334155; box-shadow:0 1px 2px rgba(15,23,42,.08); cursor:pointer; }
+  .map-btn:hover { background:#f1f5f9; }
+
+  /* Port marker */
+  .port-marker { width:30px; height:30px; border-radius:50%; background:#2563eb; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,.3); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+
+  /* Popup */
+  .port-popup .leaflet-popup-content-wrapper { padding:0; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(15,23,42,.25); }
+  .port-popup .leaflet-popup-content { margin:0; width:280px !important; font-family:'Inter',sans-serif; }
+  .port-popup .leaflet-popup-tip { background:#fff; }
+  .port-popup .leaflet-popup-close-button { color:#fff !important; top:8px !important; right:10px !important; font-size:22px !important; font-weight:300 !important; width:24px !important; height:24px !important; opacity:.85; }
+  .port-popup .leaflet-popup-close-button:hover { background:rgba(255,255,255,.2) !important; color:#fff !important; opacity:1; }
+  .pp-header { background:#2563eb; color:#fff; padding:12px 14px 10px; }
+  .pp-title { font-size:14px; font-weight:700; }
+  .pp-sub { font-size:11px; font-weight:500; opacity:.75; margin-left:5px; }
+  .pp-body { background:#fff; }
+  .pp-row { display:flex; align-items:center; justify-content:space-between; padding:9px 14px; border-bottom:1px solid #f1f5f9; font-size:13px; }
+  .pp-row:last-child { border-bottom:0; }
+  .pp-k { color:#64748b; font-weight:500; }
+  .pp-v { font-weight:700; color:#0f172a; }
+  .pp-cta { display:block; width:calc(100% - 28px); margin:4px 14px 14px; background:#fff; color:#2563eb; border:1.5px solid #2563eb; border-radius:8px; padding:9px 12px; font-weight:700; font-size:12.5px; cursor:pointer; text-align:center; transition:background .15s; }
+  .pp-cta:hover { background:#eff6ff; }
+
+  /* View toggle */
+  .view-toggle { display:inline-flex; background:#fff; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; box-shadow:0 1px 2px rgba(15,23,42,.08); }
+  .view-btn { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; font-size:13px; font-weight:600; border:0; cursor:pointer; transition:background 120ms, color 120ms; }
+  .view-btn.active { background:#2563eb; color:#fff; }
+  .view-btn:not(.active) { background:#fff; color:#64748b; }
+  .view-btn:not(.active):hover { background:#f8fafc; }
+
+  /* List view */
+  .ports-table { width:100%; border-collapse:collapse; }
+  .ports-table th { padding:10px 14px; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; text-align:left; border-bottom:1px solid #e2e8f0; background:#fff; white-space:nowrap; }
+  .ports-table td { padding:11px 14px; font-size:13px; color:#334155; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+  .ports-table tr:hover td { background:#f8fafc; }
+  .port-link { color:#2563eb; font-weight:600; cursor:pointer; }
+  .port-link:hover { color:#1d4ed8; }
+
+  /* Map type menu */
+  .map-type-opt { padding:8px 12px; font-size:12px; font-weight:600; color:#0f172a; cursor:pointer; display:flex; align-items:center; gap:8px; }
+  .map-type-opt:hover { background:#f8fafc; }
+</style>
+</head>
+<body class="bg-ink-100 text-ink-900 antialiased">
+<div id="app" class="h-screen w-full flex overflow-hidden"></div>
+
+<script>
+window.PAGE = { id:'ports', title:'Ports', crumb:'Ports' };
+window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "density": "compact",
+  "accent": "blue",
+  "sidebarExpanded": false,
+  "showSparklines": true
+}/*EDITMODE-END*/;
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="shared/chrome.js?v=4"></script>
+<script>
+const SC = window.sharedChrome;
+const Ico = SC.I;
+
+let viewMode = 'Map';
+
+/* ---- Port data ---- */
+window.__ports = [
+  { name:'Port of Shanghai',       country:'China',        lat:31.3743, lng:121.5389, terminals:30, type:'Container' },
+  { name:'Port of Singapore',       country:'Singapore',    lat:1.2655,  lng:103.8200, terminals:24, type:'Container' },
+  { name:'Port of Rotterdam',       country:'Netherlands',  lat:51.9225, lng:4.4792,   terminals:18, type:'Container' },
+  { name:'Port of Antwerp',         country:'Belgium',      lat:51.2465, lng:4.4153,   terminals:15, type:'Container' },
+  { name:'Port of Hamburg',         country:'Germany',      lat:53.5453, lng:9.9689,   terminals:12, type:'Container' },
+  { name:'Port of Los Angeles',     country:'USA',          lat:33.7358, lng:-118.2620,terminals:14, type:'Container' },
+  { name:'Port of Long Beach',      country:'USA',          lat:33.7547, lng:-118.2162,terminals:10, type:'Container' },
+  { name:'Port of New York',        country:'USA',          lat:40.6840, lng:-74.0447, terminals:11, type:'Container' },
+  { name:'Port of Houston',         country:'USA',          lat:29.7361, lng:-95.0958, terminals:8,  type:'Energy' },
+  { name:'Port of Miami',           country:'USA',          lat:25.7742, lng:-80.1769, terminals:6,  type:'Cruise' },
+  { name:'Port of Vancouver',       country:'Canada',       lat:49.2875, lng:-123.1065,terminals:9,  type:'Container' },
+  { name:'Port of Santos',          country:'Brazil',       lat:-23.9618,lng:-46.3322, terminals:11, type:'Container' },
+  { name:'Port of Buenos Aires',    country:'Argentina',    lat:-34.5997,lng:-58.3731, terminals:7,  type:'Container' },
+  { name:'Port of Callao',          country:'Peru',         lat:-12.0500,lng:-77.1500, terminals:5,  type:'Container' },
+  { name:'Port of Colombo',         country:'Sri Lanka',    lat:6.9271,  lng:79.8612,  terminals:20, type:'Container' },
+  { name:'Port of Mumbai',          country:'India',        lat:18.9388, lng:72.8355,  terminals:13, type:'Container' },
+  { name:'Port of Dubai (Jebel Ali)',country:'UAE',         lat:24.9857, lng:55.0272,  terminals:22, type:'Container' },
+  { name:'Port of Piraeus',         country:'Greece',       lat:37.9490, lng:23.6442,  terminals:9,  type:'Container' },
+  { name:'Port of Barcelona',       country:'Spain',        lat:41.3454, lng:2.1734,   terminals:8,  type:'Container' },
+  { name:'Port of Valencia',        country:'Spain',        lat:39.4437, lng:-0.3196,  terminals:7,  type:'Container' },
+  { name:'Port of Algeciras',       country:'Spain',        lat:36.1237, lng:-5.4520,  terminals:6,  type:'Container' },
+  { name:'Port of Marseille',       country:'France',       lat:43.2965, lng:5.3698,   terminals:10, type:'Container' },
+  { name:'Port of Felixstowe',      country:'UK',           lat:51.9580, lng:1.3420,   terminals:9,  type:'Container' },
+  { name:'Port of Durban',          country:'South Africa', lat:-29.8687,lng:31.0218,  terminals:8,  type:'Container' },
+  { name:'Port of Lagos',           country:'Nigeria',      lat:6.4281,  lng:3.4219,   terminals:5,  type:'Container' },
+  { name:'Port of Tokyo',           country:'Japan',        lat:35.6316, lng:139.7736, terminals:12, type:'Container' },
+  { name:'Port of Yokohama',        country:'Japan',        lat:35.4437, lng:139.6380, terminals:10, type:'Container' },
+  { name:'Port of Busan',           country:'South Korea',  lat:35.0960, lng:129.0403, terminals:16, type:'Container' },
+  { name:'Port of Hong Kong',       country:'China',        lat:22.3037, lng:114.1597, terminals:19, type:'Container' },
+  { name:'Port of Shenzhen',        country:'China',        lat:22.5429, lng:113.9373, terminals:17, type:'Container' },
+  { name:'Port of Guangzhou',       country:'China',        lat:23.1291, lng:113.2644, terminals:14, type:'Container' },
+  { name:'Port of Tianjin',         country:'China',        lat:38.9884, lng:117.7462, terminals:13, type:'Container' },
+  { name:'Port of Tanjung Pelepas', country:'Malaysia',     lat:1.3644,  lng:103.5503, terminals:15, type:'Container' },
+  { name:'Port of Port Klang',      country:'Malaysia',     lat:3.0011,  lng:101.4010, terminals:11, type:'Container' },
+  { name:'Port of Jakarta',         country:'Indonesia',    lat:-6.1048, lng:106.8755, terminals:8,  type:'Container' },
+  { name:'Port of Sydney',          country:'Australia',    lat:-33.8615,lng:151.2090, terminals:7,  type:'Container' },
+  { name:'Port of Melbourne',       country:'Australia',    lat:-37.8409,lng:144.9190, terminals:9,  type:'Container' },
+  { name:'Port of Cape Town',       country:'South Africa', lat:-33.9106,lng:18.4341,  terminals:6,  type:'Container' },
+];
+
+/* ---- Anchor icon SVG ---- */
+const ANCHOR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg>`;
+
+/* ---- Popup HTML ---- */
+function portPopupHTML(p, idx) {
+  return `
+  <div>
+    <div class="pp-header">
+      <span class="pp-title">${p.name}</span>
+      <span class="pp-sub">· ${p.country}</span>
+    </div>
+    <div class="pp-body">
+      <div class="pp-row"><span class="pp-k">Latitude:</span><span class="pp-v">${p.lat.toFixed(4)}°</span></div>
+      <div class="pp-row"><span class="pp-k">Longitude:</span><span class="pp-v">${p.lng.toFixed(4)}°</span></div>
+      <div class="pp-row"><span class="pp-k">No. of Terminals:</span><span class="pp-v">${p.terminals}</span></div>
+    </div>
+    <button class="pp-cta" onclick="sessionStorage.setItem('selectedPort', JSON.stringify(window.__ports[${idx}])); window.location.href='PortDetails.html'">View Details</button>
+  </div>`;
+}
+
+/* ---- Map ---- */
+let portsMap = null;
+let portsTile = null;
+const MAP_TILES = {
+  satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  street:    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  dark:      'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+  light:     'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+};
+
+function setMapType(type) {
+  if (!portsMap) return;
+  if (portsTile) portsMap.removeLayer(portsTile);
+  portsTile = L.tileLayer(MAP_TILES[type], { attribution:'', maxZoom:19 }).addTo(portsMap);
+  portsTile.bringToBack();
+  document.querySelectorAll('.map-type-opt').forEach(el => {
+    el.style.background = el.dataset.type === type ? '#f1f5f9' : '';
+  });
+}
+
+function initMap() {
+  const el = document.getElementById('ports-map');
+  if (!el) return;
+  if (portsMap) { portsMap.remove(); portsMap = null; portsTile = null; }
+
+  portsMap = L.map(el, { center:[20, 10], zoom:2, zoomControl:true, scrollWheelZoom:true });
+  setMapType('satellite');
+
+  window.__ports.forEach((p, idx) => {
+    const icon = L.divIcon({
+      className: '',
+      html: `<div class="port-marker">${ANCHOR_SVG}</div>`,
+      iconSize: [30, 30],
+      iconAnchor: [15, 15],
+    });
+    L.marker([p.lat, p.lng], { icon })
+      .bindPopup(portPopupHTML(p, idx), { className:'port-popup', maxWidth:280, minWidth:280, closeButton:true, autoPanPadding:[30,30] })
+      .addTo(portsMap);
+  });
+
+  /* Zoom icons */
+  setTimeout(() => {
+    const zin  = el.querySelector('.leaflet-control-zoom-in');
+    const zout = el.querySelector('.leaflet-control-zoom-out');
+    if (zin)  zin.innerHTML  = `<span style="font-size:18px;line-height:30px;display:block;text-align:center;">+</span>`;
+    if (zout) zout.innerHTML = `<span style="font-size:20px;line-height:30px;display:block;text-align:center;">&minus;</span>`;
+  }, 100);
+
+  /* Layers menu */
+  const btn  = document.getElementById('layers-btn');
+  const menu = document.getElementById('layers-menu');
+  if (btn && menu) {
+    btn.addEventListener('click', e => { e.stopPropagation(); menu.style.display = menu.style.display === 'none' ? 'block' : 'none'; });
+    document.addEventListener('click', () => { if (menu) menu.style.display = 'none'; });
+    menu.addEventListener('click', e => e.stopPropagation());
+    document.querySelectorAll('.map-type-opt').forEach(opt => {
+      opt.addEventListener('click', () => { setMapType(opt.dataset.type); menu.style.display = 'none'; });
+    });
+  }
+
+  /* Fullscreen */
+  const fsBtn = document.getElementById('fs-btn');
+  if (fsBtn) {
+    fsBtn.addEventListener('click', () => {
+      const mapWrap = document.getElementById('map-wrap');
+      if (mapWrap.requestFullscreen) mapWrap.requestFullscreen();
+      setTimeout(() => portsMap.invalidateSize(), 300);
+    });
+  }
+}
+
+/* ---- Content ---- */
+function MapView() {
+  return `
+  <div id="map-wrap" class="relative flex-1">
+    <div id="ports-map"></div>
+    <!-- Fullscreen btn -->
+    <button id="fs-btn" class="map-btn absolute z-[400]" style="top:12px;left:12px;" title="Fullscreen">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+    </button>
+    <!-- Right controls -->
+    <div class="absolute z-[400] flex flex-col gap-2" style="top:12px;right:12px;">
+      <!-- Layers -->
+      <div class="relative">
+        <button id="layers-btn" class="map-btn" title="Map type">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </button>
+        <div id="layers-menu" style="display:none;position:absolute;top:38px;right:0;width:150px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 4px 12px rgba(15,23,42,.12);overflow:hidden;">
+          <div style="padding:6px 10px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #f1f5f9;">Map Type</div>
+          <div class="map-type-opt" data-type="satellite"><span style="width:8px;height:8px;border-radius:2px;background:#0b1e2e;flex-shrink:0;"></span>Satellite</div>
+          <div class="map-type-opt" data-type="street"><span style="width:8px;height:8px;border-radius:2px;background:#a8d5a2;flex-shrink:0;"></span>Street</div>
+          <div class="map-type-opt" data-type="dark"><span style="width:8px;height:8px;border-radius:2px;background:#1a1a2e;flex-shrink:0;"></span>Dark</div>
+          <div class="map-type-opt" data-type="light"><span style="width:8px;height:8px;border-radius:2px;background:#e8e8e8;border:1px solid #ccc;flex-shrink:0;"></span>Light</div>
+        </div>
+      </div>
+      <!-- Label toggle -->
+      <button class="map-btn" title="Labels">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      </button>
+    </div>
+  </div>`;
+}
+
+function ListView() {
+  return `
+  <div class="flex-1 overflow-y-auto scroll-thin">
+    <table class="ports-table">
+      <thead>
+        <tr>
+          <th>Port Name</th>
+          <th>Country</th>
+          <th>Latitude</th>
+          <th>Longitude</th>
+          <th>Terminals</th>
+          <th>Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${window.__ports.map(p => `
+          <tr>
+            <td><span class="port-link">${p.name}</span></td>
+            <td>${p.country}</td>
+            <td class="tabular-nums">${p.lat.toFixed(4)}°</td>
+            <td class="tabular-nums">${p.lng.toFixed(4)}°</td>
+            <td class="tabular-nums font-semibold">${p.terminals}</td>
+            <td><span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:#eff6ff;color:#2563eb;">${p.type}</span></td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function Content() {
+  const mapIco  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>`;
+  const listIco = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`;
+  return `
+  <div class="flex-1 overflow-hidden px-4 py-4" style="display:flex;flex-direction:column;">
+    <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col overflow-hidden flex-1">
+      <!-- Card header: view toggle + controls -->
+      <div class="shrink-0 px-4 py-3 flex items-center gap-3 border-b border-ink-100">
+        <div class="view-toggle">
+          <button class="view-btn ${viewMode==='Map'?'active':''}" data-view="Map">${mapIco} Map</button>
+          <button class="view-btn ${viewMode==='List'?'active':''}" data-view="List">${listIco} List</button>
+        </div>
+        <span class="text-xs text-ink-400 ml-1">${window.__ports.length} ports worldwide</span>
+      </div>
+      <!-- Card body -->
+      ${viewMode === 'Map' ? MapView() : ListView()}
+    </div>
+  </div>`;
+}
+
+/* ---- Render ---- */
+window.render = function() {
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
+      ${SC.Topbar()}
+      ${Content()}
+    </div>
+    ${SC.TweaksPanel()}
+  `;
+  SC.wireChrome();
+
+  /* View toggle */
+  document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => {
+    viewMode = b.dataset.view;
+    render();
+    if (viewMode === 'Map') setTimeout(initMap, 50);
+  }));
+
+  if (viewMode === 'Map') setTimeout(initMap, 50);
+};
+window.render();
+</script>
+</body>
+</html>

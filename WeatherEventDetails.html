@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Weather Event Details — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  .scroll-thin::-webkit-scrollbar{width:5px;height:5px}.scroll-thin::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
+  #evt-map{position:absolute;inset:0}
+  /* DS Pill tabs */
+  .ds-tabs{position:relative;display:inline-flex;gap:4px;padding:4px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9999px}
+  .ds-tab{position:relative;font:inherit;font-size:12.5px;font-weight:600;padding:7px 16px;background:transparent;border:0;border-radius:9999px;color:#64748b;cursor:pointer;transition:color 140ms;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+  .ds-tab:hover{color:#0f172a}
+  .ds-tab[aria-selected="true"]{color:#fff}
+  .ds-tab-pill{position:absolute;top:4px;left:0;height:calc(100% - 8px);background:#2563eb;border-radius:9999px;box-shadow:0 1px 2px rgba(15,23,42,.12);z-index:0;transition:transform 300ms cubic-bezier(.34,1.2,.64,1),width 300ms cubic-bezier(.34,1.2,.64,1);pointer-events:none}
+  .ds-tab-pill.is-init{transition:none}
+  .ds-tab-label{position:relative;z-index:1;display:inline-flex;align-items:center;gap:5px}
+  /* Map button */
+  .map-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;color:#334155;box-shadow:0 1px 2px rgba(15,23,42,.08);cursor:pointer;transition:background 100ms}
+  .map-btn:hover{background:#f1f5f9}
+  .leaflet-control-zoom,.leaflet-bar{border:1px solid #e2e8f0!important;box-shadow:0 1px 2px rgba(15,23,42,.08)!important;border-radius:8px!important;overflow:hidden}
+  .leaflet-bar a{background:#fff!important;color:#334155!important;line-height:30px!important}
+  .leaflet-bar a:hover{background:#f1f5f9!important}
+  /* Portfolio table */
+  .pf-tbl{width:100%;border-collapse:collapse;font-size:12px}
+  .pf-tbl th{padding:8px 12px;font-size:11px;font-weight:600;color:#64748b;text-align:left;border-bottom:1px solid #e2e8f0;white-space:nowrap}
+  .pf-tbl td{padding:8px 12px;border-bottom:1px solid #f8fafc;color:#334155;vertical-align:middle}
+  .pf-tbl tbody tr:last-child td{border-bottom:0}
+  .pf-tbl tbody tr:hover td{background:#f8fafc}
+  /* Assets table */
+  .az-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+  .az-tbl th{padding:10px 14px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;text-align:left;border-bottom:1px solid #e2e8f0;white-space:nowrap;cursor:pointer;user-select:none}
+  .az-tbl th:hover{color:#334155}
+  .az-tbl td{padding:11px 14px;border-bottom:1px solid #f1f5f9;color:#334155;vertical-align:middle;white-space:nowrap}
+  .az-tbl tbody tr:last-child td{border-bottom:0}
+  .az-tbl tbody tr:hover td{background:#f8fafc}
+  .type-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:9999px;font-size:11px;font-weight:600;white-space:nowrap}
+</style>
+</head>
+<body class="bg-slate-100">
+<div id="app" class="h-screen w-full flex overflow-hidden"></div>
+
+<script>
+window.PAGE = { id:'weather', title:'Weather', crumb:'Event Details' };
+window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "density": "compact",
+  "accent": "blue",
+  "sidebarExpanded": false,
+  "showSparklines": true
+}/*EDITMODE-END*/;
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="shared/chrome.js?v=4"></script>
+<script>
+const SC = window.sharedChrome;
+
+/* ── Lucide helper ──────────────────────────────────────────────────── */
+function lico(name, size=16, color='currentColor', sw=2) {
+  const data = window.lucide && lucide.icons && lucide.icons[name];
+  if (!data) return '';
+  const [tag, attrs, children] = data;
+  const a = {...attrs, width:size, height:size, stroke:color, 'stroke-width':sw,
+              style:'display:inline-block;vertical-align:middle;flex-shrink:0'};
+  const attrStr = Object.entries(a).map(([k,v])=>`${k}="${v}"`).join(' ');
+  const inner = (children||[]).map(([ct,ca])=>`<${ct} ${Object.entries(ca).map(([k,v])=>`${k}="${v}"`).join(' ')}/>`).join('');
+  return `<${tag} ${attrStr}>${inner}</${tag}>`;
+}
+
+/* ── Tab pill positioning ───────────────────────────────────────────── */
+function positionTabPills() {
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.ds-tabs').forEach(group => {
+      const pill   = group.querySelector('[data-tab-pill]');
+      const active = group.querySelector('.ds-tab[aria-selected="true"]');
+      if (!pill || !active) return;
+      const gRect = group.getBoundingClientRect();
+      const aRect = active.getBoundingClientRect();
+      if (!aRect.width) return;
+      pill.style.width     = aRect.width + 'px';
+      pill.style.transform = `translateX(${aRect.left - gRect.left}px)`;
+      requestAnimationFrame(() => pill.classList.remove('is-init'));
+    });
+  });
+}
+
+/* ── Flag ───────────────────────────────────────────────────────────── */
+function flag(cc, w=18, h=13) {
+  return `<img src="https://flagcdn.com/w40/${cc}.png" width="${w}" height="${h}" style="border-radius:2px;vertical-align:middle;display:inline-block;" />`;
+}
+
+/* ── Storm data ─────────────────────────────────────────────────────── */
+const DEFAULT_STORM = {
+  id:1, name:'TC Hidaya', type:'Tropical Cyclone', cat:'Category 2', status:'Active',
+  lat:-17.2, lng:57.4, wind:110, pressure:978, movement:'SE at 12 km/h',
+  color:'#ef4444', glow:'rgba(239,68,68,.35)', radius:17,
+  updated:'2025-07-04 18:00 UTC',
+  track:[
+    {lat:-12.5,lng:51.8,kind:'past'},{lat:-13.6,lng:52.9,kind:'past'},
+    {lat:-14.8,lng:54.2,kind:'past'},{lat:-16.1,lng:55.9,kind:'past'},
+    {lat:-18.6,lng:59.0,kind:'forecast'},{lat:-20.1,lng:61.0,kind:'forecast'},
+    {lat:-21.4,lng:62.8,kind:'forecast'},
+  ],
+};
+const STORM = (() => {
+  try {
+    const r = sessionStorage.getItem('selectedStorm');
+    return r ? {...DEFAULT_STORM, ...JSON.parse(r)} : DEFAULT_STORM;
+  } catch { return DEFAULT_STORM; }
+})();
+
+/* Update page crumb with storm name */
+window.PAGE.crumb = STORM.name || 'Event Details';
+
+/* ── Portfolio data ─────────────────────────────────────────────────── */
+const PORTFOLIOS = [
+  { name:'Car Carrier Fleet',        type:'Marine',   count:15, exposure:'$404.4M' },
+  { name:'Bulkcarrier / Ren...',     type:'Marine',   count:5,  exposure:'$155.0M' },
+  { name:'Tankers / Renew...',       type:'Marine',   count:2,  exposure:'$53.0M'  },
+  { name:'Containerships S...',      type:'Marine',   count:1,  exposure:'$79.9M'  },
+  { name:'Containerships T...',      type:'Marine',   count:1,  exposure:'$79.9M'  },
+  { name:'Tankers / VLCC',          type:'Marine',   count:1,  exposure:'$50.0M'  },
+  { name:'Bulk sea pontoons',       type:'Marine',   count:1,  exposure:'$5.0M'   },
+  { name:'Shipyards',               type:'Marine',   count:5,  exposure:'$500K'   },
+  { name:'Commercial Pro...',       type:'Property', count:8,  exposure:'$125.7M' },
+  { name:'Residential Com...',      type:'Property', count:3,  exposure:'$89.2M'  },
+  { name:'Oil Rigs Portfolio',      type:'Offshore', count:4,  exposure:'$267.8M' },
+  { name:'Wind Farm Assets',        type:'Offshore', count:2,  exposure:'$156.3M' },
+];
+const TOTAL_EXPOSURE = '$1,587.3M';
+const PF_TYPE_CFG = {
+  Marine:   { color:'#0ea5e9' },
+  Property: { color:'#d97706' },
+  Offshore: { color:'#7c3aed' },
+};
+
+/* ── Assets in zone ─────────────────────────────────────────────────── */
+const ASSETS = [
+  { name:'AP WUHU',         portfolio:'Ships size > 15',                imo:'9556446', cc:'mh', country:'Marshall Islands', type:'Car Carrier',  typeColor:'#7c3aed', typeBg:'#f5f3ff', ref:'N/A',         inception:'N/A',        expiry:'N/A',        owner:'Nautical AI World LLC',   exposure:'$500k',  market:'$53.6M',  updated:'2025-02-04' },
+  { name:'ZAARIPH',         portfolio:'Containerships Sample portfolio', imo:'9427959', cc:'lr', country:'Liberia',          type:'Container',    typeColor:'#16a34a', typeBg:'#f0fdf4', ref:'N/A',         inception:'N/A',        expiry:'N/A',        owner:'Megacarrier No 5 Co.',   exposure:'$79.9M', market:'$60.5M',  updated:'2025-02-04' },
+  { name:'ZAARIMIKA',       portfolio:'Containerships Tankers',          imo:'9427959', cc:'lr', country:'Liberia',          type:'Container',    typeColor:'#16a34a', typeBg:'#f0fdf4', ref:'CTA_flat_95', inception:'2025-02-20', expiry:'2028-02-20', owner:'Megacarrier No 5 Co.',   exposure:'$79.9M', market:'$60.5M',  updated:'2025-02-04' },
+  { name:'ZAARIGM LEADER',  portfolio:'Car Carrier fleet',               imo:'9204958', cc:'pa', country:'Panama',           type:'Car Carrier',  typeColor:'#7c3aed', typeBg:'#f5f3ff', ref:'N/A',         inception:'N/A',        expiry:'2026-02-20', owner:'Eastern Heritage Ves Co', exposure:'$200M',  market:'$66.0M',  updated:'2025-02-04' },
+  { name:'BW TULIP',        portfolio:'Norway Flag',                     imo:'9730664', cc:'sg', country:'Singapore',        type:'LNG Carrier',  typeColor:'#db2777', typeBg:'#fdf2f8', ref:'N/A',         inception:'N/A',        expiry:'N/A',        owner:'BW LNG I Private Li.',   exposure:'$1.0',   market:'$272.4M', updated:'2025-02-04' },
+];
+
+/* ── Asset map positions (relative to storm) ───────────────────────── */
+const ASSET_POS = [
+  { name:'AP WUHU',        lat:-16.0, lng:55.8 },
+  { name:'ZAARIPH',        lat:-14.9, lng:58.6 },
+  { name:'ZAARIMIKA',      lat:-15.7, lng:57.2 },
+  { name:'ZAARIGM LEADER', lat:-18.3, lng:56.4 },
+  { name:'BW TULIP',       lat:-17.6, lng:59.3 },
+];
+
+/* ── Map ────────────────────────────────────────────────────────────── */
+let evtMap = null, evtTile = null;
+let mapView = 'Portfolio';
+
+function initEvtMap() {
+  const el = document.getElementById('evt-map');
+  if (!el) return;
+  if (evtMap) { evtMap.remove(); evtMap = null; evtTile = null; }
+
+  const zoom = mapView === 'Global' ? 2 : 5;
+  const center = mapView === 'Global' ? [10, 30] : [STORM.lat, STORM.lng];
+  evtMap = L.map(el, { center, zoom, zoomControl:false, scrollWheelZoom:true });
+  evtTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution:'', maxZoom:18 }).addTo(evtMap);
+  L.control.zoom({ position:'topleft' }).addTo(evtMap);
+
+  setTimeout(() => {
+    const zin  = el.querySelector('.leaflet-control-zoom-in');
+    const zout = el.querySelector('.leaflet-control-zoom-out');
+    if (zin)  zin.innerHTML  = `<span style="font-size:18px;line-height:30px;display:block;text-align:center">+</span>`;
+    if (zout) zout.innerHTML = `<span style="font-size:20px;line-height:30px;display:block;text-align:center">&minus;</span>`;
+    const zc = el.querySelector('.leaflet-control-zoom');
+    if (zc) zc.style.marginTop = '44px';
+  }, 100);
+
+  /* Storm track */
+  const past = (STORM.track || []).filter(t => t.kind === 'past');
+  if (past.length) {
+    L.polyline([...past.map(t => [t.lat,t.lng]), [STORM.lat,STORM.lng]], { color:'#94a3b8', weight:1.5, dashArray:'4 5', opacity:.65 }).addTo(evtMap);
+    past.forEach(t => L.circleMarker([t.lat,t.lng], { radius:4, fillColor:'#94a3b8', fillOpacity:1, color:'#fff', weight:1.5 }).addTo(evtMap));
+  }
+  const fore = (STORM.track || []).filter(t => t.kind === 'forecast');
+  if (fore.length) {
+    L.polyline([[STORM.lat,STORM.lng], ...fore.map(t => [t.lat,t.lng])], { color:'#64748b', weight:1.5, dashArray:'4 5', opacity:.45 }).addTo(evtMap);
+    fore.forEach((t, i) => {
+      const blue = i >= fore.length - 2;
+      L.circleMarker([t.lat,t.lng], { radius: blue?6:4, fillColor: blue?'#3b82f6':'#64748b', fillOpacity:1, color:'#fff', weight:1.5 }).addTo(evtMap);
+    });
+  }
+
+  /* Storm marker */
+  const d = (STORM.radius || 17) * 2;
+  L.marker([STORM.lat, STORM.lng], {
+    icon: L.divIcon({
+      className:'',
+      html:`<div style="width:${d}px;height:${d}px;border-radius:50%;background:${STORM.color};border:2.5px solid rgba(255,255,255,.85);box-shadow:0 0 0 ${Math.round((STORM.radius||17)*.55)}px ${STORM.glow},0 3px 10px rgba(0,0,0,.25)"></div>`,
+      iconSize:[d,d], iconAnchor:[STORM.radius||17, STORM.radius||17],
+    })
+  }).bindTooltip(STORM.name, { permanent:false, direction:'top' }).addTo(evtMap);
+
+  /* Asset markers (portfolio view only) */
+  if (mapView === 'Portfolio') {
+    ASSET_POS.forEach(a => {
+      L.marker([a.lat, a.lng], {
+        icon: L.divIcon({
+          className:'',
+          html:`<div style="width:26px;height:26px;border-radius:50%;background:#fff;border:2px solid #2563eb;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(15,23,42,.2);font-size:13px">⚓</div>`,
+          iconSize:[26,26], iconAnchor:[13,13],
+        })
+      }).bindTooltip(a.name, { permanent:false, direction:'top', offset:[0,-14] }).addTo(evtMap);
+    });
+  }
+}
+
+/* ── Render ──────────────────────────────────────────────────────────── */
+let pfSearch = '';
+
+window.render = function() {
+  const filteredPf = PORTFOLIOS.filter(p => !pfSearch || p.name.toLowerCase().includes(pfSearch.toLowerCase()));
+  const stormUpdated = STORM.updated || STORM.updatedAt || DEFAULT_STORM.updated;
+
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
+      ${SC.Topbar()}
+      <main class="flex-1 overflow-y-auto scroll-thin bg-slate-100 p-3" style="min-height:0;display:flex;flex-direction:column;gap:12px">
+
+        <!-- Top row -->
+        <div style="display:grid;grid-template-columns:360px 1fr;gap:12px;height:480px;min-height:0">
+
+          <!-- Portfolio Summary -->
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 1px 3px rgba(15,23,42,.06);display:flex;flex-direction:column;overflow:hidden">
+            <div style="padding:12px 14px 10px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+              <span style="font-size:13px;font-weight:700;color:#0f172a">Portfolio Summary</span>
+              <div style="position:relative">
+                <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);pointer-events:none;display:flex">${lico('Search', 13, '#94a3b8')}</span>
+                <input id="pf-search" type="text" placeholder="Search" value="${pfSearch}"
+                  style="height:30px;border:1px solid #e2e8f0;border-radius:8px;padding:0 10px 0 28px;font-size:12px;color:#0f172a;outline:none;font-family:inherit;width:140px;background:#f8fafc;transition:border-color .15s" />
+              </div>
+            </div>
+            <div style="padding:8px 14px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+              <span style="font-size:12px;font-weight:600;color:#334155">Our Total Exposure:</span>
+              <span style="font-size:13px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums">${TOTAL_EXPOSURE}</span>
+            </div>
+            <div class="overflow-y-auto scroll-thin flex-1" style="min-height:0">
+              <table class="pf-tbl">
+                <thead>
+                  <tr>
+                    <th>Portfolio Name</th>
+                    <th>Type</th>
+                    <th style="text-align:right">Count</th>
+                    <th style="text-align:right">Exposure</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${filteredPf.map(p => {
+                    const cfg = PF_TYPE_CFG[p.type] || PF_TYPE_CFG.Marine;
+                    return `<tr>
+                      <td>
+                        <div style="display:flex;align-items:center;gap:7px;min-width:0">
+                          <span style="width:6px;height:6px;border-radius:50%;background:${cfg.color};flex-shrink:0"></span>
+                          <a href="#" style="color:#2563eb;font-weight:500;text-decoration:none;white-space:nowrap" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${p.name}</a>
+                        </div>
+                      </td>
+                      <td style="color:#475569">${p.type}</td>
+                      <td style="text-align:right;font-variant-numeric:tabular-nums">${p.count}</td>
+                      <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">${p.exposure}</td>
+                    </tr>`;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Map panel -->
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 1px 3px rgba(15,23,42,.06);display:flex;flex-direction:column;overflow:hidden">
+            <div style="padding:10px 14px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:10px;flex-shrink:0">
+              <div class="ds-tabs" id="map-view-tabs">
+                <span class="ds-tab-pill is-init" data-tab-pill></span>
+                <button class="ds-tab" aria-selected="${mapView==='Portfolio'}" data-mview="Portfolio">
+                  <span class="ds-tab-label">Portfolio View</span>
+                </button>
+                <button class="ds-tab" aria-selected="${mapView==='Global'}" data-mview="Global">
+                  <span class="ds-tab-label">Global View</span>
+                </button>
+              </div>
+              <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+                <span style="font-size:11.5px;color:#64748b;font-variant-numeric:tabular-nums">${stormUpdated}</span>
+                <span style="padding:3px 12px;border-radius:999px;background:#ef4444;color:#fff;font-size:11px;font-weight:700;letter-spacing:.02em">${STORM.status || 'Active'}</span>
+              </div>
+            </div>
+            <div style="flex:1;position:relative;overflow:hidden;min-height:0">
+              <div id="evt-map"></div>
+              <div style="position:absolute;top:12px;right:12px;z-index:400;display:flex;flex-direction:column;gap:6px">
+                <button class="map-btn" title="Fullscreen">${lico('Maximize2', 14)}</button>
+                <button class="map-btn" title="Layers">${lico('Layers', 14)}</button>
+                <button class="map-btn" title="Marine assets">${lico('Ship', 14)}</button>
+                <button class="map-btn" title="Aviation assets">${lico('Plane', 14)}</button>
+                <button class="map-btn" title="Property assets">${lico('Building2', 14)}</button>
+                <button class="map-btn" title="Offshore assets">${lico('Zap', 14)}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assets in Zone -->
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 1px 3px rgba(15,23,42,.06);overflow:hidden">
+          <div style="padding:12px 16px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center">
+            <span style="font-size:13px;font-weight:700;color:#0f172a">Assets in Zone</span>
+            <div style="margin-left:auto">
+              <select style="border:1px solid #e2e8f0;border-radius:8px;padding:4px 26px 4px 10px;font-size:12px;color:#334155;background:#fff url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%2210%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2364748b%22 stroke-width=%222%22%3E%3Cpolyline points=%226 9 12 15 18 9%22/%3E%3C/svg%3E') no-repeat right 7px center;-webkit-appearance:none;font-family:inherit;cursor:pointer;outline:none;font-weight:500">
+                <option>Marine</option><option>Aviation</option><option>Property</option><option>Offshore</option>
+              </select>
+            </div>
+          </div>
+          <div class="overflow-x-auto scroll-thin">
+            <table class="az-tbl">
+              <thead>
+                <tr>
+                  <th>Asset</th><th>Portfolio</th><th>IMO</th><th>Country</th><th>Type</th>
+                  <th>Ref Number</th><th>Inception Date</th><th>Expiry Date</th><th>Owner</th>
+                  <th>Our Exposure</th><th>Estimated Market Value</th><th>Latest Update</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${ASSETS.map(a => `<tr>
+                  <td><a href="#" style="color:#2563eb;font-weight:600;text-decoration:none" onmouseover="this.style.color='#1d4ed8'" onmouseout="this.style.color='#2563eb'">${a.name}</a></td>
+                  <td><a href="#" style="color:#2563eb;font-size:12px;text-decoration:none" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${a.portfolio}</a></td>
+                  <td style="font-family:monospace;font-size:12px;color:#475569">${a.imo}</td>
+                  <td><div style="display:flex;align-items:center;gap:6px">${flag(a.cc)}<span>${a.country}</span></div></td>
+                  <td><span class="type-badge" style="background:${a.typeBg};color:${a.typeColor}">${a.type}</span></td>
+                  <td style="color:#64748b;font-size:12px">${a.ref}</td>
+                  <td style="color:#475569;font-size:12px">${a.inception}</td>
+                  <td style="color:#475569;font-size:12px">${a.expiry}</td>
+                  <td style="color:#475569;font-size:12px">${a.owner}</td>
+                  <td style="font-variant-numeric:tabular-nums;font-weight:600">${a.exposure}</td>
+                  <td style="font-variant-numeric:tabular-nums;font-weight:500">${a.market}</td>
+                  <td style="color:#64748b;font-size:12px">${a.updated}</td>
+                </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+          <div style="padding:10px 16px;border-top:1px solid #f1f5f9;font-size:12px;color:#64748b;display:flex;align-items:center;justify-content:space-between">
+            <span>${ASSETS.length} results (1-${ASSETS.length} shown) &bull; Items per page: 10</span>
+            <div style="display:flex;align-items:center;gap:6px">
+              <button style="padding:4px 10px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;font-size:12px;color:#94a3b8;font-family:inherit;cursor:not-allowed" disabled>Previous</button>
+              <span style="min-width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;background:#2563eb;color:#fff;border-radius:6px;font-size:12px;font-weight:600">1</span>
+              <button style="padding:4px 10px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;font-size:12px;color:#94a3b8;font-family:inherit;cursor:not-allowed" disabled>Next</button>
+              <span style="margin-left:4px;color:#94a3b8">Page 1 of 1</span>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+    ${SC.TweaksPanel()}
+  `;
+
+  SC.wireChrome();
+  requestAnimationFrame(positionTabPills);
+  setTimeout(positionTabPills, 150);
+  window.addEventListener('resize', positionTabPills, { passive:true });
+
+  /* Map view tabs */
+  document.querySelectorAll('[data-mview]').forEach(btn => {
+    btn.onclick = () => {
+      mapView = btn.dataset.mview;
+      document.querySelectorAll('[data-mview]').forEach(t => t.setAttribute('aria-selected', String(t===btn)));
+      positionTabPills();
+      if (evtMap) evtMap.remove(), evtMap = null, evtTile = null;
+      setTimeout(initEvtMap, 50);
+    };
+  });
+
+  /* Portfolio search */
+  const psi = document.getElementById('pf-search');
+  if (psi) {
+    psi.addEventListener('input', e => { pfSearch = e.target.value; window.render(); });
+    psi.addEventListener('focus', e => { e.target.style.borderColor='#93c5fd'; e.target.style.background='#fff'; });
+    psi.addEventListener('blur',  e => { e.target.style.borderColor='#e2e8f0'; e.target.style.background='#f8fafc'; });
+  }
+
+  setTimeout(initEvtMap, 80);
+};
+
+window.render();
+</script>
+</body>
+</html>

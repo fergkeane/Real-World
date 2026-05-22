@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Portfolios — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { height:100%; }
+  body { font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; }
+  .text-ink-900{color:#0f172a}.text-ink-700{color:#334155}
+  .text-ink-600{color:#475569}.text-ink-500{color:#64748b}.text-ink-400{color:#94a3b8}
+  .bg-ink-100{background:#f1f5f9}.bg-ink-50{background:#f8fafc}
+  .border-ink-100{border-color:#f1f5f9}.border-ink-200{border-color:#e2e8f0}
+  .shadow-card{box-shadow:0 1px 2px rgba(15,23,42,.08),0 0 0 1px rgba(15,23,42,.02)}
+  .text-brand-600{color:#2563eb}
+  .scroll-thin::-webkit-scrollbar{width:5px}.scroll-thin::-webkit-scrollbar-track{background:transparent}
+  .scroll-thin::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
+  .tracking-micro{letter-spacing:0.04em}
+
+  /* Category tabs */
+  .cat-tabs { display:inline-flex; gap:4px; padding:4px; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:9999px; position:relative; }
+  .cat-tab { position:relative; font:inherit; font-size:13px; font-weight:600; padding:8px 20px; background:transparent; border:0; border-radius:9999px; color:#64748b; cursor:pointer; transition:color 140ms; display:inline-flex; align-items:center; gap:7px; white-space:nowrap; }
+  .cat-tab:hover { color:#0f172a; }
+  .cat-tab[aria-selected="true"] { color:#fff; }
+  .cat-pill { position:absolute; top:4px; left:0; height:calc(100% - 8px); background:#2563eb; border-radius:9999px; box-shadow:0 1px 2px rgba(15,23,42,.12); z-index:0; transition:transform 320ms cubic-bezier(.34,1.2,.64,1), width 320ms cubic-bezier(.34,1.2,.64,1); pointer-events:none; }
+  .cat-pill.is-init { transition:none; }
+  .cat-tab-label { position:relative; z-index:1; display:inline-flex; align-items:center; gap:7px; }
+
+  /* Sub tabs */
+  .sub-tab { padding:7px 16px; font-size:13px; font-weight:600; border-radius:9999px; border:0; cursor:pointer; transition:background 120ms, color 120ms; }
+  .sub-tab.active { background:#2563eb; color:#fff; }
+  .sub-tab:not(.active) { background:transparent; color:#64748b; }
+  .sub-tab:not(.active):hover { background:#f1f5f9; color:#0f172a; }
+
+  /* Table */
+  .porto-table { width:100%; border-collapse:collapse; }
+  .porto-table th { padding:10px 14px; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; text-align:left; border-bottom:1px solid #e2e8f0; background:#fff; white-space:nowrap; }
+  .porto-table td { padding:11px 14px; font-size:13px; color:#334155; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+  .porto-table tr:last-child td { border-bottom:0; }
+  .porto-table tr:hover td { background:#f8fafc; }
+  .porto-name { color:#2563eb; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; }
+  .porto-name:hover { color:#1d4ed8; }
+  .porto-desc { color:#64748b; font-size:12.5px; }
+  .risk-score { font-weight:700; }
+  .risk-low    { color:#16a34a; }
+  .risk-mid    { color:#d97706; }
+  .risk-high   { color:#dc2626; }
+
+  /* Badges */
+  .badge { display:inline-flex; align-items:center; padding:2px 10px; border-radius:999px; font-size:11px; font-weight:700; }
+  .badge-ok         { background:#dcfce7; color:#16a34a; }
+  .badge-warning    { background:#fef9c3; color:#a16207; }
+  .badge-sanctioned { background:#fee2e2; color:#dc2626; }
+
+  /* Search */
+  .search-input { display:flex; align-items:center; gap:6px; border:1px solid #e2e8f0; border-radius:8px; padding:6px 10px; background:#fff; }
+  .search-input input { border:0; outline:0; font:inherit; font-size:13px; color:#0f172a; background:transparent; width:160px; }
+  .search-input input::placeholder { color:#94a3b8; }
+
+  /* Pagination footer */
+  .table-footer { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-top:1px solid #f1f5f9; font-size:12px; color:#64748b; }
+  .per-page-select { border:1px solid #e2e8f0; border-radius:6px; padding:3px 24px 3px 8px; font:inherit; font-size:12px; color:#334155; background:#fff; cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 6px center; }
+
+  /* Action btns */
+  .action-btn { width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; border-radius:6px; border:0; background:transparent; color:#94a3b8; cursor:pointer; }
+  .action-btn:hover { background:#f1f5f9; color:#334155; }
+</style>
+</head>
+<body class="bg-ink-100 text-ink-900 antialiased">
+<div id="app" class="min-h-screen w-full flex"></div>
+
+<script>
+window.PAGE = { id:'portfolios', title:'Portfolios', crumb:'All Portfolios' };
+window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "density": "compact",
+  "accent": "blue",
+  "sidebarExpanded": false,
+  "showSparklines": true
+}/*EDITMODE-END*/;
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="shared/chrome.js?v=4"></script>
+<script>
+const SC = window.sharedChrome;
+const Ico = SC.I;
+
+/* ---- State ---- */
+let catTab    = 'Marine';
+let subTab    = 'Portfolios';
+let searchVal = '';
+let perPage   = 10;
+
+/* ---- Data ---- */
+const PORTFOLIOS = {
+  Marine: [
+    { name:'Black Sea Portfolios',         desc:'List of ships trapped in Ukraine ports...',               policies:1021,  exposure:'$917.5M', risk:26,  eemi:11.14, cii:6.35, status:'Warning' },
+    { name:'Dung Alon Shipping Ltd',        desc:'Subject vessels that ran aground/struck',                 policies:37,    exposure:'$517.7M', risk:100, eemi:4.03,  cii:5.17, status:'Sanctioned' },
+    { name:'Bomberos Shipping - Esperanza', desc:'Dedicated sub-SOLAS 50-100 m vessels',                   policies:252,   exposure:'$121.8M', risk:2,   eemi:5.82,  cii:4.06, status:'Sanctioned' },
+    { name:'Car Carrier Fleet',             desc:'Car carrying with no ro-ro of ship refits...',            policies:698,   exposure:'$24.4B',  risk:4,   eemi:14.43, cii:7.75, status:'OK' },
+    { name:'Container - Post Panamax',      desc:'Containerships 12,000-14,999 TEU',                       policies:1662,  exposure:'$15.1B',  risk:1,   eemi:5.7,   cii:6.2,  status:'OK' },
+    { name:'Mediterranean Tanker Fleet',    desc:'Chemical and oil tankers operating in Mediterranean routes', policies:845, exposure:'$8.9B', risk:18,  eemi:7.25,  cii:5.84, status:'OK' },
+    { name:'Asian Trade Route Vessels',     desc:'Bulk carriers and container ships on Asia-Pacific routes',policies:1203,  exposure:'$12.7B',  risk:12,  eemi:6.18,  cii:5.42, status:'Warning' },
+    { name:'North Sea Oil Support',         desc:'Offshore support vessels for North Sea operations',       policies:156,   exposure:'$2.3B',   risk:8,   eemi:9.15,  cii:6.78, status:'OK' },
+    { name:'Pacific Cruise Lines',          desc:'Passenger cruise vessels operating Pacific routes',       policies:89,    exposure:'$4.2B',   risk:6,   eemi:12.34, cii:7.89, status:'OK' },
+    { name:'Arctic LNG Carriers',           desc:'Specialized LNG carriers for Arctic shipping routes',     policies:34,    exposure:'$6.8B',   risk:22,  eemi:4.67,  cii:4.23, status:'Warning' },
+  ],
+  Offshore: [
+    { name:'North Sea Block 23',            desc:'Fixed platforms in UK North Sea sector',                  policies:45,    exposure:'$3.1B',   risk:14,  eemi:8.20,  cii:5.90, status:'OK' },
+    { name:'Gulf of Mexico Deepwater',      desc:'Deepwater floating production units',                     policies:28,    exposure:'$5.8B',   risk:31,  eemi:6.40,  cii:4.80, status:'Warning' },
+    { name:'West Africa Offshore',          desc:'FPSO and subsea assets off Nigeria coast',                policies:19,    exposure:'$2.2B',   risk:55,  eemi:3.90,  cii:3.70, status:'Sanctioned' },
+    { name:'Caspian Sea Platforms',         desc:'Fixed steel jacket platforms, Caspian basin',             policies:12,    exposure:'$890M',   risk:9,   eemi:7.10,  cii:5.20, status:'OK' },
+    { name:'Norwegian Shelf Assets',        desc:'Production platforms on Norwegian Continental Shelf',      policies:67,    exposure:'$7.4B',   risk:3,   eemi:11.50, cii:6.90, status:'OK' },
+  ],
+  Aviation: [
+    { name:'Narrowbody Fleet A',            desc:'Single-aisle aircraft portfolio, European carriers',      policies:312,   exposure:'$4.1B',   risk:5,   eemi:9.80,  cii:6.10, status:'OK' },
+    { name:'Widebody Long-Haul',            desc:'Twin-aisle aircraft on intercontinental routes',          policies:178,   exposure:'$9.2B',   risk:11,  eemi:7.60,  cii:5.50, status:'Warning' },
+    { name:'Regional Turboprop Fleet',      desc:'ATR and Dash-8 regional operations',                      policies:94,    exposure:'$680M',   risk:7,   eemi:8.90,  cii:6.40, status:'OK' },
+    { name:'Cargo Aircraft Portfolio',      desc:'Freighter aircraft worldwide operators',                   policies:57,    exposure:'$2.3B',   risk:16,  eemi:6.20,  cii:4.90, status:'Warning' },
+  ],
+  Property: [
+    { name:'Manhattan Commercial',          desc:'High-rise office and retail, Midtown Manhattan',          policies:156,   exposure:'$2.8B',   risk:8,   eemi:10.20, cii:7.10, status:'OK' },
+    { name:'London Financial District',     desc:'Grade A office buildings, City of London',                policies:234,   exposure:'$1.9B',   risk:12,  eemi:8.70,  cii:6.30, status:'Warning' },
+    { name:'Tokyo Industrial Zone',         desc:'Logistics hubs and industrial parks, Greater Tokyo',      policies:145,   exposure:'$3.2B',   risk:19,  eemi:7.40,  cii:5.80, status:'Warning' },
+    { name:'Dubai Business Bay',            desc:'Mixed-use commercial tower portfolio',                     policies:67,    exposure:'$1.2B',   risk:6,   eemi:9.50,  cii:6.70, status:'OK' },
+    { name:'Singapore CBD',                 desc:'Prime office space, Raffles Place and Marina Bay',        policies:98,    exposure:'$1.7B',   risk:4,   eemi:11.20, cii:7.50, status:'OK' },
+  ],
+};
+
+function catIcon(name, size=15) {
+  const d = window.lucide && window.lucide.icons && window.lucide.icons[name];
+  if (!d) return '';
+  const [tag, attrs, ch] = d;
+  const a = Object.entries({...attrs, width:size, height:size, class:''}).map(([k,v]) => `${k}="${v}"`).join(' ');
+  const inner = (ch||[]).map(([t,ca]) => `<${t} ${Object.entries(ca).map(([k,v])=>`${k}="${v}"`).join(' ')}/>`).join('');
+  return `<${tag} ${a}>${inner}</${tag}>`;
+}
+const CAT_ICONS = {
+  Marine:   catIcon('Ship'),
+  Offshore: catIcon('Zap'),
+  Aviation: catIcon('Plane'),
+  Property: catIcon('Building'),
+};
+
+const PORTFOLIO_ICO = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>`;
+const EDIT_ICO      = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+const DEL_ICO       = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
+const SEARCH_ICO    = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
+const PLUS_ICO      = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+
+function riskClass(r) {
+  if (r <= 10) return 'risk-low';
+  if (r <= 25) return 'risk-mid';
+  return 'risk-high';
+}
+
+function statusBadge(s) {
+  const cls = s === 'OK' ? 'badge-ok' : s === 'Warning' ? 'badge-warning' : 'badge-sanctioned';
+  return `<span class="badge ${cls}">${s}</span>`;
+}
+
+function Content() {
+  const rows = (PORTFOLIOS[catTab] || []).filter(p =>
+    !searchVal || p.name.toLowerCase().includes(searchVal.toLowerCase()) || p.desc.toLowerCase().includes(searchVal.toLowerCase())
+  );
+
+  return `
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- Top bar with Add button -->
+    <div class="flex items-center justify-end px-6 py-3">
+      <button class="inline-flex items-center gap-2 bg-brand-600 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors" style="background:#2563eb;">
+        ${PLUS_ICO} Add New Portfolio
+      </button>
+    </div>
+
+    <!-- Category tabs (centered) -->
+    <div class="flex justify-center px-6 pb-4">
+      <div class="cat-tabs" id="cat-tabs">
+        <span class="cat-pill is-init" id="cat-pill"></span>
+        ${Object.keys(PORTFOLIOS).map(cat => `
+          <button class="cat-tab" aria-selected="${cat === catTab}" data-cat="${cat}">
+            <span class="cat-tab-label">${CAT_ICONS[cat]} ${cat}</span>
+          </button>`).join('')}
+      </div>
+    </div>
+
+    <!-- Table card -->
+    <div class="flex-1 overflow-hidden px-6 pb-6">
+      <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col h-full overflow-hidden">
+
+        <!-- Sub tabs + search -->
+        <div class="flex items-center justify-between px-4 py-3 border-b border-ink-100">
+          <div class="flex items-center gap-1">
+            <button class="sub-tab ${subTab==='Portfolios'?'active':''}" data-sub="Portfolios">Portfolios</button>
+            <button class="sub-tab ${subTab==='Portfolio Groups'?'active':''}" data-sub="Portfolio Groups">Portfolio Groups</button>
+          </div>
+          <div class="search-input">
+            ${SEARCH_ICO}
+            <input id="search-input" type="text" placeholder="Search" value="${searchVal}" />
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="flex-1 overflow-y-auto scroll-thin">
+          <table class="porto-table">
+            <thead>
+              <tr>
+                <th style="width:180px;">Name</th>
+                <th>Description</th>
+                <th style="width:90px;">Policies</th>
+                <th style="width:120px;">Our Exposure</th>
+                <th style="width:100px;">Risk Score</th>
+                <th style="width:80px;">EEMI</th>
+                <th style="width:70px;">CII</th>
+                <th style="width:160px;">Sanctions/Compliance</th>
+                <th style="width:80px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map(p => `
+                <tr>
+                  <td><span class="porto-name" data-pf-cat="${catTab}" data-pf-name="${encodeURIComponent(p.name)}">${PORTFOLIO_ICO} ${p.name}</span></td>
+                  <td><span class="porto-desc">${p.desc}</span></td>
+                  <td class="tabular-nums">${p.policies.toLocaleString()}</td>
+                  <td class="tabular-nums font-semibold text-ink-900">${p.exposure}</td>
+                  <td><span class="risk-score ${riskClass(p.risk)}">${p.risk}</span></td>
+                  <td class="tabular-nums">${p.eemi}</td>
+                  <td class="tabular-nums">${p.cii}</td>
+                  <td>${statusBadge(p.status)}</td>
+                  <td>
+                    <div class="flex items-center gap-1">
+                      <button class="action-btn" title="Edit">${EDIT_ICO}</button>
+                      <button class="action-btn" title="Delete">${DEL_ICO}</button>
+                    </div>
+                  </td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="table-footer">
+          <div class="flex items-center gap-2">
+            <span>Items per page:</span>
+            <select class="per-page-select" id="per-page">
+              <option value="10" ${perPage===10?'selected':''}>10</option>
+              <option value="25" ${perPage===25?'selected':''}>25</option>
+              <option value="50" ${perPage===50?'selected':''}>50</option>
+            </select>
+          </div>
+          <div>${rows.length} total items</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function positionCatPill() {
+  const group = document.getElementById('cat-tabs');
+  const pill  = document.getElementById('cat-pill');
+  if (!group || !pill) return;
+  const active = group.querySelector('.cat-tab[aria-selected="true"]');
+  if (!active) return;
+  const gRect = group.getBoundingClientRect();
+  const aRect = active.getBoundingClientRect();
+  pill.style.width = aRect.width + 'px';
+  pill.style.transform = `translateX(${aRect.left - gRect.left}px)`;
+  requestAnimationFrame(() => requestAnimationFrame(() => pill.classList.remove('is-init')));
+}
+
+window.render = function() {
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
+      ${SC.Topbar()}
+      ${Content()}
+    </div>
+    ${SC.TweaksPanel()}
+  `;
+  SC.wireChrome();
+
+  /* Cat tab clicks */
+  document.querySelectorAll('[data-cat]').forEach(b => b.addEventListener('click', () => {
+    catTab = b.dataset.cat;
+    render();
+    requestAnimationFrame(positionCatPill);
+  }));
+  requestAnimationFrame(positionCatPill);
+
+  /* Sub tab clicks */
+  document.querySelectorAll('[data-sub]').forEach(b => b.addEventListener('click', () => {
+    subTab = b.dataset.sub;
+    render();
+  }));
+
+  /* Search */
+  const si = document.getElementById('search-input');
+  if (si) si.addEventListener('input', e => { searchVal = e.target.value; render(); });
+
+  /* Per page */
+  const pp = document.getElementById('per-page');
+  if (pp) pp.addEventListener('change', e => { perPage = parseInt(e.target.value); render(); });
+
+  /* Portfolio name → details page */
+  const DEST = {
+    Marine:   { key:'selectedPortfolio',          url:'MarinePortfolioDetails.html' },
+    Offshore: { key:'selectedOffshorePF',          url:'OffshorePortfolioDetails.html' },
+    Aviation: { key:'selectedAviationPortfolio',   url:'AviationPortfolioDetails.html' },
+  };
+  document.querySelectorAll('[data-pf-cat]').forEach(el => {
+    el.addEventListener('click', () => {
+      const cat  = el.dataset.pfCat;
+      const name = decodeURIComponent(el.dataset.pfName);
+      const dest = DEST[cat];
+      if (!dest) return;
+      const p = (PORTFOLIOS[cat] || []).find(x => x.name === name);
+      if (!p) return;
+      sessionStorage.setItem(dest.key, JSON.stringify({
+        name: p.name, policies: p.policies, assets: p.policies,
+        exposure: p.exposure, activePolicies: p.policies,
+        id: cat.slice(0,3).toUpperCase() + String(PORTFOLIOS[cat].indexOf(p) + 1).padStart(4,'0'),
+      }));
+      location.href = dest.url;
+    });
+  });
+};
+window.render();
+</script>
+</body>
+</html>

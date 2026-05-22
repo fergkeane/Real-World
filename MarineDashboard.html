@@ -1,0 +1,820 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Marine — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script>
+  tailwind.config = {
+    theme: { extend: {
+      fontFamily: { sans: ['Open Sans','ui-sans-serif','system-ui','sans-serif'], display: ['Exo','Open Sans','sans-serif'] },
+      colors: {
+        brand: {50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',800:'#1e40af'},
+        ink:   {900:'#0f172a',800:'#1e293b',700:'#334155',600:'#475569',500:'#64748b',400:'#94a3b8',300:'#cbd5e1',200:'#e2e8f0',100:'#f1f5f9',50:'#f8fafc'},
+      },
+      boxShadow: {
+        'card':'0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06)',
+        'card-hover':'0 4px 10px -2px rgb(15 23 42 / 0.08), 0 8px 24px -4px rgb(15 23 42 / 0.08)',
+      },
+    } },
+  };
+</script>
+<style>
+  html, body { font-family:'Open Sans',system-ui,sans-serif; }
+  h1,h2,h3,h4,h5,h6,.font-display,.tracking-micro { font-family:'Exo','Open Sans',sans-serif; }
+  .tracking-micro { letter-spacing:.08em; }
+  .scroll-thin::-webkit-scrollbar { width:6px; height:6px; }
+  .scroll-thin::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:999px; }
+  .pop-enter { animation: pop .16s cubic-bezier(.2,.8,.2,1); transform-origin: top right; }
+  @keyframes pop { from {opacity:0;transform:translateY(-4px) scale(.98);} to {opacity:1;transform:translateY(0) scale(1);} }
+  .dot-pulse { position:relative; }
+  .dot-pulse::after { content:''; position:absolute; inset:-3px; border-radius:999px; box-shadow:0 0 0 0 rgba(239,68,68,.5); animation:pulse 1.8s infinite; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(239,68,68,.55);} 70%{box-shadow:0 0 0 10px rgba(239,68,68,0);} 100%{box-shadow:0 0 0 0 rgba(239,68,68,0);} }
+  .tile-hover { transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+  .kbd { font-family: ui-monospace, Menlo, monospace; font-size:10.5px; padding:1px 5px; border:1px solid #e2e8f0; border-bottom-width:2px; border-radius:4px; background:#f8fafc; color:#475569; }
+  .ring-focus:focus-visible { outline:2px solid #3b82f6; outline-offset:2px; border-radius:8px; }
+  [data-density="compact"] .py-density { padding-top:.75rem; padding-bottom:.75rem; }
+  [data-density="comfortable"] .py-density { padding-top:1.25rem; padding-bottom:1.25rem; }
+  [data-density="compact"] .gap-density { gap:.75rem; }
+  [data-density="comfortable"] .gap-density { gap:1rem; }
+  /* Leaflet custom */
+  #marine-map { background:#0b1e2e; }
+  #marine-map .leaflet-top.leaflet-left { top:56px; left:2px; }
+  #marine-map .leaflet-top.leaflet-left .leaflet-bar { margin-left:10px !important; }
+  /* Fullscreen button: standalone card, same width as Leaflet zoom bar, left-aligned with it */
+  #map-fullscreen.map-btn-fs { width:32px; height:32px; border-radius:8px !important; left:12px !important; top:12px !important; }
+  .leaflet-control-zoom, .leaflet-bar { border:1px solid #e2e8f0 !important; box-shadow: 0 1px 2px rgb(15 23 42 / .08) !important; border-radius: 8px !important; overflow:hidden; }
+  .leaflet-bar a { background:#fff !important; color:#334155 !important; }
+  .leaflet-bar a:hover { background:#f1f5f9 !important; }
+  .leaflet-control-zoom a { display:flex !important; align-items:center; justify-content:center; padding:0 !important; }
+  .leaflet-control-zoom a svg { width:16px; height:16px; }
+  .map-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:#fff; border:1px solid #e2e8f0; border-radius:8px; color:#334155; box-shadow: 0 1px 2px rgb(15 23 42 / .08); }
+  .map-btn:hover { background:#f1f5f9; }
+  /* Vessel name label next to marker on the map */
+  .vessel-label-wrap { background:transparent !important; border:0 !important; }
+  .vessel-label {
+    display:inline-block; white-space:nowrap;
+    background:rgba(15,23,42,.88); color:#fff;
+    font-family:'Exo','Open Sans',sans-serif;
+    font-size:11px; font-weight:700; letter-spacing:.01em;
+    padding:3px 7px; border-radius:5px;
+    box-shadow:0 1px 3px rgba(0,0,0,.25);
+    text-shadow:0 1px 1px rgba(0,0,0,.5);
+    pointer-events:none;
+  }
+  .vessel-marker svg { filter: drop-shadow(0 1px 2px rgba(0,0,0,.5)); }
+  /* Vessel popup design */
+  .vessel-popup .leaflet-popup-content-wrapper { padding:0; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(15,23,42,.25); }
+  .vessel-popup .leaflet-popup-content { margin:0; width:300px !important; font-family:'Open Sans',system-ui,sans-serif; }
+  .vessel-popup .leaflet-popup-tip { background:#fff; }
+  .vp { background:#fff; color:#0f172a; }
+  .vp-header { background:#2563eb; color:#fff; padding:12px 14px 10px; display:flex; align-items:flex-start; justify-content:space-between; }
+  .vp-header-main { min-width:0; }
+  .vp-title { font-family:'Exo','Open Sans',sans-serif; font-weight:800; font-size:15px; letter-spacing:.02em; display:flex; align-items:center; }
+  .vp-subtitle { font-size:11.5px; color:rgba(255,255,255,.85); margin-top:2px; }
+  .vp-route { display:grid; grid-template-columns:1fr auto 1fr; gap:8px; align-items:center; padding:12px 14px; border-bottom:1px solid #e2e8f0; }
+  .vp-port { text-align:center; }
+  .vp-port-code { font-family:'Exo','Open Sans',sans-serif; font-weight:800; font-size:15px; color:#0f172a; }
+  .vp-port-name { font-size:11.5px; color:#334155; margin-top:1px; }
+  .vp-port-time { font-size:10px; color:#64748b; margin-top:3px; letter-spacing:.02em; }
+  .vp-arrow { color:#64748b; font-size:16px; }
+  .vp-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 16px; padding:12px 14px; }
+  .vp-grid > div { min-width:0; }
+  .vp-span { grid-column:1 / -1; }
+  .vp-k { font-size:10.5px; color:#64748b; }
+  .vp-v { font-size:12.5px; color:#0f172a; margin-top:1px; font-weight:600; }
+  .vp-strong { font-weight:700; color:#0f172a; }
+  .vp-muted { color:#64748b; font-weight:500; font-size:11px; }
+  .vp-nav { color:#16a34a; font-weight:700; }
+  .vp-cta { display:block; width:calc(100% - 28px); margin:4px 14px 14px; background:#fff; color:#2563eb; border:1.5px solid #2563eb; border-radius:8px; padding:10px 12px; font-weight:700; font-size:12.5px; cursor:pointer; font-family:'Exo','Open Sans',sans-serif; letter-spacing:.02em; }
+  .vp-cta:hover { background:#eff6ff; }
+  .vessel-popup .leaflet-popup-close-button { color:#fff !important; top:8px !important; right:10px !important; font-size:22px !important; font-weight:400 !important; width:24px !important; height:24px !important; line-height:22px !important; padding:0 !important; border-radius:6px; opacity:.9; }
+  .vessel-popup .leaflet-popup-close-button:hover { color:#fff !important; background:rgba(255,255,255,.18); opacity:1; }
+  /* Fullscreen map mode */
+  #map-container.is-fullscreen { position:fixed; inset:0; z-index:9999; border-radius:0; border:0; }
+  #map-container.is-fullscreen > div { height:100vh !important; }
+  /* Pill tabs (Skytek DS — animated pill via shared layout) */
+  .ds-tabs { position:relative; display:inline-flex; gap:4px; padding:4px; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:9999px; }
+  .ds-tabs.is-stretch { display:flex; }
+  .ds-tabs.is-stretch > .ds-tab { flex:1; }
+  .ds-tab { position:relative; font:inherit; font-size:13px; font-weight:600; padding:8px 18px; background:transparent; border:0; border-radius:9999px; color:#64748b; cursor:pointer; transition:color 140ms ease; display:inline-flex; align-items:center; justify-content:center; gap:6px; white-space:nowrap; text-align:center; }
+  .ds-tab:hover { color:#0f172a; }
+  .ds-tab[aria-selected="true"], .ds-tab[aria-selected="true"]:hover { color:#fff; }
+  .ds-tab-pill { position:absolute; top:4px; left:0; height:calc(100% - 8px); background:#2563eb; border-radius:9999px; box-shadow:0 1px 2px rgba(15,23,42,.12); z-index:0; transform:translateX(0) scaleX(1); transform-origin:left center; transition:transform 320ms cubic-bezier(.34,1.2,.64,1), width 320ms cubic-bezier(.34,1.2,.64,1); pointer-events:none; }
+  .ds-tab-pill.is-init { transition:none; }
+  .ds-tab-label { position:relative; z-index:1; display:inline-flex; align-items:center; gap:6px; }
+  .ds-tab .tab-ico { display:inline-flex; }
+</style>
+</head>
+<body class="bg-ink-100 text-ink-900 antialiased" data-density="compact">
+<div id="app" class="min-h-screen w-full flex"></div>
+
+<script>
+  window.PAGE = { id:'marine', title:'Marine', crumb:'Overview' };
+  window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "density": "comfortable",
+    "accent": "blue",
+    "sidebarExpanded": false,
+    "showSparklines": true
+  }/*EDITMODE-END*/;
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="shared/chrome.js?v=4"></script>
+<script>
+const SC = window.sharedChrome;
+const Ico = SC.I;
+
+/* ----------- DATA ----------- */
+const PORTFOLIOS = [
+  { name:'Europe Shipping',     policies:29,  exposure:'$645.5B' },
+  { name:'Black sea portfolio', policies:100, exposure:'$492.8B' },
+  { name:'Buena Vista Shipp…',  policies:37,  exposure:'$577M'   },
+  { name:'LLC Holdings',        policies:15,  exposure:'$89.2M'  },
+  { name:'North Atlantic Grp',  policies:42,  exposure:'$210.4B' },
+  { name:'Pacific Rim Carriers',policies:68,  exposure:'$318.9B' },
+];
+
+const REGIONS = [
+  { cc:'us', name:'USA',          above:'$298', ours:'$204.1B' },
+  { cc:'eu', name:'Europe',       above:'$156', ours:'$178.5B', expand:true },
+  { cc:'cn', name:'Asia Pacific', above:'$234', ours:'$312.7B', expand:true },
+  { cc:'sa', name:'Middle East',  above:'$187', ours:'$256.3B' },
+  { cc:'br', name:'South America',above:'$98',  ours:'$134.8B' },
+  { cc:'za', name:'Africa',       above:'$67',  ours:'$89.4B'  },
+];
+
+const BENCHMARK = [
+  { kind:'Container',        count:'9,234',  pct:18.2, color:'#2563eb' },
+  { kind:'Bulk Carrier',     count:'12,483', pct:24.6, color:'#3b82f6' },
+  { kind:'Tanker',           count:'8,021',  pct:17.8, color:'#ef4444' },
+  { kind:'Gas Carrier',      count:'3,456',  pct:6.8,  color:'#f97316' },
+  { kind:'LNG Carrier',      count:'2,876',  pct:5.7,  color:'#eab308' },
+  { kind:'General Cargo',    count:'6,788',  pct:13.6, color:'#22c55e' },
+  { kind:'Refrigerated Cargo',count:'2,134', pct:4.2,  color:'#06b6d4' },
+];
+
+const ALERTS = [
+  { cc:'ru', name:'MV Volga Trader',  kind:'Container Ship',
+    date:'2024-11-05 08:45 UTC', loc:'Black Sea, 43.8°N 37.2°E',
+    body:'Vessel flagged under international sanctions with restricted…',
+    tag:'SANCTIONED', tagTone:'rose' },
+  { cc:'pa', name:'MV Ocean Navigator', kind:'Container Ship',
+    date:'2024-11-04 14:23 UTC', loc:'North Atlantic, 45.2°N 28.5°W',
+    body:'Vessel AIS signal lost in severe weather zone with 12m waves…',
+    tag:'AIS SILENCE', tagTone:'amber' },
+  { cc:'mh', name:'MV Arctic Star',   kind:'LNG Carrier',
+    date:'2024-11-04 09:12 UTC', loc:'Bering Strait, 65.7°N 169.0°W',
+    body:'Deviation from filed route — drift tracking active near ice edge…',
+    tag:'ROUTE DEVIATION', tagTone:'amber' },
+];
+
+/* Vessels on the map — varied types scattered across the globe, oriented by heading. */
+const VESSEL_TYPES = [
+  { k:'Container',         color:'#2563eb' },
+  { k:'Bulk Carrier',      color:'#3b82f6' },
+  { k:'Tanker',            color:'#ef4444' },
+  { k:'Gas Carrier',       color:'#f97316' },
+  { k:'LNG Carrier',       color:'#eab308' },
+  { k:'General Cargo',     color:'#22c55e' },
+  { k:'Refrigerated Cargo',color:'#06b6d4' },
+  { k:'Cruise Passenger',  color:'#ec4899' },
+  { k:'Vehicle Carrier',   color:'#8b5cf6' },
+  { k:'Yacht',             color:'#f59e0b' },
+];
+function randV(seed){ // tiny LCG
+  let s = seed;
+  return () => { s = (s*9301 + 49297) % 233280; return s/233280; };
+}
+function makeVessels() {
+  const types = VESSEL_TYPES.map(t => ({ k: t.k, color: t.color }));
+  const NAMES = ['SEA BREEZE','OCEAN PIONEER','NORDIC STAR','ATLANTIC PEARL','PACIFIC DAWN','BLUE HORIZON','SILVER WAVE','NORTHERN LIGHT','SOUTHERN CROSS','MARITIME GLORY','COASTAL RUNNER','DEEP EXPLORER','TIDAL FORCE','HARBOR MASTER','GULF VOYAGER','ARCTIC WIND','BOREAL QUEEN','EQUINOX','MERIDIAN','CELESTIAL','MIRAMAR','LA PEROUSE','KON-TIKI','AMBER TRADER','IRON DUKE','SEASPRITE','GOLDEN GATE','CAPE HORN','LONG BEACH','YOKOHAMA BAY'];
+  const FLAGS = [
+    {cc:'ng', name:'Nigeria'},{cc:'pa', name:'Panama'},{cc:'lr', name:'Liberia'},{cc:'mh', name:'Marshall Islands'},
+    {cc:'hk', name:'Hong Kong'},{cc:'sg', name:'Singapore'},{cc:'mt', name:'Malta'},{cc:'cy', name:'Cyprus'},
+    {cc:'gr', name:'Greece'},{cc:'no', name:'Norway'},{cc:'gb', name:'United Kingdom'},{cc:'jp', name:'Japan'},
+    {cc:'kr', name:'South Korea'},{cc:'us', name:'United States'},{cc:'bs', name:'Bahamas'},{cc:'tr', name:'Turkey'}
+  ];
+  const PORTS = [
+    {cc:'sa', code:'SA', name:'Ras Tanura'},{cc:'nl', code:'NL', name:'Lagos'},
+    {cc:'sg', code:'SG', name:'Singapore'},{cc:'cn', code:'CN', name:'Shanghai'},
+    {cc:'ae', code:'AE', name:'Jebel Ali'},{cc:'us', code:'US', name:'Los Angeles'},
+    {cc:'us', code:'US', name:'Houston'},{cc:'br', code:'BR', name:'Santos'},
+    {cc:'za', code:'ZA', name:'Durban'},{cc:'gb', code:'GB', name:'Felixstowe'},
+    {cc:'de', code:'DE', name:'Hamburg'},{cc:'nl', code:'NL', name:'Rotterdam'},
+    {cc:'jp', code:'JP', name:'Yokohama'},{cc:'kr', code:'KR', name:'Busan'},
+    {cc:'hk', code:'HK', name:'Hong Kong'},{cc:'in', code:'IN', name:'Mumbai'},
+    {cc:'pa', code:'PA', name:'Balboa'},{cc:'eg', code:'EG', name:'Port Said'}
+  ];
+  const NAVS = ['Underway Using Engine','Under Sail','At Anchor','Moored','Restricted Maneuverability'];
+  const POLICIES = ['Liability','Hull & Machinery','Cargo','War Risks','P&I'];
+  // Anchor routes so vessels look like they're on real sea lanes
+  const lanes = [
+    [{lat:51,lng:2},{lat:50,lng:-5},{lat:45,lng:-20},{lat:40,lng:-40},{lat:38,lng:-60},{lat:35,lng:-75}], // N. Atl
+    [{lat:36,lng:-6},{lat:36,lng:14},{lat:34,lng:25},{lat:31,lng:32},{lat:12,lng:43},{lat:8,lng:77},{lat:1,lng:104}], // Suez-Malacca
+    [{lat:22,lng:114},{lat:31,lng:121},{lat:35,lng:139},{lat:20,lng:150},{lat:-10,lng:170},{lat:-35,lng:175}], // E. Asia-SW Pac
+    [{lat:33,lng:-118},{lat:20,lng:-140},{lat:10,lng:-160},{lat:-5,lng:170},{lat:-20,lng:155}], // Trans-Pac
+    [{lat:-34,lng:18},{lat:-10,lng:40},{lat:5,lng:55},{lat:24,lng:56},{lat:26,lng:56}], // Indian Ocean
+    [{lat:-23,lng:-43},{lat:-35,lng:-55},{lat:-48,lng:-60},{lat:-55,lng:-70}], // S. Atl
+    [{lat:18,lng:-67},{lat:25,lng:-80},{lat:30,lng:-87},{lat:29,lng:-94}], // Caribbean/Gulf
+  ];
+  const r = randV(42);
+  const list = [];
+  let id = 0;
+  for (const lane of lanes) {
+    const samples = 8 + Math.floor(r()*6);
+    for (let i=0; i<samples; i++) {
+      const t = r();
+      const idx = Math.min(lane.length-2, Math.floor(t * (lane.length-1)));
+      const frac = t*(lane.length-1) - idx;
+      const a = lane[idx], b = lane[idx+1];
+      const lat = a.lat + (b.lat-a.lat)*frac + (r()-0.5)*2.5;
+      const lng = a.lng + (b.lng-a.lng)*frac + (r()-0.5)*2.5;
+      const heading = Math.atan2(b.lat-a.lat, b.lng-a.lng) * 180/Math.PI;
+      const type = types[Math.floor(r()*types.length)];
+      // Pick two distinct ports for origin/destination
+      const pFrom = PORTS[Math.floor(r()*PORTS.length)];
+      let pTo = PORTS[Math.floor(r()*PORTS.length)];
+      if (pTo === pFrom) pTo = PORTS[(PORTS.indexOf(pFrom)+1)%PORTS.length];
+      const flag = FLAGS[Math.floor(r()*FLAGS.length)];
+      const name = NAMES[Math.floor(r()*NAMES.length)];
+      const nav = NAVS[Math.floor(r()*NAVS.length)];
+      const policy = POLICIES[Math.floor(r()*POLICIES.length)];
+      const speed = Math.round((8 + r()*14)*10)/10;       // 8.0–22.0 knots
+      const course = Math.round(((heading+360)%360)*10)/10;
+      const draught = Math.round((8 + r()*12)*100)/100;   // 8.00–20.00 m
+      const maxD  = Math.round((draught+0.4+r()*1.2)*100)/100;
+      const durH = 6 + Math.floor(r()*40);                // 6-46h
+      const durM = Math.floor(r()*60);
+      const distNm = Math.round(200 + r()*1600);
+      const adtH = Math.floor(r()*24), adtM = Math.floor(r()*60);
+      const adtDay = 1 + Math.floor(r()*28);
+      const etaDay = 5 + Math.floor(r()*20);
+      const etaH = Math.floor(r()*24), etaM = Math.floor(r()*60);
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const adtMonth = months[Math.floor(r()*12)];
+      const etaMonth = months[Math.floor(r()*12)];
+      list.push({
+        id:++id, lat, lng, heading, type:type.k, color:type.color,
+        name, flag,
+        from: pFrom, to: pTo,
+        adt: `${String(adtDay).padStart(2,'0')} ${adtMonth}, ${String(adtH).padStart(2,'0')}:${String(adtM).padStart(2,'0')}`,
+        eta: `${String(etaDay).padStart(2,'0')} ${etaMonth}, ${String(etaH).padStart(2,'0')}:${String(etaM).padStart(2,'0')}`,
+        durH, durM, distNm,
+        nav, speed, course, draught, maxD, policy,
+        ts: `About ${(r()*5).toFixed(1)} hours ago`,
+      });
+    }
+  }
+  return list;
+}
+
+/* ----------- CARDS ----------- */
+let state = {
+  portfolioTab: 'Portfolios',
+  regionTab: 'Regions Aggregation',
+  alertTab: 'Alerts',
+  vesselFilter: new Set(VESSEL_TYPES.map(t => t.k)),
+  showLabels: false,
+};
+
+// Flag icon helper — ISO 3166-1 alpha-2 code → flagcdn.com image.
+// Pass size 'sm' (h-3.5 / list) or 'md' (h-5 / alert row).
+function flag(cc, size='sm') {
+  if (!cc) return '';
+  const h = size === 'md' ? 20 : 14;
+  const w = size === 'md' ? 28 : 20;
+  return `<img src="https://flagcdn.com/w40/${cc}.png" srcset="https://flagcdn.com/w80/${cc}.png 2x" alt="${cc.toUpperCase()}" width="${w}" height="${h}" class="inline-block rounded-[2px] ring-1 ring-ink-200/80 object-cover" style="width:${w}px;height:${h}px" loading="lazy" />`;
+}
+
+function tabs(tabs, active, groupAttr) {
+  return `
+  <div class="ds-tabs is-stretch" data-tab-group="${groupAttr}">
+    <span class="ds-tab-pill is-init" data-tab-pill></span>
+    ${tabs.map(t => `
+      <button ${groupAttr}="${t}" aria-selected="${t===active}" class="ds-tab" style="font-size:12px; padding:6px 12px;">
+        <span class="ds-tab-label">${t}</span>
+      </button>
+    `).join('')}
+  </div>`;
+}
+function positionTabPills() {
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.ds-tabs').forEach(group => {
+      const pill   = group.querySelector('[data-tab-pill]');
+      const active = group.querySelector('.ds-tab[aria-selected="true"]');
+      if (!pill || !active) return;
+      const gRect = group.getBoundingClientRect();
+      const aRect = active.getBoundingClientRect();
+      if (!aRect.width) return;
+      pill.style.width     = aRect.width + 'px';
+      pill.style.transform = `translateX(${aRect.left - gRect.left}px)`;
+      requestAnimationFrame(() => pill.classList.remove('is-init'));
+    });
+  });
+}
+
+function PortfolioCard() {
+  return `
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:280px">
+    <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Portfolios','Portfolio Groups'], state.portfolioTab, 'data-portfolio-tab')}</div>
+    <div class="grid grid-cols-2 divide-x divide-ink-100 border-b border-ink-100">
+      <div class="p-3 text-center">
+        <div class="text-[10px] font-bold tracking-micro uppercase text-ink-500">Total Policies</div>
+        <div class="mt-1 text-xl font-bold text-brand-600 tabular-nums">4,932</div>
+      </div>
+      <div class="p-3 text-center">
+        <div class="text-[10px] font-bold tracking-micro uppercase text-ink-500">Total Exposure</div>
+        <div class="mt-1 text-xl font-bold text-brand-600 tabular-nums">$605.2B</div>
+      </div>
+    </div>
+    <div class="px-3 pt-2 pb-1 flex items-center justify-between text-[10px] font-bold tracking-micro uppercase text-ink-500">
+      <span>Name</span>
+      <span class="flex gap-6"><span>Policies</span><span>Exposure</span></span>
+    </div>
+    <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-100">
+      ${PORTFOLIOS.map((p, i) => `
+        <button data-pf-idx="${i}" class="w-full text-left px-3 py-2 hover:bg-ink-50 flex items-center justify-between text-xs">
+          <span class="truncate text-brand-600 font-semibold hover:underline">${p.name}</span>
+          <span class="flex items-center gap-6 tabular-nums text-ink-600 shrink-0">
+            <span class="w-10 text-right">${p.policies}</span>
+            <span class="w-20 text-right font-semibold text-ink-900">${p.exposure}</span>
+          </span>
+        </button>
+      `).join('')}
+    </div>
+    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 flex items-center justify-between text-xs h-9">
+      <button class="inline-flex items-center gap-1 text-brand-600 font-semibold hover:text-brand-700 tracking-micro"><span class="inline-flex items-center [&_svg]:h-3.5 [&_svg]:w-3.5">${Ico.plus}</span><span>ADD PORTFOLIO</span></button>
+      <button class="inline-flex items-center gap-1 text-brand-600 font-semibold hover:text-brand-700 tracking-micro"><span>VIEW ALL PORTFOLIOS</span><span class="inline-flex items-center [&_svg]:h-3.5 [&_svg]:w-3.5">${Ico.chev}</span></button>
+    </div>
+  </div>`;
+}
+
+function RegionsCard() {
+  return `
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:280px">
+    <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Regions Aggregation','Exposure Aggregation'], state.regionTab, 'data-region-tab')}</div>
+    <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto_auto] gap-6 text-[10px] font-bold tracking-micro uppercase text-ink-500">
+      <span>Name</span>
+      <span class="text-rose-500">Above<br><span class="line-through decoration-rose-400">1,000,000.0</span></span>
+      <span class="text-right">Our Exposure</span>
+    </div>
+    <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-100">
+      ${REGIONS.map(r => `
+        <button class="w-full text-left px-3 py-2 hover:bg-ink-50 grid grid-cols-[1fr_auto_auto] gap-6 items-center text-xs">
+          <span class="inline-flex items-center gap-2 min-w-0">
+            <span class="shrink-0">${flag(r.cc,'sm')}</span>
+            <span class="truncate text-ink-800 font-medium">${r.name}</span>
+            ${r.expand ? `<span class="text-ink-400">${Ico.chevDown}</span>` : ''}
+          </span>
+          <span class="tabular-nums text-rose-600 font-semibold">${r.above}</span>
+          <span class="tabular-nums text-right font-semibold text-ink-900">${r.ours}</span>
+        </button>
+      `).join('')}
+    </div>
+    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 text-center h-9 flex items-center justify-center">
+      <button class="text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">ALL REGIONS</button>
+    </div>
+  </div>`;
+}
+
+function BenchmarkCard() {
+  // teardrop marker — matches the filter menu + map vessel icons
+  const marker = (color) => `<svg viewBox="0 0 24 24" class="h-4 w-4 shrink-0" style="transform:rotate(45deg); color:${color};" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"><path d="M12 2 L19 20 L12 16 L5 20 Z"/></svg>`;
+  return `
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:280px">
+    <div class="px-4 pt-4 pb-3 shrink-0 border-b border-ink-100">
+      <div class="text-sm font-semibold text-ink-900">Benchmark against Global Fleet</div>
+    </div>
+    <div class="px-4">
+      <div class="bg-ink-50 rounded-lg px-3 py-2.5 flex items-center justify-between">
+        <div class="text-[10px] font-bold tracking-micro uppercase text-ink-500">All Vessels</div>
+        <div class="text-lg font-bold text-brand-600 tabular-nums">1.5%</div>
+      </div>
+    </div>
+    <div class="flex-1 px-4 py-2 space-y-1.5 overflow-y-auto scroll-thin">
+      ${BENCHMARK.map(b => `
+        <div class="grid grid-cols-[16px_1fr_auto_56px_auto] items-center gap-2 text-xs py-1.5 border-b border-ink-100 last:border-0">
+          ${marker(b.color)}
+          <span class="text-ink-700 truncate">${b.kind}</span>
+          <span class="tabular-nums text-ink-500 text-right">${b.count}</span>
+          <div class="h-1 bg-ink-100 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${Math.min(100, b.pct*3)}%; background:${b.color}"></div></div>
+          <span class="tabular-nums font-semibold text-ink-900 w-10 text-right">${b.pct}%</span>
+        </div>
+      `).join('')}
+    </div>
+  </div>`;
+}
+
+function AlertsCard() {
+  const tagCls = (tone) => ({
+    rose:'bg-rose-100 text-rose-700',
+    amber:'bg-amber-100 text-amber-700',
+    emerald:'bg-emerald-100 text-emerald-700',
+  }[tone]) || 'bg-ink-100 text-ink-700';
+
+  const row = (a) => `
+    <div class="p-3 border-b border-ink-100 last:border-0">
+      <div class="flex items-start justify-between gap-2">
+        <div class="flex items-start gap-2 min-w-0">
+          <span class="shrink-0 mt-0.5">${flag(a.cc,'md')}</span>
+          <div class="min-w-0">
+            <div class="text-sm font-semibold text-ink-900 truncate">${a.name}</div>
+            <div class="text-[11px] text-ink-500">${a.kind}</div>
+          </div>
+        </div>
+        <span class="text-[10px] font-bold tracking-micro px-1.5 py-0.5 rounded ${tagCls(a.tagTone)} shrink-0">${a.tag}</span>
+      </div>
+      <div class="mt-2 space-y-0.5 text-[11px] text-ink-600">
+        <div class="flex items-center gap-1.5"><span class="text-ink-400">${Ico.chev}</span>${a.date}</div>
+        <div class="flex items-center gap-1.5"><span class="text-ink-400">${Ico.pin}</span>${a.loc}</div>
+      </div>
+      <div class="mt-1.5 text-[11px] text-ink-600 line-clamp-2">${a.body}</div>
+      <button class="mt-1 text-[11px] font-semibold text-brand-600 hover:text-brand-700">▸ Show More</button>
+    </div>`;
+
+  return `
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:280px">
+    <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Alerts','Compliance','Weather'], state.alertTab, 'data-alert-tab')}</div>
+    <div class="flex-1 overflow-y-auto scroll-thin">
+      ${ALERTS.map(row).join('')}
+    </div>
+    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 text-center h-9 flex items-center justify-center">
+      <button class="text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">VIEW ALL</button>
+    </div>
+  </div>`;
+}
+
+function MapCard() {
+  return `
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card overflow-hidden" id="map-container">
+    <div class="relative" style="height:500px">
+      <div id="marine-map" class="absolute inset-0"></div>
+      <!-- fullscreen button above Leaflet zoom control (top-left) -->
+      <button id="map-fullscreen" class="map-btn map-btn-fs absolute z-[400]" title="Toggle fullscreen" style="top:12px; left:12px;">${Ico.maximize}</button>
+      <!-- right-side map tools -->
+      <div class="absolute top-3 right-3 z-[400] flex flex-col gap-1 items-end">
+        <div class="relative">
+          <button id="map-layers-btn" class="map-btn" title="Layers">${Ico.layers}</button>
+          <!-- Layers menu -->
+          <div id="map-layers-menu" class="hidden absolute top-0 right-[calc(100%+8px)] w-[160px] bg-white border border-ink-200 rounded-xl shadow-card-hover overflow-hidden py-1">
+            ${[
+              { id:'satellite', label:'Satellite' },
+              { id:'street',    label:'Street View' },
+              { id:'dark',      label:'Dark Mode' },
+              { id:'light',     label:'Light Mode' },
+            ].map(o => `
+              <button data-map-type="${o.id}" class="map-type-opt w-full flex items-center justify-between px-3 py-2 text-sm text-ink-700 hover:bg-ink-50 transition-colors">
+                <span data-label>${o.label}</span>
+                <span class="text-brand-600 opacity-0" data-check>${Ico.check}</span>
+              </button>`).join('')}
+          </div>
+        </div>
+        <div class="relative">
+          <button id="map-filters-btn" class="map-btn" title="Filter vessels">${Ico.filter}</button>
+          <!-- Filter menu -->
+          <div id="map-filters-menu" class="hidden absolute top-0 right-[calc(100%+8px)] w-[240px] bg-white border border-ink-200 rounded-xl shadow-card-hover overflow-hidden flex flex-col" style="max-height:420px;">
+            <div class="px-3 py-2.5 border-b border-ink-200 flex items-center justify-between">
+              <div class="text-sm font-bold text-ink-800">Filter Vessels</div>
+              <div class="flex items-center gap-1">
+                <button id="vf-all"  class="h-6 px-2 rounded-md border border-ink-200 text-[11px] font-semibold text-ink-700 hover:bg-ink-50">All</button>
+                <button id="vf-none" class="h-6 px-2 rounded-md border border-ink-200 text-[11px] font-semibold text-ink-700 hover:bg-ink-50">None</button>
+              </div>
+            </div>
+            <div class="px-3 py-2 bg-ink-50 border-b border-ink-200 text-[11px] font-semibold uppercase tracking-micro text-ink-600">Vessel Type</div>
+            <div class="overflow-y-auto scroll-thin py-1" id="vf-list">
+              ${VESSEL_TYPES.map(t => `
+                <label class="vf-row flex items-center gap-2.5 px-3 py-1.5 cursor-pointer hover:bg-ink-50" data-vtype="${t.k}">
+                  <input type="checkbox" class="vf-cb h-4 w-4 rounded border-ink-300 accent-brand-600" checked />
+                  <svg viewBox="0 0 24 24" width="16" height="16" style="transform:rotate(45deg); color:${t.color};" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"><path d="M12 2 L19 20 L12 16 L5 20 Z"/></svg>
+                  <span class="text-[13px] text-ink-700">${t.k}</span>
+                </label>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="relative">
+          <button id="map-labels-btn" class="map-btn" title="Vessel labels">${Ico.tag}</button>
+          <!-- Labels menu -->
+          <div id="map-labels-menu" class="hidden absolute top-0 right-[calc(100%+8px)] w-[260px] bg-white border border-ink-200 rounded-xl shadow-card-hover overflow-hidden p-3">
+            <div class="flex items-center justify-between gap-3">
+              <div class="text-sm font-bold text-ink-900">Show Labels</div>
+              <button id="labels-toggle" role="switch" aria-checked="false" class="relative inline-flex h-6 w-11 items-center rounded-full bg-ink-300 transition-colors">
+                <span class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform translate-x-0.5"></span>
+              </button>
+            </div>
+            <p class="mt-1.5 text-[12px] leading-snug text-ink-500">Display vessel names directly on the map next to icons.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ----------- CONTENT ----------- */
+function Content() {
+  return `
+  <div class="px-4 lg:px-6 py-density">
+    <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-density mb-4">
+      ${PortfolioCard()}
+      ${RegionsCard()}
+      ${BenchmarkCard()}
+      ${AlertsCard()}
+    </section>
+    <section class="mb-6">
+      ${MapCard()}
+    </section>
+  </div>`;
+}
+
+/* ----------- RENDER + WIRING ----------- */
+/* vessel popup (matches designed tooltip) */
+function vesselPopupHTML(v) {
+  const typeLabel = v.type === 'Tanker' ? 'Tanker' : v.type === 'LNG' ? 'LNG Carrier' : v.type === 'Gas' ? 'Gas Carrier' : v.type === 'Container' ? 'Container Ship' : v.type === 'Bulk' ? 'Bulk Carrier' : v.type === 'Reefer' ? 'Reefer' : 'General Cargo';
+  const latStr = `${v.lat.toFixed(2)}${v.lat>=0?'N':'S'}`;
+  const lngStr = `${Math.abs(v.lng).toFixed(2)}${v.lng>=0?'E':'W'}`;
+  const flagImg = `<img src="https://flagcdn.com/w40/${v.flag.cc}.png" srcset="https://flagcdn.com/w80/${v.flag.cc}.png 2x" width="18" height="13" alt="${v.flag.name}" style="display:inline-block;border-radius:2px;vertical-align:middle;margin-right:4px;" />`;
+  const fromFlag = `<img src="https://flagcdn.com/w40/${v.from.cc}.png" width="16" height="12" alt="" style="display:inline-block;border-radius:2px;margin-right:4px;vertical-align:middle;" />`;
+  const toFlag = `<img src="https://flagcdn.com/w40/${v.to.cc}.png" width="16" height="12" alt="" style="display:inline-block;border-radius:2px;margin-right:4px;vertical-align:middle;" />`;
+  return `
+  <div class="vp">
+    <div class="vp-header">
+      <div class="vp-header-main">
+        <div class="vp-title">${fromFlag}${v.name}</div>
+        <div class="vp-subtitle">${typeLabel}</div>
+      </div>
+    </div>
+    <div class="vp-route">
+      <div class="vp-port">
+        <div class="vp-port-code">${v.from.code}</div>
+        <div class="vp-port-name">${v.from.name}</div>
+        <div class="vp-port-time">ADT: ${v.adt}</div>
+      </div>
+      <div class="vp-arrow">→</div>
+      <div class="vp-port vp-port-right">
+        <div class="vp-port-code">${v.to.code}</div>
+        <div class="vp-port-name">${v.to.name}</div>
+        <div class="vp-port-time">ETA (UTC): ${v.eta}</div>
+      </div>
+    </div>
+    <div class="vp-grid">
+      <div><div class="vp-k">Estimated Duration:</div><div class="vp-v">${v.durH}h ${v.durM}m</div></div>
+      <div><div class="vp-k">Distance:</div><div class="vp-v">${v.distNm} nm</div></div>
+      <div><div class="vp-k">Lat/Lng:</div><div class="vp-v vp-strong">${latStr} /<br>${lngStr}</div></div>
+      <div><div class="vp-k">Flag:</div><div class="vp-v">${flagImg}${v.flag.name}</div></div>
+      <div class="vp-span"><div class="vp-k">Nav status:</div><div class="vp-v vp-nav">${v.nav}</div></div>
+      <div><div class="vp-k">Speed (Knots):</div><div class="vp-v"><span class="vp-strong">${v.speed}</span> Knots</div></div>
+      <div><div class="vp-k">Course over ground:</div><div class="vp-v">${v.course}</div></div>
+      <div><div class="vp-k">Draught (m):</div><div class="vp-v"><span class="vp-strong">${v.draught.toFixed(2)}</span><br><span class="vp-muted">(max ${v.maxD.toFixed(2)})</span></div></div>
+      <div><div class="vp-k">Heading (deg):</div><div class="vp-v">${Math.round(v.course)}</div></div>
+      <div class="vp-span"><div class="vp-k">Timestamp:</div><div class="vp-v">${v.ts}</div></div>
+      <div class="vp-span"><div class="vp-k">Policy Type:</div><div class="vp-v vp-strong">${v.policy}</div></div>
+    </div>
+    <a href="VesselDetails.html" class="vp-cta" style="text-decoration:none; text-align:center;">View Full Vessel Details</a>
+  </div>`;
+}
+
+let mapInstance = null;
+
+function vesselIcon(color, heading) {
+  // Filter-menu shape: a teardrop (rotated 45deg). Rotate by heading + 45 so heading 0 points east.
+  const html = `<div class="vessel-marker" style="transform: rotate(${heading + 45}deg); transform-origin: center;">
+    <svg viewBox="0 0 24 24" width="16" height="16" style="color:${color};" fill="currentColor" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"><path d="M12 2 L19 20 L12 16 L5 20 Z"/></svg>
+  </div>`;
+  return L.divIcon({ html, className:'', iconSize:[16,16], iconAnchor:[8,8] });
+}
+
+function labelIcon(name) {
+  const html = `<div class="vessel-label">${name}</div>`;
+  return L.divIcon({ html, className:'vessel-label-wrap', iconSize:[0,0], iconAnchor:[-10, 7] });
+}
+
+function initMap() {
+  if (mapInstance) { mapInstance.remove(); mapInstance = null; }
+  const map = L.map('marine-map', {
+    center: [25, 10], zoom: 2, minZoom: 2, maxZoom: 7,
+    worldCopyJump: true, zoomControl: true, attributionControl: true,
+  });
+  mapInstance = map;
+  // Tile layer options (Satellite default; Street via OSM; Dark via CartoDB).
+  const TILES = {
+    satellite: {
+      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      attr: 'Tiles © Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+    },
+    street: {
+      url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      attr: '© OpenStreetMap contributors',
+    },
+    dark: {
+      url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+      attr: '© OpenStreetMap contributors © CARTO',
+    },
+    light: {
+      url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+      attr: '© OpenStreetMap contributors © CARTO',
+    },
+  };
+  let currentTileLayer = L.tileLayer(TILES.satellite.url, { attribution: TILES.satellite.attr, maxZoom: 19 }).addTo(map);
+  let currentType = 'satellite';
+
+  function setMapType(type) {
+    if (type === currentType || !TILES[type]) return;
+    if (currentTileLayer) map.removeLayer(currentTileLayer);
+    currentTileLayer = L.tileLayer(TILES[type].url, { attribution: TILES[type].attr, maxZoom: 19 }).addTo(map);
+    currentType = type;
+    // Re-sync background color for gaps between tiles
+    document.getElementById('marine-map').style.background =
+      type === 'street' ? '#e2e8f0' :
+      type === 'dark'   ? '#0b0f1a' :
+      type === 'light'  ? '#f1f5f9' : '#0b1e2e';
+    // Update menu active state (checkmark + bold label)
+    document.querySelectorAll('[data-map-type]').forEach(b => {
+      const isOn = b.dataset.mapType === type;
+      const lbl   = b.querySelector('[data-label]');
+      const check = b.querySelector('[data-check]');
+      if (lbl)   { lbl.style.color = isOn ? '#2563eb' : '#334155'; lbl.style.fontWeight = isOn ? '600' : '500'; }
+      if (check) { check.style.opacity = isOn ? '1' : '0'; }
+    });
+  }
+  setTimeout(() => setMapType('satellite'), 0); // prime active state
+
+  const vessels = makeVessels();
+  const vesselMarkers = [];
+  const labelMarkers  = [];
+  vessels.forEach(v => {
+    const m = L.marker([v.lat, v.lng], { icon: vesselIcon(v.color, v.heading) })
+      .bindPopup(vesselPopupHTML(v), { className:'vessel-popup', maxWidth: 320, minWidth: 300, closeButton:true, autoPanPadding:[30,30] });
+    m._vtype = v.type;
+    m.addTo(map);
+    vesselMarkers.push(m);
+
+    const lbl = L.marker([v.lat, v.lng], { icon: labelIcon(v.name), interactive:false, keyboard:false });
+    lbl._vtype = v.type;
+    labelMarkers.push(lbl);
+  });
+
+  function applyVesselFilter() {
+    vesselMarkers.forEach(m => {
+      const show = state.vesselFilter.has(m._vtype);
+      if (show && !map.hasLayer(m)) m.addTo(map);
+      if (!show && map.hasLayer(m)) map.removeLayer(m);
+    });
+    applyLabels();
+  }
+  function applyLabels() {
+    labelMarkers.forEach(lbl => {
+      const shouldShow = state.showLabels && state.vesselFilter.has(lbl._vtype);
+      if (shouldShow && !map.hasLayer(lbl)) lbl.addTo(map);
+      if (!shouldShow && map.hasLayer(lbl)) map.removeLayer(lbl);
+    });
+  }
+
+  // Swap Leaflet's default "+/−" text glyphs for Lucide Plus/Minus icons.
+  const zin = document.querySelector('.leaflet-control-zoom-in');
+  const zout = document.querySelector('.leaflet-control-zoom-out');
+  if (zin)  zin.innerHTML  = `<span class="inline-flex items-center justify-center h-full w-full">${Ico.plus}</span>`;
+  if (zout) zout.innerHTML = `<span class="inline-flex items-center justify-center h-full w-full">${Ico.minus}</span>`;
+
+  // Fullscreen toggle — expand the map card to fill the viewport
+  const fsBtn = document.getElementById('map-fullscreen');
+  const container = document.getElementById('map-container');
+  if (fsBtn && container) {
+    fsBtn.onclick = () => {
+      const isFs = container.classList.toggle('is-fullscreen');
+      fsBtn.innerHTML = isFs ? Ico.minimize : Ico.maximize;
+      fsBtn.title = isFs ? 'Exit fullscreen' : 'Toggle fullscreen';
+      document.body.style.overflow = isFs ? 'hidden' : '';
+      setTimeout(() => map.invalidateSize(), 260);
+    };
+    // Esc to exit
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && container.classList.contains('is-fullscreen')) fsBtn.onclick();
+    });
+  }
+
+  // Layers menu
+  const layersBtn  = document.getElementById('map-layers-btn');
+  const layersMenu = document.getElementById('map-layers-menu');
+  if (layersBtn && layersMenu) {
+    layersBtn.onclick = (e) => { e.stopPropagation(); layersMenu.classList.toggle('hidden'); filtersMenu && filtersMenu.classList.add('hidden'); };
+    layersMenu.querySelectorAll('[data-map-type]').forEach(opt => {
+      opt.onclick = (e) => { e.stopPropagation(); setMapType(opt.dataset.mapType); layersMenu.classList.add('hidden'); };
+    });
+  }
+
+  // Filters menu
+  const filtersBtn  = document.getElementById('map-filters-btn');
+  const filtersMenu = document.getElementById('map-filters-menu');
+  function syncFilterUI() {
+    filtersMenu.querySelectorAll('.vf-row').forEach(row => {
+      const on = state.vesselFilter.has(row.dataset.vtype);
+      row.querySelector('.vf-cb').checked = on;
+    });
+  }
+  if (filtersBtn && filtersMenu) {
+    filtersBtn.onclick = (e) => { e.stopPropagation(); filtersMenu.classList.toggle('hidden'); layersMenu && layersMenu.classList.add('hidden'); };
+    filtersMenu.querySelectorAll('.vf-row').forEach(row => {
+      row.onclick = (e) => {
+        e.stopPropagation();
+        const t = row.dataset.vtype;
+        if (state.vesselFilter.has(t)) state.vesselFilter.delete(t); else state.vesselFilter.add(t);
+        syncFilterUI(); applyVesselFilter();
+      };
+    });
+    const allBtn  = document.getElementById('vf-all');
+    const noneBtn = document.getElementById('vf-none');
+    if (allBtn)  allBtn.onclick  = (e) => { e.stopPropagation(); state.vesselFilter = new Set(VESSEL_TYPES.map(t=>t.k)); syncFilterUI(); applyVesselFilter(); };
+    if (noneBtn) noneBtn.onclick = (e) => { e.stopPropagation(); state.vesselFilter = new Set();                        syncFilterUI(); applyVesselFilter(); };
+  }
+
+  // Labels menu
+  const labelsBtn  = document.getElementById('map-labels-btn');
+  const labelsMenu = document.getElementById('map-labels-menu');
+  const labelsSw   = document.getElementById('labels-toggle');
+  function syncLabelsUI() {
+    if (!labelsSw) return;
+    const on = !!state.showLabels;
+    labelsSw.setAttribute('aria-checked', on ? 'true' : 'false');
+    labelsSw.style.backgroundColor = on ? '#2563eb' : '#cbd5e1';
+    const knob = labelsSw.querySelector('span');
+    if (knob) knob.style.transform = on ? 'translateX(22px)' : 'translateX(2px)';
+  }
+  syncLabelsUI();
+  if (labelsBtn && labelsMenu) {
+    labelsBtn.onclick = (e) => {
+      e.stopPropagation();
+      labelsMenu.classList.toggle('hidden');
+      layersMenu && layersMenu.classList.add('hidden');
+      filtersMenu && filtersMenu.classList.add('hidden');
+    };
+    if (labelsSw) labelsSw.onclick = (e) => {
+      e.stopPropagation();
+      state.showLabels = !state.showLabels;
+      syncLabelsUI(); applyLabels();
+    };
+  }
+
+  // Dismiss popovers on outside click
+  document.addEventListener('click', (e) => {
+    if (layersMenu  && !layersMenu.contains(e.target)  && e.target !== layersBtn  && !(layersBtn  && layersBtn.contains(e.target)))  layersMenu.classList.add('hidden');
+    if (filtersMenu && !filtersMenu.contains(e.target) && e.target !== filtersBtn && !(filtersBtn && filtersBtn.contains(e.target))) filtersMenu.classList.add('hidden');
+    if (labelsMenu  && !labelsMenu.contains(e.target)  && e.target !== labelsBtn  && !(labelsBtn  && labelsBtn.contains(e.target)))  labelsMenu.classList.add('hidden');
+  });
+}
+
+window.render = function render() {
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col">
+      ${SC.Topbar()}
+      <main class="flex-1 overflow-y-auto scroll-thin bg-ink-100">${Content()}</main>
+    </div>
+    ${SC.TweaksPanel()}
+  `;
+  SC.wireChrome();
+  const wireTab = (attr, stateKey) => {
+    document.querySelectorAll(`[${attr}]`).forEach(b => b.onclick = () => {
+      const v = b.getAttribute(attr);
+      if (state[stateKey] === v) return;
+      state[stateKey] = v;
+      const group = b.closest('.ds-tabs');
+      if (group) {
+        group.querySelectorAll('.ds-tab').forEach(t => t.setAttribute('aria-selected', String(t === b)));
+        positionTabPills();
+        setTimeout(() => render(), 220);
+      } else { render(); }
+    });
+  };
+  wireTab('data-portfolio-tab', 'portfolioTab');
+  wireTab('data-region-tab',    'regionTab');
+  wireTab('data-alert-tab',     'alertTab');
+
+  /* Portfolio name → details page */
+  document.querySelectorAll('[data-pf-idx]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.pfIdx);
+      const p   = PORTFOLIOS[idx];
+      sessionStorage.setItem('selectedPortfolio', JSON.stringify({
+        name: p.name, policies: p.policies, exposure: p.exposure,
+        activePolicies: Math.round(p.policies * 0.97),
+        id: 'PF' + String(idx + 1).padStart(4,'0') + 'MAR',
+      }));
+      location.href = 'MarinePortfolioDetails.html';
+    });
+  });
+  requestAnimationFrame(positionTabPills);
+  window.addEventListener('resize', positionTabPills, { passive: true });
+  // init map (deferred so container has size)
+  setTimeout(initMap, 50);
+};
+window.render();
+</script>
+</body>
+</html>

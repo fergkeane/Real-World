@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Airport Details — Aviation — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { height:100%; }
+  body { font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; }
+  .text-ink-900{color:#0f172a}.text-ink-800{color:#1e293b}.text-ink-700{color:#334155}
+  .text-ink-600{color:#475569}.text-ink-500{color:#64748b}.text-ink-400{color:#94a3b8}
+  .text-ink-300{color:#cbd5e1}.text-ink-200{color:#e2e8f0}.text-ink-100{color:#f1f5f9}
+  .bg-ink-100{background:#f1f5f9}.bg-ink-50{background:#f8fafc}
+  .border-ink-100{border-color:#f1f5f9}.border-ink-200{border-color:#e2e8f0}
+  .shadow-card{box-shadow:0 1px 2px rgba(15,23,42,.08),0 0 0 1px rgba(15,23,42,.02)}
+  .text-brand-600{color:#2563eb}.bg-brand-600{background:#2563eb}.bg-brand-050{background:#eff6ff}
+  .scroll-thin::-webkit-scrollbar{width:5px}.scroll-thin::-webkit-scrollbar-track{background:transparent}
+  .scroll-thin::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
+  .scroll-thin::-webkit-scrollbar-thumb:hover{background:#94a3b8}
+  .tracking-micro{letter-spacing:0.04em}
+  [data-density="compact"] .py-density{padding-top:.75rem;padding-bottom:.75rem}
+  /* DS Tabs */
+  .ds-tabs{position:relative;display:inline-flex;gap:4px;padding:4px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9999px}
+  .ds-tabs.is-stretch{display:flex}
+  .ds-tabs.is-stretch>.ds-tab{flex:1}
+  .ds-tab{position:relative;font:inherit;font-size:13px;font-weight:600;padding:8px 18px;background:transparent;border:0;border-radius:9999px;color:#64748b;cursor:pointer;transition:color 140ms ease;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
+  .ds-tab:hover{color:#0f172a}
+  .ds-tab[aria-selected="true"]{color:#fff}
+  .ds-tab-pill{position:absolute;top:4px;left:0;height:calc(100% - 8px);background:#2563eb;border-radius:9999px;box-shadow:0 1px 2px rgba(15,23,42,.12);z-index:0;transition:transform 320ms cubic-bezier(.34,1.2,.64,1),width 320ms cubic-bezier(.34,1.2,.64,1);pointer-events:none}
+  .ds-tab-pill.is-init{transition:none}
+  .ds-tab-label{position:relative;z-index:1;display:inline-flex;align-items:center;gap:6px}
+  /* Map */
+  #airport-map{position:absolute;inset:0;background:#0b1e2e}
+  #airport-map .leaflet-top.leaflet-left{top:48px;left:2px}
+  #airport-map .leaflet-top.leaflet-left .leaflet-bar{margin-left:10px !important}
+  .leaflet-control-zoom,.leaflet-bar{border:1px solid #e2e8f0 !important;box-shadow:0 1px 2px rgba(15,23,42,.08) !important;border-radius:8px !important;overflow:hidden}
+  .leaflet-bar a{background:#fff !important;color:#334155 !important;line-height:30px !important}
+  .leaflet-bar a:hover{background:#f1f5f9 !important}
+  .map-ctrl{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;color:#334155;box-shadow:0 1px 2px rgba(15,23,42,.08);cursor:pointer;flex-shrink:0}
+  .map-ctrl:hover{background:#f1f5f9}
+  /* Segment tabs (Summary Statistics) */
+  .seg-tabs{display:flex;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden}
+  .seg-tab{flex:1;padding:7px 10px;font-size:11px;font-weight:700;border:0;cursor:pointer;transition:background 120ms,color 120ms;background:#fff;color:#64748b;letter-spacing:.04em}
+  .seg-tab:not(:last-child){border-right:1px solid #e2e8f0}
+  .seg-tab.active{background:#2563eb;color:#fff}
+  /* Status badges */
+  .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap}
+  .badge-parked{background:#f1f5f9;color:#475569}
+  .badge-taxiing{background:#fef3c7;color:#92400e}
+  .badge-boarding{background:#dbeafe;color:#1d4ed8}
+  .badge-loading{background:#ffedd5;color:#c2410c}
+  .badge-arrived{background:#dcfce7;color:#15803d}
+  /* Value chip */
+  .val-chip{display:inline-flex;align-items:center;padding:2px 10px;border-radius:999px;font-size:13px;font-weight:700;background:#eff6ff;color:#2563eb}
+  /* Table */
+  .data-table{width:100%;border-collapse:collapse}
+  .data-table th{text-align:left;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#64748b;padding:8px 12px;border-bottom:1px solid #e2e8f0;background:#f8fafc}
+  .data-table td{padding:10px 12px;font-size:12px;color:#0f172a;border-bottom:1px solid #f1f5f9}
+  .data-table tbody tr:hover{background:#f8fafc}
+  .data-table td.link{color:#2563eb;font-weight:600;cursor:pointer}
+  .data-table td.link:hover{text-decoration:underline}
+  /* Header badge */
+  .hdr-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600}
+  .hdr-badge-gray{background:#f1f5f9;color:#475569}
+  .hdr-badge-blue{background:#eff6ff;color:#2563eb}
+</style>
+</head>
+<body class="bg-ink-100 text-ink-900 antialiased" data-density="compact">
+<div id="app" class="min-h-screen w-full flex"></div>
+
+<script>
+window.PAGE = { id:'aviation', title:'Aviation', crumb:'Airport Details' };
+window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "density": "comfortable",
+  "accent": "blue",
+  "sidebarExpanded": true,
+  "showSparklines": true
+}/*EDITMODE-END*/;
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="shared/chrome.js?v=4"></script>
+<script>
+const SC = window.sharedChrome;
+const Ico = SC.I;
+
+/* ---- Load airport from sessionStorage ---- */
+const DEFAULT_AIRPORT = {
+  code:'ORD', name:"Chicago O'Hare International Airport",
+  country:'United States', elev:'680 ft', runways:8,
+  lat:41.98, lng:-87.90, icao:'KORD'
+};
+const AIRPORT = (() => {
+  try { const r = sessionStorage.getItem('selectedAirport'); return r ? JSON.parse(r) : DEFAULT_AIRPORT; }
+  catch(e) { return DEFAULT_AIRPORT; }
+})();
+
+/* ---- Data ---- */
+const AIRCRAFT_GROUND = [
+  { portfolio:'Aercap IE',          terminal:'North', reg:'C-FKSV', type:'BBJ (787-9)',  value:'$80.0M' },
+  { portfolio:'Aercap IE',          terminal:'2D',    reg:'G-VRAY', type:'A-330-300',    value:'$33.7M' },
+  { portfolio:'Castel Lake',        terminal:'1B',    reg:'TC-LOM', type:'A-330-200',    value:'$26.8M' },
+  { portfolio:'Asia Pacific Routes', terminal:'4G',   reg:'G-WWGZ', type:'Boeing 787-9', value:'$265.5M' },
+];
+const EXPOSURE = [
+  { name:'Aviation Fleet A',    hull:'$1.2B',  chw:'$850M', hullw:'$250M', tlohw:'$100M' },
+  { name:'Emirates Portfolio',  hull:'$800M',  chw:'$800M', hullw:'$0',    tlohw:'$0'    },
+  { name:'European Carriers',   hull:'$680M',  chw:'$420M', hullw:'$180M', tlohw:'$80M'  },
+  { name:'Asia Pacific Routes', hull:'$562M',  chw:'$310M', hullw:'$152M', tlohw:'$100M' },
+];
+const AIRCRAFT_TABLE = [
+  { type:'Boeing 777-300ER', reg:'G-STES', operator:'British Airways', status:'Parked',   time:'14:30', gate:'T5-23', value:'$75.2M'  },
+  { type:'Airbus A380-800',  reg:'A6-EUA', operator:'Emirates',        status:'Taxiing',  time:'15:45', gate:'T3-15', value:'$415.6M' },
+  { type:'Airbus A340-200',  reg:'G-ABZT', operator:'Virgin Atlantic',  status:'Boarding', time:'16:20', gate:'T2-8',  value:'$110.8M' },
+  { type:'Boeing 787-9',     reg:'G-WWGZ', operator:'Norwegian',        status:'Parked',   time:'17:00', gate:'T4-12', value:'$265.5M' },
+  { type:'Airbus A320-200',  reg:'G-EUUU', operator:'British Airways',  status:'Loading',  time:'17:30', gate:'T5-45', value:'$95.3M'  },
+  { type:'Boeing 737-800',   reg:'EI-DAA', operator:'Ryanair',          status:'Parked',   time:'18:00', gate:'T1-3',  value:'$45.1M'  },
+];
+
+/* ---- State ---- */
+let tableTab = 'Aircraft On The Ground';
+let statsTab = 'HULL';
+let tablePage = 1;
+const PAGE_SIZE = 5;
+
+/* ---- Helpers ---- */
+function statusBadge(s) {
+  const cls = s==='Taxiing'?'badge-taxiing':s==='Boarding'?'badge-boarding':s==='Loading'?'badge-loading':s==='Arrived'?'badge-arrived':'badge-parked';
+  return `<span class="badge ${cls}">${s}</span>`;
+}
+function positionTabPills() {
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.ds-tabs').forEach(group => {
+      const pill   = group.querySelector('[data-tab-pill]');
+      const active = group.querySelector('.ds-tab[aria-selected="true"]');
+      if (!pill || !active) return;
+      const gRect = group.getBoundingClientRect();
+      const aRect = active.getBoundingClientRect();
+      if (!aRect.width) return;
+      pill.style.width     = aRect.width + 'px';
+      pill.style.transform = `translateX(${aRect.left - gRect.left}px)`;
+      requestAnimationFrame(() => pill.classList.remove('is-init'));
+    });
+  });
+}
+
+/* ---- Cards ---- */
+function CardPortfolioGround() {
+  return `
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="height:100%;">
+    <div class="px-4 py-3 border-b border-ink-100 flex items-center justify-between shrink-0">
+      <div class="text-sm font-semibold text-ink-900">Portfolio Aircraft on the Ground</div>
+      <div class="flex items-center gap-1.5">
+        <span class="hdr-badge hdr-badge-gray"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h7v7H3zm0 11h7v7H3zm11-11h7v7h-7zm0 11h7v7h-7z"/></svg> ${AIRCRAFT_GROUND.length}</span>
+        <span class="hdr-badge hdr-badge-blue">$1.5B</span>
+      </div>
+    </div>
+    <div class="px-4 py-3 shrink-0">
+      <div class="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-center">
+        <div class="text-[11px] text-ink-500 mb-1">Total Exposure</div>
+        <div class="text-xl font-bold text-brand-600">$1.5B</div>
+      </div>
+    </div>
+    <div class="flex-1 overflow-y-auto scroll-thin">
+      <table class="data-table">
+        <thead><tr>
+          <th>Portfolio ↑↓</th><th>Terminal ↑↓</th><th>Reg No ↑↓</th><th>Type ↑↓</th><th class="text-right">Value ↑↓</th>
+        </tr></thead>
+        <tbody>
+          ${AIRCRAFT_GROUND.map(r=>`<tr>
+            <td class="link">${r.portfolio}</td>
+            <td>${r.terminal}</td>
+            <td>${r.reg}</td>
+            <td>${r.type}</td>
+            <td class="text-right tabular-nums font-semibold">${r.value}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function CardExposure() {
+  const infoIco = `<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#2563eb" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><circle cx="8" cy="5.5" r=".6" fill="#2563eb"/><path d="M8 7.5v4" stroke-linecap="round"/></svg>`;
+  return `
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="height:100%;">
+    <div class="px-4 py-3 border-b border-ink-100 flex items-center justify-between shrink-0">
+      <div class="text-sm font-semibold text-ink-900">Our Exposure By Portfolio</div>
+      <div class="flex items-center gap-1.5">
+        <span class="hdr-badge hdr-badge-gray"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h7v7H3zm0 11h7v7H3zm11-11h7v7h-7zm0 11h7v7h-7z"/></svg> ${EXPOSURE.length}</span>
+        <span class="hdr-badge hdr-badge-blue">$3.2B</span>
+      </div>
+    </div>
+    <div class="grid grid-cols-4 divide-x divide-ink-100 border-b border-ink-100 shrink-0">
+      ${[['Total Hull','$3.2B'],['Total CHW','$2.4B'],['Total HULLW','$582M'],['Total TLOHW','$280M']].map(([l,v])=>`
+        <div class="p-3 text-center">
+          <div class="text-[10px] font-bold tracking-micro uppercase text-ink-500">${l}</div>
+          <div class="text-base font-bold text-brand-600 tabular-nums mt-1">${v}</div>
+        </div>`).join('')}
+    </div>
+    <div class="flex-1 overflow-y-auto scroll-thin">
+      <table class="data-table">
+        <thead><tr>
+          <th>Name</th><th class="text-right">Hull</th>
+          <th class="text-right"><span class="inline-flex items-center gap-1">${infoIco} CHW</span></th>
+          <th class="text-right"><span class="inline-flex items-center gap-1">${infoIco} HULLW</span></th>
+          <th class="text-right"><span class="inline-flex items-center gap-1">${infoIco} TLOHW</span></th>
+        </tr></thead>
+        <tbody>
+          ${EXPOSURE.map(r=>`<tr>
+            <td class="link">${r.name}</td>
+            <td class="text-right tabular-nums font-semibold">${r.hull}</td>
+            <td class="text-right tabular-nums">${r.chw}</td>
+            <td class="text-right tabular-nums">${r.hullw}</td>
+            <td class="text-right tabular-nums">${r.tlohw}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function CardSummary() {
+  const tabs = ['HULL','CHW','HULLW','TLOHW'];
+  const stats = {
+    HULL:  { avg:'$515.2M', avgC:251, hiV:'$599.5M', hiD:'Dec 20th 2024', hiC:309, loV:'$357.0M', loD:'Dec 25th 2024', loC:140 },
+    CHW:   { avg:'$320.4M', avgC:241, hiV:'$410.8M', hiD:'Dec 18th 2024', hiC:290, loV:'$215.0M', loD:'Dec 26th 2024', loC:130 },
+    HULLW: { avg:'$82.1M',  avgC:221, hiV:'$110.2M', hiD:'Dec 15th 2024', hiC:280, loV:'$55.0M',  loD:'Dec 27th 2024', loC:120 },
+    TLOHW: { avg:'$44.0M',  avgC:211, hiV:'$58.5M',  hiD:'Dec 12th 2024', hiC:260, loV:'$30.0M',  loD:'Dec 28th 2024', loC:110 },
+  };
+  const s = stats[statsTab];
+  const calIco = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`;
+  const infoIco = `<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#2563eb" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><circle cx="8" cy="5.5" r=".6" fill="#2563eb"/><path d="M8 7.5v4" stroke-linecap="round"/></svg>`;
+  return `
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="height:100%;">
+    <div class="px-4 py-3 border-b border-ink-100 shrink-0">
+      <div class="text-sm font-semibold text-ink-900">Summary Statistics</div>
+    </div>
+    <div class="p-4 flex flex-col gap-4 flex-1">
+      <div>
+        <div class="text-[11px] text-ink-500 mb-2">Date Range:</div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <input type="text" value="Dec 1st 2024" class="border border-ink-200 rounded-md px-2.5 py-1.5 text-xs text-ink-900 w-28" />
+          <span class="text-xs text-ink-500">to</span>
+          <input type="text" value="Dec 31st 2024" class="border border-ink-200 rounded-md px-2.5 py-1.5 text-xs text-ink-900 w-28" />
+          <button class="map-ctrl w-7 h-7" style="flex-shrink:0;">${calIco}</button>
+          <select class="border border-ink-200 rounded-md px-2 py-1.5 text-xs text-ink-900 flex-1 min-w-[100px]"><option>All portfolios</option></select>
+        </div>
+      </div>
+      <div class="seg-tabs" id="seg-tabs">
+        ${tabs.map(t=>`<button class="seg-tab${t===statsTab?' active':''}" data-seg="${t}">${t}</button>`).join('')}
+      </div>
+      <div class="flex flex-col gap-4 flex-1">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <div class="text-[11px] text-ink-500 mb-1.5">Average Daily Exposure Value:</div>
+            <span class="val-chip">${s.avg}</span>
+          </div>
+          <div>
+            <div class="text-[11px] text-ink-500 mb-1 flex items-center gap-1">${infoIco} Average Daily Asset Count:</div>
+            <div class="text-xl font-bold text-ink-900 tabular-nums">${s.avgC}</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <div class="text-[11px] text-ink-500 mb-1.5">Highest Daily Exposure Value:</div>
+            <span class="val-chip">${s.hiV}</span>
+            <div class="text-[11px] text-ink-400 mt-1">${s.hiD}</div>
+          </div>
+          <div>
+            <div class="text-[11px] text-ink-500 mb-1 flex items-center gap-1">${infoIco} Highest Daily Asset Count:</div>
+            <div class="text-xl font-bold text-ink-900 tabular-nums">${s.hiC}</div>
+            <div class="text-[11px] text-ink-400 mt-1">${s.hiD}</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <div class="text-[11px] text-ink-500 mb-1.5">Lowest Daily Exposure Value:</div>
+            <span class="val-chip">${s.loV}</span>
+            <div class="text-[11px] text-ink-400 mt-1">${s.loD}</div>
+          </div>
+          <div>
+            <div class="text-[11px] text-ink-500 mb-1 flex items-center gap-1">${infoIco} Lowest Daily Asset Count:</div>
+            <div class="text-xl font-bold text-ink-900 tabular-nums">${s.loC}</div>
+            <div class="text-[11px] text-ink-400 mt-1">${s.loD}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function CardGeneralInfo() {
+  const iconTerminal = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><path d="M2 20h20M4 20V10l8-7 8 7v10"/><path d="M9 20v-5h6v5"/></svg>`;
+  const iconGate = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>`;
+  const iconRunway = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><path d="M12 2v20M8 6h8M8 10h8M8 14h8M8 18h8"/></svg>`;
+  const icao = AIRPORT.icao || AIRPORT.code;
+  return `
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="height:493px;">
+    <div class="px-4 py-3 border-b border-ink-100 shrink-0">
+      <div class="text-sm font-semibold text-ink-900">General Information</div>
+    </div>
+    <div class="flex-1 overflow-y-auto scroll-thin p-4">
+      <div class="grid grid-cols-3 gap-2 mb-4 text-center">
+        <div class="flex flex-col items-center gap-1">
+          ${iconTerminal}
+          <div class="text-xl font-bold text-ink-900">0</div>
+          <div class="text-[11px] text-ink-500">Terminals</div>
+        </div>
+        <div class="flex flex-col items-center gap-1">
+          ${iconGate}
+          <div class="text-xl font-bold text-ink-900">0</div>
+          <div class="text-[11px] text-ink-500">Gates</div>
+        </div>
+        <div class="flex flex-col items-center gap-1">
+          ${iconRunway}
+          <div class="text-xl font-bold text-ink-900">0</div>
+          <div class="text-[11px] text-ink-500">Runways</div>
+        </div>
+      </div>
+      <div class="border-t border-ink-100 pt-3 flex flex-col gap-3 text-sm">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <div class="text-[11px] text-ink-500 font-medium uppercase tracking-micro mb-0.5">IATA CODE:</div>
+            <div class="font-semibold text-ink-900">${AIRPORT.code}</div>
+          </div>
+          <div>
+            <div class="text-[11px] text-ink-500 font-medium uppercase tracking-micro mb-0.5">ICAO CODE:</div>
+            <div class="font-semibold text-ink-900">${icao}</div>
+          </div>
+        </div>
+        <div>
+          <div class="text-[11px] text-ink-500 font-medium mb-0.5">Location:</div>
+          <div class="font-semibold text-ink-900">${AIRPORT.country || 'Unknown'}</div>
+        </div>
+        <div>
+          <div class="text-[11px] text-ink-500 font-medium mb-0.5">Elevation:</div>
+          <div class="font-semibold text-ink-900">${AIRPORT.elev || 'N/A'}</div>
+        </div>
+        <div>
+          <div class="text-[11px] text-ink-500 font-medium mb-0.5">Area:</div>
+          <div class="font-semibold text-ink-900">N/A</div>
+        </div>
+      </div>
+      <div class="border-t border-ink-100 mt-4 pt-3">
+        <div class="text-sm font-semibold text-ink-900 mb-2">Terminals</div>
+        <div class="text-xs text-ink-500">Information not available for this airport.</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function CardAirportView() {
+  const pinIco = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
+  const layersIco = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>`;
+  const fsIco = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>`;
+  return `
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card overflow-hidden flex flex-col" style="height:493px;">
+    <div class="px-4 py-3 border-b border-ink-100 shrink-0 flex items-center gap-1.5">
+      <span class="text-brand-600">${pinIco}</span>
+      <div class="text-sm font-semibold text-ink-900">Airport View</div>
+    </div>
+    <div class="relative flex-1">
+      <div id="airport-map"></div>
+      <button class="map-ctrl absolute z-[400]" style="top:12px;left:12px;" title="Fullscreen">${fsIco}</button>
+      <button class="map-ctrl absolute z-[400]" style="top:12px;right:12px;" title="Layers">${layersIco}</button>
+      <div class="absolute bottom-0 left-0 z-[400] bg-white/90 backdrop-blur-sm px-3 py-2 rounded-tr-lg border-t border-r border-ink-200">
+        <div class="text-[12px] font-semibold text-ink-900">${AIRPORT.name}</div>
+        <div class="text-[10px] text-ink-500 tracking-micro uppercase">${AIRPORT.code}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function CardAircraftTable() {
+  const allTabs = ['Aircraft On The Ground','Incoming Aircraft','Engines & Spares'];
+  const total = AIRCRAFT_TABLE.length;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const start = (tablePage-1)*PAGE_SIZE;
+  const rows = AIRCRAFT_TABLE.slice(start, start+PAGE_SIZE);
+  return `
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col">
+    <div class="p-3 border-b border-ink-100 shrink-0">
+      <div class="ds-tabs is-stretch" data-tab-group="table-tab">
+        <span class="ds-tab-pill is-init" data-tab-pill></span>
+        ${allTabs.map(t=>`
+          <button data-table-tab="${t}" aria-selected="${t===tableTab}" class="ds-tab" style="font-size:12px;padding:6px 14px;">
+            <span class="ds-tab-label">${t}</span>
+          </button>`).join('')}
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="data-table">
+        <thead><tr>
+          <th>Aircraft</th><th>Registration</th><th>Operator</th>
+          <th>Status</th><th>Time</th><th>Gate</th><th class="text-right">Value</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map(r=>`<tr>
+            <td class="font-medium">${r.type}</td>
+            <td class="link">${r.reg}</td>
+            <td class="link">${r.operator}</td>
+            <td>${statusBadge(r.status)}</td>
+            <td class="tabular-nums">${r.time}</td>
+            <td>${r.gate}</td>
+            <td class="text-right tabular-nums font-semibold">${r.value}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div class="px-4 py-3 border-t border-ink-100 flex items-center justify-between text-xs text-ink-500 bg-ink-50">
+      <span>Showing ${start+1} to ${Math.min(start+PAGE_SIZE,total)} of ${total} results</span>
+      <div class="flex items-center gap-3">
+        <button id="pg-prev" class="text-xs font-semibold ${tablePage<=1?'text-ink-300 cursor-not-allowed':'text-ink-600 hover:text-ink-900'}">&lsaquo; Previous</button>
+        <span class="font-medium text-ink-700">Page ${tablePage} of ${totalPages}</span>
+        <button id="pg-next" class="text-xs font-semibold ${tablePage>=totalPages?'text-ink-300 cursor-not-allowed':'text-ink-600 hover:text-ink-900'}">Next &rsaquo;</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function Content() {
+  return `
+  <div class="flex-1 overflow-y-auto px-4 lg:px-6 py-4 space-y-3">
+    <div class="grid gap-3" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);align-items:stretch;">
+      ${CardPortfolioGround()}
+      ${CardExposure()}
+      ${CardSummary()}
+    </div>
+    <div class="grid gap-3" style="grid-template-columns:minmax(0,1fr) minmax(0,2fr);align-items:start;">
+      ${CardGeneralInfo()}
+      ${CardAirportView()}
+    </div>
+    ${CardAircraftTable()}
+  </div>`;
+}
+
+/* ---- Map ---- */
+let airportMap = null;
+function initMap() {
+  const el = document.getElementById('airport-map');
+  if (!el) return;
+  if (airportMap) { airportMap.remove(); airportMap = null; }
+  airportMap = L.map(el, { center:[AIRPORT.lat, AIRPORT.lng], zoom:14, zoomControl:true, scrollWheelZoom:true });
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution:'', maxZoom:19 }).addTo(airportMap);
+  const planeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#eab308" stroke="none"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>`;
+  const offsets = [[0.008,0.012,45],[0.002,-0.015,180],[-0.01,0.008,270],[0.015,0.005,90]];
+  offsets.forEach(([dlat,dlng,rot]) => {
+    const icon = L.divIcon({ className:'', html:`<div style="transform:rotate(${rot}deg);filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))">${planeSvg}</div>`, iconSize:[20,20], iconAnchor:[10,10] });
+    L.marker([AIRPORT.lat+dlat, AIRPORT.lng+dlng], { icon }).addTo(airportMap);
+  });
+  const zin=el.querySelector('.leaflet-control-zoom-in'), zout=el.querySelector('.leaflet-control-zoom-out');
+  if(zin)  zin.innerHTML =`<span style="font-size:18px;line-height:30px;display:block;text-align:center;">+</span>`;
+  if(zout) zout.innerHTML=`<span style="font-size:20px;line-height:30px;display:block;text-align:center;">&minus;</span>`;
+}
+
+/* ---- Wiring ---- */
+function wireInteractions() {
+  document.querySelectorAll('[data-table-tab]').forEach(b => b.onclick = () => {
+    tableTab = b.getAttribute('data-table-tab');
+    tablePage = 1;
+    render();
+  });
+  const prev = document.getElementById('pg-prev');
+  const next = document.getElementById('pg-next');
+  if (prev) prev.onclick = () => { if(tablePage>1){tablePage--;render();} };
+  if (next) next.onclick = () => { if(tablePage<Math.ceil(AIRCRAFT_TABLE.length/PAGE_SIZE)){tablePage++;render();} };
+  document.querySelectorAll('[data-seg]').forEach(b => b.onclick = () => {
+    statsTab = b.getAttribute('data-seg');
+    document.querySelectorAll('[data-seg]').forEach(x=>x.classList.toggle('active',x===b));
+  });
+  positionTabPills();
+}
+
+window.render = function() {
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
+      ${SC.Topbar()}
+      ${Content()}
+    </div>
+    ${SC.TweaksPanel()}
+  `;
+  SC.wireChrome();
+  wireInteractions();
+  setTimeout(initMap, 50);
+};
+window.render();
+</script>
+</body>
+</html>

@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Weather — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  .scroll-thin::-webkit-scrollbar{width:5px}.scroll-thin::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
+
+  #weather-map{position:absolute;inset:0;background:#a8c8e8}
+
+  /* Pill tabs (DS) */
+  .ds-tabs{position:relative;display:inline-flex;gap:4px;padding:4px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9999px}
+  .ds-tab{position:relative;font:inherit;font-size:12.5px;font-weight:600;padding:7px 16px;background:transparent;border:0;border-radius:9999px;color:#64748b;cursor:pointer;transition:color 140ms;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+  .ds-tab:hover{color:#0f172a}
+  .ds-tab[aria-selected="true"]{color:#fff}
+  .ds-tab-pill{position:absolute;top:4px;left:0;height:calc(100% - 8px);background:#2563eb;border-radius:9999px;box-shadow:0 1px 2px rgba(15,23,42,.12);z-index:0;transition:transform 300ms cubic-bezier(.34,1.2,.64,1),width 300ms cubic-bezier(.34,1.2,.64,1);pointer-events:none}
+  .ds-tab-pill.is-init{transition:none}
+  .ds-tab-label{position:relative;z-index:1;display:inline-flex;align-items:center;gap:5px}
+
+  /* Map controls */
+  .map-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;color:#334155;box-shadow:0 1px 2px rgba(15,23,42,.08);cursor:pointer}
+  .map-btn:hover{background:#f1f5f9}
+  .leaflet-control-zoom,.leaflet-bar{border:1px solid #e2e8f0 !important;box-shadow:0 1px 2px rgba(15,23,42,.08) !important;border-radius:8px !important;overflow:hidden}
+  .leaflet-bar a{background:#fff !important;color:#334155 !important;line-height:30px !important}
+  .leaflet-bar a:hover{background:#f1f5f9 !important}
+
+  /* Popups */
+  .storm-popup .leaflet-popup-content-wrapper{padding:0;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(15,23,42,.22)}
+  .storm-popup .leaflet-popup-content{margin:0;width:230px !important;font-family:'Inter',sans-serif}
+  .storm-popup .leaflet-popup-close-button{color:#fff !important;top:8px !important;right:10px !important;font-size:20px !important;font-weight:300 !important}
+  .pp-header{padding:11px 14px 9px;color:#fff}
+  .pp-row{display:flex;justify-content:space-between;align-items:center;padding:7px 14px;border-bottom:1px solid #f1f5f9;font-size:12.5px}
+  .pp-row:last-child{border-bottom:0}
+  .pp-k{color:#64748b;font-weight:500}
+  .pp-v{font-weight:700;color:#0f172a}
+
+  /* Map type menu */
+  .map-type-opt{padding:7px 12px;font-size:12px;font-weight:600;color:#0f172a;cursor:pointer;display:flex;align-items:center;gap:8px}
+  .map-type-opt:hover{background:#f8fafc}
+
+  /* List table */
+  .wx-tbl{width:100%;border-collapse:collapse}
+  .wx-tbl th{padding:10px 14px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;text-align:left;border-bottom:1px solid #e2e8f0;background:#fff;white-space:nowrap}
+  .wx-tbl td{padding:12px 14px;font-size:13px;color:#334155;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+  .wx-tbl tr:hover td{background:#f8fafc}
+</style>
+</head>
+<body class="bg-slate-100 text-slate-900">
+<div id="app" class="h-screen w-full flex overflow-hidden"></div>
+
+<script>
+window.PAGE = { id:'weather', title:'Weather', crumb:'Storm Tracker' };
+window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "density": "compact",
+  "accent": "blue",
+  "sidebarExpanded": false,
+  "showSparklines": true
+}/*EDITMODE-END*/;
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="shared/chrome.js?v=4"></script>
+<script>
+const SC = window.sharedChrome;
+
+/* ── Lucide icon helper ──────────────────────────────────────────────────── */
+function lico(name, size = 16, color = 'currentColor', sw = 2) {
+  const data = window.lucide && lucide.icons && lucide.icons[name];
+  if (!data) return '';
+  const [tag, attrs, children] = data;
+  const a = { ...attrs, width: size, height: size, stroke: color, 'stroke-width': sw,
+               style: 'display:inline-block;vertical-align:middle;flex-shrink:0' };
+  const attrStr = Object.entries(a).map(([k, v]) => `${k}="${v}"`).join(' ');
+  const inner = (children || []).map(([ct, ca]) =>
+    `<${ct} ${Object.entries(ca).map(([k, v]) => `${k}="${v}"`).join(' ')}/>`
+  ).join('');
+  return `<${tag} ${attrStr}>${inner}</${tag}>`;
+}
+
+/* ── Tab pill positioning ────────────────────────────────────────────────── */
+function positionTabPills() {
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.ds-tabs').forEach(group => {
+      const pill   = group.querySelector('[data-tab-pill]');
+      const active = group.querySelector('.ds-tab[aria-selected="true"]');
+      if (!pill || !active) return;
+      const gRect = group.getBoundingClientRect();
+      const aRect = active.getBoundingClientRect();
+      if (!aRect.width) return;
+      pill.style.width     = aRect.width + 'px';
+      pill.style.transform = `translateX(${aRect.left - gRect.left}px)`;
+      requestAnimationFrame(() => pill.classList.remove('is-init'));
+    });
+  });
+}
+
+/* ── Open storm details ──────────────────────────────────────────────────── */
+function openStormDetails(id) {
+  const storm = SYSTEMS.find(s => s.id === id);
+  if (storm) sessionStorage.setItem('selectedStorm', JSON.stringify(storm));
+  window.location.href = 'WeatherEventDetails.html';
+}
+
+/* ── Storm data ───────────────────────────────────────────────────────────── */
+const SYSTEMS = [
+  {
+    id:1, name:'TC Hidaya', type:'Tropical Cyclone', cat:'Category 2', status:'Active',
+    lat:-17.2, lng:57.4, wind:110, pressure:978, movement:'SE at 12 km/h',
+    color:'#ef4444', glow:'rgba(239,68,68,.35)', radius:17,
+    track:[
+      {lat:-12.5, lng:51.8, kind:'past'},{lat:-13.6, lng:52.9, kind:'past'},
+      {lat:-14.8, lng:54.2, kind:'past'},{lat:-16.1, lng:55.9, kind:'past'},
+      {lat:-18.6, lng:59.0, kind:'forecast'},{lat:-20.1, lng:61.0, kind:'forecast'},
+      {lat:-21.4, lng:62.8, kind:'forecast'},
+    ],
+  },
+  {
+    id:2, name:'TC Ialy', type:'Tropical Depression', cat:'Depression', status:'Active',
+    lat:-15.3, lng:56.2, wind:55, pressure:997, movement:'S at 6 km/h',
+    color:'#f97316', glow:'rgba(249,115,22,.3)', radius:10, track:[],
+  },
+  {
+    id:3, name:'Disturbance 95S', type:'Tropical Disturbance', cat:'Disturbance', status:'Active',
+    lat:10.1, lng:52.3, wind:30, pressure:1008, movement:'NW at 8 km/h',
+    color:'#f97316', glow:'rgba(249,115,22,.25)', radius:8, track:[],
+  },
+  {
+    id:4, name:'Ex-TC Javen', type:'Extratropical Cyclone', cat:'Extratropical', status:'Active',
+    lat:-22.5, lng:113.5, wind:75, pressure:988, movement:'SW at 18 km/h',
+    color:'#eab308', glow:'rgba(234,179,8,.35)', radius:12, track:[],
+  },
+  {
+    id:5, name:'Disturbance 96S', type:'Tropical Disturbance', cat:'Disturbance', status:'Active',
+    lat:-15.9, lng:56.9, wind:20, pressure:1010, movement:'SE at 10 km/h',
+    color:'#3b82f6', glow:'rgba(59,130,246,.3)', radius:8, track:[],
+  },
+];
+
+/* ── State ────────────────────────────────────────────────────────────────── */
+let viewMode = 'Map';
+let wxMap = null;
+let wxTile = null;
+
+const MAP_TILES = {
+  street:    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  light:     'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  dark:      'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+  satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+};
+
+function setMapType(type) {
+  if (!wxMap) return;
+  if (wxTile) wxMap.removeLayer(wxTile);
+  wxTile = L.tileLayer(MAP_TILES[type], { attribution:'', maxZoom:19 }).addTo(wxMap);
+  wxTile.bringToBack();
+  document.querySelectorAll('.map-type-opt').forEach(el => {
+    el.style.background = el.dataset.type === type ? '#f1f5f9' : '';
+  });
+}
+
+/* ── Storm popup HTML ─────────────────────────────────────────────────────── */
+function stormPopup(s) {
+  return `
+  <div>
+    <div class="pp-header" style="background:${s.color}">
+      <div style="font-size:14px;font-weight:700">${s.name}</div>
+      <div style="font-size:11px;opacity:.82;margin-top:1px">${s.type}</div>
+    </div>
+    <div>
+      <div class="pp-row"><span class="pp-k">Category</span><span class="pp-v">${s.cat}</span></div>
+      <div class="pp-row"><span class="pp-k">Max Winds</span><span class="pp-v">${s.wind} km/h</span></div>
+      <div class="pp-row"><span class="pp-k">Pressure</span><span class="pp-v">${s.pressure} hPa</span></div>
+      <div class="pp-row"><span class="pp-k">Movement</span><span class="pp-v">${s.movement}</span></div>
+    </div>
+    <div style="padding:10px 14px;border-top:1px solid #f1f5f9">
+      <button style="width:100%;height:32px;background:#2563eb;color:#fff;border:0;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:background 120ms" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'" onclick="openStormDetails(${s.id})">
+        View Details
+      </button>
+    </div>
+  </div>`;
+}
+
+/* ── Init map ─────────────────────────────────────────────────────────────── */
+function initMap() {
+  const el = document.getElementById('weather-map');
+  if (!el) return;
+  if (wxMap) { wxMap.remove(); wxMap = null; wxTile = null; }
+
+  wxMap = L.map(el, { center:[-16, 65], zoom:4, zoomControl:true, scrollWheelZoom:true });
+  setMapType('street');
+
+  SYSTEMS.forEach(s => {
+    // Past track
+    const past = s.track.filter(t => t.kind === 'past');
+    if (past.length) {
+      const pts = [...past.map(t => [t.lat, t.lng]), [s.lat, s.lng]];
+      L.polyline(pts, { color:'#94a3b8', weight:1.5, dashArray:'4 5', opacity:.6 }).addTo(wxMap);
+      past.forEach(t => L.circleMarker([t.lat, t.lng], { radius:4, fillColor:'#94a3b8', fillOpacity:1, color:'#fff', weight:1.5 }).addTo(wxMap));
+    }
+
+    // Forecast track
+    const fore = s.track.filter(t => t.kind === 'forecast');
+    if (fore.length) {
+      const pts = [[s.lat, s.lng], ...fore.map(t => [t.lat, t.lng])];
+      L.polyline(pts, { color:'#64748b', weight:1.5, dashArray:'4 5', opacity:.45 }).addTo(wxMap);
+      fore.forEach((t, i) => {
+        const isBlue = i >= fore.length - 2;
+        L.circleMarker([t.lat, t.lng], {
+          radius: isBlue ? 6 : 4,
+          fillColor: isBlue ? '#3b82f6' : '#64748b',
+          fillOpacity: 1, color:'#fff', weight:1.5,
+        }).addTo(wxMap);
+      });
+    }
+
+    // Main marker
+    const d = s.radius * 2;
+    const icon = L.divIcon({
+      className:'',
+      html:`<div style="width:${d}px;height:${d}px;border-radius:50%;background:${s.color};border:2.5px solid rgba(255,255,255,.85);box-shadow:0 0 0 ${Math.round(s.radius*.55)}px ${s.glow},0 3px 10px rgba(0,0,0,.25)"></div>`,
+      iconSize:[d,d], iconAnchor:[s.radius,s.radius],
+    });
+    L.marker([s.lat, s.lng], { icon })
+      .bindPopup(stormPopup(s), { className:'storm-popup', maxWidth:230, minWidth:230, closeButton:true })
+      .addTo(wxMap);
+  });
+
+  // Custom zoom icons
+  setTimeout(() => {
+    const zin  = el.querySelector('.leaflet-control-zoom-in');
+    const zout = el.querySelector('.leaflet-control-zoom-out');
+    if (zin)  zin.innerHTML  = `<span style="font-size:18px;line-height:30px;display:block;text-align:center">+</span>`;
+    if (zout) zout.innerHTML = `<span style="font-size:20px;line-height:30px;display:block;text-align:center">&minus;</span>`;
+  }, 100);
+
+  // Layer switcher
+  const lb = document.getElementById('wx-layers-btn');
+  const lm = document.getElementById('wx-layers-menu');
+  if (lb && lm) {
+    lb.addEventListener('click', e => { e.stopPropagation(); lm.style.display = lm.style.display==='none'?'block':'none'; });
+    document.addEventListener('click', () => { if (lm) lm.style.display='none'; });
+    document.querySelectorAll('.map-type-opt').forEach(o => o.addEventListener('click', () => { setMapType(o.dataset.type); lm.style.display='none'; }));
+  }
+
+  // Fullscreen
+  const fs = document.getElementById('wx-fs-btn');
+  if (fs) fs.addEventListener('click', () => {
+    const w = document.getElementById('wx-map-wrap');
+    if (w && w.requestFullscreen) w.requestFullscreen();
+    setTimeout(() => wxMap && wxMap.invalidateSize(), 300);
+  });
+}
+
+/* ── Views ────────────────────────────────────────────────────────────────── */
+function MapView() {
+  return `
+  <div id="wx-map-wrap" class="relative flex-1">
+    <div id="weather-map"></div>
+
+    <!-- Active badge -->
+    <div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:400;pointer-events:none">
+      <div style="background:#ef4444;color:#fff;font-size:12px;font-weight:700;padding:5px 14px;border-radius:999px;box-shadow:0 2px 8px rgba(239,68,68,.45);white-space:nowrap">
+        ${SYSTEMS.filter(s=>s.status==='Active').length} Active
+      </div>
+    </div>
+
+    <!-- Fullscreen -->
+    <button id="wx-fs-btn" class="map-btn" style="position:absolute;top:12px;left:12px;z-index:400" title="Fullscreen">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+    </button>
+
+    <!-- Layers control -->
+    <div style="position:absolute;top:12px;right:12px;z-index:400">
+      <button id="wx-layers-btn" class="map-btn" title="Map type">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </button>
+      <div id="wx-layers-menu" style="display:none;position:absolute;top:38px;right:0;width:148px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 4px 12px rgba(15,23,42,.12);overflow:hidden">
+        <div style="padding:6px 10px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #f1f5f9">Map Type</div>
+        ${[['street','Street','#e8e0d4'],['light','Light','#e8e8e8'],['dark','Dark','#1a1a2e'],['satellite','Satellite','#0b1e2e']].map(([k,l,c]) =>
+          `<div class="map-type-opt" data-type="${k}"><span style="width:8px;height:8px;border-radius:2px;background:${c};border:1px solid #ddd;flex-shrink:0"></span>${l}</div>`
+        ).join('')}
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div style="position:absolute;bottom:24px;left:12px;z-index:400;background:rgba(255,255,255,.92);backdrop-filter:blur(4px);border:1px solid #e2e8f0;border-radius:10px;padding:10px 14px;box-shadow:0 2px 8px rgba(15,23,42,.1)">
+      <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Track Legend</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#475569">
+          <span style="width:12px;height:12px;border-radius:50%;background:#ef4444;border:2px solid #fff;box-shadow:0 0 0 3px rgba(239,68,68,.3);flex-shrink:0;display:inline-block"></span>Current position
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#475569">
+          <span style="width:8px;height:8px;border-radius:50%;background:#94a3b8;border:1.5px solid #fff;flex-shrink:0;display:inline-block"></span>Past track
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#475569">
+          <span style="width:8px;height:8px;border-radius:50%;background:#3b82f6;border:1.5px solid #fff;flex-shrink:0;display:inline-block"></span>Forecast track
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function ListView() {
+  return `
+  <div class="flex-1 overflow-y-auto scroll-thin">
+    <table class="wx-tbl">
+      <thead>
+        <tr>
+          <th>System</th>
+          <th>Type</th>
+          <th>Category</th>
+          <th>Max Winds</th>
+          <th>Pressure</th>
+          <th>Movement</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${SYSTEMS.map(s => `<tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="width:10px;height:10px;border-radius:50%;background:${s.color};flex-shrink:0;box-shadow:0 0 0 2px ${s.glow}"></span>
+              <span style="font-weight:600;color:#0f172a">${s.name}</span>
+            </div>
+          </td>
+          <td>${s.type}</td>
+          <td style="font-weight:600;color:${s.color}">${s.cat}</td>
+          <td style="font-variant-numeric:tabular-nums;font-weight:500">${s.wind} km/h</td>
+          <td style="font-variant-numeric:tabular-nums">${s.pressure} hPa</td>
+          <td>${s.movement}</td>
+          <td><span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:#f0fdf4;color:#16a34a">Active</span></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function Content() {
+  return `
+  <div class="flex-1 overflow-hidden px-4 py-4" style="display:flex;flex-direction:column">
+    <div class="bg-white rounded-xl border border-slate-200 flex flex-col overflow-hidden flex-1" style="box-shadow:0 1px 2px rgba(15,23,42,.06)">
+      <div class="shrink-0 px-4 py-3 flex items-center gap-3 border-b border-slate-100">
+        <div class="ds-tabs" id="view-tabs">
+          <span class="ds-tab-pill is-init" data-tab-pill></span>
+          <button class="ds-tab" aria-selected="${viewMode==='Map'}" data-view="Map">
+            <span class="ds-tab-label">${lico('Map', 13)} Map</span>
+          </button>
+          <button class="ds-tab" aria-selected="${viewMode==='List'}" data-view="List">
+            <span class="ds-tab-label">${lico('List', 13)} List</span>
+          </button>
+        </div>
+        <span style="font-size:12px;color:#94a3b8">${SYSTEMS.length} systems tracked · ${SYSTEMS.filter(s=>s.status==='Active').length} active</span>
+      </div>
+      ${viewMode === 'Map' ? MapView() : ListView()}
+    </div>
+  </div>`;
+}
+
+/* ── Render ───────────────────────────────────────────────────────────────── */
+window.render = function() {
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
+      ${SC.Topbar()}
+      ${Content()}
+    </div>
+    ${SC.TweaksPanel()}
+  `;
+  SC.wireChrome();
+  requestAnimationFrame(positionTabPills);
+  setTimeout(positionTabPills, 150);
+  window.addEventListener('resize', positionTabPills, { passive: true });
+
+  document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => {
+    viewMode = b.dataset.view;
+    window.render();
+    if (viewMode === 'Map') setTimeout(initMap, 50);
+  }));
+
+  if (viewMode === 'Map') setTimeout(initMap, 50);
+};
+
+window.render();
+</script>
+</body>
+</html>

@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Real World — Modern Platform Design</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Landing page specific styles */
+    html, body { margin: 0; padding: 0; }
+    body { background: var(--bg-app); }
+
+    /* Header/Nav */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: var(--z-sticky);
+      background: var(--white);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: var(--space-5) var(--space-10);
+    }
+
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-8);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      text-decoration: none;
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 16px;
+    }
+
+    .logo-mark {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, var(--brand-600), var(--brand-400));
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: var(--space-8);
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: color var(--motion-fast);
+    }
+
+    .nav-links a:hover {
+      color: var(--brand-600);
+    }
+
+    /* Hero */
+    .hero {
+      padding: var(--space-16) var(--space-10);
+      text-align: center;
+      background: linear-gradient(180deg, var(--brand-050) 0%, var(--white) 100%);
+    }
+
+    .hero-content {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .hero h1 {
+      font-size: 48px;
+      line-height: 1.15;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 0 0 var(--space-6);
+      color: var(--text-primary);
+    }
+
+    .hero p {
+      font-size: 18px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      margin: 0 0 var(--space-10);
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero-cta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-5);
+      flex-wrap: wrap;
+    }
+
+    /* Features grid */
+    .features {
+      padding: var(--space-16) var(--space-10);
+      background: var(--white);
+    }
+
+    .features-content {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .features-header {
+      text-align: center;
+      margin-bottom: var(--space-12);
+    }
+
+    .features-header h2 {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 0 0 var(--space-5);
+    }
+
+    .features-header p {
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: var(--space-8);
+    }
+
+    .feature-card {
+      padding: var(--space-8);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      background: var(--white);
+      transition: border-color var(--motion-fast), box-shadow var(--motion-fast);
+    }
+
+    .feature-card:hover {
+      border-color: var(--brand-400);
+      box-shadow: var(--shadow-md);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      background: var(--brand-050);
+      display: grid;
+      place-items: center;
+      color: var(--brand-600);
+      font-size: 24px;
+      margin-bottom: var(--space-5);
+    }
+
+    .feature-card h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0 0 var(--space-3);
+      color: var(--text-primary);
+    }
+
+    .feature-card p {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+
+    /* Testimonials section */
+    .testimonials {
+      padding: var(--space-16) var(--space-10);
+      background: var(--bg-canvas);
+    }
+
+    .testimonials-content {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .testimonials-header {
+      text-align: center;
+      margin-bottom: var(--space-12);
+    }
+
+    .testimonials-header h2 {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 0 0 var(--space-5);
+    }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: var(--space-8);
+    }
+
+    .testimonial {
+      padding: var(--space-8);
+      background: var(--white);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+    }
+
+    .testimonial-content {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-5);
+      font-style: italic;
+    }
+
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .testimonial-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--brand-100);
+      display: grid;
+      place-items: center;
+      color: var(--brand-600);
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .testimonial-author-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .testimonial-author-title {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* CTA section */
+    .cta-section {
+      padding: var(--space-16) var(--space-10);
+      background: linear-gradient(135deg, var(--brand-600), var(--brand-500));
+      text-align: center;
+      color: white;
+    }
+
+    .cta-content {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .cta-section h2 {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 0 0 var(--space-5);
+      color: white;
+    }
+
+    .cta-section p {
+      font-size: 16px;
+      line-height: 1.6;
+      margin: 0 0 var(--space-8);
+      opacity: 0.95;
+    }
+
+    /* Footer */
+    .footer {
+      padding: var(--space-12) var(--space-10);
+      background: var(--slate-900);
+      color: var(--text-inverse);
+      font-size: 13px;
+    }
+
+    .footer-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-10);
+      padding-bottom: var(--space-8);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: var(--space-8);
+    }
+
+    .footer-section h4 {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 0 0 var(--space-4);
+      opacity: 0.8;
+    }
+
+    .footer-section ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .footer-section a {
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      transition: color var(--motion-fast);
+    }
+
+    .footer-section a:hover {
+      color: white;
+    }
+
+    .footer-bottom {
+      text-align: center;
+      opacity: 0.6;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        gap: var(--space-5);
+      }
+
+      .hero h1 {
+        font-size: 32px;
+      }
+
+      .hero p {
+        font-size: 16px;
+      }
+
+      .features-header h2,
+      .testimonials-header h2,
+      .cta-section h2 {
+        font-size: 28px;
+      }
+
+      .features-grid,
+      .testimonials-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        padding: var(--space-12) var(--space-5);
+      }
+
+      .features,
+      .testimonials,
+      .cta-section {
+        padding: var(--space-12) var(--space-5);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header/Navigation -->
+  <header class="header">
+    <div class="header-content">
+      <a href="#" class="logo">
+        <div class="logo-mark">S</div>
+        <span>Real World</span>
+      </a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#testimonials">Testimonials</a></li>
+          <li><a href="#cta">Get Started</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Design with purpose</h1>
+      <p>Build beautiful, accessible products with Skytek. A complete design system built for modern teams and real-world applications.</p>
+      <div class="hero-cta">
+        <button class="ds-btn ds-btn--primary ds-btn--lg">Start Building</button>
+        <button class="ds-btn ds-btn--secondary ds-btn--lg">View Documentation</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features" id="features">
+    <div class="features-content">
+      <div class="features-header">
+        <h2>Everything you need</h2>
+        <p>Comprehensive components and tokens designed for scale</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🎨</div>
+          <h3>Design Tokens</h3>
+          <p>Color, typography, spacing, and elevation tokens that scale with your product.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚛️</div>
+          <h3>React Components</h3>
+          <p>Production-ready components built with accessibility and performance in mind.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📐</div>
+          <h3>Layout System</h3>
+          <p>Flexible grid and spacing system that adapts to any screen size.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">♿</div>
+          <h3>Accessibility</h3>
+          <p>WCAG 2.1 compliant components with semantic HTML and ARIA support.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📚</div>
+          <h3>Documentation</h3>
+          <p>Detailed guides, usage examples, and best practices for every component.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🚀</div>
+          <h3>Developer Ready</h3>
+          <p>TypeScript support, CSS variables, and a clean API for rapid development.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section class="testimonials" id="testimonials">
+    <div class="testimonials-content">
+      <div class="testimonials-header">
+        <h2>Loved by teams</h2>
+      </div>
+      <div class="testimonials-grid">
+        <div class="testimonial">
+          <div class="testimonial-content">"Skytek helped us ship our product faster while maintaining design consistency across teams."</div>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">JD</div>
+            <div>
+              <div class="testimonial-author-name">Jane Doe</div>
+              <div class="testimonial-author-title">Product Designer</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial">
+          <div class="testimonial-content">"The components are well-designed and the documentation is incredibly thorough. Highly recommend."</div>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">MS</div>
+            <div>
+              <div class="testimonial-author-name">Mark Smith</div>
+              <div class="testimonial-author-title">Frontend Engineer</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial">
+          <div class="testimonial-content">"Finally a design system that actually works in the real world. Integration was seamless."</div>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">EA</div>
+            <div>
+              <div class="testimonial-author-name">Emma Anderson</div>
+              <div class="testimonial-author-title">Design Lead</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section" id="cta">
+    <div class="cta-content">
+      <h2>Ready to build?</h2>
+      <p>Join hundreds of teams using Skytek to create beautiful, accessible products.</p>
+      <button class="ds-btn ds-btn--primary ds-btn--lg" style="background: white; color: var(--brand-600); border-color: white;">Get Started Today</button>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#">Components</a></li>
+          <li><a href="#">Design Tokens</a></li>
+          <li><a href="#">Documentation</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="#">Getting Started</a></li>
+          <li><a href="#">Guides</a></li>
+          <li><a href="#">API Reference</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Privacy</a></li>
+          <li><a href="#">Terms</a></li>
+          <li><a href="#">License</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Real World. All rights reserved.</p>
+    </div>
+  </footer>
+</body>
+</html>

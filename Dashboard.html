@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dashboard — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Open Sans','ui-sans-serif','system-ui','sans-serif'], display:['Exo','Open Sans','sans-serif'] },
+        colors: {
+          brand: {50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',800:'#1e40af'},
+          ink:   {900:'#0f172a',800:'#1e293b',700:'#334155',600:'#475569',500:'#64748b',400:'#94a3b8',300:'#cbd5e1',200:'#e2e8f0',100:'#f1f5f9',50:'#f8fafc'},
+        },
+        boxShadow: {
+          'card': '0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06)',
+          'card-hover': '0 4px 10px -2px rgb(15 23 42 / 0.08), 0 8px 24px -4px rgb(15 23 42 / 0.08)',
+        },
+      },
+    },
+  };
+</script>
+<style>
+  html, body { font-family:'Open Sans',system-ui,sans-serif; }
+  h1,h2,h3,h4,h5,h6,.font-display,.tracking-micro { font-family:'Exo','Open Sans',sans-serif; }
+  .tracking-micro { letter-spacing: 0.08em; }
+  .scroll-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scroll-thin::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+  .pop-enter { animation: pop .16s cubic-bezier(.2,.8,.2,1); transform-origin: top right; }
+  @keyframes pop { from { opacity: 0; transform: translateY(-4px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  .dot-pulse { position: relative; }
+  .dot-pulse::after { content: ''; position: absolute; inset: -3px; border-radius: 999px; box-shadow: 0 0 0 0 rgba(239,68,68,0.5); animation: pulse 1.8s infinite; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.55);} 70% { box-shadow: 0 0 0 10px rgba(239,68,68,0);} 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0);} }
+  .tile-hover { transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+  .tile-hover:hover { transform: translateY(-2px); }
+  [data-density="comfortable"] .py-density { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+  [data-density="compact"] .py-density { padding-top: 1rem; padding-bottom: 1rem; }
+  [data-density="compact"] .gap-density { gap: 0.75rem; }
+  [data-density="comfortable"] .gap-density { gap: 1rem; }
+  .kbd { font-family: ui-monospace, Menlo, monospace; font-size: 10.5px; padding: 1px 5px; border: 1px solid #e2e8f0; border-bottom-width: 2px; border-radius: 4px; background: #f8fafc; color: #475569; }
+  .ring-focus:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; border-radius: 8px; }
+</style>
+</head>
+<body class="bg-ink-100 text-ink-900 antialiased" data-density="compact">
+<div id="app" class="min-h-screen w-full flex"></div>
+
+<script>
+  window.PAGE = { id:'dash', title:'Dashboard', crumb:'Overview' };
+  window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "density": "comfortable",
+    "accent": "blue",
+    "sidebarExpanded": false,
+    "showSparklines": true
+  }/*EDITMODE-END*/;
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="shared/chrome.js?v=4"></script>
+<script>
+const SC = window.sharedChrome;
+const Ico = SC.I;
+const spark = SC.sparkline, tone = SC.toneClasses;
+
+const KPIS = [
+  { label:'Total Exposure', value:'$4.2B', hint:'USD', icon:'bolt', tone:'indigo', delta:'+2.4%', dir:'up' },
+  { label:'Active Policies', value:'156', hint:'renewals in 30d: 12', icon:'doc', tone:'emerald', delta:'+6', dir:'up' },
+  { label:'Risk Alerts', value:'12', hint:'3 critical · 9 watch', icon:'bolt', tone:'amber', delta:'+3', dir:'up', danger:true },
+  { label:'Global Regions', value:'24', hint:'across 4 continents', icon:'pin', tone:'rose', delta:'', dir:'' },
+];
+const CATEGORIES = [
+  { id:'marine',    label:'Marine',          icon:'ship',     assets:'1,247', portfolios:8,  trend:[6,8,7,9,11,10,12,13], href:'MarineDashboard.html' },
+  { id:'property',  label:'Property',        icon:'building2',assets:'3,542', portfolios:12, trend:[10,9,11,12,13,14,15,16], href:'PropertyDashboard.html' },
+  { id:'aviation',  label:'Aviation',        icon:'plane2',   assets:'738',   portfolios:4,  trend:[8,9,8,10,9,11,10,12],  href:'AviationDashboard.html' },
+  { id:'energy',    label:'Offshore/Energy', icon:'bolt2',    assets:'10',    portfolios:2,  trend:[4,5,7,6,8,10,9,11],    href:'OffshoreDashboard.html' },
+];
+const QUICK = [
+  { label:'Reports', icon:'docs2' }, { label:'Ports & Cargo', icon:'anchor2' },
+  { label:'Regions', icon:'pin' }, { label:'Nat Cat Events', icon:'cloudrain', alert:true },
+  { label:'Weather', icon:'cloudicon' }, { label:'Asset Search', icon:'search2' },
+  { label:'Company Search', icon:'factory' },
+];
+// make sidebar-sized lucide icons available for category cards
+Object.assign(window.sharedChrome, { _ok:true });
+
+function Content() {
+  const now = new Date();
+  const hour = now.getHours();
+  const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  return `
+  <div class="mx-auto max-w-[1200px] px-6 lg:px-8 py-density">
+    <section class="flex flex-col items-center text-center gap-3 pt-6 pb-8">
+      <div class="relative">
+        <div class="h-[72px] w-[72px] rounded-full p-[3px] bg-gradient-to-br from-brand-400 to-brand-600">
+          <div class="h-full w-full rounded-full bg-white p-[2px]">
+            <div class="h-full w-full rounded-full overflow-hidden bg-ink-100">
+              <img src="images/avatar-paul-kiernan.avif" alt="Paul Kiernan" style="width:100%;height:100%;object-fit:cover;border-radius:50%" />ll="#60a5fa"/></svg>
+            </div>
+          </div>
+        </div>
+        <div class="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-emerald-500 ring-2 ring-white"></div>
+      </div>
+      <div class="space-y-1">
+        <div class="text-[22px] font-semibold text-ink-900 tracking-tight"><span class="text-ink-700">${greet}, </span><span class="text-brand-600">Paul!</span></div>
+        <div class="text-xs text-ink-500">${now.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'})} · <span id="clock">${now.toLocaleTimeString('en-US',{hour:'numeric', minute:'2-digit'})}</span> · Global ops normal</div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-density mb-6">
+      ${KPIS.map(k => {
+        const t = tone(k.tone);
+        const deltaCls = k.dir==='up' ? (k.danger?'text-rose-600 bg-rose-50':'text-emerald-600 bg-emerald-50') : k.dir==='down' ? 'text-rose-600 bg-rose-50' : 'text-ink-500 bg-ink-100';
+        const arrow = k.dir==='up' ? Ico.arrowUp : k.dir==='down' ? Ico.arrowDown : '';
+        return `<button class="group relative text-left bg-white rounded-xl border border-ink-200 p-4 shadow-card hover:shadow-card-hover hover:border-ink-300 tile-hover ring-focus">
+          <div class="flex items-start justify-between">
+            <div class="h-9 w-9 rounded-lg ${t.bg} ${t.text} flex items-center justify-center ring-1 ${t.ring}">${Ico[k.icon]}</div>
+            ${k.delta ? `<span class="inline-flex items-center gap-1 text-[11px] font-semibold rounded-full px-1.5 py-0.5 ${deltaCls}">${arrow}${k.delta}</span>` : ''}
+          </div>
+          <div class="mt-3">
+            <div class="text-[10px] font-bold tracking-micro text-ink-500 uppercase">${k.label}</div>
+            <div class="mt-1 text-2xl font-bold text-ink-900 tabular-nums">${k.value}</div>
+            <div class="text-[11px] text-ink-500 mt-0.5">${k.hint}</div>
+          </div>
+        </button>`;
+      }).join('')}
+    </section>
+
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-density mb-6">
+      ${CATEGORIES.map(c => {
+        const tag = c.href ? 'a' : 'button';
+        const hrefAttr = c.href ? `href="${c.href}"` : '';
+        return `<${tag} ${hrefAttr} class="group bg-white rounded-xl border border-ink-200 p-5 shadow-card hover:shadow-card-hover hover:border-brand-300 tile-hover ring-focus relative overflow-hidden block no-underline">
+          <div class="flex items-center justify-center text-brand-600 h-14">${Ico[c.icon]}</div>
+          <div class="mt-2 text-center text-base font-semibold text-brand-600">${c.label}</div>
+          <div class="mt-3 pt-3 border-t border-ink-100 grid grid-cols-2 gap-2">
+            <div class="text-[11px]"><span class="text-ink-500">Assets: </span><span class="inline-flex items-center gap-1 font-semibold text-ink-800"><span class="text-brand-500">${Ico.bolt}</span>${c.assets}</span></div>
+            <div class="text-[11px] text-right"><span class="text-ink-500">Portfolios: </span><span class="inline-flex items-center gap-1 font-semibold text-ink-800"><span class="text-brand-500">${Ico.briefcase}</span>${c.portfolios}</span></div>
+          </div>
+        </${tag}>`;
+      }).join('')}
+    </section>
+
+    <section class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-density mb-10">
+      ${QUICK.map(q => `<button class="group relative bg-white rounded-xl border border-ink-200 p-5 shadow-card hover:shadow-card-hover hover:border-brand-300 tile-hover ring-focus flex flex-col items-center justify-center gap-2 min-h-[116px]">
+        <div class="text-brand-600 group-hover:text-brand-700 transition-colors">${Ico[q.icon]}</div>
+        <div class="text-sm font-semibold text-brand-600 group-hover:text-brand-700 transition-colors">${q.label}</div>
+        ${q.alert ? `<span class="absolute top-2 right-3 h-1.5 w-1.5 rounded-full bg-rose-500 dot-pulse"></span>` : ''}
+      </button>`).join('')}
+    </section>
+
+    <section class="border-t border-ink-200 pt-4 pb-8 flex flex-wrap items-center justify-between gap-3 text-[11px] text-ink-500">
+      <div class="flex items-center gap-4"><span class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>All systems operational</span><span>Last sync just now</span></div>
+      <div class="flex items-center gap-4"><span>v2.4.1</span><span>Region · Global</span></div>
+    </section>
+  </div>`;
+}
+
+window.render = function render() {
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col">
+      ${SC.Topbar()}
+      <main class="flex-1 overflow-y-auto scroll-thin">${Content()}</main>
+    </div>
+    ${SC.TweaksPanel()}
+  `;
+  SC.wireChrome();
+  const clock = document.getElementById('clock');
+  if (clock) setInterval(() => {
+    const el = document.getElementById('clock');
+    if (el) el.textContent = new Date().toLocaleTimeString('en-US',{hour:'numeric', minute:'2-digit'});
+  }, 30000);
+};
+window.render();
+</script>
+</body>
+</html>

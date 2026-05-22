@@ -1,0 +1,1378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FRESH BREEZE — Marine — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { height:100%; }
+  body { font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; }
+  .text-ink-900 { color:#0f172a; }
+  .text-ink-800 { color:#1e293b; }
+  .text-ink-700 { color:#334155; }
+  .text-ink-600 { color:#475569; }
+  .text-ink-500 { color:#64748b; }
+  .text-ink-400 { color:#94a3b8; }
+  .text-ink-300 { color:#cbd5e1; }
+  .text-ink-200 { color:#e2e8f0; }
+  .text-ink-100 { color:#f1f5f9; }
+  .bg-ink-100 { background:#f1f5f9; }
+  .bg-ink-50 { background:#f8fafc; }
+  .bg-ink-900 { background:#0f172a; }
+  .border-ink-100 { border-color:#f1f5f9; }
+  .border-ink-200 { border-color:#e2e8f0; }
+  .shadow-card { box-shadow:0 2px 4px 0 rgb(15 23 42 / 0.08), 0 1px 2px 0 rgb(15 23 42 / 0.06); }
+  .text-brand-600 { color:#2563eb; }
+  .bg-brand-600 { background:#2563eb; }
+  .bg-brand-050 { background:#eff6ff; }
+  .scroll-thin::-webkit-scrollbar { width:6px; height:6px; }
+  .scroll-thin::-webkit-scrollbar-track { background:transparent; }
+  .scroll-thin::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:999px; }
+  .scroll-thin::-webkit-scrollbar-thumb:hover { background:#94a3b8; }
+  .tracking-micro { letter-spacing:0.04em; }
+  .ring-focus:focus-visible { outline:2px solid #3b82f6; outline-offset:2px; border-radius:8px; }
+  [data-density="compact"] .py-density { padding-top:.75rem; padding-bottom:.75rem; }
+  [data-density="comfortable"] .py-density { padding-top:1.25rem; padding-bottom:1.25rem; }
+  [data-density="compact"] .gap-density { gap:.75rem; }
+  [data-density="comfortable"] .gap-density { gap:1rem; }
+  /* Pill tabs (Skytek DS — animated pill via shared layout) */
+  .ds-tabs { position:relative; display:inline-flex; gap:4px; padding:4px; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:9999px; }
+  .ds-tabs.is-stretch { display:flex; }
+  .ds-tabs.is-stretch > .ds-tab { flex:1; }
+  .ds-tab { position:relative; font:inherit; font-size:13px; font-weight:600; padding:8px 18px; background:transparent; border:0; border-radius:9999px; color:#64748b; cursor:pointer; transition:color 140ms ease; display:inline-flex; align-items:center; justify-content:center; gap:6px; white-space:nowrap; text-align:center; }
+  .ds-tab:hover { color:#0f172a; }
+  .ds-tab[aria-selected="true"], .ds-tab[aria-selected="true"]:hover { color:#fff; }
+  .ds-tab-pill { position:absolute; top:4px; left:0; height:calc(100% - 8px); background:#2563eb; border-radius:9999px; box-shadow:0 1px 2px rgba(15,23,42,.12); z-index:0; transform:translateX(0) scaleX(1); transform-origin:left center; transition:transform 320ms cubic-bezier(.34,1.2,.64,1), width 320ms cubic-bezier(.34,1.2,.64,1); pointer-events:none; }
+  .ds-tab-pill.is-init { transition:none; }
+  .ds-tab-label { position:relative; z-index:1; display:inline-flex; align-items:center; gap:6px; }
+  .ds-tab[data-disabled="true"] { color:#cbd5e1; cursor:not-allowed; }
+  /* DS Pagination */
+  .ds-pagination { display:flex; align-items:center; gap:2px; }
+  .ds-page-btn { font:inherit; font-size:13px; font-weight:500; min-width:32px; height:32px; padding:0 6px; display:inline-flex; align-items:center; justify-content:center; background:transparent; border:1px solid transparent; border-radius:6px; color:#64748b; cursor:pointer; transition:background 120ms, border-color 120ms, color 120ms; }
+  .ds-page-btn:hover:not([disabled]) { background:#f1f5f9; color:#0f172a; border-color:#e2e8f0; }
+  .ds-page-btn.is-active { background:#2563eb; border-color:#2563eb; color:#fff; font-weight:600; }
+  .ds-page-btn[disabled] { opacity:.35; cursor:not-allowed; }
+  .ds-page-ellipsis { min-width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center; font-size:13px; color:#94a3b8; pointer-events:none; }
+  .ds-pagination-wrap { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; border-top:1px solid #e2e8f0; background:#f8fafc; font-size:13px; color:#64748b; }
+  #vessel-map { background:#0b1e2e; position:absolute; inset:0; }
+  #vessel-map .leaflet-top.leaflet-left { top:46px; left:2px; }
+  #vessel-map .leaflet-top.leaflet-left .leaflet-bar { margin-left:10px !important; }
+  .leaflet-control-zoom, .leaflet-bar { border:1px solid #e2e8f0 !important; box-shadow:0 1px 2px rgb(15 23 42/.08) !important; border-radius:8px !important; overflow:hidden; }
+  .leaflet-bar a { background:#fff !important; color:#334155 !important; }
+  .leaflet-bar a:hover { background:#f1f5f9 !important; }
+  .map-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:#fff; border:1px solid #e2e8f0; border-radius:8px; color:#334155; box-shadow:0 1px 2px rgb(15 23 42/.08); cursor:pointer; flex-shrink:0; }
+  .map-btn:hover { background:#f1f5f9; }
+  .map-btn svg { width:16px; height:16px; }
+  /* Fullscreen */
+  #vessel-tracking-card.is-fullscreen { position:fixed; inset:0; z-index:9999; border-radius:0; }
+  #vessel-tracking-card.is-fullscreen #map-wrapper { min-height:0; flex:1; }
+  /* Timeline overlay */
+  .timeline-overlay { position:absolute; bottom:16px; left:12px; right:12px; z-index:400; background:rgba(15,23,42,.82); border-radius:12px; padding:10px 14px; backdrop-filter:blur(4px); }
+  .timeline-track { position:relative; height:6px; background:rgba(255,255,255,.25); border-radius:999px; cursor:pointer; flex:1; }
+  .timeline-fill  { position:absolute; left:0; top:0; bottom:0; background:#3b82f6; border-radius:999px; pointer-events:none; }
+  .timeline-thumb { position:absolute; top:50%; transform:translate(-50%,-50%); width:16px; height:16px; background:#fff; border:2px solid #3b82f6; border-radius:999px; box-shadow:0 2px 6px rgba(0,0,0,.4); pointer-events:none; cursor:grab; }
+</style>
+</head>
+<body class="bg-ink-100 text-ink-900 antialiased" data-density="compact">
+<div id="app" class="min-h-screen w-full flex"></div>
+
+<script>
+  window.PAGE = { id:'marine', title:'Marine', crumb:'FRESH BREEZE' };
+  window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "density": "compact",
+    "accent": "blue",
+    "sidebarExpanded": false,
+    "showSparklines": true
+  }/*EDITMODE-END*/;
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="shared/chrome.js?v=4"></script>
+<script>
+const SC = window.sharedChrome;
+
+/* ----------- STATE ----------- */
+let state = {
+  topTab: 'Vessel Details',
+  topRightTab: 'Risk Score',
+  sectionTab: 'Inspection Data',
+  bottomLeftTab: 'Environmental Rating',
+  timelinePos: 0.5,
+  casualtyExpanded: new Set([0]),
+};
+
+/* ----------- DATA ----------- */
+const VESSEL = {
+  name: 'FRESH BREEZE',
+  flag: { cc:'es', name:'Spain' },
+  latestTs: 'Mon, 13 Oct 2025 02:37:51 GMT',
+  compliance: 'Sanctioned',
+  speed: '8.2',
+  monitoredFlags: 'No monitored flags are connected with this vessel',
+};
+
+const COMPANY = {
+  name: 'Bulkcarriers - Panama',
+  flag: { cc:'nl', name:'Netherlands' },
+  classificationSociety: 'Indian Register of Shipping',
+  piClub: 'Unknown Entity',
+  groupOwner: 'Unknown Entity',
+  shipManager: 'Unknown Entity',
+  operator: 'Unknown Entity',
+  registeredOwner: 'Ametrine Navigation Incorporated',
+};
+
+const POLICY = {
+  portfolios: 'Bulkcarriers - Panama',
+  signedLine: '0.0100%',
+  exposure: '$2.5M',
+  totalInsured: '$9.1M',
+  warExp: '$2.8M',
+  warTotal: '$8.8M',
+  premium: '$24.5k',
+};
+
+const PORT_CALLS = {
+  previous: { name:'Singapore', cc:'sg', departed:'2025-12-28 11:00', leg:'2,031 nm' },
+  current:  { name:'Singapore', cc:'sg', eta:'+2d4m', leg:'1,223 nm' },
+  future:   { name:'Hamburg', cc:'de', destination:true, leg:'Germany' },
+};
+
+const VOYAGE_HISTORY = [
+  { port:'Amsterdam',  cc:'nl', arr:'2024-11-15', dep:'2024-11-18' },
+  { port:'Rotterdam',  cc:'nl', arr:'2024-10-22', dep:'2024-10-26' },
+  { port:'Antwerp',    cc:'be', arr:'2024-09-30', dep:'2024-10-03' },
+  { port:'Hamburg',    cc:'de', arr:'2024-09-12', dep:'2024-09-15' },
+  { port:'Bremerhaven',cc:'de', arr:'2024-08-28', dep:'2024-08-31' },
+];
+
+const CASUALTY_DATA = [
+  { date:'2024-08-15', severity:'Minor',    location:'Singapore Strait', type:'Collision',   desc:'Minor collision with fishing vessel, no injuries reported' },
+  { date:'2024-03-22', severity:'Moderate', location:'Gulf of Aden',     type:'Grounding',   desc:'Vessel grounded on sandbar, refloated after 4 hours with tug assistance' },
+  { date:'2023-11-10', severity:'Minor',    location:'Red Sea',          type:'Fire',        desc:'Engine room fire contained within 30 minutes, no casualties' },
+  { date:'2023-07-05', severity:'Severe',   location:'Strait of Hormuz', type:'Flooding',    desc:'Hull breach caused flooding in cargo hold, emergency repairs required' },
+  { date:'2023-02-18', severity:'Minor',    location:'Malacca Strait',   type:'Collision',   desc:'Glancing blow with container vessel, minor hull damage' },
+  { date:'2022-10-30', severity:'Moderate', location:'Indian Ocean',     type:'Structural',  desc:'Structural crack found in hull plating during routine inspection' },
+  { date:'2022-06-12', severity:'Minor',    location:'Bay of Bengal',    type:'Equipment',   desc:'Steering gear failure, vessel anchored pending repair' },
+];
+
+const INSPECTIONS = [
+  { date:'2023-06-30', cc:'ir', country:'Iran',     port:'Bandar Imam Khomeini', portFlag:'ir', psc:'',        type:'Initial Inspection', defects:0, detained:'0 Days' },
+  { date:'2023-02-19', cc:'eg', country:'Egypt',    port:'Damietta',           portFlag:'',   psc:'Med Mou', type:'Initial Inspection', defects:0, detained:'0 Days' },
+  { date:'2022-02-02', cc:'bg', country:'Bulgaria', port:'Varna',              portFlag:'',   psc:'Paris Mou',type:'Initial Inspection', defects:0, detained:'0 Days' },
+  { date:'2021-05-28', cc:'ge', country:'Georgia',  port:'Poti',               portFlag:'',   psc:'',        type:'Initial Inspection', defects:0, detained:'0 Days' },
+  { date:'2020-10-27', cc:'tr', country:'Turkey',   port:'Mersin',             portFlag:'',   psc:'',        type:'Initial Inspection', defects:0, detained:'0 Days' },
+];
+
+const SUSPICIOUS_ACTIVITY = [
+  { start:'2024-11-04 14:23 UTC', end:'2024-11-04 18:45 UTC', duration:'4h 22m',  alertType:'AIS Silence',              alertColor:'bg-blue-100 text-blue-700',   region:'Sea of Azov and Black Sea', regionFlag:true,  desc:'Vessel AIS signal lost in severe weather zone with 12m waves and 65 knot winds' },
+  { start:'2024-11-03 18:42 UTC', end:'2024-11-04 02:15 UTC', duration:'7h 33m',  alertType:'Unusual Movement Patterns', alertColor:'bg-amber-100 text-amber-700', region:'Suez Canal',               regionFlag:false, desc:'Vessel deviating from planned route with erratic course changes' },
+  { start:'2024-11-03 12:30 UTC', end:'2024-11-03 14:18 UTC', duration:'1h 48m',  alertType:'AIS Spoofing',              alertColor:'bg-purple-100 text-purple-700',region:'Cannes, Nice',             regionFlag:false, desc:'AIS position data inconsistent with satellite tracking information' },
+  { start:'2024-11-02 21:05 UTC', end:'2024-11-03 05:20 UTC', duration:'8h 15m',  alertType:'Drifting',                  alertColor:'bg-cyan-100 text-cyan-700',   region:'Gulf of Guinea',           regionFlag:true,  desc:'Vessel stationary for extended period with engines showing minimal power' },
+  { start:'2024-11-01 16:30 UTC', end:'2024-11-01 16:30 UTC', duration:'Ongoing', alertType:'Name/Flag Change',           alertColor:'bg-pink-100 text-pink-700',   region:'Miami',                    regionFlag:false, desc:'Vessel identity changed multiple times in short period' },
+];
+
+const STS_DATA = [
+  { id:1, highlight:'orange',
+    v1:{ name:'COSWISH LAKE',   compliance:'ok',         draught:'↑ 0.5', dest:'FUJAIRAH' },
+    v2:{ name:'HUNTER ODIN',    compliance:'ok-warn',    draught:'-',     dest:'BR ADRI' },
+    region:'South Atlantic Ocean', ports:'-', start:'2025-08-17 08:02:0…', end:'2025-08-17 21:57:5…', duration:'13h 55m' },
+  { id:2, highlight:'',
+    v1:{ name:'COSWISH LAKE',   compliance:'ok',         draught:'↑ 8.7', dest:'ROTTERDAM' },
+    v2:{ name:'NORDIC BREEZE',  compliance:'ok',         draught:'-',     dest:'ANTWERP' },
+    region:'North Sea', ports:'-', start:'2025-09-15 06:45:2…', end:'2025-09-15 19:30:1…', duration:'12h 44m' },
+  { id:3, highlight:'red',
+    v1:{ name:'COSWISH LAKE',   compliance:'ok',         draught:'-',     dest:'BR ADRI' },
+    v2:{ name:'HEDDA KNUTSEN',  compliance:'sanctioned', draught:'-',     dest:'BR ADRI' },
+    region:'South Atlantic Ocean', ports:'-', start:'2025-06-27 11:15:1…', end:'2025-06-28 17:13:4…', duration:'1d 5h 58m' },
+  { id:4, highlight:'',
+    v1:{ name:'COSWISH LAKE',   compliance:'ok',         draught:'-',     dest:'SINGAPORE' },
+    v2:{ name:'VANDA ADVENTURE',compliance:'ok',         draught:'-',     dest:'ALEPRI8' },
+    region:'Singapore Strait', ports:'-', start:'2025-05-22 08:10:4…', end:'2025-05-22 21:11:0…', duration:'13h' },
+  { id:5, highlight:'',
+    v1:{ name:'COSWISH LAKE',   compliance:'ok',         draught:'↑ 9.2', dest:'HAMBURG' },
+    v2:{ name:'ATLANTIC STAR',  compliance:'ok',         draught:'-',     dest:'LONDON' },
+    region:'English Channel', ports:'-', start:'2025-04-10 14:20:3…', end:'2025-04-11 02:15:4…', duration:'11h 55m' },
+];
+
+const SANCTION_COMPLIANCE = [
+  { relationship:'Vessel',            name:'COOL RUNNER',         ofac:'ok', un:'ok', eu:'ok', aus:'ok', ofsi:'ok' },
+  { relationship:"Vessel's Flag",     name:'China',               ofac:'ok', un:'ok', eu:'ok', aus:'ok', ofsi:'ok' },
+  { relationship:'Registered Owner',  name:'Pacific Maritime Ltd', ofac:'ok', un:'ok', eu:'ok', aus:'ok', ofsi:'ok' },
+  { relationship:'Operator',          name:'Global Shipping Co',   ofac:'ok', un:'ok', eu:'ok', aus:'ok', ofsi:'ok' },
+  { relationship:'Technical Manager', name:'Marine Tech Services', ofac:'ok', un:'ok', eu:'ok', aus:'ok', ofsi:'ok' },
+];
+
+const ASSOCIATIONS = [
+  { type:'Registered Owner',     entity:'Blackwater Maritime Ltd.',   risk:'Sanctions Exposure',            jurisdiction:'Marshall Islands', status:'High Risk',     statusTone:'danger',  confidence:92, updated:'06 May 2026' },
+  { type:'Technical Manager',    entity:'Eastern Crest Shipping',     risk:'AIS Manipulation History',      jurisdiction:'UAE',              status:'Medium Risk',   statusTone:'warning', confidence:81, updated:'03 May 2026' },
+  { type:'Commercial Operator',  entity:'Nova Tanker Logistics',      risk:'Ship-to-Ship Transfer Activity', jurisdiction:'Singapore',        status:'Under Review',  statusTone:'info',    confidence:74, updated:'29 Apr 2026' },
+  { type:'Parent Company',       entity:'Meridian Holdings Group',    risk:'Shell Company Network',         jurisdiction:'Hong Kong',        status:'High Risk',     statusTone:'danger',  confidence:89, updated:'01 May 2026' },
+  { type:'Previous Flag State',  entity:'Cameroon Registry',          risk:'Flagging Irregularities',       jurisdiction:'Cameroon',         status:'Historical',    statusTone:'neutral', confidence:68, updated:'14 Feb 2026' },
+  { type:'Insurance Provider',   entity:'Oceanic P&I Mutual',         risk:'Linked Sanctioned Fleet',       jurisdiction:'Russia',           status:'High Risk',     statusTone:'danger',  confidence:95, updated:'05 May 2026' },
+  { type:'Beneficial Owner',     entity:'Al Sahar Investments',       risk:'Opaque Ownership Structure',    jurisdiction:'UAE',              status:'Medium Risk',   statusTone:'warning', confidence:77, updated:'30 Apr 2026' },
+  { type:'Port Call Association',entity:'Bandar Khomeini Operations', risk:'Restricted Trade Corridor',     jurisdiction:'Iran',             status:'Alert',         statusTone:'amber',   confidence:84, updated:'02 May 2026' },
+];
+
+const ENV_RATING = {
+  grade: 'B',
+  operational: [
+    { label:'Avg. Required EEXI:',     value:'5.53' },
+    { label:'Avg. Attained EEXI:',    value:'5.81' },
+    { label:'Avg. Required CII:',      value:'7.42' },
+    { label:'Avg. Attained CII:',      value:'7.11' },
+  ],
+  operationalAspect: [
+    { label:'Major Superior',   badge:'A', color:'#10b981' },
+    { label:'Minor Superior',   badge:'B', color:'#84cc16', icon:true },
+    { label:'Moderate',         badge:'C', color:'#f59e0b' },
+    { label:'Minor Inferior',   badge:'D', color:'#f97316' },
+    { label:'Inferior',         badge:'E', color:'#ef4444' },
+  ],
+  technical: [
+    { label:'Avg. Required EEXI:', value:'5.53', sub:'1,202.08 Hrs\nAverage time spent at sea', pct:'13%' },
+    { label:'Avg. Attained EEXI:', value:'5.81', sub:'3,660.09 CO₂\nAverage CO₂ emissions 2022 [in tonnes]' },
+    { label:'Avg. Required CII:',  value:'7.42' },
+    { label:'Avg. Attained CII:',  value:'7.11', sub:'6 days\nAverage Time in ECA', pct:'13%' },
+    { label:'Average Speed:',      value:'11.04 Kts' },
+  ],
+  compliance: [
+    { label:'Sox/Nox reduction measures',  value:'None Specified', pct:'75%' },
+    { label:'Ballast treatment compliance',value:'None Specified', pct:'75%' },
+    { label:'Recycling compliance',        value:'None Specified', pct:'75%' },
+    { label:'IHM Green Passport',          value:'75%' },
+    { label:'Open Loop (MG)',              value:'25%' },
+  ],
+};
+
+const EVENTS = [
+  { ts:'Fri, 04 Jul 2025 11:00:08 GMT', title:'AIS Static Detail Change', detail:'Vessel changed nav_status_code from "Under Way Sailing" to "Under way Using Engine".' },
+  { ts:'Fri, 04 Jul 2025 06:44:00 GMT', title:'AIS Static Detail Change', detail:'Vessel\'s ETA has changed from 2025-07-08 08:00:00 UTC to 2025-07-16 08:00:00 UTC.' },
+  { ts:'Fri, 04 Jul 2025 06:44:00 GMT', title:'AIS Static Detail Change', detail:'Vessel changed destination from "Dakar (SNDKR)" to "Abidjan (CIABJ)".' },
+  { ts:'Fri, 04 Jul 2025 06:01:01 GMT', title:'AIS Static Detail Change', detail:'Vessel changed nav_status_code from "Under way Using Engine" to "Under Way Sailing".' },
+];
+
+/* ----------- HELPERS ----------- */
+function flag(cc, size='sm') {
+  if (!cc) return '';
+  const h = size === 'md' ? 18 : 14;
+  const w = size === 'md' ? 26 : 20;
+  return `<img src="https://flagcdn.com/w40/${cc}.png" srcset="https://flagcdn.com/w80/${cc}.png 2x" alt="${cc.toUpperCase()}" width="${w}" height="${h}" class="inline-block rounded-[2px] ring-1 ring-ink-200/80 object-cover" style="width:${w}px;height:${h}px" loading="lazy" />`;
+}
+
+function tabs(tabs, active, attr, stretch = false) {
+  return `
+  <div class="ds-tabs${stretch ? ' is-stretch' : ''}" data-tab-group="${attr}">
+    <span class="ds-tab-pill is-init" data-tab-pill></span>
+    ${tabs.map(t => {
+      const upArrow = `<svg width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>`;
+      const downArrow = `<svg width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12l7 7 7-7"/></svg>`;
+      const scoreBadge = t.scoreBadge ? `<span class="ml-1.5 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${t.scoreBadge.tone.bg} ${t.scoreBadge.tone.text}">${t.scoreBadge.value}${t.scoreBadge.up ? upArrow : downArrow}</span>` : '';
+      const iBadge = t.badge ? `<span class="ml-1 inline-flex items-center justify-center text-[9px] font-bold bg-orange-500 text-white rounded-full" style="width:14px;height:14px;flex-shrink:0;">${t.badge}</span>` : '';
+      const iconHtml = t.icon ? `<span class="inline-flex items-center" style="width:14px;height:14px;flex-shrink:0;">${SC.I[t.icon]}</span>` : '';
+      return `
+      <button ${attr}="${t.k}" aria-selected="${t.k===active}" class="ds-tab" style="font-size:13px; padding:7px 16px;">
+        <span class="ds-tab-label">
+          ${iconHtml}${t.k}${iBadge}${scoreBadge}
+        </span>
+      </button>`;
+    }).join('')}
+  </div>`;
+}
+
+function iconTabs(tabs, active, attr) {
+  return `
+  <div class="ds-tabs" data-tab-group="${attr}">
+    <span class="ds-tab-pill is-init" data-tab-pill></span>
+    ${tabs.map(t => `
+      <button ${attr}="${t.k}" aria-selected="${t.k===active}" class="ds-tab" style="font-size:12px; padding:8px 14px;">
+        <span class="ds-tab-label">
+          ${t.icon ? `<span class="inline-flex items-center" style="width:14px;height:14px;flex-shrink:0;">${SC.I[t.icon]}</span>` : ''}
+          <span>${t.k}</span>
+        </span>
+      </button>`).join('')}
+  </div>`;
+}
+
+function positionTabPills() {
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.ds-tabs').forEach(group => {
+      const pill   = group.querySelector('[data-tab-pill]');
+      const active = group.querySelector('.ds-tab[aria-selected="true"]');
+      if (!pill || !active) return;
+      const gRect = group.getBoundingClientRect();
+      const aRect = active.getBoundingClientRect();
+      if (!aRect.width) return;
+      pill.style.width     = aRect.width + 'px';
+      pill.style.transform = `translateX(${aRect.left - gRect.left}px)`;
+      requestAnimationFrame(() => pill.classList.remove('is-init'));
+    });
+  });
+}
+
+/* ----------- CARDS ----------- */
+function VesselDetailsCard() {
+  const topTabs = [
+    { k:'Vessel Details',  icon:'ship'   },
+    { k:'Company Details', icon:'office', badge:'i' },
+  ];
+  
+  const row = (label, value, isBold) => `
+    <div class="flex justify-between text-xs py-1.5 border-b last:border-b-0" style="border-color:#f1f5f9;">
+      <span class="text-ink-500">${label}</span>
+      <span class="${isBold?'font-semibold text-ink-900':'text-ink-700'}">${value}</span>
+    </div>`;
+
+  let body = '';
+  let footer = '';
+  if (state.topTab === 'Vessel Details') {
+    body = `
+      <div class="space-y-0.5">
+        ${row('Name:', VESSEL.name, true)}
+        ${row('Latest Timestamp:', VESSEL.latestTs)}
+        ${row('Flag:', `${flag(VESSEL.flag.cc)} ${VESSEL.flag.name}`)}
+        ${row('Overall Compliance:', `<span class="text-red-600 font-semibold">${VESSEL.compliance}</span>`)}
+        ${row('Speed:', VESSEL.speed)}
+        ${row('Monitored Flags:', VESSEL.monitoredFlags)}
+      </div>`;
+    footer = `
+    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 flex items-center justify-center h-9">
+      <button class="inline-flex items-center gap-1 text-xs text-brand-600 font-semibold hover:text-brand-700 tracking-micro">
+        <span class="inline-flex items-center [&_svg]:h-3.5 [&_svg]:w-3.5">${SC.I.plus}</span>
+        <span>ADD TO PORTFOLIO</span>
+      </button>
+    </div>`;
+  } else if (state.topTab === 'Company Details') {
+    body = `
+      <div class="space-y-0.5">
+        ${row('Flag:', `${flag(COMPANY.flag.cc)} ${COMPANY.flag.name}`)}
+        ${row('Associations:', `<a href="#" class="inline-flex items-center gap-1.5 font-semibold text-brand-600 hover:underline"><span class="inline-flex items-center justify-center w-4 h-4 rounded-full text-white text-[9px] font-bold" style="background:#f97316">i</span>View company details</a>`)}
+        ${row('Classification Society:', COMPANY.classificationSociety)}
+        ${row('P &amp; I Club:', COMPANY.piClub)}
+        <div class="flex justify-between text-xs py-1.5 border-b last:border-b-0" style="border-color:#f1f5f9;">
+          <span class="text-ink-500">Group Owner:</span>
+          <span class="font-semibold text-ink-900">${COMPANY.groupOwner}</span>
+        </div>
+        ${row('Ship Manager:', COMPANY.shipManager)}
+        ${row('Operator:', COMPANY.operator)}
+        ${row('Registered Owner:', COMPANY.registeredOwner, true)}
+      </div>`;
+  }
+
+  return `
+  <div class="bg-white rounded-lg border border-ink-200 shadow-card flex flex-col h-full">
+    <div class="px-4 py-3 border-b border-ink-200 shrink-0">
+      ${tabs(topTabs, state.topTab, 'data-top-tab', true)}
+    </div>
+    <div class="p-4 flex-1 overflow-y-auto scroll-thin">
+      ${body}
+    </div>
+    ${footer}
+  </div>`;
+}
+
+function PolicyDetailsCard() {
+  const row = (label, value, isBold) => `
+    <div class="flex justify-between text-xs py-1.5 border-b last:border-b-0" style="border-color:#f1f5f9;">
+      <span class="text-ink-500">${label}</span>
+      <span class="${isBold?'font-semibold text-ink-900':'text-ink-700'}">${value}</span>
+    </div>`;
+    
+  return `
+  <div class="bg-white rounded-lg border border-ink-200 shadow-card flex flex-col h-full">
+    <div class="px-4 py-3 border-b border-ink-200 shrink-0">
+      <div class="text-sm font-semibold text-ink-900">Policy Details</div>
+    </div>
+    <div class="px-4 pt-3 pb-2 flex-1 overflow-y-auto scroll-thin">
+      <div class="space-y-0.5">
+        ${row('Portfolios:', POLICY.portfolios)}
+        ${row('Signed Line:', POLICY.signedLine)}
+        ${row('Exposure Value:', POLICY.exposure, true)}
+        ${row('Total Insured Value:', POLICY.totalInsured)}
+        ${row('War Exposure:', POLICY.warExp, true)}
+        ${row('War Total Insured Value:', POLICY.warTotal)}
+        ${row('Premium Details:', POLICY.premium)}
+        ${row('Coverage Period:', '2025-02-20 / 2027-02-20')}
+        ${row('Assured Details:', VESSEL.name, true)}
+      </div>
+    </div>
+  </div>`;
+}
+
+function PortCallsCard() {
+  return `
+  <div class="bg-white rounded-lg border border-ink-200 shadow-card flex flex-col h-full">
+    <div class="px-4 py-3 border-b border-ink-200 shrink-0">
+      <div class="text-sm font-semibold text-ink-900">Port Calls</div>
+    </div>
+    <div class="px-4 py-3 flex-1 overflow-y-auto scroll-thin">
+      <div class="flex flex-col items-center text-center space-y-2">
+
+        <!-- Departure port outlined -->
+        <div style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 12px;background:#f8fafc;">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#64748b;margin-bottom:6px;">Departure Port</div>
+          <div class="flex items-center justify-center gap-2 mb-1">
+            ${flag('sg')}
+            <span class="text-sm font-semibold text-ink-900">Singapore</span>
+          </div>
+          <div class="space-y-0.5 text-xs text-ink-600">
+            <div class="flex items-center justify-center gap-2">
+              <svg class="w-3 h-3 text-ink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+              <span>Arr: 2025-12-28 11:00</span>
+              <svg class="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m7-7v18"/></svg>
+              <span>12.4m</span>
+            </div>
+            <div class="flex items-center justify-center gap-2">
+              <svg class="w-3 h-3 text-ink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18"/></svg>
+              <span>Dep: 2025-12-30 18:30</span>
+              <svg class="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+              <span>12.2m</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-l-2 border-dashed border-ink-300 h-6"></div>
+        <div class="text-xs text-ink-500 font-medium">3,031 nm</div>
+        <div class="text-xs text-ink-400">Underway using engine</div>
+        <div class="border-l-2 border-dashed border-ink-300 h-6"></div>
+
+        <!-- Destination port outlined -->
+        <div style="width:100%;border:1.5px solid var(--brand-300,#7dd3fc);border-radius:10px;padding:10px 12px;background:var(--brand-50,#f0f9ff);">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--brand-600,#0284c7);margin-bottom:6px;">Destination Port</div>
+          <div class="flex items-center justify-center gap-2">
+            ${flag('de')}
+            <span class="text-sm font-semibold text-ink-900">Hamburg</span>
+          </div>
+          <div class="text-xs text-ink-500 mt-1">Germany</div>
+        </div>
+
+      </div>
+    </div>
+    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 flex items-center justify-center h-9">
+      <button class="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">
+        <span>VOYAGE HISTORY</span>
+        <span class="inline-flex items-center [&_svg]:h-3.5 [&_svg]:w-3.5">${SC.I.chev}</span>
+      </button>
+    </div>
+  </div>`;
+}
+
+function CasualtyRiskCard() {
+  const avgScore = 32;
+  const score2025 = 6;
+  // Match gauge colour: 0-10 green, 10-25 amber, 25+ red
+  const scoreTone = avgScore <= 10 ? { bg:'bg-green-100', text:'text-green-700' }
+                  : avgScore <= 25 ? { bg:'bg-amber-100',  text:'text-amber-700' }
+                  :                  { bg:'bg-red-100',    text:'text-red-700' };
+  const topRightTabs = [
+    { k:'Risk Score', scoreBadge: { value: avgScore, up: avgScore > score2025, tone: scoreTone } },
+    { k:'Casualty Data', badge: CASUALTY_DATA.length },
+  ];
+  
+  const severityBadge = (c) => {
+    const styles = {
+      'Severe':   { bg:'#fef9c3', text:'#92400e', dot:'#ef4444' },
+      'Moderate': { bg:'#ffedd5', text:'#9a3412', dot:'#f97316' },
+      'Minor':    { bg:'#fef9c3', text:'#92400e', dot:'#eab308' },
+    };
+    const s = styles[c.severity] || styles['Minor'];
+    return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold" style="background:${s.bg}; color:${s.text};">
+      <span class="w-2 h-2 rounded-full" style="background:${s.dot};"></span>
+      ${c.severity}
+    </span>`;
+  };
+
+  let body = '';
+  if (state.topRightTab === 'Casualty Data') {
+    body = `
+    <div class="flex-1 overflow-y-auto scroll-thin">
+      <div class="px-4 py-2 grid grid-cols-[1fr_auto_auto] gap-4 border-b border-ink-200 sticky top-0 bg-white">
+        <span class="text-xs font-semibold text-ink-900">Date</span>
+        <span class="text-xs font-semibold text-ink-900">Severity</span>
+        <span></span>
+      </div>
+      ${CASUALTY_DATA.map((c, i) => {
+        const expanded = state.casualtyExpanded.has(i);
+        return `
+        <div class="border-b border-ink-100 last:border-0">
+          <div class="px-4 py-3 grid grid-cols-[1fr_auto_auto] gap-4 items-center">
+            <span class="text-xs text-ink-700">${c.date}</span>
+            ${severityBadge(c)}
+            <button class="text-xs text-brand-600 font-medium inline-flex items-center gap-0.5 hover:underline" data-casualty="${i}">
+              ${expanded ? 'less' : 'more'}
+              <svg class="w-3 h-3 transition-transform" style="transform:${expanded?'rotate(180deg)':'rotate(0deg)'}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+          </div>
+          ${expanded ? `
+          <div class="px-4 pb-3 space-y-1.5 text-xs">
+            <div><span class="font-semibold text-ink-900">Location:</span> <span class="text-ink-700">${c.location}</span></div>
+            <div><span class="font-semibold text-ink-900">Type:</span> <span class="text-ink-700">${c.type}</span></div>
+            <div class="font-semibold text-ink-900">Description:</div>
+            <div class="text-ink-500 leading-relaxed">${c.desc}</div>
+          </div>` : ''}
+        </div>`;
+      }).join('')}
+    </div>`;
+  } else if (state.topRightTab === 'Risk Score') {
+    const rsScore = 32, rs2024 = 6, rs2023 = 4;
+    const rsDelta25 = rsScore - rs2024;
+    const rsDelta24 = rs2024 - rs2023;
+    const rsPct = Math.round(Math.abs(rsDelta25) / rs2024 * 100);
+    const risk = rsScore <= 10
+      ? { label:'GOOD', c:'#16a34a', glow:'#86efac', pillBg:'#dcfce7', pillTxt:'#15803d' }
+      : rsScore <= 25
+      ? { label:'AVERAGE RISK', c:'#f97316', glow:'#fed7aa', pillBg:'#fef3c7', pillTxt:'#b45309' }
+      : { label:'HIGH RISK',    c:'#ef4444', glow:'#fca5a5', pillBg:'#fee2e2', pillTxt:'#dc2626' };
+    // Gauge geometry: 270° arc, start=135° (7:30 o'clock), sweep clockwise
+    const CX=100, CY=108, R=80, RO=95, SW=11;
+    const toRad = d => d * Math.PI / 180;
+    const pt = (a, r) => [+(CX + r*Math.cos(toRad(a))).toFixed(2), +(CY + r*Math.sin(toRad(a))).toFixed(2)];
+    const [sx,sy]   = pt(135, R);   // arc track start
+    const [ex,ey]   = pt(45,  R);   // arc track end (135+270=405≡45°)
+    const [sox,soy] = pt(135, RO);  // outer dot ring start
+    const [eox,eoy] = pt(45,  RO);  // outer dot ring end
+    // Smooth gradient gauge: 54 fine arc segments, each with interpolated color
+    const GAUGE_MAX = 50, GAUGE_START = 135, GAUGE_SWEEP_DEG = 270;
+    const gAngle = s => GAUGE_START + (Math.min(s, GAUGE_MAX) / GAUGE_MAX) * GAUGE_SWEEP_DEG;
+    const arcD = (a1, a2, r) => {
+      const [x1,y1] = pt(a1, r), [x2,y2] = pt(a2, r);
+      const sw = ((a2 - a1) % 360 + 360) % 360;
+      return `M ${x1},${y1} A ${r},${r} 0 ${sw > 180 ? 1 : 0},1 ${x2},${y2}`;
+    };
+    const lerpHex = (c1, c2, t) => {
+      const h = s => parseInt(s, 16);
+      const f = (a, b) => Math.round(h(a) + (h(b) - h(a)) * t).toString(16).padStart(2, '0');
+      return '#' + f(c1.slice(1,3),c2.slice(1,3)) + f(c1.slice(3,5),c2.slice(3,5)) + f(c1.slice(5,7),c2.slice(5,7));
+    };
+    const gaugeColor = s => {
+      // Continuous stops: green(0) → yellow(10) → orange(25) → red(50)
+      const stops = [[0,'#22c55e'],[10,'#eab308'],[25,'#f97316'],[50,'#ef4444']];
+      for (let i = 0; i < stops.length - 1; i++) {
+        if (s <= stops[i+1][0]) {
+          const t = (s - stops[i][0]) / (stops[i+1][0] - stops[i][0]);
+          return lerpHex(stops[i][1], stops[i+1][1], t);
+        }
+      }
+      return stops[stops.length-1][1];
+    };
+    const N = 54;
+    const segPaths = Array.from({length: N}, (_, i) => {
+      const a1 = gAngle(i * GAUGE_MAX / N);
+      const a2 = gAngle((i + 1) * GAUGE_MAX / N);
+      const midScore = (i + 0.5) * GAUGE_MAX / N;
+      const filled = midScore <= rsScore;
+      return `<path d="${arcD(a1, a2, R)}" fill="none" stroke="${filled ? gaugeColor(midScore) : '#e2e8f0'}" stroke-width="${SW}" stroke-linecap="butt"/>`;
+    }).join('');
+    const glowColor = rsScore <= 10 ? '#86efac' : rsScore <= 25 ? '#fcd34d' : '#fca5a5';
+    const fillTipA = gAngle(Math.min(rsScore, GAUGE_MAX));
+    const fillTipB = gAngle(Math.max(0, Math.min(rsScore, GAUGE_MAX) - GAUGE_MAX * 0.08));
+    const glowPath = rsScore > 0 ? `<path d="${arcD(fillTipB, fillTipA, R)}" fill="none" stroke="${glowColor}" stroke-width="${SW + 8}" stroke-linecap="round" opacity="0.3"/>` : '';
+    body = `
+    <div style="padding:12px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <!-- Gauge -->
+        <div style="background:#f8fafc;border-radius:12px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;">
+          <div style="position:relative;width:100%;max-width:185px;">
+            <svg viewBox="0 0 200 192" style="width:100%;height:auto;overflow:visible;" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <radialGradient id="rsGaugeGlow" cx="50%" cy="55%" r="42%">
+                  <stop offset="0%" stop-color="${risk.glow}" stop-opacity="0.55"/>
+                  <stop offset="100%" stop-color="${risk.glow}" stop-opacity="0"/>
+                </radialGradient>
+              </defs>
+              <!-- Soft glow behind fill -->
+              <ellipse cx="100" cy="108" rx="70" ry="60" fill="url(#rsGaugeGlow)"/>
+              <!-- Outer dotted ring arc (270°) -->
+              <path d="M ${sox},${soy} A ${RO},${RO} 0 1,1 ${eox},${eoy}"
+                fill="none" stroke="#dde4ef" stroke-width="1.5"
+                stroke-dasharray="3 8.2" stroke-linecap="round"/>
+              <!-- Glow at fill tip -->
+              ${glowPath}
+              <!-- Smooth gradient fill segments (grey when unfilled) -->
+              ${segPaths}
+              <!-- Score number -->
+              <text x="100" y="122" text-anchor="middle" font-size="52" font-weight="800" fill="#0f172a" font-family="Inter,sans-serif">${rsScore}</text>
+            </svg>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;margin-top:-14px;margin-bottom:7px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="${risk.c}" stroke-width="2.5" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.8" fill="${risk.c}"/></svg>
+            <span style="font-size:10px;font-weight:700;color:${risk.c};letter-spacing:0.06em;">${risk.label}</span>
+          </div>
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px;text-align:center;width:100%;">
+            <div style="display:flex;align-items:center;justify-content:center;gap:3px;color:${risk.c};font-weight:700;font-size:13px;">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+              +${rsDelta25} (+${rsPct}%)
+            </div>
+            <div style="font-size:10px;color:#64748b;margin-top:1px;">vs 2024</div>
+          </div>
+        </div>
+        <!-- Year comparisons -->
+        <div style="background:#f8fafc;border-radius:12px;padding:12px 8px;display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:start;">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+            <span style="background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:999px;">2025</span>
+            <div style="font-size:9px;color:#64748b;text-align:center;line-height:1.4;">Avg. Risk Score</div>
+            <div style="font-size:34px;font-weight:800;color:${risk.c};line-height:1;">${rsScore}</div>
+            <div style="background:${risk.pillBg};color:${risk.pillTxt};font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;display:flex;align-items:center;gap:2px;white-space:nowrap;">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+              + ${rsDelta25}
+            </div>
+            <div style="font-size:9px;color:#64748b;">vs 2024</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+            <span style="background:#2563eb;color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:999px;">2024</span>
+            <div style="font-size:9px;color:#64748b;text-align:center;line-height:1.4;">Avg. Risk Score</div>
+            <div style="font-size:34px;font-weight:800;color:#0f172a;line-height:1;">${rs2024}</div>
+            <div style="background:#dbeafe;color:#1d4ed8;font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;display:flex;align-items:center;gap:2px;white-space:nowrap;">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+              + ${rsDelta24}
+            </div>
+            <div style="font-size:9px;color:#64748b;">vs 2023</div>
+          </div>
+        </div>
+      </div>
+      <!-- Risk Level Guide -->
+      <div>
+        <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:7px;">Risk Level Guide</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:8px 7px;">
+            <div style="display:flex;align-items:center;gap:5px;margin-bottom:5px;">
+              <div style="width:26px;height:26px;background:#dcfce7;border-radius:999px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="12" height="12" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <div style="min-width:0;flex:1;">
+                <div style="font-size:11px;font-weight:700;color:#16a34a;">Good</div>
+                <div style="font-size:9px;color:#64748b;">0 – 10</div>
+              </div>
+              <div style="font-size:13px;font-weight:800;color:#0f172a;flex-shrink:0;">14%</div>
+            </div>
+            <div style="height:4px;background:#e2e8f0;border-radius:999px;overflow:hidden;"><div style="width:14%;height:100%;background:#16a34a;border-radius:999px;"></div></div>
+          </div>
+          <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:8px 7px;">
+            <div style="display:flex;align-items:center;gap:5px;margin-bottom:5px;">
+              <div style="width:26px;height:26px;background:#fef3c7;border-radius:999px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="12" height="12" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16" stroke-width="3"/></svg>
+              </div>
+              <div style="min-width:0;flex:1;">
+                <div style="font-size:11px;font-weight:700;color:#d97706;">Average</div>
+                <div style="font-size:9px;color:#64748b;">10 – 25</div>
+              </div>
+              <div style="font-size:13px;font-weight:800;color:#0f172a;flex-shrink:0;">55%</div>
+            </div>
+            <div style="height:4px;background:#e2e8f0;border-radius:999px;overflow:hidden;"><div style="width:55%;height:100%;background:#f59e0b;border-radius:999px;"></div></div>
+          </div>
+          <div style="background:#fff1f2;border:1px solid #fecdd3;border-radius:10px;padding:8px 7px;">
+            <div style="display:flex;align-items:center;gap:5px;margin-bottom:5px;">
+              <div style="width:26px;height:26px;background:#fee2e2;border-radius:999px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="12" height="12" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+              </div>
+              <div style="min-width:0;flex:1;">
+                <div style="font-size:10px;font-weight:700;color:#dc2626;white-space:nowrap;">Below Avg.</div>
+                <div style="font-size:9px;color:#64748b;">25 – 100</div>
+              </div>
+              <div style="font-size:13px;font-weight:800;color:#0f172a;flex-shrink:0;">31%</div>
+            </div>
+            <div style="height:4px;background:#e2e8f0;border-radius:999px;overflow:hidden;"><div style="width:31%;height:100%;background:#ef4444;border-radius:999px;"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+  
+  return `
+  <div class="bg-white rounded-lg border border-ink-200 shadow-card flex flex-col h-full">
+    <div class="px-4 py-3 border-b border-ink-200">
+      ${tabs(topRightTabs, state.topRightTab, 'data-top-right-tab', true)}
+    </div>
+    ${body}
+  </div>`;
+}
+
+function InspectionTable() {
+  const sortHead = (label) => `
+  <button class="inline-flex items-center gap-1 text-[11px] font-semibold tracking-wider uppercase text-ink-500 hover:text-ink-700">
+    ${label}
+    <svg viewBox="0 0 24 24" class="h-3 w-3 text-ink-400" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 9l4-4 4 4M8 15l4 4 4-4"/></svg>
+  </button>`;
+  
+  return `
+  <div class="bg-white rounded-lg border border-ink-200 shadow-card overflow-hidden">
+    <div class="px-4 py-3 border-b border-ink-200 flex gap-2 overflow-x-auto scroll-thin">
+      ${iconTabs([
+        { k:'Inspection Data', icon:'clipboard' },
+        { k:'Associations', icon:'users' },
+        { k:'Sanction Compliance', icon:'shield' },
+        { k:'Ship-To-Ship', icon:'anchor' },
+        { k:'Suspicious Activity', icon:'alertTri' },
+      ], state.sectionTab, 'data-section-tab')}
+    </div>
+    <div class="overflow-x-auto">
+      ${state.sectionTab === 'Associations' ? `
+      <table class="w-full text-xs min-w-[900px]">
+        <thead class="bg-ink-50">
+          <tr>
+            <th class="px-3 py-2 text-left">${sortHead('Association Type')}</th>
+            <th class="px-3 py-2 text-left">${sortHead('Entity Name')}</th>
+            <th class="px-3 py-2 text-left">${sortHead('Risk Category')}</th>
+            <th class="px-3 py-2 text-left">${sortHead('Jurisdiction')}</th>
+            <th class="px-3 py-2 text-left">${sortHead('Status')}</th>
+            <th class="px-3 py-2 text-right">${sortHead('Confidence')}</th>
+            <th class="px-3 py-2 text-right">${sortHead('Last Updated')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${ASSOCIATIONS.map((r, i) => {
+            const toneMap = { danger:'bg-red-100 text-red-700', warning:'bg-amber-100 text-amber-700', info:'bg-blue-100 text-blue-700', neutral:'bg-ink-100 text-ink-600', amber:'bg-yellow-100 text-yellow-700' };
+            const tone = toneMap[r.statusTone] || toneMap.neutral;
+            return `
+            <tr class="${i%2===0?'bg-white':'bg-ink-50'} hover:bg-brand-50 border-b border-ink-100 last:border-0">
+              <td class="px-3 py-2 font-semibold text-ink-900">${r.type}</td>
+              <td class="px-3 py-2 text-ink-700">${r.entity}</td>
+              <td class="px-3 py-2 text-ink-700">${r.risk}</td>
+              <td class="px-3 py-2 text-ink-700">${r.jurisdiction}</td>
+              <td class="px-3 py-2"><span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${tone}">${r.status}</span></td>
+              <td class="px-3 py-2 text-right font-semibold text-ink-900">${r.confidence}%</td>
+              <td class="px-3 py-2 text-right text-ink-600">${r.updated}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>` : state.sectionTab === 'Sanction Compliance' ? `
+      <table class="w-full text-xs min-w-[800px]">
+        <thead class="bg-ink-50">
+          <tr>
+            <th class="px-3 py-2 text-left">${sortHead('Relationship')}</th>
+            <th class="px-3 py-2 text-left">${sortHead('Name')}</th>
+            <th class="px-3 py-2 text-center">${sortHead('OFAC List')}</th>
+            <th class="px-3 py-2 text-center">${sortHead('UN List')}</th>
+            <th class="px-3 py-2 text-center">${sortHead('EU List')}</th>
+            <th class="px-3 py-2 text-center">${sortHead('Australia List')}</th>
+            <th class="px-3 py-2 text-center">${sortHead('OFSI List')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${SANCTION_COMPLIANCE.map((r, i) => {
+            const okBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-green-50 text-green-700 border border-green-200"><span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>Ok</span>`;
+            return `
+            <tr class="${i%2===0?'bg-white':'bg-ink-50'} hover:bg-brand-50 border-b border-ink-100 last:border-0">
+              <td class="px-3 py-2 text-ink-700">${r.relationship}</td>
+              <td class="px-3 py-2 text-ink-900 font-medium">${r.name}</td>
+              <td class="px-3 py-2 text-center">${okBadge}</td>
+              <td class="px-3 py-2 text-center">${okBadge}</td>
+              <td class="px-3 py-2 text-center">${okBadge}</td>
+              <td class="px-3 py-2 text-center">${okBadge}</td>
+              <td class="px-3 py-2 text-center">${okBadge}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>` : state.sectionTab === 'Ship-To-Ship' ? `
+      <table class="w-full text-xs min-w-[1100px]">
+        <thead class="bg-ink-50">
+          <tr>
+            <th class="px-3 py-2 text-left">${sortHead('Vessel(s)')}</th>
+            <th class="px-3 py-2 text-left">${sortHead('Compliance')}</th>
+            <th class="px-3 py-2 text-left">${sortHead('Draught')}</th>
+            <th class="px-3 py-2 text-left">${sortHead('Destination')}</th>
+            <th class="px-3 py-2 text-left">${sortHead('STS Region')}</th>
+            <th class="px-3 py-2 text-center">${sortHead('Ports')}</th>
+            <th class="px-3 py-2 text-left">${sortHead('STS Start')}</th>
+            <th class="px-3 py-2 text-left">${sortHead('STS End')}</th>
+            <th class="px-3 py-2 text-left">${sortHead('STS Duration')}</th>
+            <th class="px-3 py-2 text-left">${sortHead('Actions')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${STS_DATA.map(r => {
+            const border = r.highlight === 'red' ? 'border-l-2 border-l-red-400 bg-red-50' : r.highlight === 'orange' ? 'border-l-2 border-l-orange-400 bg-orange-50' : '';
+            const okBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-green-700"><span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>Ok</span>`;
+            const sanctionBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-red-700"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>Sanctioned <svg class="w-3 h-3 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15" stroke="currentColor" stroke-width="2"/></svg></span>`;
+            const warnBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-green-700"><span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>Ok <svg class="w-3 h-3 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg></span>`;
+            const compBadge = (c) => c === 'sanctioned' ? sanctionBadge : c === 'ok-warn' ? warnBadge : okBadge;
+            const vesselIcon = `<svg class="w-3.5 h-3.5 text-brand-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 17l2-8h10l2 8M3 17h18M12 9V3"/></svg>`;
+            const arrowIcon = `<svg class="w-2.5 h-2.5 text-ink-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7M5 9l7-7 7 7"/></svg>`;
+            return `
+            <tr class="border-b border-ink-100 last:border-0 ${border}">
+              <td class="px-3 py-2">
+                <div class="flex flex-col gap-1.5">
+                  <div class="flex items-center gap-1.5 font-semibold text-brand-600">${vesselIcon}${r.v1.name}</div>
+                  <div class="flex items-center gap-1.5 text-ink-500">${arrowIcon}${r.v2.name}</div>
+                </div>
+              </td>
+              <td class="px-3 py-2">
+                <div class="flex flex-col gap-1.5">
+                  <div>${compBadge(r.v1.compliance)}</div>
+                  <div>${compBadge(r.v2.compliance)}</div>
+                </div>
+              </td>
+              <td class="px-3 py-2">
+                <div class="flex flex-col gap-1.5 text-ink-700">
+                  <div>${r.v1.draught}</div>
+                  <div>${r.v2.draught}</div>
+                </div>
+              </td>
+              <td class="px-3 py-2">
+                <div class="flex flex-col gap-1.5 text-ink-700">
+                  <div>${r.v1.dest}</div>
+                  <div>${r.v2.dest}</div>
+                </div>
+              </td>
+              <td class="px-3 py-2 text-ink-700 align-middle">${r.region}</td>
+              <td class="px-3 py-2 text-center text-ink-500 align-middle">${r.ports}</td>
+              <td class="px-3 py-2 text-ink-700 align-middle">${r.start}</td>
+              <td class="px-3 py-2 text-ink-700 align-middle">${r.end}</td>
+              <td class="px-3 py-2 font-medium text-ink-900 align-middle">${r.duration}</td>
+              <td class="px-3 py-2 align-middle">
+                <button class="inline-flex items-center gap-1 px-3 py-1.5 border border-brand-600 text-brand-600 text-[11px] font-semibold rounded-lg hover:bg-brand-50 transition-colors">
+                  Create Analysis <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6"/></svg>
+                </button>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>` : state.sectionTab === 'Suspicious Activity' ? `
+      <table class="w-full text-xs min-w-[900px]">
+        <thead class="bg-ink-50">
+          <tr>
+            <th class="px-3 py-2 text-left">${sortHead('Start Time')}</th>
+            <th class="px-3 py-2 text-left">${sortHead('End Time')}</th>
+            <th class="px-3 py-2 text-left">${sortHead('Duration')}</th>
+            <th class="px-3 py-2 text-left">${sortHead('Alert Type')}</th>
+            <th class="px-3 py-2 text-left">${sortHead('Regions')}</th>
+            <th class="px-3 py-2 text-left">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${SUSPICIOUS_ACTIVITY.map((r, i) => {
+            const flagIcon = `<svg class="w-3 h-3 text-red-400 inline ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15" stroke="currentColor" stroke-width="2"/></svg>`;
+            return `
+            <tr class="border-b border-ink-100 last:border-0 hover:bg-ink-50">
+              <td class="px-3 py-3 text-ink-700">${r.start}</td>
+              <td class="px-3 py-3 text-ink-700">${r.end}</td>
+              <td class="px-3 py-3 text-ink-700">${r.duration}</td>
+              <td class="px-3 py-3"><span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold ${r.alertColor}">${r.alertType}</span></td>
+              <td class="px-3 py-3 text-ink-700">${r.region}${r.regionFlag ? flagIcon : ''}</td>
+              <td class="px-3 py-3">
+                <div class="text-ink-700">${r.desc}</div>
+                <button class="mt-1 inline-flex items-center gap-0.5 text-brand-600 font-semibold text-[11px] hover:underline">
+                  Show more
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>` : `
+      <table class="w-full text-xs min-w-[1100px]">
+        <thead class="bg-ink-50">
+          <tr>
+            <th class="px-3 py-2 text-left">${sortHead('Date')}</th>
+            <th class="px-3 py-2 text-left">${sortHead('Country')}</th>
+            <th class="px-3 py-2 text-left">${sortHead('Port')}</th>
+            <th class="px-3 py-2 text-left">${sortHead('PSC Organization')}</th>
+            <th class="px-3 py-2 text-left">${sortHead('Type of Inspection')}</th>
+            <th class="px-3 py-2 text-right">${sortHead('Defects')}</th>
+            <th class="px-3 py-2 text-right">${sortHead('Detained')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${INSPECTIONS.map((r, i) => `
+            <tr class="${i%2===0?'bg-white':'bg-ink-50'} hover:bg-brand-50 border-b border-ink-100 last:border-0">
+              <td class="px-3 py-2 text-ink-700">${r.date}</td>
+              <td class="px-3 py-2">
+                <div class="flex items-center gap-2">
+                  ${flag(r.cc)}
+                  <span class="text-ink-700">${r.country}</span>
+                </div>
+              </td>
+              <td class="px-3 py-2 text-ink-700">${r.port}${r.portFlag ? ` ${flag(r.portFlag)}` : ''}</td>
+              <td class="px-3 py-2 text-ink-700">${r.psc}</td>
+              <td class="px-3 py-2 text-ink-700">${r.type}</td>
+              <td class="px-3 py-2 text-right text-ink-700">${r.defects}</td>
+              <td class="px-3 py-2 text-right text-ink-700">${r.detained}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`}
+    </div>
+    <div class="ds-pagination-wrap">
+      <span>Showing 1–5 of 6 results</span>
+      <div class="flex items-center gap-4">
+        <label class="flex items-center gap-1.5">
+          Rows per page
+          <select class="ml-1 h-7 border border-ink-200 rounded-md px-2 text-xs text-ink-700" style="font-size:13px;">
+            <option>5</option>
+            <option>10</option>
+            <option>25</option>
+          </select>
+        </label>
+        <nav class="ds-pagination" aria-label="Table pagination">
+          <button class="ds-page-btn" disabled aria-label="Previous page">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <button class="ds-page-btn is-active" aria-current="page">1</button>
+          <button class="ds-page-btn">2</button>
+          <button class="ds-page-btn" aria-label="Next page">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </div>`;
+}
+
+function EnvironmentalRatingCard() {
+  const bottomTabs = [
+    { k:'Environmental Rating', icon:'leaf' },
+    { k:'Additional Details', icon:'fileText' },
+    { k:'Historical Details', icon:'clock' },
+    { k:'Full Vessel Details', icon:'anchor' },
+  ];
+  
+  const gradeBox = `
+  <div class="flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-400 to-green-500 rounded-lg mb-3">
+    <span class="text-4xl font-bold text-white">${ENV_RATING.grade}</span>
+  </div>`;
+
+  const aspectBadge = (item) => {
+    const bg = item.color;
+    return `
+    <div class="flex items-center justify-between py-1.5">
+      <span class="text-xs text-ink-700">${item.label}</span>
+      <div class="flex items-center gap-2">
+        ${item.icon ? `<svg class="w-3.5 h-3.5 text-ink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>` : ''}
+        <span class="px-2 py-0.5 rounded text-xs font-bold text-white" style="background:${bg}">${item.badge}</span>
+      </div>
+    </div>`;
+  };
+
+  return `
+  <div class="bg-white rounded-lg border border-ink-200 shadow-card">
+    <div class="px-4 py-3 border-b border-ink-200 flex gap-2 overflow-x-auto scroll-thin">
+      ${iconTabs(bottomTabs, state.bottomLeftTab, 'data-bottom-left-tab')}
+    </div>
+    <div class="p-4">
+      <div class="text-sm font-semibold text-ink-900 mb-4">Environmental Rating 2025Q4</div>
+      <div class="grid grid-cols-3 gap-8">
+        <!-- Left Column: Operational -->
+        <div>
+          <div class="text-xs font-semibold text-ink-900 mb-3">Operational - CII (Carbon Intensity Fleet Index)</div>
+          ${gradeBox}
+          <div class="space-y-2">
+            ${ENV_RATING.operational.map(item => `
+              <div class="flex justify-between text-xs">
+                <span class="text-ink-700">${item.label}</span>
+                <span class="${item.label.includes('Attained') ? 'text-red-600 font-semibold' : 'text-ink-900 font-medium'}">${item.value}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        
+        <!-- Middle Column: Operational Aspect -->
+        <div>
+          <div class="text-xs font-semibold text-ink-900 mb-3">Operational Aspect</div>
+          <div class="space-y-1">
+            ${ENV_RATING.operationalAspect.map(aspectBadge).join('')}
+          </div>
+        </div>
+        
+        <!-- Right Column: Technical Aspect -->
+        <div>
+          <div class="text-xs font-semibold text-ink-900 mb-3">Technical Aspect</div>
+          <div class="space-y-2">
+            ${ENV_RATING.technical.slice(0,5).map(item => `
+              <div class="flex justify-between items-start text-xs">
+                <div class="flex-1">
+                  <div class="flex items-center justify-between mb-0.5">
+                    <span class="text-ink-700">${item.label}</span>
+                    <span class="${item.label.includes('Attained') ? 'text-red-600 font-semibold' : 'text-ink-900 font-medium'}">${item.value}</span>
+                  </div>
+                  ${item.sub ? `<div class="text-[10px] text-ink-500 flex justify-between"><span>${item.sub.split('\n')[0]}</span>${item.pct ? `<span class="font-semibold text-ink-900">${item.pct}</span>` : ''}</div>` : ''}
+                  ${item.sub && item.sub.includes('\n') ? `<div class="text-[10px] text-ink-500 flex justify-between"><span>${item.sub.split('\n')[1]}</span>${item.pct2 ? `<span class="font-semibold text-ink-900">${item.pct2}</span>` : ''}</div>` : ''}
+                </div>
+              </div>
+            `).join('')}
+            <div class="pt-2 border-t border-ink-100 space-y-1.5">
+              ${ENV_RATING.compliance.map(item => `
+                <div class="flex justify-between text-xs">
+                  <span class="text-ink-700">${item.label}</span>
+                  <div class="flex items-center gap-2">
+                    <span class="text-ink-600">${item.value}</span>
+                    ${item.pct ? `<span class="font-semibold text-ink-900">${item.pct}</span>` : ''}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function VesselTrackingCard() {
+  return `
+  <div id="vessel-tracking-card" class="bg-white rounded-lg border border-ink-200 shadow-card flex flex-col h-full">
+    <div class="px-4 py-3 border-b border-ink-200 flex items-center gap-2">
+      <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v4m0 12v4M2 12h4m12 0h4m-4.8 4.8l2.8 2.8M4.2 4.2l2.8 2.8m0 9.6l-2.8 2.8m12.8-12.8l2.8-2.8"/></svg>
+      <span class="text-sm font-semibold text-ink-900">Vessel Tracking</span>
+    </div>
+    <div id="map-wrapper" class="flex-1 relative" style="min-height:420px;">
+      <div id="vessel-map"></div>
+      <!-- Fullscreen button — top-left -->
+      <button id="map-fullscreen" class="map-btn" title="Toggle fullscreen" style="position:absolute;top:12px;left:12px;z-index:400;">
+        <svg id="fs-expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        <svg id="fs-collapse-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="display:none"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 0 2-2h3M3 16h3a2 2 0 0 0 2 2v3"/></svg>
+      </button>
+      <!-- Right-side tools — top-right -->
+      <div style="position:absolute;top:12px;right:12px;z-index:400;display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
+        <div style="position:relative;">
+          <button id="map-layers-btn" class="map-btn" title="Map type">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </button>
+          <div id="map-layers-menu" class="hidden" style="position:absolute;top:0;right:calc(100% + 8px);width:148px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 4px 12px rgba(15,23,42,.12);overflow:hidden;padding:4px 0;">
+            ${[{id:'satellite',label:'Satellite'},{id:'street',label:'Street'},{id:'dark',label:'Dark'},{id:'light',label:'Light'}].map(o => `
+            <button data-vessel-map-type="${o.id}" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;font-size:13px;color:#334155;background:transparent;border:0;cursor:pointer;text-align:left;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+              <span>${o.label}</span>
+              <span data-check style="color:#2563eb;opacity:0;"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 6L9 17l-5-5"/></svg></span>
+            </button>`).join('')}
+          </div>
+        </div>
+      </div>
+      <!-- Timeline overlay -->
+      <div class="timeline-overlay">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:11px;color:#94a3b8;white-space:nowrap;">2025-10-07</span>
+          <div class="timeline-track" id="timeline-slider">
+            <div class="timeline-fill" id="timeline-fill"></div>
+            <div class="timeline-thumb" id="timeline-thumb"></div>
+          </div>
+          <span style="font-size:11px;color:#94a3b8;white-space:nowrap;">2025-10-09</span>
+          <button style="width:28px;height:28px;background:rgba(255,255,255,.12);border:0;border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#94a3b8;flex-shrink:0;" title="Pick date">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke-linecap="round"/><path stroke-linecap="round" d="M16 2v4M8 2v4M3 10h18"/></svg>
+          </button>
+        </div>
+        <div id="timeline-timestamp" style="font-size:11px;color:#94a3b8;text-align:center;margin-top:5px;">Tue, 07 Oct 2025 09:00:00 GMT</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function HistoricalEventsCard() {
+  return `
+  <div class="bg-white rounded-lg border border-ink-200 shadow-card flex flex-col h-full">
+    <div class="px-4 py-3 border-b border-ink-200 flex gap-2">
+      ${iconTabs([
+        { k:'Historical Events', icon:'clock' },
+        { k:'Alerts', icon:'bell' },
+      ], 'Historical Events', 'data-bottom-right-tab')}
+    </div>
+    <div class="px-4 py-3 border-b border-ink-200">
+      <div class="flex items-center gap-2 text-xs">
+        <span class="text-ink-500">From</span>
+        <input type="text" value="2024/01/01" class="px-2 py-1.5 border border-ink-200 rounded-md text-ink-700 text-xs" />
+        <svg class="w-4 h-4 text-ink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        <span class="text-ink-500">To</span>
+        <input type="text" value="2024/01/01" class="px-2 py-1.5 border border-ink-200 rounded-md text-ink-700 text-xs" />
+      </div>
+    </div>
+    <div class="px-4 py-3 border-b border-ink-200">
+      <div class="relative">
+        <input type="search" placeholder="Search Historical events..." class="w-full px-3 py-2 pr-8 border border-ink-200 rounded-md text-xs" />
+        <svg class="w-4 h-4 text-ink-400 absolute right-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35"/></svg>
+      </div>
+    </div>
+    <div class="flex-1 overflow-y-auto scroll-thin">
+      ${EVENTS.map(e => `
+        <div class="p-3 border-b border-ink-100 hover:bg-ink-50">
+          <div class="flex items-start gap-2 mb-1">
+            <svg class="w-4 h-4 text-blue-600 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="white"/></svg>
+            <div class="flex-1 min-w-0">
+              <div class="text-xs text-ink-500 mb-1">${e.ts}</div>
+              <div class="text-xs font-semibold text-ink-900 mb-1">${e.title}</div>
+              <div class="text-xs text-ink-700 leading-relaxed"><span class="font-semibold">Details:</span> ${e.detail}</div>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="px-4 py-3 border-t border-ink-200">
+      <button class="w-full py-2 text-sm font-semibold text-brand-600 border border-ink-200 rounded-lg hover:bg-brand-50 transition-colors inline-flex items-center justify-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        Download Historical Events
+      </button>
+    </div>
+  </div>`;
+}
+
+/* ----------- MAP ----------- */
+let map = null;
+let tileLayer = null;
+let currentMapType = 'satellite';
+
+const MAP_TYPES = {
+  satellite: { url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', sub:'abc' },
+  street:    { url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', sub:'abcd' },
+  dark:      { url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', sub:'abcd' },
+  light:     { url:'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', sub:'abcd' },
+};
+
+function setMapType(type) {
+  if (!map || !MAP_TYPES[type]) return;
+  currentMapType = type;
+  if (tileLayer) map.removeLayer(tileLayer);
+  const t = MAP_TYPES[type];
+  tileLayer = L.tileLayer(t.url, { maxZoom:19, subdomains: t.sub || 'abc', attribution:'' }).addTo(map);
+  document.querySelectorAll('[data-vessel-map-type]').forEach(b => {
+    b.querySelector('[data-check]').style.opacity = b.dataset.vesselMapType === type ? '1' : '0';
+  });
+}
+function initMap() {
+  const c = document.getElementById('vessel-map');
+  if (!c) return;
+
+  // If map exists but its container was torn down by a re-render, destroy it first
+  if (map) {
+    if (!document.body.contains(map.getContainer())) {
+      map.remove();
+      map = null;
+    } else {
+      map.invalidateSize();
+      wireMapControls();
+      return;
+    }
+  }
+
+  map = L.map(c, {
+    center: [35, 25],
+    zoom: 5,
+    zoomControl: true,
+    scrollWheelZoom: true,
+    attributionControl: false,
+  });
+
+  setMapType('satellite');
+
+  // Route polyline (example path: Suez → Med)
+  const route = [
+    [29.9, 32.6],   // Suez Canal
+    [31.5, 29.9],   // Alexandria
+    [33.5, 27.2],
+    [35.5, 24.0],   // current position
+    [37.0, 21.5],
+    [38.2, 20.5],   // Crete area
+  ];
+  L.polyline(route, { color:'#2563eb', weight:2.5, opacity:0.7, dashArray:'6 4' }).addTo(map);
+
+  // Vessel marker — stored globally so wireTimeline can move it
+  const vesselIcon = L.divIcon({
+    className: '',
+    html: `<div style="width:14px;height:14px;background:#ef4444;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(239,68,68,.6)"></div>`,
+    iconSize: [14, 14],
+    iconAnchor: [7, 7],
+  });
+  window._vesselMarker = L.marker([35.5, 24.0], { icon: vesselIcon })
+    .addTo(map)
+    .bindPopup('<b>FRESH BREEZE</b><br>Lat 35.5° N &nbsp;Lon 24.0° E<br>Speed: 8.2 kts');
+  window._vesselRoute = route;
+
+  // Origin / destination pins
+  const pinIcon = (color) => L.divIcon({
+    className: '',
+    html: `<div style="width:10px;height:10px;background:${color};border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div>`,
+    iconSize: [10, 10], iconAnchor: [5, 5],
+  });
+  L.marker([29.9, 32.6], { icon: pinIcon('#94a3b8') }).addTo(map).bindPopup('Suez Canal');
+  L.marker([38.2, 20.5], { icon: pinIcon('#10b981') }).addTo(map).bindPopup('Hamburg (via Med)');
+
+  // Force a size recalculation once layout is stable
+  setTimeout(() => map && map.invalidateSize(), 200);
+
+  wireMapControls();
+}
+
+function wireMapControls() {
+  const fsBtnEl = document.getElementById('map-fullscreen');
+  const cardEl  = document.getElementById('vessel-tracking-card');
+  const expandIcon   = document.getElementById('fs-expand-icon');
+  const collapseIcon = document.getElementById('fs-collapse-icon');
+  const layersBtn  = document.getElementById('map-layers-btn');
+  const layersMenu = document.getElementById('map-layers-menu');
+
+  if (fsBtnEl && cardEl) {
+    fsBtnEl.onclick = () => {
+      const isFs = cardEl.classList.toggle('is-fullscreen');
+      if (expandIcon)   expandIcon.style.display   = isFs ? 'none' : '';
+      if (collapseIcon) collapseIcon.style.display = isFs ? ''     : 'none';
+      setTimeout(() => map && map.invalidateSize(), 80);
+    };
+  }
+
+  if (layersBtn && layersMenu) {
+    layersBtn.onclick = (e) => { e.stopPropagation(); layersMenu.classList.toggle('hidden'); };
+    layersMenu.querySelectorAll('[data-vessel-map-type]').forEach(btn => {
+      btn.onclick = (e) => { e.stopPropagation(); setMapType(btn.dataset.vesselMapType); layersMenu.classList.add('hidden'); };
+    });
+    document.addEventListener('click', () => layersMenu.classList.add('hidden'));
+  }
+
+  // Sync check marks
+  setMapType(currentMapType);
+}
+
+function wireTimeline() {
+  const slider = document.getElementById('timeline-slider');
+  const fill   = document.getElementById('timeline-fill');
+  const thumb  = document.getElementById('timeline-thumb');
+  const tsEl   = document.getElementById('timeline-timestamp');
+  if (!slider || !fill || !thumb) return;
+
+  const startMs = new Date('2025-10-07T09:00:00Z').getTime();
+  const endMs   = new Date('2025-10-09T09:00:00Z').getTime();
+
+  function interpolateRoute(t) {
+    const route = window._vesselRoute;
+    if (!route) return null;
+    t = Math.max(0, Math.min(1, t));
+    const total = route.length - 1;
+    const pos   = t * total;
+    const idx   = Math.floor(pos);
+    const frac  = pos - idx;
+    const a = route[Math.min(idx, route.length - 1)];
+    const b = route[Math.min(idx + 1, route.length - 1)];
+    return [a[0] + (b[0] - a[0]) * frac, a[1] + (b[1] - a[1]) * frac];
+  }
+
+  function formatTs(t) {
+    const d = new Date(startMs + t * (endMs - startMs));
+    return d.toUTCString().replace('GMT', 'GMT');
+  }
+
+  const updatePos = (pct) => {
+    state.timelinePos = Math.max(0, Math.min(1, pct));
+    fill.style.width  = (state.timelinePos * 100) + '%';
+    thumb.style.left  = (state.timelinePos * 100) + '%';
+    if (tsEl) tsEl.textContent = formatTs(state.timelinePos);
+    // Move vessel marker
+    if (window._vesselMarker) {
+      const pos = interpolateRoute(state.timelinePos);
+      if (pos) window._vesselMarker.setLatLng(pos);
+    }
+  };
+
+  updatePos(state.timelinePos);
+
+  const onDrag = (clientX) => {
+    const rect = slider.getBoundingClientRect();
+    updatePos((clientX - rect.left) / rect.width);
+  };
+
+  slider.addEventListener('mousedown', (e) => {
+    onDrag(e.clientX);
+    const onMove = (e) => onDrag(e.clientX);
+    const onUp   = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  // Touch support
+  slider.addEventListener('touchstart', (e) => {
+    onDrag(e.touches[0].clientX);
+    const onMove = (e) => onDrag(e.touches[0].clientX);
+    const onEnd  = () => { slider.removeEventListener('touchmove', onMove); slider.removeEventListener('touchend', onEnd); };
+    slider.addEventListener('touchmove', onMove);
+    slider.addEventListener('touchend', onEnd);
+  }, { passive: true });
+}
+
+/* ----------- CONTENT ----------- */
+function Content() {
+  return `
+  <div class="px-4 lg:px-6 py-4 space-y-3">
+    <section class="grid grid-cols-1 md:grid-cols-12 gap-3">
+      <div class="md:col-span-4" style="height:440px;">${VesselDetailsCard()}</div>
+      <div class="md:col-span-2" style="height:440px;">${PolicyDetailsCard()}</div>
+      <div class="md:col-span-2" style="height:440px;">${PortCallsCard()}</div>
+      <div class="md:col-span-4" style="height:440px;">${CasualtyRiskCard()}</div>
+    </section>
+    <section>
+      ${InspectionTable()}
+    </section>
+    <section>
+      ${EnvironmentalRatingCard()}
+    </section>
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-3" style="min-height:500px;">
+      ${HistoricalEventsCard()}
+      ${VesselTrackingCard()}
+    </section>
+  </div>`;
+}
+
+/* ----------- RENDER + WIRING ----------- */
+window.render = function render() {
+  // Tear down Leaflet before replacing the DOM so it can be cleanly re-created
+  if (map) { map.remove(); map = null; }
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col">
+      ${SC.Topbar()}
+      ${Content()}
+    </div>
+    ${SC.TweaksPanel()}
+  `;
+  SC.wireChrome();
+  const wireTab = (attr, stateKey) => {
+    document.querySelectorAll(`[${attr}]`).forEach(b => b.onclick = () => {
+      const v = b.getAttribute(attr);
+      if (state[stateKey] === v) return;
+      state[stateKey] = v;
+      const group = b.closest('.ds-tabs');
+      if (group) {
+        group.querySelectorAll('.ds-tab').forEach(t => t.setAttribute('aria-selected', String(t === b)));
+        positionTabPills();
+        setTimeout(() => render(), 220);
+      } else { render(); }
+    });
+  };
+  wireTab('data-top-tab',         'topTab');
+  wireTab('data-top-right-tab',   'topRightTab');
+  wireTab('data-section-tab',     'sectionTab');
+  wireTab('data-bottom-left-tab', 'bottomLeftTab');
+  // Casualty expand/collapse
+  document.querySelectorAll('[data-casualty]').forEach(btn => {
+    btn.onclick = () => {
+      const i = parseInt(btn.getAttribute('data-casualty'));
+      if (state.casualtyExpanded.has(i)) state.casualtyExpanded.delete(i);
+      else state.casualtyExpanded.add(i);
+      render();
+    };
+  });
+  requestAnimationFrame(positionTabPills);
+  window.addEventListener('resize', positionTabPills, { passive: true });
+  // Inject icons after chrome loads
+  if (window.I) {
+    document.querySelectorAll('[data-icon]').forEach(el => {
+      const iconName = el.getAttribute('data-icon');
+      if (window.I[iconName]) {
+        el.innerHTML = window.I[iconName];
+      }
+    });
+  }
+  setTimeout(initMap, 50);
+  setTimeout(wireTimeline, 100);
+};
+window.render();
+</script>
+<style id="__om-edit-overrides">
+  [data-top-tab="Vessel Details"] > .ds-tab-label { font-size: 12px !important; }
+  [data-top-tab="Company Details"] > .ds-tab-label { font-size: 12px !important; }
+  [data-top-right-tab="Casualty Data"] > .ds-tab-label { font-size: 12px !important; }
+  [data-top-right-tab="Risk Score"] > .ds-tab-label { font-size: 12px !important; }
+</style>
+</body>
+</html>

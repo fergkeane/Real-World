@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Companies — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  .scroll-thin::-webkit-scrollbar{width:5px}.scroll-thin::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
+  /* Table */
+  .co-tbl{width:100%;border-collapse:collapse;min-width:1100px}
+  .co-tbl th{padding:9px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;text-align:left;border-bottom:1px solid #e2e8f0;background:#fff;white-space:nowrap;user-select:none}
+  .co-tbl th.sortable{cursor:pointer}.co-tbl th.sortable:hover{color:#334155}.co-tbl th.sorted{color:#2563eb}
+  .co-tbl td{padding:10px 12px;font-size:13px;color:#334155;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+  .co-tbl tr:last-child td{border-bottom:0}
+  .co-tbl tbody tr:hover td{background:#f8fafc}
+  .co-tbl th:first-child,.co-tbl td:first-child{position:sticky;left:0;z-index:2;background:#fff}
+  .co-tbl th:first-child{z-index:3}
+  .co-tbl tbody tr:hover td:first-child{background:#f8fafc}
+  .co-tbl td:first-child::after,.co-tbl th:first-child::after{content:'';position:absolute;top:0;right:-1px;bottom:0;width:1px;background:linear-gradient(to right,#e2e8f0,transparent)}
+  .co-link{color:#2563eb;font-weight:600;cursor:pointer;text-decoration:none}.co-link:hover{text-decoration:underline;color:#1d4ed8}
+  /* Badges */
+  .tbadge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap;display:inline-block}
+  .tb-shipping   {background:#eff6ff;color:#2563eb}
+  .tb-investment {background:#f0fdf4;color:#16a34a}
+  .tb-energy     {background:#fffbeb;color:#d97706}
+  .tb-conglomerate{background:#faf5ff;color:#7c3aed}
+  .sbadge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;display:inline-block}
+  .sb-active  {background:#f0fdf4;color:#16a34a}
+  .sb-inactive{background:#fef2f2;color:#dc2626}
+  /* Services */
+  .svc-tag{font-size:11px;font-weight:500;padding:1px 6px;border-radius:4px;background:#f1f5f9;color:#475569;display:inline-block;margin:1px 2px 1px 0}
+  .svc-more{font-size:11px;font-weight:600;padding:1px 6px;border-radius:4px;background:#e0e7ff;color:#4f46e5;display:inline-block;margin:1px 0}
+  /* Filter bar */
+  .fbtn{display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 11px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;font-size:12.5px;font-weight:500;color:#334155;cursor:pointer;white-space:nowrap;transition:background .1s,border-color .1s;font-family:inherit}
+  .fbtn:hover{background:#f8fafc;border-color:#cbd5e1}.fbtn.factive{background:#eff6ff;border-color:#bfdbfe;color:#2563eb}
+  .fdrop{position:absolute;top:calc(100% + 5px);left:0;min-width:180px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 8px 24px rgba(15,23,42,.12);z-index:9999;overflow:hidden}
+  .fdrop-item{padding:8px 12px;font-size:13px;color:#334155;cursor:pointer;display:flex;align-items:center;gap:8px}.fdrop-item:hover{background:#f8fafc}.fdrop-item.fsel{color:#2563eb;font-weight:600;background:#eff6ff}
+  /* Pagination / action */
+  .pgbtn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;color:#334155;cursor:pointer;transition:background .1s}
+  .pgbtn:hover:not([disabled]){background:#f1f5f9}.pgbtn[disabled]{opacity:.4;cursor:not-allowed}
+  .actbtn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#fff;color:#94a3b8;cursor:pointer;transition:background .1s,color .1s,border-color .1s}
+  .actbtn:hover{background:#f1f5f9;color:#334155;border-color:#cbd5e1}
+</style>
+</head>
+<body class="bg-slate-100 text-slate-900">
+<div id="app" class="h-screen w-full flex overflow-hidden"></div>
+
+<script>
+window.PAGE = { id:'companies', title:'Companies', crumb:'All Companies' };
+window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "density": "compact",
+  "accent": "blue",
+  "sidebarExpanded": false,
+  "showSparklines": true
+}/*EDITMODE-END*/;
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="shared/chrome.js?v=4"></script>
+<script>
+const SC = window.sharedChrome;
+
+/* ── Data ─────────────────────────────────────────────────────────────────── */
+const COMPANIES = [
+  { name:'Ramous Maritime Company Ltd',    type:'Shipping Company',   country:'Cyprus',           flag:'🇨🇾', hq:'Limassol',    reg:'HE 123456',  fleet:25,  fleetVal:'$1.2B',  fleetM:1200,  services:['Container Shipping','Bulk Cargo'],                    est:1995, employees:450,  status:'Active'   },
+  { name:'Turvalu Naviera S.A.',           type:'Shipping Company',   country:'Panama',           flag:'🇵🇦', hq:'Panama City', reg:'PA-456789',  fleet:8,   fleetVal:'$145M',  fleetM:145,   services:['Container Shipping','General Cargo'],                est:2008, employees:120,  status:'Active'   },
+  { name:'Ship Owner Investment Co.',      type:'Investment Company', country:'Marshall Islands', flag:'🇲🇭', hq:'Majuro',      reg:'MI-789012',  fleet:35,  fleetVal:'$2.8B',  fleetM:2800,  services:['Ship Investment','Fleet Management'],                est:1987, employees:85,   status:'Active'   },
+  { name:'Eternal Light Shipping Limited', type:'Shipping Company',   country:'Panama',           flag:'🇵🇦', hq:'Panama City', reg:'PA-345678',  fleet:12,  fleetVal:'$68M',   fleetM:68,    services:['Vehicle Carriers','RoRo Services'],                  est:2001, employees:200,  status:'Active'   },
+  { name:'Cosco Netherlands Shipping',     type:'Shipping Company',   country:'Netherlands',      flag:'🇳🇱', hq:'Rotterdam',   reg:'NL-567890',  fleet:185, fleetVal:'$12.5B', fleetM:12500, services:['Container Shipping','Terminal Operations'],          est:1978, employees:2500, status:'Active'   },
+  { name:'Shell Canada Limited',           type:'Energy Company',     country:'Canada',           flag:'🇨🇦', hq:'Calgary',     reg:'CA-678901',  fleet:45,  fleetVal:'$3.2B',  fleetM:3200,  services:['Oil Transport','LNG Shipping'],                      est:1954, employees:3200, status:'Active'   },
+  { name:'Nordic Maritime Solutions',      type:'Shipping Company',   country:'Norway',           flag:'🇳🇴', hq:'Oslo',        reg:'NO-789012',  fleet:18,  fleetVal:'$420M',  fleetM:420,   services:['Offshore Support','Subsea Services'],                est:1992, employees:380,  status:'Active'   },
+  { name:'Mediterranean Carriers Ltd',     type:'Shipping Company',   country:'Malta',            flag:'🇲🇹', hq:'Valletta',    reg:'MT-890123',  fleet:22,  fleetVal:'$180M',  fleetM:180,   services:['Ferry Services','Passenger Transport'],              est:1999, employees:650,  status:'Active'   },
+  { name:'Baltic Shipping Enterprises',    type:'Shipping Company',   country:'Latvia',           flag:'🇱🇻', hq:'Riga',        reg:'LV-901234',  fleet:15,  fleetVal:'$95M',   fleetM:95,    services:['Dry Bulk','Forest Products'],                        est:2005, employees:175,  status:'Active'   },
+  { name:'Asian Pacific Maritime Corp',    type:'Conglomerate',       country:'Singapore',        flag:'🇸🇬', hq:'Singapore',   reg:'SG-012345',  fleet:95,  fleetVal:'$4.8B',  fleetM:4800,  services:['Container Shipping','Port Operations','Ship Finance'], est:1982, employees:4200, status:'Active'   },
+  { name:'Meridian Tankers International', type:'Shipping Company',   country:'Greece',           flag:'🇬🇷', hq:'Athens',      reg:'GR-789012',  fleet:28,  fleetVal:'$890M',  fleetM:890,   services:['Crude Oil Transport','Chemical Tankers'],            est:1968, employees:310,  status:'Active'   },
+];
+
+const COMPANY_TYPES = [...new Set(COMPANIES.map(c => c.type))].sort();
+const COUNTRIES     = [...new Set(COMPANIES.map(c => c.country))].sort();
+
+/* ── State ────────────────────────────────────────────────────────────────── */
+let ST = {
+  query:'', filterType:'all', filterCountry:'all', filterStatus:'all',
+  filterFleet:'all', filterEst:'all',
+  sortCol:null, sortDir:'asc',
+  page:1, perPage:10, openDrop:null,
+};
+
+/* ── SVG icons ────────────────────────────────────────────────────────────── */
+const SVG = {
+  search:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+  sliders:   `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>`,
+  chevDown:  `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`,
+  filter:    `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>`,
+  columns:   `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="18"/><rect x="14" y="3" width="7" height="18"/></svg>`,
+  chevLeft:  `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`,
+  chevRight: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`,
+  extLink:   `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`,
+};
+
+function sortIcon(col) {
+  if (ST.sortCol !== col) return `<svg width="9" height="12" viewBox="0 0 9 12" fill="none" style="display:inline-block;margin-left:2px;vertical-align:middle;opacity:.3"><path d="M4.5 1L1.5 4.5h6z" fill="currentColor"/><path d="M4.5 11L1.5 7.5h6z" fill="currentColor"/></svg>`;
+  const up = ST.sortDir === 'asc';
+  return `<svg width="9" height="12" viewBox="0 0 9 12" fill="none" style="display:inline-block;margin-left:2px;vertical-align:middle"><path d="M4.5 1L1.5 4.5h6z" fill="${up ? '#2563eb' : '#cbd5e1'}"/><path d="M4.5 11L1.5 7.5h6z" fill="${!up ? '#2563eb' : '#cbd5e1'}"/></svg>`;
+}
+
+function typeBadge(type) {
+  const key = {'Shipping Company':'shipping','Investment Company':'investment','Energy Company':'energy','Conglomerate':'conglomerate'}[type] || 'shipping';
+  return `<span class="tbadge tb-${key}">${type}</span>`;
+}
+
+function activeDot() {
+  return `<span style="width:6px;height:6px;border-radius:50%;background:#2563eb;display:inline-block;margin-left:2px;vertical-align:middle;flex-shrink:0"></span>`;
+}
+
+/* ── Filtering & sorting ──────────────────────────────────────────────────── */
+function getFiltered() {
+  let rows = [...COMPANIES];
+  const q = ST.query.trim().toLowerCase();
+  if (q) rows = rows.filter(c =>
+    c.name.toLowerCase().includes(q) || c.hq.toLowerCase().includes(q) || c.reg.toLowerCase().includes(q)
+  );
+  if (ST.filterType    !== 'all') rows = rows.filter(c => c.type    === ST.filterType);
+  if (ST.filterCountry !== 'all') rows = rows.filter(c => c.country === ST.filterCountry);
+  if (ST.filterStatus  !== 'all') rows = rows.filter(c => c.status  === ST.filterStatus);
+  if (ST.filterFleet !== 'all') {
+    const R = {lt20:[0,20],'20to50':[21,50],'50to100':[51,100],gt100:[101,1e9]};
+    const [lo,hi] = R[ST.filterFleet] || [0,1e9];
+    rows = rows.filter(c => c.fleet >= lo && c.fleet <= hi);
+  }
+  if (ST.filterEst !== 'all') {
+    const R = {pre1970:[0,1969],'1970to1990':[1970,1990],'1990to2010':[1991,2010],post2010:[2011,9999]};
+    const [lo,hi] = R[ST.filterEst] || [0,9999];
+    rows = rows.filter(c => c.est >= lo && c.est <= hi);
+  }
+  if (ST.sortCol) {
+    const numCols = new Set(['fleet','est','employees']);
+    rows.sort((a, b) => {
+      let va = ST.sortCol === 'fleetVal' ? a.fleetM : a[ST.sortCol];
+      let vb = ST.sortCol === 'fleetVal' ? b.fleetM : b[ST.sortCol];
+      if (!numCols.has(ST.sortCol) && ST.sortCol !== 'fleetVal') { va = String(va).toLowerCase(); vb = String(vb).toLowerCase(); }
+      return (va < vb ? -1 : va > vb ? 1 : 0) * (ST.sortDir === 'asc' ? 1 : -1);
+    });
+  }
+  return rows;
+}
+
+/* ── Render ───────────────────────────────────────────────────────────────── */
+function renderPage() {
+  const rows      = getFiltered();
+  const total     = rows.length;
+  const totalPages = Math.max(1, Math.ceil(total / ST.perPage));
+  if (ST.page > totalPages) ST.page = totalPages;
+  const start     = (ST.page - 1) * ST.perPage;
+  const pageRows  = rows.slice(start, start + ST.perPage);
+  const hasFilter = ST.filterType !== 'all' || ST.filterCountry !== 'all' || ST.filterStatus !== 'all' || ST.filterFleet !== 'all' || ST.filterEst !== 'all' || ST.query;
+
+  const typeItems    = [['all','All Types'],    ...COMPANY_TYPES.map(t => [t, t])];
+  const countryItems = [['all','All Countries'],...COUNTRIES.map(c => [c, c])];
+  const fleetItems   = [['all','Any Size'],['lt20','1 – 20 vessels'],['20to50','21 – 50 vessels'],['50to100','51 – 100 vessels'],['gt100','100+ vessels']];
+  const estItems     = [['all','Any Year'],['pre1970','Before 1970'],['1970to1990','1970 – 1990'],['1990to2010','1991 – 2010'],['post2010','After 2010']];
+
+  function dropHTML(id, btnContent, items, current) {
+    const isOpen = ST.openDrop === id;
+    return `<div style="position:relative" data-drop-wrap="${id}">
+      <button class="fbtn ${current !== 'all' ? 'factive' : ''}" data-drop-btn="${id}">${btnContent}</button>
+      ${isOpen ? `<div class="fdrop">${items.map(([v,l]) => `<div class="fdrop-item ${current === v ? 'fsel' : ''}" data-drop-item="${id}" data-val="${v}">${l}</div>`).join('')}</div>` : ''}
+    </div>`;
+  }
+
+  const allcoLabel  = ST.filterType !== 'all' ? ST.filterType : 'All Companies';
+
+  return `
+  <!-- Filter bar -->
+  <div class="shrink-0 px-4 pt-4 pb-3">
+    <div class="bg-white rounded-xl border border-slate-200 px-3 py-2 flex items-center gap-2 flex-wrap" style="box-shadow:0 1px 3px rgba(15,23,42,.06)">
+
+      <!-- Search -->
+      <div style="position:relative;flex:1;min-width:220px;max-width:400px">
+        <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:#94a3b8;pointer-events:none;display:flex">${SVG.search}</span>
+        <input id="co-search" type="text"
+          placeholder="Search by company name, headquarters, or registration number"
+          value="${ST.query.replace(/"/g, '&quot;')}"
+          style="width:100%;height:34px;padding:0 32px 0 30px;border:1px solid #e2e8f0;border-radius:8px;font-size:12.5px;color:#0f172a;outline:none;font-family:inherit;transition:border-color .15s,box-shadow .15s" />
+        <span style="position:absolute;right:7px;top:50%;transform:translateY(-50%);color:#94a3b8;display:flex">${SVG.sliders}</span>
+      </div>
+
+      <div style="width:1px;height:20px;background:#e2e8f0;flex-shrink:0"></div>
+
+      <!-- All Companies type chooser -->
+      ${dropHTML('allco', `${allcoLabel} ${SVG.chevDown}`, typeItems, ST.filterType)}
+
+      <div style="width:1px;height:20px;background:#e2e8f0;flex-shrink:0"></div>
+
+      <!-- Reset Filters -->
+      <button class="fbtn" id="reset-btn" style="${hasFilter ? '' : 'opacity:.45;pointer-events:none'}">
+        ${SVG.filter} Reset Filters
+      </button>
+
+      <!-- Company Type -->
+      ${dropHTML('type', `Company Type${ST.filterType !== 'all' ? activeDot() : ''}`, typeItems, ST.filterType)}
+
+      <!-- Country -->
+      ${dropHTML('country', `Country${ST.filterCountry !== 'all' ? activeDot() : ''}`, countryItems, ST.filterCountry)}
+
+      <!-- Status -->
+      ${dropHTML('status', `Status${ST.filterStatus !== 'all' ? activeDot() : ''}`, [['all','All Statuses'],['Active','Active'],['Inactive','Inactive']], ST.filterStatus)}
+
+      <!-- Fleet Size -->
+      ${dropHTML('fleet', `Fleet Size ${SVG.chevDown}`, fleetItems, ST.filterFleet)}
+
+      <!-- Established -->
+      ${dropHTML('est', `Established ${SVG.chevDown}`, estItems, ST.filterEst)}
+
+      <div style="flex:1;min-width:4px"></div>
+
+      <!-- Edit Columns -->
+      <button class="fbtn">${SVG.columns} Edit Columns</button>
+    </div>
+  </div>
+
+  <!-- Table card -->
+  <div class="flex-1 min-h-0 px-4 pb-4 flex flex-col">
+    <div class="bg-white rounded-xl border border-slate-200 flex flex-col overflow-hidden flex-1 min-h-0" style="box-shadow:0 1px 3px rgba(15,23,42,.06)">
+
+      <!-- Result count -->
+      <div class="shrink-0 px-4 py-2.5 border-b border-slate-100">
+        <span class="text-sm font-semibold text-slate-900">Companies</span>
+        <span class="text-sm text-slate-400 ml-1.5">(${total} result${total !== 1 ? 's' : ''})</span>
+      </div>
+
+      <!-- Scrollable table -->
+      <div class="flex-1 min-h-0 overflow-auto scroll-thin">
+        <table class="co-tbl">
+          <thead>
+            <tr>
+              <th class="sortable ${ST.sortCol === 'name'      ? 'sorted' : ''}" data-sort="name"     style="min-width:190px">Company Name${sortIcon('name')}</th>
+              <th class="sortable ${ST.sortCol === 'type'      ? 'sorted' : ''}" data-sort="type"     style="min-width:150px">Type${sortIcon('type')}</th>
+              <th class="sortable ${ST.sortCol === 'country'   ? 'sorted' : ''}" data-sort="country"  style="min-width:145px">Country${sortIcon('country')}</th>
+              <th style="min-width:110px">Headquarters</th>
+              <th style="min-width:125px">Registration #</th>
+              <th class="sortable ${ST.sortCol === 'fleet'     ? 'sorted' : ''}" data-sort="fleet"    style="min-width:95px">Fleet Size${sortIcon('fleet')}</th>
+              <th class="sortable ${ST.sortCol === 'fleetVal'  ? 'sorted' : ''}" data-sort="fleetVal" style="min-width:100px">Fleet Value${sortIcon('fleetVal')}</th>
+              <th style="min-width:220px">Primary Services</th>
+              <th class="sortable ${ST.sortCol === 'est'       ? 'sorted' : ''}" data-sort="est"      style="min-width:110px">Established${sortIcon('est')}</th>
+              <th class="sortable ${ST.sortCol === 'employees' ? 'sorted' : ''}" data-sort="employees"style="min-width:100px">Employees${sortIcon('employees')}</th>
+              <th style="min-width:80px">Status</th>
+              <th style="min-width:52px;width:52px">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${pageRows.length === 0 ? `
+              <tr><td colspan="12" style="text-align:center;padding:64px 0;color:#94a3b8;font-size:13px">
+                No companies match your current filters.
+              </td></tr>
+            ` : pageRows.map(co => {
+              const shown = co.services.slice(0, 2);
+              const extra = co.services.length - 2;
+              return `<tr>
+                <td><a class="co-link" href="#">${co.name}</a></td>
+                <td>${typeBadge(co.type)}</td>
+                <td><span style="font-size:15px;margin-right:5px">${co.flag}</span><span>${co.country}</span></td>
+                <td style="color:#64748b">${co.hq}</td>
+                <td style="color:#475569;font-variant-numeric:tabular-nums">${co.reg}</td>
+                <td style="font-variant-numeric:tabular-nums">${co.fleet.toLocaleString()} vessel${co.fleet !== 1 ? 's' : ''}</td>
+                <td style="font-variant-numeric:tabular-nums;font-weight:600">${co.fleetVal}</td>
+                <td>${shown.map(s => `<span class="svc-tag">${s}</span>`).join('')}${extra > 0 ? `<span class="svc-more">+${extra}</span>` : ''}</td>
+                <td style="font-variant-numeric:tabular-nums">${co.est}</td>
+                <td style="font-variant-numeric:tabular-nums">${co.employees.toLocaleString()}</td>
+                <td><span class="sbadge ${co.status === 'Active' ? 'sb-active' : 'sb-inactive'}">${co.status}</span></td>
+                <td><button class="actbtn" title="View details">${SVG.extLink}</button></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="shrink-0 px-4 py-2.5 border-t border-slate-100 flex items-center gap-2.5">
+        <span class="text-xs text-slate-500 shrink-0">Items per page:</span>
+        <div style="position:relative">
+          <select id="per-page" style="appearance:none;-webkit-appearance:none;height:28px;padding:0 22px 0 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;color:#334155;background:#fff;cursor:pointer;font-family:inherit;outline:none">
+            ${[10,20,50].map(n => `<option value="${n}"${ST.perPage === n ? ' selected' : ''}>${n}</option>`).join('')}
+          </select>
+          <span style="position:absolute;right:4px;top:50%;transform:translateY(-50%);pointer-events:none;color:#64748b;display:flex">${SVG.chevDown}</span>
+        </div>
+        <div style="flex:1"></div>
+        ${total > 0 ? `<span class="text-xs text-slate-500">${start + 1}–${Math.min(start + ST.perPage, total)} of ${total}</span>` : ''}
+        <button class="pgbtn" id="pg-prev"${ST.page <= 1 ? ' disabled' : ''}>${SVG.chevLeft}</button>
+        <span class="text-xs font-semibold text-slate-700" style="white-space:nowrap">Page ${ST.page} of ${totalPages}</span>
+        <button class="pgbtn" id="pg-next"${ST.page >= totalPages ? ' disabled' : ''}>${SVG.chevRight}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── Wire interactions ────────────────────────────────────────────────────── */
+let _coMain = null;
+let _outsideClickBound = false;
+
+function rc() {
+  if (!_coMain) return;
+  const hadFocus = document.activeElement && document.activeElement.id === 'co-search';
+  const selS = hadFocus ? document.activeElement.selectionStart : null;
+  const selE = hadFocus ? document.activeElement.selectionEnd : null;
+  _coMain.innerHTML = renderPage();
+  wireCompanies();
+  if (hadFocus) {
+    const el = document.getElementById('co-search');
+    if (el) { el.focus(); try { el.setSelectionRange(selS, selE); } catch(e) {} }
+  }
+}
+
+function wireCompanies() {
+  /* Search */
+  const si = document.getElementById('co-search');
+  if (si) {
+    si.addEventListener('input', e => { ST.query = e.target.value; ST.page = 1; rc(); });
+    si.addEventListener('focus', e => { e.target.style.borderColor = '#93c5fd'; e.target.style.boxShadow = '0 0 0 3px rgba(59,130,246,.12)'; });
+    si.addEventListener('blur',  e => { e.target.style.borderColor = '#e2e8f0'; e.target.style.boxShadow = ''; });
+  }
+
+  /* Column sort */
+  document.querySelectorAll('.co-tbl th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const c = th.dataset.sort;
+      if (ST.sortCol === c) ST.sortDir = ST.sortDir === 'asc' ? 'desc' : 'asc';
+      else { ST.sortCol = c; ST.sortDir = 'asc'; }
+      ST.page = 1; rc();
+    });
+  });
+
+  /* Dropdown open / close */
+  document.querySelectorAll('[data-drop-btn]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = btn.dataset.dropBtn;
+      ST.openDrop = ST.openDrop === id ? null : id;
+      rc();
+    });
+  });
+
+  /* Dropdown item select */
+  document.querySelectorAll('[data-drop-item]').forEach(item => {
+    item.addEventListener('click', e => {
+      e.stopPropagation();
+      const id  = item.dataset.dropItem;
+      const val = item.dataset.val;
+      if      (id === 'allco' || id === 'type') ST.filterType    = val;
+      else if (id === 'country')                ST.filterCountry = val;
+      else if (id === 'status')                 ST.filterStatus  = val;
+      else if (id === 'fleet')                  ST.filterFleet   = val;
+      else if (id === 'est')                    ST.filterEst     = val;
+      ST.page = 1; ST.openDrop = null; rc();
+    });
+  });
+
+  /* Reset */
+  const rb = document.getElementById('reset-btn');
+  if (rb) rb.addEventListener('click', () => {
+    Object.assign(ST, { query:'', filterType:'all', filterCountry:'all', filterStatus:'all', filterFleet:'all', filterEst:'all', page:1, openDrop:null });
+    rc();
+  });
+
+  /* Per page */
+  const pp = document.getElementById('per-page');
+  if (pp) pp.addEventListener('change', () => { ST.perPage = parseInt(pp.value); ST.page = 1; rc(); });
+
+  /* Pagination */
+  const prev = document.getElementById('pg-prev');
+  const next  = document.getElementById('pg-next');
+  if (prev) prev.addEventListener('click', () => { if (ST.page > 1) { ST.page--; rc(); } });
+  if (next) next.addEventListener('click', () => {
+    const tp = Math.max(1, Math.ceil(getFiltered().length / ST.perPage));
+    if (ST.page < tp) { ST.page++; rc(); }
+  });
+
+  /* Outside click closes dropdowns */
+  if (!_outsideClickBound) {
+    _outsideClickBound = true;
+    document.addEventListener('click', () => {
+      if (ST.openDrop) { ST.openDrop = null; rc(); }
+    });
+  }
+}
+
+/* ── Main render ──────────────────────────────────────────────────────────── */
+window.render = function() {
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
+      ${SC.Topbar()}
+      <main id="co-main" class="flex-1 min-h-0 overflow-hidden flex flex-col bg-slate-100"></main>
+    </div>
+    ${SC.TweaksPanel()}
+  `;
+  SC.wireChrome();
+  _coMain = document.getElementById('co-main');
+  rc();
+};
+
+window.render();
+</script>
+</body>
+</html>

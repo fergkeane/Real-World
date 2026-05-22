@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Reports — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  .scroll-thin::-webkit-scrollbar{width:5px}.scroll-thin::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
+  .rtab{display:inline-flex;align-items:center;gap:7px;padding:7px 16px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;border:0;font-family:inherit;transition:background .15s,color .15s;white-space:nowrap}
+  .rtab.active{background:#2563eb;color:#fff}
+  .rtab:not(.active){background:transparent;color:#64748b}
+  .rtab:not(.active):hover{background:#f1f5f9;color:#334155}
+  .chat-input{width:100%;height:46px;border:1px solid #e2e8f0;border-radius:12px;padding:0 52px 0 16px;font-size:14px;color:#0f172a;outline:none;font-family:inherit;background:#fff;transition:border-color .15s,box-shadow .15s}
+  .chat-input:focus{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .chip{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:13px 16px;font-size:13px;font-weight:600;color:#0f172a;cursor:pointer;text-align:left;font-family:inherit;transition:border-color .15s,box-shadow .15s,background .1s}
+  .chip:hover{border-color:#93c5fd;box-shadow:0 2px 8px rgba(37,99,235,.12);background:#fafafe}
+  .bubble-user{background:#2563eb;color:#fff;border-radius:16px 16px 4px 16px;padding:10px 14px;font-size:14px;max-width:480px;margin-left:auto;line-height:1.5}
+  .bubble-ai{background:#fff;border:1px solid #e2e8f0;border-radius:16px 16px 16px 4px;padding:12px 16px;font-size:14px;color:#0f172a;line-height:1.6;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+  .bubble-ai p{margin-bottom:8px}.bubble-ai p:last-child{margin-bottom:0}
+  .bubble-ai ul{margin:6px 0 6px 16px;list-style:disc}.bubble-ai li{margin-bottom:3px}
+  .bubble-ai strong{font-weight:700}
+  .bubble-ai code{background:#f1f5f9;border-radius:4px;padding:1px 5px;font-size:12.5px;font-family:ui-monospace,monospace}
+  .typing-dot{width:7px;height:7px;border-radius:50%;background:#93c5fd;animation:bounce .9s infinite}
+  .typing-dot:nth-child(2){animation-delay:.15s}.typing-dot:nth-child(3){animation-delay:.3s}
+  @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+  /* Form card */
+  .form-card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;max-width:640px}
+  .form-section{padding:18px 20px;border-bottom:1px solid #f1f5f9}
+  .form-section:last-child{border-bottom:0}
+  .form-sec-title{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:#0f172a;margin-bottom:12px}
+  .form-search{width:100%;height:36px;border:1px solid #e8ecf0;border-radius:8px;padding:0 10px 0 32px;font-size:13px;color:#334155;outline:none;font-family:inherit;background:#f8fafc}
+  .form-search:focus{border-color:#93c5fd;box-shadow:0 0 0 2px rgba(37,99,235,.1);background:#fff}
+  .pf-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #f1f5f9;cursor:pointer;transition:background .1s}
+  .pf-row:last-child{border-bottom:0}
+  .pf-row:hover{background:#f8fafc}
+  .area-row{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid #f1f5f9;cursor:pointer;transition:background .1s}
+  .area-row:last-child{border-bottom:0}
+  .area-row:hover{background:#f8fafc}
+  .cb{width:18px;height:18px;border-radius:4px;border:1.5px solid #cbd5e1;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .1s,border-color .1s;background:#fff}
+  .cb.checked{background:#2563eb;border-color:#2563eb}
+  .risk-badge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;margin-left:auto;flex-shrink:0}
+  .risk-critical{background:#fee2e2;color:#dc2626}
+  .risk-high{background:#fef3c7;color:#d97706}
+  .risk-medium{background:#eff6ff;color:#2563eb}
+  .form-date-input{width:100%;height:38px;border:1px solid #e2e8f0;border-radius:8px;padding:0 10px;font-size:13px;color:#334155;outline:none;font-family:inherit;background:#f8fafc}
+  .form-date-input:focus{border-color:#93c5fd;box-shadow:0 0 0 2px rgba(37,99,235,.1)}
+  .form-select{width:100%;height:38px;border:1px solid #e2e8f0;border-radius:8px;padding:0 28px 0 10px;font-size:13px;color:#334155;outline:none;font-family:inherit;background:#f8fafc;appearance:none;-webkit-appearance:none;cursor:pointer}
+  .gen-btn{width:100%;height:46px;border-radius:10px;border:0;background:linear-gradient(90deg,#2563eb,#3b82f6);color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;transition:opacity .15s}
+  .gen-btn:hover{opacity:.92}
+  .gen-btn:disabled{opacity:.6;cursor:not-allowed}
+</style>
+</head>
+<body class="bg-slate-100 text-slate-900">
+<div id="app" class="h-screen w-full flex overflow-hidden"></div>
+
+<script>
+window.PAGE = { id:'reports', title:'Reports', crumb:'Report Builder' };
+window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "density": "compact",
+  "accent": "blue",
+  "sidebarExpanded": true,
+  "showSparklines": true
+}/*EDITMODE-END*/;
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="shared/chrome.js?v=4"></script>
+<script>
+const SC = window.sharedChrome;
+
+/* ── Static data ──────────────────────────────────────────────────────────── */
+const PORTFOLIOS = [
+  { id:'marine',   name:'Marine Fleet Portfolio',   icon:'ship',     color:'#2563eb', assets:45 },
+  { id:'apac',     name:'Asia Pacific Vessels',     icon:'ship',     color:'#2563eb', assets:28 },
+  { id:'europe',   name:'European Fleet',           icon:'ship',     color:'#0891b2', assets:32 },
+  { id:'aviation', name:'Aviation Assets',          icon:'plane',    color:'#2563eb', assets:15 },
+  { id:'property', name:'Commercial Properties',    icon:'building', color:'#16a34a', assets:22 },
+  { id:'energy',   name:'North Sea Energy',         icon:'bolt',     color:'#ea580c', assets:18 },
+];
+
+const AREAS = [
+  { id:'hormuz',  name:'Strait of Hormuz',       region:'Middle East',     risk:'Critical', keywords:['hormuz'] },
+  { id:'redsea',  name:'Red Sea Corridor',       region:'Middle East',     risk:'High',     keywords:['red sea'] },
+  { id:'aden',    name:'Gulf of Aden',           region:'East Africa',     risk:'High',     keywords:['aden','gulf of aden'] },
+  { id:'bab',     name:'Bab-el-Mandeb Strait',   region:'Middle East',     risk:'Critical', keywords:['bab-el-mandeb','bab el mandeb','bab'] },
+  { id:'malacca', name:'Strait of Malacca',      region:'Southeast Asia',  risk:'High',     keywords:['malacca'] },
+  { id:'black',   name:'Black Sea',              region:'Eastern Europe',  risk:'Critical', keywords:['black sea'] },
+  { id:'persian', name:'Persian Gulf',           region:'Middle East',     risk:'High',     keywords:['persian gulf'] },
+];
+
+const SUGGESTED = [
+  "What's my exposure risk in the Strait of Hormuz?",
+  "Show me casualties in the Red Sea region for Q1 2025",
+  "Compare my fleet performance vs competitors",
+  "What vessels are approaching high-risk areas?",
+  "Generate a compliance report for sanctioned regions",
+];
+
+/* ── State ────────────────────────────────────────────────────────────────── */
+let activeTab  = 'builder';
+let messages   = [];
+let isLoading  = false;
+let msgCounter = 0;
+
+// Active form state (lives alongside messages)
+let formState  = null; // null when no form shown
+
+/* ── Helpers ──────────────────────────────────────────────────────────────── */
+const SPARKLE = `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2l1.5 5.5L19 9l-5.5 1.5L12 16l-1.5-5.5L5 9l5.5-1.5L12 2z"/><path d="M5 17l.8 2.2L8 20l-2.2.8L5 23l-.8-2.2L2 20l2.2-.8L5 17z" opacity=".6"/><path d="M19 3l.5 1.6 1.6.5-1.6.5L19 7.2l-.5-1.6L16.9 5l1.6-.5L19 3z" opacity=".5"/></svg>`;
+const SEND    = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>`;
+const DOC_ICO = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
+const CHT_ICO = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`;
+const STR_ICO = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`;
+const SRCH    = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
+const CHECK   = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+const AI_AV   = `<div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#3b82f6);flex-shrink:0;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 2l1.5 5.5L19 9l-5.5 1.5L12 16l-1.5-5.5L5 9l5.5-1.5L12 2z"/></svg></div>`;
+const USER_AV = `<div style="width:28px;height:28px;border-radius:50%;background:#dbeafe;flex-shrink:0;display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>`;
+
+function portfolioIcon(icon, color) {
+  const icons = {
+    ship:     `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 21c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2c1.3 0 1.9.5 2.5 1"/><path d="M19 15V6.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5V15"/><path d="M5 15V6.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V15"/><path d="M3 15h18"/></svg>`,
+    plane:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21 4 19 2c-2-2-4-2-5.5-.5L10 5 1.8 6.2c-.5.1-.9.5-.8 1 0 .2.2.4.3.6l5.6 5.6-1.6 7.9c-.1.4.1.8.5 1l.3.1.3-.1 5.6-2.8 5.6 2.8.3.1.3-.1c.4-.2.6-.6.5-1z"/></svg>`,
+    building: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>`,
+    bolt:     `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+  };
+  return icons[icon] || icons.ship;
+}
+
+function today() {
+  const d = new Date(); return d.toISOString().slice(0,10);
+}
+function monthAgo() {
+  const d = new Date(); d.setDate(d.getDate()-30); return d.toISOString().slice(0,10);
+}
+function detectAreas(q) {
+  const ql = q.toLowerCase();
+  return AREAS.filter(a => a.keywords.some(k => ql.includes(k))).map(a => a.id);
+}
+
+function renderMD(text) {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`(.+?)`/g, '<code>$1</code>')
+    .replace(/^### (.+)$/gm, '<strong style="font-size:14px">$1</strong>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>\n?)+/g, s => `<ul>${s}</ul>`)
+    .split('\n\n').map(p => p.trim() ? (p.startsWith('<') ? p : `<p>${p}</p>`) : '').join('');
+}
+
+/* ── Form HTML ────────────────────────────────────────────────────────────── */
+function formHTML(q, fs) {
+  const pSearch = (fs.portfolioSearch||'').toLowerCase();
+  const aSearch = (fs.areaSearch||'').toLowerCase();
+  const filteredPF = PORTFOLIOS.filter(p => !pSearch || p.name.toLowerCase().includes(pSearch));
+  const filteredAR = AREAS.filter(a => !aSearch || a.name.toLowerCase().includes(aSearch) || a.region.toLowerCase().includes(aSearch));
+  const selAreas = fs.selectedAreas || [];
+  const selPF    = fs.selectedPortfolios || [];
+  const hasSelection = selPF.length > 0 || selAreas.length > 0;
+
+  return `
+  <!-- AI ack -->
+  <div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:14px">
+    ${AI_AV}
+    <div class="bubble-ai">
+      I'll help you analyze <strong>"${q}"</strong>. To generate an accurate report, please provide the following details:
+    </div>
+  </div>
+
+  <!-- Form card -->
+  <div class="form-card" style="margin-left:36px;max-width:620px">
+
+    <!-- Portfolios -->
+    <div class="form-section">
+      <div class="form-sec-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        Select Portfolios
+      </div>
+      <div style="position:relative;margin-bottom:10px">
+        <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);display:flex;pointer-events:none">${SRCH}</span>
+        <input id="pf-search" class="form-search" type="text" placeholder="Search portfolios..." value="${(fs.portfolioSearch||'').replace(/"/g,'&quot;')}" />
+      </div>
+      <div style="border:1px solid #f1f5f9;border-radius:8px;overflow:hidden;max-height:220px;overflow-y:auto" class="scroll-thin">
+        ${filteredPF.map(p => `
+        <div class="pf-row" data-pf="${p.id}">
+          <div class="cb ${selPF.includes(p.id)?'checked':''}">${selPF.includes(p.id)?CHECK:''}</div>
+          <span style="display:flex;align-items:center;gap:6px;flex:1;font-size:13px;font-weight:600;color:#0f172a">
+            ${portfolioIcon(p.icon, p.color)} ${p.name}
+          </span>
+          <span style="font-size:12px;font-weight:500;color:#64748b;background:#f1f5f9;padding:2px 8px;border-radius:6px">${p.assets} assets</span>
+        </div>`).join('')}
+      </div>
+      ${selPF.length>0?`<div style="font-size:12px;color:#2563eb;margin-top:6px;display:flex;align-items:center;gap:4px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>${selPF.length} portfolio${selPF.length>1?'s':''} selected</div>`:''}
+    </div>
+
+    <!-- High-Risk Areas -->
+    <div class="form-section">
+      <div class="form-sec-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Select High-Risk Areas
+      </div>
+      <div style="position:relative;margin-bottom:10px">
+        <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);display:flex;pointer-events:none">${SRCH}</span>
+        <input id="area-search" class="form-search" type="text" placeholder="Search high-risk areas..." value="${(fs.areaSearch||'').replace(/"/g,'&quot;')}" />
+      </div>
+      <div style="border:1px solid #f1f5f9;border-radius:8px;overflow:hidden">
+        ${filteredAR.map(a => {
+          const sel = selAreas.includes(a.id);
+          const riskCls = a.risk==='Critical'?'risk-critical':a.risk==='High'?'risk-high':'risk-medium';
+          return `<div class="area-row" data-area="${a.id}">
+            <div class="cb ${sel?'checked':''}">${sel?CHECK:''}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:600;color:#0f172a">${a.name}</div>
+              <div style="font-size:11px;color:#94a3b8">${a.region}</div>
+            </div>
+            <span class="risk-badge ${riskCls}">${a.risk}</span>
+          </div>`;
+        }).join('')}
+      </div>
+      ${selAreas.length>0?`<div style="font-size:12px;color:#16a34a;margin-top:8px;display:flex;align-items:center;gap:4px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>${selAreas.length} area${selAreas.length>1?'s':''} selected</div>`:''}
+    </div>
+
+    <!-- Date Range -->
+    <div class="form-section">
+      <div class="form-sec-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Date Range
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <div style="font-size:11px;font-weight:600;color:#64748b;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em">From</div>
+          <input id="date-from" class="form-date-input" type="date" value="${fs.dateFrom||monthAgo()}" />
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:600;color:#64748b;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em">To</div>
+          <input id="date-to" class="form-date-input" type="date" value="${fs.dateTo||today()}" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Asset Type -->
+    <div class="form-section">
+      <div class="form-sec-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Asset Type <span style="font-size:13px;font-weight:400;color:#94a3b8">(Optional)</span>
+      </div>
+      <div style="position:relative">
+        <select id="asset-type" class="form-select">
+          <option value="all" ${fs.assetType==='all'?'selected':''}>All asset types</option>
+          <option value="vessel" ${fs.assetType==='vessel'?'selected':''}>Vessels</option>
+          <option value="aircraft" ${fs.assetType==='aircraft'?'selected':''}>Aircraft</option>
+          <option value="property" ${fs.assetType==='property'?'selected':''}>Properties</option>
+          <option value="offshore" ${fs.assetType==='offshore'?'selected':''}>Offshore assets</option>
+        </select>
+        <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;display:flex;color:#64748b">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
+      </div>
+    </div>
+
+    <!-- Generate button -->
+    <div style="padding:16px 20px">
+      <button id="gen-report-btn" class="gen-btn" ${!hasSelection?'disabled':''}>
+        ${SPARKLE.replace('width="28"','width="16"').replace('height="28"','height="16"')}
+        Generate Report
+      </button>
+    </div>
+  </div>`;
+}
+
+/* ── Chat HTML ────────────────────────────────────────────────────────────── */
+function chatHTML() {
+  return `
+  <div id="msg-scroll" class="flex-1 overflow-y-auto scroll-thin" style="padding:20px 24px;display:flex;flex-direction:column;gap:14px;min-height:0">
+    ${messages.map(m => {
+      if (m.role === 'user') return `
+      <div style="display:flex;justify-content:flex-end;gap:8px;align-items:flex-end">
+        <div class="bubble-user">${m.content}</div>
+        ${USER_AV}
+      </div>`;
+      if (m.role === 'form') return `<div id="form-block">${formHTML(m.question, formState||{})}</div>`;
+      if (m.role === 'confirm') {
+        const assetLabel = {'all':'All','vessel':'Vessels','aircraft':'Aircraft','property':'Properties','offshore':'Offshore assets'}[m.assetType]||m.assetType;
+        return `<div style="display:flex;gap:8px;align-items:flex-start">
+          ${AI_AV}
+          <div class="bubble-ai" style="max-width:560px">
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;font-weight:600;color:#16a34a">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#dcfce7" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><polyline points="9 12 11.5 14.5 15 10"/></svg>
+              Report is being generated with the following parameters:
+            </div>
+            <div style="font-size:13px;color:#334155;line-height:1.85">
+              <div>• Portfolios: <span style="color:#2563eb;font-weight:600">${m.portfolios} selected</span></div>
+              <div>• Regions: <span style="color:#2563eb;font-weight:600">0 selected</span></div>
+              <div>• High-Risk Areas: <span style="color:#2563eb;font-weight:600">${m.areas} selected</span></div>
+              <div>• Date Range: <span style="color:#2563eb;font-weight:600">${m.dateFrom} to ${m.dateTo}</span></div>
+              <div>• Asset Type: <span style="color:#2563eb;font-weight:600">${assetLabel}</span></div>
+            </div>
+            <div style="margin-top:12px;font-size:13px;color:#2563eb">Your report will be ready in a few moments...</div>
+          </div>
+        </div>`;
+      }
+      return `
+      <div style="display:flex;gap:8px;align-items:flex-start">
+        ${AI_AV}
+        <div class="bubble-ai" style="max-width:560px">${renderMD(m.content)}</div>
+      </div>`;
+    }).join('')}
+    ${isLoading ? `
+    <div style="display:flex;gap:8px;align-items:flex-start">
+      ${AI_AV}
+      <div class="bubble-ai"><div style="display:flex;gap:5px;align-items:center;height:20px">
+        <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+      </div></div>
+    </div>` : ''}
+  </div>
+
+  <!-- Input bar -->
+  <div style="padding:12px 20px;border-top:1px solid #f1f5f9;flex-shrink:0;background:#fff">
+    <div style="position:relative;max-width:760px;margin:0 auto">
+      <input id="chat-input" class="chat-input" type="text" placeholder="Ask a follow-up question..." ${isLoading?'disabled':''} />
+      <button id="send-btn" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:8px;background:${isLoading?'#93c5fd':'#2563eb'};border:0;color:#fff;cursor:${isLoading?'not-allowed':'pointer'};display:flex;align-items:center;justify-content:center" ${isLoading?'disabled':''}>${SEND}</button>
+    </div>
+    <div style="font-size:11px;color:#94a3b8;text-align:center;margin-top:6px">AI can make mistakes. Verify important information.</div>
+  </div>`;
+}
+
+function welcomeHTML() {
+  return `
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:40px 24px;text-align:center">
+    <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#3b82f6);display:flex;align-items:center;justify-content:center;margin-bottom:20px;box-shadow:0 8px 24px rgba(37,99,235,.3)">${SPARKLE}</div>
+    <h2 style="font-size:22px;font-weight:700;color:#0f172a;margin-bottom:10px">Welcome to AI Report Assistant</h2>
+    <p style="font-size:14px;color:#64748b;max-width:500px;line-height:1.65;margin-bottom:28px">Ask me anything about your maritime portfolio, exposure risks, compliance, or performance metrics. I'll guide you through creating detailed reports.</p>
+    <div style="position:relative;width:640px;max-width:calc(100vw - 48px)">
+      <input id="chat-input" class="chat-input" type="text" placeholder="Ask a question about your portfolio..." />
+      <button id="send-btn" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:8px;background:#2563eb;border:0;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center">${SEND}</button>
+    </div>
+    <div style="font-size:12px;color:#94a3b8;margin-top:8px">AI can make mistakes. Verify important information.</div>
+    <div style="margin-top:28px;width:640px;max-width:calc(100vw - 48px);text-align:left">
+      <div style="font-size:13px;font-weight:600;color:#475569;margin-bottom:12px">Suggested questions:</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        ${SUGGESTED.map((q,i) => `<button class="chip" data-q="${q.replace(/"/g,'&quot;')}" ${i===SUGGESTED.length-1&&SUGGESTED.length%2!==0?'style="grid-column:1"':''}>${q}</button>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── Core actions ─────────────────────────────────────────────────────────── */
+function sendMessage(content) {
+  if (!content.trim() || isLoading) return;
+  messages.push({ role:'user', content, id:++msgCounter });
+
+  // Push form message — user fills it out before AI responds
+  formState = {
+    selectedPortfolios: [],
+    selectedAreas: detectAreas(content),
+    portfolioSearch: '', areaSearch: '',
+    dateFrom: monthAgo(), dateTo: today(),
+    assetType: 'all',
+  };
+  messages.push({ role:'form', id:++msgCounter, question:content });
+  rerenderChat();
+}
+
+async function generateReport() {
+  const formMsg = messages.find(m => m.role === 'form');
+  if (!formMsg || isLoading) return;
+
+  // Collect live form values
+  const df = document.getElementById('date-from');
+  const dt = document.getElementById('date-to');
+  const at = document.getElementById('asset-type');
+  if (df) formState.dateFrom = df.value;
+  if (dt) formState.dateTo   = dt.value;
+  if (at) formState.assetType = at.value;
+
+  const fs = formState;
+  const selPF   = PORTFOLIOS.filter(p => fs.selectedPortfolios.includes(p.id)).map(p => p.name);
+  const selArea = AREAS.filter(a => fs.selectedAreas.includes(a.id)).map(a => a.name);
+
+  // Remove form, add confirmation, start generating
+  messages = messages.filter(m => m.role !== 'form');
+  formState = null;
+  messages.push({
+    role:'confirm', id:++msgCounter,
+    portfolios: selPF.length, areas: selArea.length,
+    dateFrom: fs.dateFrom, dateTo: fs.dateTo, assetType: fs.assetType,
+  });
+  isLoading = true;
+  rerenderChat();
+
+  const prompt = `You are an AI assistant for Real World, a maritime risk and insurance analytics platform.
+Generate a detailed, professional report for the following query:
+Question: "${formMsg.question}"
+Selected Portfolios: ${selPF.length ? selPF.join(', ') : 'All portfolios'}
+High-Risk Areas: ${selArea.length ? selArea.join(', ') : 'All areas'}
+Date Range: ${fs.dateFrom} to ${fs.dateTo}
+Asset Type Filter: ${fs.assetType === 'all' ? 'All asset types' : fs.assetType}
+
+Provide a concise, structured report with key metrics, risk findings, and recommendations. Use markdown formatting.`;
+
+  try {
+    const response = await window.claude.complete({ messages:[{role:'user',content:prompt}] });
+    messages.push({ role:'assistant', content:response, id:++msgCounter });
+  } catch(e) {
+    messages.push({ role:'assistant', content:'I encountered an error generating your report. Please try again.', id:++msgCounter });
+  }
+  isLoading = false;
+  rerenderChat();
+}
+
+/* ── Render & wire ────────────────────────────────────────────────────────── */
+function rerenderChat() {
+  const area = document.getElementById('chat-area');
+  if (!area) return;
+  area.innerHTML = messages.length === 0 ? welcomeHTML() : chatHTML();
+  const msgs = document.getElementById('msg-scroll');
+  if (msgs) msgs.scrollTop = msgs.scrollHeight;
+  wireChat();
+}
+
+function wireChat() {
+  /* Input & send */
+  const input   = document.getElementById('chat-input');
+  const sendBtn = document.getElementById('send-btn');
+  if (input) {
+    input.focus();
+    input.addEventListener('keydown', e => { if (e.key==='Enter'&&!e.shiftKey) { e.preventDefault(); sendMessage(input.value); input.value=''; } });
+  }
+  if (sendBtn) sendBtn.addEventListener('click', () => { if(input){ sendMessage(input.value); input.value=''; } });
+
+  /* Suggested chips */
+  document.querySelectorAll('[data-q]').forEach(chip => chip.addEventListener('click', () => sendMessage(chip.dataset.q)));
+
+  /* Portfolio checkboxes */
+  document.querySelectorAll('[data-pf]').forEach(row => {
+    row.addEventListener('click', () => {
+      const id = row.dataset.pf;
+      if (!formState) return;
+      if (formState.selectedPortfolios.includes(id)) formState.selectedPortfolios = formState.selectedPortfolios.filter(x=>x!==id);
+      else formState.selectedPortfolios.push(id);
+      rerenderChat();
+    });
+  });
+
+  /* Portfolio search */
+  const pfSearch = document.getElementById('pf-search');
+  if (pfSearch) pfSearch.addEventListener('input', e => {
+    if (formState) formState.portfolioSearch = e.target.value;
+    rerenderChat();
+  });
+
+  /* Area checkboxes */
+  document.querySelectorAll('[data-area]').forEach(row => {
+    row.addEventListener('click', () => {
+      const id = row.dataset.area;
+      if (!formState) return;
+      if (formState.selectedAreas.includes(id)) formState.selectedAreas = formState.selectedAreas.filter(x=>x!==id);
+      else formState.selectedAreas.push(id);
+      rerenderChat();
+    });
+  });
+
+  /* Area search */
+  const aSearch = document.getElementById('area-search');
+  if (aSearch) aSearch.addEventListener('input', e => {
+    if (formState) formState.areaSearch = e.target.value;
+    rerenderChat();
+  });
+
+  /* Generate */
+  const genBtn = document.getElementById('gen-report-btn');
+  if (genBtn) genBtn.addEventListener('click', generateReport);
+}
+
+/* ── Tab content ──────────────────────────────────────────────────────────── */
+function tabContent() {
+  if (activeTab === 'builder') return `<div id="chat-area" style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;background:#f8fafc"></div>`;
+  const icon = activeTab === 'fleet' ? DOC_ICO.replace('width="14"','width="24"').replace('height="14"','height="24"') : CHT_ICO.replace('width="14"','width="24"').replace('height="14"','height="24"');
+  const title = activeTab === 'fleet' ? 'Weekly Fleet Reports' : 'Competitor Analysis';
+  const desc  = activeTab === 'fleet' ? 'Scheduled fleet performance and exposure summaries will appear here once generated.' : 'Benchmarking and competitive fleet analytics will appear here once configured.';
+  return `<div style="flex:1;display:flex;align-items:center;justify-content:center;background:#f8fafc"><div style="text-align:center;max-width:360px">
+    <div style="width:56px;height:56px;border-radius:14px;background:#fff;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 1px 3px rgba(15,23,42,.06)">${icon}</div>
+    <h3 style="font-size:16px;font-weight:700;color:#0f172a;margin-bottom:8px">${title}</h3>
+    <p style="font-size:13px;color:#64748b;line-height:1.6">${desc}</p>
+  </div></div>`;
+}
+
+/* ── Main render ──────────────────────────────────────────────────────────── */
+window.render = function() {
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
+      ${SC.Topbar()}
+      <main class="flex-1 overflow-hidden flex flex-col" style="min-height:0;background:#f1f5f9;padding:12px">
+        <div style="flex:1;min-height:0;background:#fff;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 1px 3px rgba(15,23,42,.06);display:flex;flex-direction:column;overflow:hidden">
+          <!-- Tabs in card header -->
+          <div style="padding:10px 16px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:4px;flex-shrink:0">
+            <button class="rtab ${activeTab==='builder'?'active':''}" data-tab="builder">${STR_ICO} Report Builder</button>
+            <button class="rtab ${activeTab==='fleet'?'active':''}"   data-tab="fleet">${DOC_ICO} Weekly Fleet Reports</button>
+            <button class="rtab ${activeTab==='comp'?'active':''}"    data-tab="comp">${CHT_ICO} Competitor Analysis</button>
+          </div>
+          ${tabContent()}
+        </div>
+      </main>
+    </div>
+    ${SC.TweaksPanel()}
+  `;
+  SC.wireChrome();
+  document.querySelectorAll('[data-tab]').forEach(btn => btn.addEventListener('click', () => { activeTab = btn.dataset.tab; window.render(); }));
+  if (activeTab === 'builder') rerenderChat();
+};
+
+window.render();
+</script>
+</body>
+</html>

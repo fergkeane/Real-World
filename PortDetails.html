@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Port Details — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { height:100%; }
+  body { font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; }
+  .text-ink-900{color:#0f172a}.text-ink-700{color:#334155}.text-ink-600{color:#475569}
+  .text-ink-500{color:#64748b}.text-ink-400{color:#94a3b8}
+  .bg-ink-100{background:#f1f5f9}.bg-ink-50{background:#f8fafc}
+  .border-ink-100{border-color:#f1f5f9}.border-ink-200{border-color:#e2e8f0}
+  .shadow-card{box-shadow:0 1px 2px rgba(15,23,42,.08),0 0 0 1px rgba(15,23,42,.02)}
+  .text-brand{color:#2563eb}
+  .scroll-thin::-webkit-scrollbar{width:5px}.scroll-thin::-webkit-scrollbar-track{background:transparent}
+  .scroll-thin::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
+  /* Card */
+  .card { background:#fff; border-radius:12px; border:1px solid #e2e8f0; box-shadow:0 1px 2px rgba(15,23,42,.08); overflow:hidden; }
+  .card-hdr { padding:10px 16px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; justify-content:space-between; }
+  .card-title { font-size:13px; font-weight:700; color:#0f172a; }
+  /* Sub tabs */
+  .stab { display:inline-flex; background:#eff6ff; border-radius:999px; padding:3px; gap:2px; }
+  .stab-btn { font-size:11px; font-weight:700; padding:4px 12px; border-radius:999px; border:0; cursor:pointer; transition:background 120ms,color 120ms; }
+  .stab-btn.active { background:#2563eb; color:#fff; }
+  .stab-btn:not(.active) { background:transparent; color:#2563eb; }
+  /* Tables */
+  .dt { width:100%; border-collapse:collapse; }
+  .dt th { font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; padding:8px 14px; text-align:left; border-bottom:1px solid #e2e8f0; background:#fff; white-space:nowrap; }
+  .dt td { font-size:12.5px; color:#334155; padding:9px 14px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+  .dt tr:last-child td { border-bottom:0; }
+  .dt tr:hover td { background:#f8fafc; }
+  .lnk { color:#2563eb; font-weight:600; cursor:pointer; }
+  .lnk:hover { color:#1d4ed8; }
+  /* Stat grid */
+  .stat-grid { display:grid; grid-template-columns:repeat(3,1fr); }
+  .stat-col-hdr { font-size:11px; font-weight:700; color:#64748b; padding:8px 14px; border-bottom:1px solid #f1f5f9; }
+  .stat-row { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; border-bottom:1px solid #f1f5f9; }
+  .stat-row:last-child { border-bottom:0; }
+  .stat-cell { padding:10px 14px; font-size:12px; }
+  .stat-cell.name { font-weight:600; }
+  .stat-cell.val { color:#334155; font-size:12px; }
+  .stat-cell .unit { font-size:10px; color:#94a3b8; display:block; }
+  /* Trends table */
+  .trend-table { width:100%; border-collapse:collapse; font-size:11.5px; }
+  .trend-table th { padding:8px 10px; font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; border-bottom:1px solid #e2e8f0; text-align:right; white-space:nowrap; }
+  .trend-table th:first-child { text-align:left; width:130px; }
+  .trend-table td { padding:9px 10px; border-bottom:1px solid #f1f5f9; text-align:right; color:#334155; tabular-nums; white-space:nowrap; }
+  .trend-table td:first-child { text-align:left; font-weight:600; }
+  .trend-table tr.expandable td:first-child { cursor:pointer; }
+  .trend-table tr.expandable td:first-child:hover { color:#2563eb; }
+  /* Risk table */
+  .risk-table { width:100%; border-collapse:collapse; }
+  .risk-table th { font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; padding:8px 14px; border-bottom:1px solid #e2e8f0; text-align:left; }
+  .risk-table td { font-size:12.5px; color:#334155; padding:10px 14px; border-bottom:1px solid #f1f5f9; }
+  .risk-table tr:last-child td { border-bottom:0; }
+  .risk-table tr:hover td { background:#f8fafc; }
+  .type-dot { width:10px; height:10px; border-radius:2px; flex-shrink:0; }
+  /* Map */
+  #port-map { position:absolute; inset:0; background:#0b2a3a; }
+  .leaflet-control-zoom,.leaflet-bar { border:1px solid #e2e8f0 !important; box-shadow:0 1px 2px rgba(15,23,42,.08) !important; border-radius:8px !important; overflow:hidden; }
+  .leaflet-bar a { background:#fff !important; color:#334155 !important; line-height:30px !important; }
+  .leaflet-bar a:hover { background:#f1f5f9 !important; }
+  .leaflet-top.leaflet-left { top:44px !important; }
+  .map-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:#fff; border:1px solid #e2e8f0; border-radius:8px; color:#334155; box-shadow:0 1px 2px rgba(15,23,42,.08); cursor:pointer; }
+  .map-btn:hover { background:#f1f5f9; }
+</style>
+</head>
+<body class="bg-ink-100 text-ink-900 antialiased">
+<div id="app" class="h-screen w-full flex overflow-hidden"></div>
+<script>
+window.PAGE = { id:'ports', title:'Ports', crumb:'Port Details' };
+window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "density": "comfortable",
+  "accent": "blue",
+  "sidebarExpanded": true,
+  "showSparklines": true
+}/*EDITMODE-END*/;
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="shared/chrome.js?v=4"></script>
+<script>
+const SC = window.sharedChrome;
+
+/* ---- Load port ---- */
+const DEFAULT = { name:'Port of Long Beach', country:'USA', lat:33.7547, lng:-118.2162, terminals:10, type:'Container' };
+const PORT = (() => { try { const r = sessionStorage.getItem('selectedPort'); return r ? {...DEFAULT,...JSON.parse(r)} : DEFAULT; } catch { return DEFAULT; } })();
+
+/* ---- Static mock data ---- */
+const VESSELS = [
+  { name:'AERONAUTICAL',    flag:'US', mmsi:'338450221', type:'Other',                    len:13,  wid:4  },
+  { name:'ALANI T',         flag:'US', mmsi:'367104060', type:'Offshore Tug Supply Ship', len:33,  wid:8  },
+  { name:'ALOHA NUI',       flag:'US', mmsi:'338319175', type:'Other',                    len:18,  wid:3  },
+  { name:'ALOHA SPIRIT',    flag:'US', mmsi:'338514837', type:'Other',                    len:16,  wid:8  },
+  { name:'ALWAYS RIGHT',    flag:'US', mmsi:'367529960', type:'Other',                    len:14,  wid:5  },
+  { name:'ANGELS NAVIGATOR',flag:'US', mmsi:'366164540', type:'Other',                    len:17,  wid:5  },
+  { name:'ANGELS PILOT',    flag:'US', mmsi:'366164530', type:'Other',                    len:17,  wid:5  },
+  { name:'AQUILA',          flag:'US', mmsi:'366554080', type:'Other',                    len:20,  wid:8  },
+  { name:'ASSATEAGUE',      flag:'US', mmsi:'366020880', type:'Articulated Pusher Tug',   len:145, wid:17 },
+  { name:'ASTRAL',          flag:'US', mmsi:'338331664', type:'Other',                    len:12,  wid:4  },
+  { name:'AVALON',          flag:'US', mmsi:'367448380', type:'Other',                    len:21,  wid:6  },
+];
+
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+const TREND_ROWS = [
+  { label:'Dry Bulk', unit:'MT',   color:'#2563eb', data:[245000,238000,251000,247000,255000,262000,258000,263000,257000,260000,254000,248000], prev:[220000,215000,228000,224000,232000,238000,235000,240000,234000,237000,231000,225000] },
+  { label:'Liquid Bulk', unit:'MT',color:'#2563eb', data:[185000,192000,188000,195000,201000,198000,205000,210000,207000,203000,196000,189000], prev:null },
+  { label:'Roll on Roll off', unit:'Cars', color:'#2563eb', data:[42500,45200,43800,46100,48300,50100,49200,51400,50800,49500,47200,44800], prev:null },
+  { label:'Containers', unit:'TEU',color:'#2563eb', data:[325000,318000,334000,342000,351000,358000,365000,372000,368000,361000,349000,337000], prev:null },
+  { label:'Reefers', unit:'TEU',   color:'#2563eb', data:[28500,29200,30100,31800,33200,34500,35800,36400,35100,33900,31700,29800], prev:null },
+  { label:'Cargo Ships', unit:'No.',color:'#2563eb',data:[156,148,162,171,179,185,188,192,186,178,169,160], prev:null },
+];
+
+const RISK_ZONES = [
+  { zone:'Maersk Terminal',       assetType:'containers', color:'#2563eb', count:'23.7K', unit:'$30.0K', total:'$709.6M' },
+  { zone:'Fenix Terminal',        assetType:'containers', color:'#2563eb', count:'20.5K', unit:'$30.0K', total:'$613.7M' },
+  { zone:'Everport High Stacks',  assetType:'containers', color:'#2563eb', count:'3.2K',  unit:'$30.0K', total:'$94.6M'  },
+  { zone:'Everport Terminal',     assetType:'containers', color:'#dc2626', count:'8.0K',  unit:'$30.0K', total:'$240.9M' },
+  { zone:'Yusen Terminal',        assetType:'containers', color:'#16a34a', count:'11.4K', unit:'$30.0K', total:'$340.9M' },
+  { zone:'Trapac Pier A Terminal',assetType:'containers', color:'#2563eb', count:'6.8K',  unit:'$30.0K', total:'$202.9M' },
+  { zone:'WWL Cars Terminal',     assetType:'cars',       color:'#dc2626', count:'4.8K',  unit:'$30.0K', total:'$143.0M' },
+  { zone:'Trapac Terminal',       assetType:'containers', color:'#0f172a', count:'1.7K',  unit:'$30.0K', total:'$52.3M'  },
+  { zone:'West Basin Terminal',   assetType:'containers', color:'#0f172a', count:'4.5K',  unit:'$30.0K', total:'$136.1M' },
+  { zone:'Smith Island Terminal', assetType:'containers', color:'#0f172a', count:'11.2K', unit:'$30.0K', total:'$336.0M' },
+];
+
+const TERMINALS = [
+  { name:'Praxis Onderling Terminal (Sile 1)', berths:4 },
+  { name:'Automobile Terminal',               berths:6 },
+  { name:'World Cruise Centre (Inner Harbour)',berths:5 },
+  { name:'SA Recycling Terminal',             berths:2 },
+  { name:'Kinder Morgan',                     berths:2 },
+  { name:'Consolidatifina',                   berths:2 },
+  { name:'Naptha (ex Valazu)',                berths:1 },
+  { name:'Shell',                             berths:2 },
+  { name:'Vopak',                             berths:4 },
+  { name:'Eurosammel (Southwestraat) Terminal',berths:4 },
+];
+
+const BERTH_PURPOSE = [
+  { label:'Breakbulk',      color:'#f9a8d4', pct:22 },
+  { label:'Tender',         color:'#93c5fd', pct:18 },
+  { label:'Container',      color:'#6ee7b7', pct:28 },
+  { label:'Unknown/Other',  color:'#cbd5e1', pct:14 },
+  { label:'Ore',            color:'#fde68a', pct:8  },
+  { label:'Roro',           color:'#1e293b', pct:10 },
+];
+
+/* ---- Bar chart SVG ---- */
+function BarChart(data, prev) {
+  const W=760, H=160, PAD={t:16,r:8,b:28,l:44};
+  const cw = W - PAD.l - PAD.r;
+  const ch = H - PAD.t - PAD.b;
+  const maxVal = Math.max(...data, ...(prev||[])) * 1.1;
+  const bw = cw / data.length;
+  const barW = bw * 0.35;
+  const gap  = bw * 0.08;
+  const yTicks = [0, 70000, 140000, 210000, 280000];
+  const fmt = v => v >= 1000 ? (v/1000)+'K' : v;
+  const toY = v => PAD.t + ch - (v/maxVal)*ch;
+
+  const bars = data.map((v,i) => {
+    const x = PAD.l + i*bw + bw*0.12;
+    const y = toY(v);
+    const h = ch - (y - PAD.t);
+    const xp = x + barW + gap;
+    const vp = prev ? prev[i] : 0;
+    const yp = prev ? toY(vp) : 0;
+    const hp = prev ? ch - (yp - PAD.t) : 0;
+    return `
+      <rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="2" fill="#3b82f6"/>
+      ${prev ? `<rect x="${xp}" y="${yp}" width="${barW}" height="${hp}" rx="2" fill="#10b981"/>` : ''}
+    `;
+  }).join('');
+
+  const gridLines = yTicks.map(v => `
+    <line x1="${PAD.l}" y1="${toY(v)}" x2="${W-PAD.r}" y2="${toY(v)}" stroke="#f1f5f9" stroke-width="1"/>
+    <text x="${PAD.l-6}" y="${toY(v)+4}" text-anchor="end" font-size="9" fill="#94a3b8">${fmt(v)}</text>
+  `).join('');
+
+  const labels = MONTHS.map((m,i) => `
+    <text x="${PAD.l + i*bw + bw/2}" y="${H-6}" text-anchor="middle" font-size="9" fill="#94a3b8">${m}</text>
+  `).join('');
+
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;">${gridLines}${bars}${labels}</svg>`;
+}
+
+/* ---- Donut chart SVG ---- */
+function DonutChart(slices) {
+  const cx=100, cy=100, r=70, ir=44;
+  let cumAngle = -Math.PI/2;
+  const paths = slices.map(s => {
+    const angle = (s.pct/100) * 2*Math.PI;
+    const x1 = cx + r * Math.cos(cumAngle);
+    const y1 = cy + r * Math.sin(cumAngle);
+    const x2 = cx + r * Math.cos(cumAngle + angle);
+    const y2 = cy + r * Math.sin(cumAngle + angle);
+    const ix1 = cx + ir * Math.cos(cumAngle);
+    const iy1 = cy + ir * Math.sin(cumAngle);
+    const ix2 = cx + ir * Math.cos(cumAngle + angle);
+    const iy2 = cy + ir * Math.sin(cumAngle + angle);
+    const large = angle > Math.PI ? 1 : 0;
+    const d = `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} L ${ix2} ${iy2} A ${ir} ${ir} 0 ${large} 0 ${ix1} ${iy1} Z`;
+    cumAngle += angle;
+    return `<path d="${d}" fill="${s.color}" stroke="#fff" stroke-width="1.5"/>`;
+  }).join('');
+  return `<svg viewBox="0 0 200 200" style="width:160px;height:160px;">${paths}</svg>`;
+}
+
+/* ---- Sections ---- */
+function CardExposure() {
+  return `
+  <div class="card">
+    <div class="card-hdr">
+      <span class="card-title">Exposure</span>
+      <div class="stab">
+        <button class="stab-btn active">Port Side Cargo</button>
+        <button class="stab-btn">Vessels &amp; Cargo</button>
+      </div>
+      <span style="font-size:13px;font-weight:700;color:#2563eb;margin-left:8px;">$3.34B</span>
+    </div>
+    <div style="display:grid;grid-template-columns:140px 1fr;">
+      <!-- Left panel -->
+      <div style="padding:14px;border-right:1px solid #f1f5f9;display:flex;flex-direction:column;gap:10px;">
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">Skytek Exposure</div>
+          <div style="font-size:18px;font-weight:800;color:#2563eb;">$6.31M</div>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">Total Exposure</div>
+          <div style="font-size:18px;font-weight:800;color:#0f172a;">$7.89B</div>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Select past exposure</div>
+          <select style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 6px;font-size:11px;color:#334155;">
+            <option>08/08/2024</option><option>07/08/2024</option><option>06/08/2024</option>
+          </select>
+        </div>
+      </div>
+      <!-- Table -->
+      <div>
+        <table class="dt">
+          <thead><tr><th>Type</th><th style="text-align:right;">Qty</th><th style="text-align:right;">Est. Value</th></tr></thead>
+          <tbody>
+            <tr><td>Roll on Roll off exposure</td><td style="text-align:right;tabular-nums;">4.77K Cars</td><td style="text-align:right;font-weight:600;">$142.97M</td></tr>
+            <tr><td>Containers exposure</td><td style="text-align:right;tabular-nums;">90.90K TEU</td><td style="text-align:right;font-weight:600;">$2.73B</td></tr>
+            <tr><td>Reefer exposure</td><td style="text-align:right;tabular-nums;">7.27K TEU</td><td style="text-align:right;font-weight:600;">$218.17M</td></tr>
+            <tr><td>Crude Oil</td><td style="text-align:right;tabular-nums;">115.0K MT</td><td style="text-align:right;font-weight:600;">$63.00M</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+function CardTrendsSummary() {
+  const rows = [
+    { label:'Total Dry Bulk',     y2023:'1.1M MT',  y2024:'1.0M MT',  ytd:'967.0K MT'  },
+    { label:'Total Liquid Bulk',  y2023:'92.6M MT', y2024:'92.3M MT', ytd:'86.4M MT'   },
+    { label:'Roll On Roll Off',   y2023:'64.3K Cars',y2024:'76.1K Cars',ytd:'76.0K Cars'},
+    { label:'Total Containers',   y2023:'9.0M TEU', y2024:'10.3M TEU',ytd:'8.7M TEU'   },
+  ];
+  return `
+  <div class="card">
+    <div class="card-hdr"><span class="card-title">Trends &amp; Statistics</span></div>
+    <div style="padding:0;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;border-bottom:1px solid #f1f5f9;">
+        <div style="padding:8px 14px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;"></div>
+        <div style="padding:8px 14px;font-size:11px;font-weight:700;color:#64748b;text-align:center;">2023</div>
+        <div style="padding:8px 14px;font-size:11px;font-weight:700;color:#0f172a;text-align:center;border-bottom:2px solid #2563eb;">2024</div>
+        <div style="padding:8px 14px;font-size:11px;font-weight:700;color:#64748b;text-align:center;">YTD</div>
+      </div>
+      ${rows.map(r => `
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;border-bottom:1px solid #f1f5f9;">
+          <div style="padding:10px 14px;"><span class="lnk" style="font-size:12px;">${r.label}</span></div>
+          <div style="padding:10px 14px;text-align:center;font-size:12px;color:#64748b;">${r.y2023}</div>
+          <div style="padding:10px 14px;text-align:center;font-size:12px;font-weight:600;color:#0f172a;">${r.y2024}</div>
+          <div style="padding:10px 14px;text-align:center;font-size:12px;color:#64748b;">${r.ytd}</div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function CardVessels() {
+  return `
+  <div class="card" style="overflow:hidden;max-height:320px;display:flex;flex-direction:column;">
+    <div class="card-hdr"><span class="card-title">Current Vessels In Port</span></div>
+    <div style="flex:1;overflow-y:auto;" class="scroll-thin">
+      <table class="dt">
+        <thead><tr><th>Asset</th><th>Flag</th><th>MMSI</th><th>Type</th><th>Length</th><th>Width</th></tr></thead>
+        <tbody>
+          ${VESSELS.map(v => `
+            <tr>
+              <td><span class="lnk">${v.name}</span></td>
+              <td style="font-size:12px;"><img src="https://flagcdn.com/w20/${v.flag.toLowerCase()}.png" width="14" style="vertical-align:middle;border-radius:2px;margin-right:4px;" />United States</td>
+              <td><span class="lnk">${v.mmsi}</span></td>
+              <td style="font-size:12px;color:#64748b;">${v.type}</td>
+              <td style="tabular-nums;">${v.len}</td>
+              <td style="tabular-nums;">${v.wid}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function CardMap() {
+  const fsIco = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>`;
+  const lyrIco= `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`;
+  const tagIco= `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`;
+  return `
+  <div class="card" style="display:flex;flex-direction:column;min-height:320px;">
+    <div class="card-hdr"><span class="card-title">Port Location &amp; Surrounding Area</span></div>
+    <div style="position:relative;flex:1;">
+      <div id="port-map"></div>
+      <button class="map-btn" style="position:absolute;top:10px;left:10px;z-index:400;" title="Fullscreen">${fsIco}</button>
+      <div style="position:absolute;top:10px;right:10px;z-index:400;display:flex;flex-direction:column;gap:4px;">
+        <button class="map-btn" title="Layers">${lyrIco}</button>
+        <button class="map-btn" title="Labels">${tagIco}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function CardTrendsDetail() {
+  const chartRow = TREND_ROWS[0];
+  return `
+  <div class="card">
+    <div class="card-hdr">
+      <span class="card-title">Trends &amp; Statistics</span>
+      <select style="border:1px solid #e2e8f0;border-radius:6px;padding:3px 8px;font-size:12px;font-weight:600;color:#334155;background:#fff;">
+        <option>2024</option><option>2023</option><option>2022</option>
+      </select>
+    </div>
+    <div style="overflow-x:auto;" class="scroll-thin">
+      <table class="trend-table" style="min-width:900px;">
+        <thead>
+          <tr>
+            <th></th>
+            ${MONTHS.map(m => `<th>${m}</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>
+          ${TREND_ROWS.map((r, ri) => `
+            <tr class="expandable" style="${ri===0?'color:#2563eb;':''}">
+              <td style="${ri===0?'color:#2563eb;':''};padding:10px;">
+                <div style="font-weight:600;font-size:12px;${ri===0?'color:#2563eb;':''}">${r.label}</div>
+                <div style="font-size:10px;color:#94a3b8;">${r.unit}</div>
+                ${ri===0 ? `<div style="padding:0;"><div style="font-size:11px;font-weight:700;color:#0f172a;margin-top:4px;padding:2px 0 8px;">Estimated Dry Bulk Throughput</div>${BarChart(r.data, r.prev)}</div>` : ''}
+              </td>
+              ${r.data.map(v => `<td>${v.toLocaleString()}</td>`).join('')}
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function CardRiskExposure() {
+  const exportIco = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`;
+  return `
+  <div class="card">
+    <div class="card-hdr">
+      <span class="card-title">Port Side Risk Exposure</span>
+      <button style="background:none;border:0;cursor:pointer;padding:4px;">${exportIco}</button>
+    </div>
+    <table class="risk-table">
+      <thead><tr><th>Zone</th><th>Asset Type</th><th>Count/Area</th><th>Unit Value</th><th>Total Value</th></tr></thead>
+      <tbody>
+        ${RISK_ZONES.map(z => `
+          <tr>
+            <td style="font-weight:600;">${z.zone}</td>
+            <td><div style="display:flex;align-items:center;gap:6px;"><div class="type-dot" style="background:${z.color};"></div><span style="font-size:12px;">${z.assetType}</span></div></td>
+            <td style="tabular-nums;">${z.count}</td>
+            <td style="tabular-nums;">${z.unit}</td>
+            <td style="tabular-nums;font-weight:600;">${z.total}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function CardTerminals() {
+  return `
+  <div class="card" style="overflow:hidden;">
+    <div class="card-hdr"><span class="card-title">Terminals</span></div>
+    <table class="dt">
+      <thead><tr><th>Name</th><th style="text-align:right;">Num Berths</th></tr></thead>
+      <tbody>
+        ${TERMINALS.map(t => `
+          <tr>
+            <td><span class="lnk">${t.name}</span></td>
+            <td style="text-align:right;font-weight:600;">${t.berths}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function CardBerthPurpose() {
+  return `
+  <div class="card">
+    <div class="card-hdr"><span class="card-title">Berth Purpose</span></div>
+    <div style="padding:16px;display:flex;flex-direction:column;align-items:center;gap:16px;">
+      ${DonutChart(BERTH_PURPOSE)}
+      <div style="display:flex;flex-wrap:wrap;gap:8px 14px;justify-content:center;">
+        ${BERTH_PURPOSE.map(s => `
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#475569;">
+            <div style="width:10px;height:10px;border-radius:2px;background:${s.color};flex-shrink:0;${s.color==='#1e293b'?'border:1px solid #e2e8f0;':''}"></div>
+            ${s.label}
+          </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---- Map init ---- */
+let portMap = null;
+function initMap() {
+  const el = document.getElementById('port-map');
+  if (!el || portMap) return;
+  portMap = L.map(el, { center:[PORT.lat, PORT.lng], zoom:13, zoomControl:true, scrollWheelZoom:true });
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution:'', maxZoom:19 }).addTo(portMap);
+
+  /* Circle overlay */
+  L.circle([PORT.lat, PORT.lng], { radius:2000, color:'#2563eb', weight:2.5, fillColor:'#2563eb', fillOpacity:0.08 }).addTo(portMap);
+
+  /* Port marker */
+  const anchorSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg>`;
+  const icon = L.divIcon({ className:'', html:`<div style="width:28px;height:28px;border-radius:50%;background:#2563eb;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;">${anchorSvg}</div>`, iconSize:[28,28], iconAnchor:[14,14] });
+  L.marker([PORT.lat, PORT.lng], { icon }).bindPopup(`<b>${PORT.name}</b><br>${PORT.country}`).addTo(portMap);
+
+  /* Label */
+  const labelIcon = L.divIcon({ className:'', html:`<div style="background:rgba(15,23,42,.65);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;white-space:nowrap;backdrop-filter:blur(2px);">${PORT.name}</div>`, iconSize:[0,0], iconAnchor:[-14,28] });
+  L.marker([PORT.lat, PORT.lng], { icon:labelIcon }).addTo(portMap);
+
+  const zin=el.querySelector('.leaflet-control-zoom-in'), zout=el.querySelector('.leaflet-control-zoom-out');
+  if(zin)  zin.innerHTML=`<span style="font-size:18px;line-height:30px;display:block;text-align:center;">+</span>`;
+  if(zout) zout.innerHTML=`<span style="font-size:20px;line-height:30px;display:block;text-align:center;">&minus;</span>`;
+}
+
+/* ---- Render ---- */
+window.render = function() {
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
+      ${SC.Topbar()}
+      <div class="flex-1 overflow-y-auto scroll-thin px-4 py-4">
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <!-- Row 1 -->
+          <div style="display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:12px;align-items:start;">
+            ${CardExposure()}
+            ${CardTrendsSummary()}
+          </div>
+          <!-- Row 2 -->
+          <div style="display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:12px;align-items:start;">
+            ${CardVessels()}
+            ${CardMap()}
+          </div>
+          <!-- Row 3: Trends detail -->
+          ${CardTrendsDetail()}
+          <!-- Row 4: Risk -->
+          ${CardRiskExposure()}
+          <!-- Row 5: Terminals + Berth -->
+          <div style="display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:12px;align-items:start;">
+            ${CardTerminals()}
+            ${CardBerthPurpose()}
+          </div>
+        </div>
+      </div>
+    </div>
+    ${SC.TweaksPanel()}
+  `;
+  SC.wireChrome();
+  setTimeout(initMap, 80);
+};
+window.render();
+</script>
+</body>
+</html>

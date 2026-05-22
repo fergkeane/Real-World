@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Offshore/Energy — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { height:100%; }
+  body { font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; }
+  .text-ink-900 { color:#0f172a; }
+  .text-ink-800 { color:#1e293b; }
+  .text-ink-700 { color:#334155; }
+  .text-ink-600 { color:#475569; }
+  .text-ink-500 { color:#64748b; }
+  .text-ink-400 { color:#94a3b8; }
+  .text-ink-300 { color:#cbd5e1; }
+  .text-ink-200 { color:#e2e8f0; }
+  .text-ink-100 { color:#f1f5f9; }
+  .bg-ink-100 { background:#f1f5f9; }
+  .bg-ink-50 { background:#f8fafc; }
+  .bg-ink-900 { background:#0f172a; }
+  .border-ink-100 { border-color:#f1f5f9; }
+  .border-ink-200 { border-color:#e2e8f0; }
+  .shadow-card { box-shadow:0 1px 2px rgba(15,23,42,.08), 0 0 0 1px rgba(15,23,42,.02); }
+  .text-brand-600 { color:#2563eb; }
+  .bg-brand-600 { background:#2563eb; }
+  .bg-brand-050 { background:#eff6ff; }
+  .scroll-thin::-webkit-scrollbar { width:6px; height:6px; }
+  .scroll-thin::-webkit-scrollbar-track { background:transparent; }
+  .scroll-thin::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:999px; }
+  .scroll-thin::-webkit-scrollbar-thumb:hover { background:#94a3b8; }
+  .tracking-micro { letter-spacing:0.04em; }
+  .ring-focus:focus-visible { outline:2px solid #3b82f6; outline-offset:2px; border-radius:8px; }
+  [data-density="compact"] .py-density { padding-top:.75rem; padding-bottom:.75rem; }
+  [data-density="comfortable"] .py-density { padding-top:1.25rem; padding-bottom:1.25rem; }
+  [data-density="compact"] .gap-density { gap:.75rem; }
+  [data-density="comfortable"] .gap-density { gap:1rem; }
+  /* Pill tabs (Skytek DS — animated pill via shared layout) */
+  .ds-tabs { position:relative; display:inline-flex; gap:4px; padding:4px; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:9999px; }
+  .ds-tabs.is-stretch { display:flex; }
+  .ds-tabs.is-stretch > .ds-tab { flex:1; }
+  .ds-tab { position:relative; font:inherit; font-size:13px; font-weight:600; padding:8px 18px; background:transparent; border:0; border-radius:9999px; color:#64748b; cursor:pointer; transition:color 140ms ease; display:inline-flex; align-items:center; justify-content:center; gap:6px; white-space:nowrap; text-align:center; }
+  .ds-tab:hover { color:#0f172a; }
+  .ds-tab[aria-selected="true"], .ds-tab[aria-selected="true"]:hover { color:#fff; }
+  .ds-tab-pill { position:absolute; top:4px; left:0; height:calc(100% - 8px); background:#2563eb; border-radius:9999px; box-shadow:0 1px 2px rgba(15,23,42,.12); z-index:0; transform:translateX(0) scaleX(1); transform-origin:left center; transition:transform 320ms cubic-bezier(.34,1.2,.64,1), width 320ms cubic-bezier(.34,1.2,.64,1); pointer-events:none; }
+  .ds-tab-pill.is-init { transition:none; }
+  .ds-tab-label { position:relative; z-index:1; display:inline-flex; align-items:center; gap:6px; }
+  /* Leaflet custom */
+  #offshore-map { background:#e0ebe9; }
+  #offshore-map .leaflet-top.leaflet-left { top:56px; left:2px; }
+  #offshore-map .leaflet-top.leaflet-left .leaflet-bar { margin-left:10px !important; }
+  #map-fullscreen.map-btn-fs { width:32px; height:32px; border-radius:8px !important; left:12px !important; top:12px !important; }
+  .leaflet-control-zoom, .leaflet-bar { border:1px solid #e2e8f0 !important; box-shadow: 0 1px 2px rgb(15 23 42 / .08) !important; border-radius: 8px !important; overflow:hidden; }
+  .leaflet-bar a { background:#fff !important; color:#334155 !important; }
+  .leaflet-bar a:hover { background:#f1f5f9 !important; }
+  .leaflet-control-zoom a { display:flex !important; align-items:center; justify-content:center; padding:0 !important; }
+  .leaflet-control-zoom a svg { width:16px; height:16px; }
+  .map-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:#fff; border:1px solid #e2e8f0; border-radius:8px; color:#334155; box-shadow: 0 1px 2px rgb(15 23 42 / .08); }
+  .map-btn:hover { background:#f1f5f9; }
+  .offshore-marker { display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .offshore-dot { width:10px; height:10px; border-radius:50%; border:2px solid #fff; box-shadow:0 2px 4px rgba(0,0,0,.3); }
+  .offshore-label { background:#1e293b; color:#fff; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:600; white-space:nowrap; box-shadow:0 2px 4px rgba(0,0,0,.3); }
+  #map-container.is-fullscreen { position:fixed; inset:0; z-index:9999; border-radius:0; border:0; }
+  #map-container.is-fullscreen > div { height:100vh !important; }
+  .asset-popup .leaflet-popup-content-wrapper { padding:0; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(15,23,42,.25); }
+  .asset-popup .leaflet-popup-content { margin:0; width:300px !important; font-family:'Inter',sans-serif; }
+  .asset-popup .leaflet-popup-tip { background:#fff; }
+  .asset-popup .leaflet-popup-close-button { color:#fff !important; top:8px !important; right:10px !important; font-size:22px !important; font-weight:300 !important; width:24px !important; height:24px !important; opacity:1 !important; line-height:1 !important; border-radius:4px; }
+  .asset-popup .leaflet-popup-close-button:hover { background:rgba(255,255,255,.2) !important; color:#fff !important; }
+</style>
+</head>
+<body class="bg-ink-100 text-ink-900 antialiased" data-density="compact">
+<div id="app" class="min-h-screen w-full flex"></div>
+
+<script>
+  window.PAGE = { id:'energy', title:'Offshore/Energy', crumb:'Overview' };
+  window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "density": "compact",
+    "accent": "blue",
+    "sidebarExpanded": false,
+    "showSparklines": true
+  }/*EDITMODE-END*/;
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="shared/chrome.js?v=4"></script>
+<script>
+const SC = window.sharedChrome;
+const Ico = SC.I;
+
+/* ----------- STATE ----------- */
+let state = {
+  portfolioTab: 'Portfolio',
+  regionsTab: 'Regions Aggregation',
+  weatherTab: 'Weather',
+};
+
+/* ----------- DATA ----------- */
+const PORTFOLIOS = [
+  { name:'Venezuelan Offshore',  assets:12, exposure:'$1.85B' },
+  { name:'Gulf of Mexico Assets', assets:10, exposure:'$2.37B' },
+  { name:'Ekofisk',              assets:9,  exposure:'$540.0M' },
+  { name:'Chevron',              assets:8,  exposure:'$918.0M' },
+  { name:'Fosen Vind Power',     assets:7,  exposure:'$850.0M' },
+  { name:'Neptune Energy',       assets:8,  exposure:'$450.0M' },
+  { name:'Oseberg',              assets:6,  exposure:'$380.0M' },
+];
+
+const REGIONS = [
+  { name:'North Sea',      above:'$234', ours:'$156.8B', icon:'🗂️' },
+  { name:'Gulf of Mexico', above:'$198', ours:'$234.5B', icon:'🗂️' },
+  { name:'West Africa',    above:'$167', ours:'$178.3B', icon:'🗂️' },
+  { name:'Brazil',         above:'$145', ours:'$198.7B', icon:'🗂️' },
+  { name:'Southeast Asia', above:'$123', ours:'$134.2B', icon:'🗂️' },
+  { name:'Australia',      above:'$98',  ours:'$123.6B', icon:'🗂️' },
+];
+
+const WEATHER = [
+  { event:'Hurricane Delta',   region:'Gulf of Mexico',      date:'2024-11-01', knots:'155', category:'Category 5' },
+  { event:'North Sea Storm',   region:'North Sea',           date:'2024-10-29', knots:'95',  category:'Severe Storm' },
+  { event:'Typhoon Mawar',     region:'South China Sea',     date:'2024-10-28', knots:'125', category:'Category 4' },
+  { event:'Cyclone Freddy',    region:'Mozambique Channel',  date:'2024-11-02', knots:'85',  category:'Category 3' },
+  { event:'Winter Storm Titan',region:'Norwegian Sea',       date:'2024-11-03', knots:'105', category:'Winter Storm' },
+];
+
+const MARKERS = [
+  { lat:56.5,  lng:3.2,   name:'Buzzard Isle & Elev...', color:'#ec4899',
+    fullName:'Buzzard Isle & Elevator', assetType:'Fixed Platform',
+    operator:'Chrysaor Holdings', country:'United Kingdom',
+    coords:'56.50N / 3.20E', waterDepth:'98m',
+    status:'Operational', production:'65,000 bbl/day',
+    commissioned:'2007', policyType:'Energy Package', field:'Buzzard Field' },
+  { lat:57.8,  lng:2.9,   name:'Hilo Subsea Vision', color:'#06b6d4',
+    fullName:'Hilo Subsea Vision', assetType:'Subsea Installation',
+    operator:'bp', country:'United Kingdom',
+    coords:'57.80N / 2.90E', waterDepth:'145m',
+    status:'Operational', production:'42,000 bbl/day',
+    commissioned:'2011', policyType:'Cargo', field:'North Sea' },
+  { lat:58.1,  lng:2.5,   name:'Barracouta', color:'#8b5cf6',
+    fullName:'Barracouta', assetType:'FPSO',
+    operator:'Neptune Energy', country:'United Kingdom',
+    coords:'58.10N / 2.50E', waterDepth:'112m',
+    status:'Under Maintenance', production:'28,000 bbl/day',
+    commissioned:'2004', policyType:'Hull & Machinery', field:'Barracouta Field' },
+  { lat:59.2,  lng:2.1,   name:'East Commander', color:'#10b981',
+    fullName:'East Commander', assetType:'Jack-Up Rig',
+    operator:'Equinor', country:'Norway',
+    coords:'59.20N / 2.10E', waterDepth:'78m',
+    status:'Operational', production:'35,000 bbl/day',
+    commissioned:'2015', policyType:'Energy Package', field:'North Sea' },
+  { lat:27.5,  lng:-91.2, name:'Dorado Mjol Elevator', color:'#f59e0b',
+    fullName:'Dorado Mjol Elevator', assetType:'Semi-Submersible',
+    operator:'Shell', country:'United States',
+    coords:'27.50N / 91.20W', waterDepth:'1,480m',
+    status:'Operational', production:'120,000 bbl/day',
+    commissioned:'2019', policyType:'Cargo', field:'Gulf of Mexico' },
+  { lat:28.2,  lng:-89.8, name:'Auger TLP', color:'#06b6d4',
+    fullName:'Auger Tension Leg Platform', assetType:'TLP',
+    operator:'Chevron', country:'United States',
+    coords:'28.20N / 89.80W', waterDepth:'2,200m',
+    status:'Operational', production:'88,000 bbl/day',
+    commissioned:'2016', policyType:'Hull & Machinery', field:'Gulf of Mexico' },
+  { lat:-35.8, lng:19.5,  name:'Hopperish', color:'#06b6d4',
+    fullName:'Hopperish Deepwater', assetType:'Drillship',
+    operator:'TotalEnergies', country:'South Africa',
+    coords:'35.80S / 19.50E', waterDepth:'3,100m',
+    status:'Stacked', production:'0 bbl/day',
+    commissioned:'2013', policyType:'Cargo', field:'Orange Basin' },
+  { lat:-42.5, lng:-56.8, name:'Teora Lopes Elevator', color:'#ea580c',
+    fullName:'Teora Lopes Elevator', assetType:'Mobile Production (MOPU)',
+    operator:'Petrobras', country:'Brazil',
+    coords:'24.80S / 44.20W', waterDepth:'2,150m',
+    status:'Operational', production:'100,000 bbl/day',
+    commissioned:'2017', policyType:'Cargo', field:'Santos Basin' },
+];
+
+/* ----------- HELPERS ----------- */
+function tabs(tabs, active, groupAttr) {
+  return `
+  <div class="ds-tabs is-stretch" data-tab-group="${groupAttr}">
+    <span class="ds-tab-pill is-init" data-tab-pill></span>
+    ${tabs.map(t => `
+      <button ${groupAttr}="${t}" aria-selected="${t===active}" class="ds-tab" style="font-size:12px; padding:6px 12px;">
+        <span class="ds-tab-label">${t}</span>
+      </button>
+    `).join('')}
+  </div>`;
+}
+function positionTabPills() {
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.ds-tabs').forEach(group => {
+      const pill   = group.querySelector('[data-tab-pill]');
+      const active = group.querySelector('.ds-tab[aria-selected="true"]');
+      if (!pill || !active) return;
+      const gRect = group.getBoundingClientRect();
+      const aRect = active.getBoundingClientRect();
+      if (!aRect.width) return;
+      pill.style.width     = aRect.width + 'px';
+      pill.style.transform = `translateX(${aRect.left - gRect.left}px)`;
+      requestAnimationFrame(() => pill.classList.remove('is-init'));
+    });
+  });
+}
+
+/* ----------- CARDS ----------- */
+function PortfolioCard() {
+  return `
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:280px">
+    <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Portfolio','Portfolio Groups'], state.portfolioTab, 'data-portfolio-tab')}</div>
+    <div class="flex-1 overflow-y-auto scroll-thin">
+      <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto_auto] gap-6 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white">
+        <span>Name</span>
+        <span class="text-right">Assets ↑↓</span>
+        <span class="text-right">Exposure ↑↓</span>
+      </div>
+      ${PORTFOLIOS.map((p, i) => `
+        <button data-off-pf-idx="${i}" class="w-full text-left px-3 py-2 hover:bg-ink-50 flex items-center justify-between text-xs">
+          <span class="truncate text-brand-600 font-semibold hover:underline">${p.name}</span>
+          <span class="flex items-center gap-6 tabular-nums text-ink-600 shrink-0">
+            <span class="w-8 text-right">${p.assets}</span>
+            <span class="w-20 text-right font-semibold text-ink-900">${p.exposure}</span>
+          </span>
+        </button>
+      `).join('')}
+    </div>
+    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 flex items-center justify-between text-xs h-9">
+      <button class="inline-flex items-center gap-1 text-brand-600 font-semibold hover:text-brand-700 tracking-micro">+ ADD PORTFOLIO</button>
+      <button class="inline-flex items-center gap-1 text-brand-600 font-semibold hover:text-brand-700 tracking-micro">VIEW ALL PORTFOLIOS &amp; GROUPS</button>
+    </div>
+  </div>`;
+}
+
+function RegionsCard() {
+  return `
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:280px">
+    <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Regions Aggregation','Exposure Aggregation'], state.regionsTab, 'data-regions-tab')}</div>
+    <div class="flex-1 overflow-y-auto scroll-thin">
+      <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto_auto] gap-6 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white">
+        <span>Name</span>
+        <span class="text-right">Above Threshold ↑↓</span>
+        <span class="text-right">Our Exposure ↑↓</span>
+      </div>
+      <div class="px-3 pt-1 pb-2 text-[10px] font-bold uppercase text-ink-500">Monitored Regions:</div>
+      ${REGIONS.map(r => `
+        <button class="w-full text-left px-3 py-2 hover:bg-ink-50 grid grid-cols-[1fr_auto_auto] gap-6 text-xs items-center">
+          <span class="truncate text-brand-600 font-medium inline-flex items-center gap-2">
+            <span>${r.icon}</span>
+            <span>${r.name}</span>
+          </span>
+          <span class="tabular-nums text-orange-600 font-semibold">${r.above}</span>
+          <span class="tabular-nums text-right font-semibold text-ink-900">${r.ours}</span>
+        </button>
+      `).join('')}
+      <div class="px-3 pt-2 pb-1 text-[10px] font-bold uppercase text-ink-500">Our Top Exposure Today</div>
+    </div>
+    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 text-center h-9 flex items-center justify-center">
+      <button class="text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">ALL REGIONS</button>
+    </div>
+  </div>`;
+}
+
+function WeatherCard() {
+  const badge = (txt, cat) => {
+    const bg = cat.includes('5') ? 'bg-red-100 text-red-700' : 
+               cat.includes('4') ? 'bg-orange-100 text-orange-700' :
+               cat.includes('3') ? 'bg-amber-100 text-amber-700' :
+               cat.includes('Winter') ? 'bg-rose-100 text-rose-700' :
+               'bg-orange-100 text-orange-700';
+    return `<span class="px-2 py-0.5 rounded-md text-[10px] font-semibold ${bg}">${txt}</span>`;
+  };
+  return `
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:280px">
+    <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Weather','Alerts'], state.weatherTab, 'data-weather-tab')}</div>
+    <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto_auto] gap-3 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white">
+      <span>Event Name</span>
+      <span>Region</span>
+      <span>Category</span>
+    </div>
+    <div class="flex-1 overflow-y-auto scroll-thin">
+      ${WEATHER.map(w => `
+        <div class="px-3 py-2 hover:bg-ink-50 text-xs border-t border-ink-100 first:border-0">
+          <div class="grid grid-cols-[1fr_auto] gap-3 mb-1">
+            <span class="font-semibold text-brand-600 truncate">${w.event}</span>
+            ${badge(w.category, w.category)}
+          </div>
+          <div class="flex items-center gap-1 text-ink-500 text-[11px] mb-0.5">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"/></svg>
+            <span>${w.knots} knots</span>
+          </div>
+          <div class="text-ink-700">${w.region}</div>
+          <div class="text-ink-500 text-[11px] tabular-nums">${w.date}</div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 text-center h-9 flex items-center justify-center">
+      <button class="text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">VIEW ALL</button>
+    </div>
+  </div>`;
+}
+
+/* ----------- ASSET POPUP ----------- */
+function buildPopupHTML(m) {
+  const statusColor = m.status === 'Operational' ? '#10b981' :
+                      m.status === 'Under Maintenance' ? '#f59e0b' : '#94a3b8';
+  const row = (label, val, color) =>
+    `<div><div style="font-size:11px;color:#64748b;margin-bottom:2px;">${label}:</div><div style="font-size:13px;font-weight:600;color:${color||'#0f172a'};">${val}</div></div>`;
+  return `
+    <div style="background:#2563eb;padding:12px 36px 12px 16px;">
+      <div style="color:#fff;font-weight:700;font-size:13px;line-height:1.35;">${m.fullName}</div>
+      <div style="color:rgba(255,255,255,.75);font-size:11px;font-weight:500;margin-top:2px;">${m.assetType}</div>
+    </div>
+    <div style="padding:14px 16px 6px;display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;">
+      ${row('Operator', m.operator)}
+      ${row('Country', m.country)}
+      ${row('Coordinates', m.coords)}
+      ${row('Water Depth', m.waterDepth)}
+      ${row('Status', m.status, statusColor)}
+      ${row('Production', m.production)}
+    </div>
+    <div style="padding:4px 16px 8px;display:flex;flex-direction:column;gap:8px;">
+      ${row('Commissioned', m.commissioned)}
+      ${row('Policy Type', m.policyType)}
+      ${row('Field', m.field)}
+    </div>
+    <div style="padding:4px 16px 14px;">
+      <button style="display:block;width:100%;background:#fff;color:#2563eb;border:1.5px solid #2563eb;border-radius:8px;padding:10px 12px;font-weight:700;font-size:12.5px;cursor:pointer;" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='#fffround='#1d4ed8'" onmouseout="this.style.background='#2563eb'" onclick="window.location.href='AssetOffshoreDetails.html'">View Details</button>
+    </div>`;
+}
+
+
+/* ----------- MAP ----------- */
+let map = null;
+let currentMapType = 'satellite';
+let tileLayer = null;
+
+const MAP_TYPES = {
+  satellite: { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', bg: '#0b1e2e' },
+  street:    { url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', bg: '#f8fafc' },
+  dark:      { url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', bg: '#0b1e2e' },
+  light:     { url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', bg: '#e0ebe9' },
+};
+
+function setMapType(type) {
+  if (!map || !MAP_TYPES[type]) return;
+  currentMapType = type;
+  if (tileLayer) map.removeLayer(tileLayer);
+  tileLayer = L.tileLayer(MAP_TYPES[type].url, { attribution: '', subdomains: 'abcd', maxZoom: 19 }).addTo(map);
+  document.getElementById('offshore-map').style.background = MAP_TYPES[type].bg;
+  document.querySelectorAll('[data-map-type]').forEach(b => {
+    const isOn = b.dataset.mapType === type;
+    const lbl = b.querySelector('[data-label]');
+    const chk = b.querySelector('[data-check]');
+    if (lbl) lbl.style.fontWeight = isOn ? '700' : '400';
+    if (chk) chk.style.opacity = isOn ? '1' : '0';
+  });
+}
+
+function initMap() {
+  const c = document.getElementById('offshore-map');
+  if (!c) return;
+  if (map) {
+    if (!document.body.contains(map.getContainer())) {
+      map.remove(); map = null; tileLayer = null;
+    } else {
+      map.invalidateSize();
+      return;
+    }
+  }
+  map = L.map(c, {
+    center: [25, 10],
+    zoom: 2,
+    minZoom: 2,
+    maxZoom: 8,
+    zoomControl: true,
+    scrollWheelZoom: true,
+  });
+  setMapType(currentMapType);
+
+  MARKERS.forEach(m => {
+    const html = m.name ? 
+      `<div class="offshore-marker"><div class="offshore-dot" style="background:${m.color}"></div><div class="offshore-label">${m.name}</div></div>` :
+      `<div class="offshore-marker"><div class="offshore-dot" style="background:${m.color}"></div></div>`;
+    const icon = L.divIcon({
+      className: '',
+      html,
+      iconSize: [120, 40],
+      iconAnchor: [60, 20],
+    });
+    L.marker([m.lat, m.lng], { icon })
+      .bindPopup(buildPopupHTML(m), { className:'asset-popup', maxWidth:300, minWidth:300, closeButton:true, autoPanPadding:[30,30] })
+      .on('popupopen', () => { sessionStorage.setItem('selectedOffshoreAsset', JSON.stringify(m)); })
+      .addTo(map);
+  });
+
+  // Custom zoom controls
+  const zin = document.querySelector('.leaflet-control-zoom-in');
+  const zout = document.querySelector('.leaflet-control-zoom-out');
+  if (zin) zin.innerHTML = `<span class="inline-flex items-center justify-center h-full w-full">${Ico.plus}</span>`;
+  if (zout) zout.innerHTML = `<span class="inline-flex items-center justify-center h-full w-full">${Ico.minus}</span>`;
+
+  // Fullscreen toggle
+  const fsBtn = document.getElementById('map-fullscreen');
+  const container = document.getElementById('map-container');
+  if (fsBtn && container) {
+    fsBtn.onclick = () => {
+      const isFs = container.classList.toggle('is-fullscreen');
+      fsBtn.innerHTML = isFs ? Ico.minimize : Ico.maximize;
+      fsBtn.title = isFs ? 'Exit fullscreen' : 'Toggle fullscreen';
+      document.body.style.overflow = isFs ? 'hidden' : '';
+      setTimeout(() => map.invalidateSize(), 260);
+    };
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && container.classList.contains('is-fullscreen')) fsBtn.onclick();
+    });
+  }
+
+  // Map type selector
+  const layersBtn = document.getElementById('map-layers-btn');
+  const layersMenu = document.getElementById('map-layers-menu');
+  if (layersBtn && layersMenu) {
+    layersBtn.onclick = (e) => { e.stopPropagation(); layersMenu.classList.toggle('hidden'); };
+    layersMenu.querySelectorAll('[data-map-type]').forEach(opt => {
+      opt.onclick = (e) => { e.stopPropagation(); setMapType(opt.dataset.mapType); layersMenu.classList.add('hidden'); };
+    });
+    document.addEventListener('click', () => layersMenu.classList.add('hidden'));
+  }
+  setMapType('satellite');
+}
+
+/* ----------- CONTENT ----------- */
+function Content() {
+  return `
+  <div class="px-4 lg:px-6 py-4 space-y-3">
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+      ${PortfolioCard()}
+      ${RegionsCard()}
+      ${WeatherCard()}
+    </section>
+    <section class="bg-white rounded-xl border border-ink-200 shadow-card overflow-hidden" id="map-container" style="height:calc(100vh - 380px); min-height:800px;">
+      <div class="p-3 border-b border-ink-100 flex items-center justify-between">
+        <div class="text-sm font-semibold text-ink-900">Asset Locations</div>
+      </div>
+      <div class="relative flex-1" style="height:calc(100% - 53px);">
+        <div id="offshore-map" class="absolute inset-0"></div>
+        <button id="map-fullscreen" class="map-btn map-btn-fs absolute z-[400]" title="Toggle fullscreen" style="top:12px; left:12px;">${Ico.maximize}</button>
+        <div class="absolute top-3 right-3 z-[400] flex flex-col gap-1 items-end">
+          <div class="relative">
+            <button id="map-layers-btn" class="map-btn" title="Layers">${Ico.layers}</button>
+            <div id="map-layers-menu" class="hidden absolute top-0 right-[calc(100%+8px)] w-[160px] bg-white border border-ink-200 rounded-xl shadow-card overflow-hidden py-1">
+              ${[
+                { id:'satellite', label:'Satellite' },
+                { id:'street',    label:'Street View' },
+                { id:'dark',      label:'Dark Mode' },
+                { id:'light',     label:'Light Mode' },
+              ].map(o => `
+                <button data-map-type="${o.id}" class="map-type-opt w-full flex items-center justify-between px-3 py-2 text-sm text-ink-700 hover:bg-ink-50 transition-colors">
+                  <span data-label>${o.label}</span>
+                  <span class="text-brand-600 opacity-0" data-check>${Ico.check}</span>
+                </button>`).join('')}
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+    </section>
+  </div>`;
+}
+
+/* ----------- RENDER + WIRING ----------- */
+window.render = function render() {
+  if (map) { map.remove(); map = null; tileLayer = null; }
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col">
+      ${SC.Topbar()}
+      ${Content()}
+    </div>
+    ${SC.TweaksPanel()}
+  `;
+  SC.wireChrome();
+  const wireTab = (attr, stateKey) => {
+    document.querySelectorAll(`[${attr}]`).forEach(b => b.onclick = () => {
+      const v = b.getAttribute(attr);
+      if (state[stateKey] === v) return;
+      state[stateKey] = v;
+      const group = b.closest('.ds-tabs');
+      if (group) {
+        group.querySelectorAll('.ds-tab').forEach(t => t.setAttribute('aria-selected', String(t === b)));
+        positionTabPills();
+        setTimeout(() => render(), 220);
+      } else { render(); }
+    });
+  };
+  wireTab('data-portfolio-tab', 'portfolioTab');
+  wireTab('data-regions-tab',   'regionsTab');
+  wireTab('data-weather-tab',   'weatherTab');
+
+  /* Portfolio name → details page */
+  document.querySelectorAll('[data-off-pf-idx]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.offPfIdx);
+      const p   = PORTFOLIOS[idx];
+      sessionStorage.setItem('selectedOffshorePF', JSON.stringify({
+        name: p.name, assets: p.assets, exposure: p.exposure,
+      }));
+      location.href = 'OffshorePortfolioDetails.html';
+    });
+  });
+  requestAnimationFrame(positionTabPills);
+  window.addEventListener('resize', positionTabPills, { passive: true });
+  setTimeout(initMap, 50);
+};
+window.render();
+</script>
+</body>
+</html>

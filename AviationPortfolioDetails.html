@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Aviation Portfolio Details — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { height:100%; font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; }
+  .text-ink-900{color:#0f172a}.text-ink-700{color:#334155}.text-ink-600{color:#475569}.text-ink-500{color:#64748b}.text-ink-400{color:#94a3b8}
+  .bg-ink-100{background:#f1f5f9}.bg-ink-50{background:#f8fafc}
+  .border-ink-100{border-color:#f1f5f9}.border-ink-200{border-color:#e2e8f0}
+  .scroll-thin::-webkit-scrollbar{width:5px;height:5px}
+  .scroll-thin::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
+  .dot-pulse::after{content:'';position:absolute;inset:-3px;border-radius:999px;box-shadow:0 0 0 0 rgba(239,68,68,.5);animation:pulse 1.8s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.55)}70%{box-shadow:0 0 0 10px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
+  /* Pill tabs */
+  .ds-tabs{position:relative;display:inline-flex;gap:4px;padding:4px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9999px}
+  .ds-tab{position:relative;font:inherit;font-size:12.5px;font-weight:600;padding:7px 16px;background:transparent;border:0;border-radius:9999px;color:#64748b;cursor:pointer;transition:color 140ms;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+  .ds-tab:hover{color:#0f172a}
+  .ds-tab[aria-selected="true"]{color:#fff}
+  .ds-tab-pill{position:absolute;top:4px;left:0;height:calc(100% - 8px);background:#2563eb;border-radius:9999px;box-shadow:0 1px 2px rgba(15,23,42,.12);z-index:0;transition:transform 300ms cubic-bezier(.34,1.2,.64,1),width 300ms cubic-bezier(.34,1.2,.64,1);pointer-events:none}
+  .ds-tab-pill.is-init{transition:none}
+  .ds-tab-label{position:relative;z-index:1;display:inline-flex;align-items:center;gap:5px}
+  /* Policy table */
+  .pol-table{width:100%;border-collapse:collapse;font-size:12px}
+  .pol-table th{padding:9px 12px;text-align:left;font-size:11.5px;font-weight:600;color:#334155;border-bottom:1px solid #e2e8f0;white-space:nowrap;background:#fff;cursor:default}
+  .pol-table th.sortable{cursor:pointer}
+  .pol-table th.sortable:hover{color:#2563eb}
+  .pol-table td{padding:10px 12px;border-bottom:1px solid #f1f5f9;color:#334155;white-space:nowrap;vertical-align:middle}
+  .pol-table tbody tr:last-child td{border-bottom:0}
+  .pol-table tbody tr:hover td{background:#f8fafc}
+  .pol-table td.id-cell{color:#2563eb;font-weight:600;cursor:pointer}
+  .pol-table td.id-cell:hover{color:#1d4ed8}
+  .sort-ico{display:inline-flex;flex-direction:column;gap:1px;margin-left:3px;vertical-align:middle;opacity:.55}
+  .sort-ico svg{width:7px;height:7px}
+  /* Select */
+  .sel{border:1px solid #e2e8f0;border-radius:6px;padding:4px 22px 4px 8px;font-size:12px;color:#334155;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 5px center;-webkit-appearance:none;font-family:inherit;cursor:pointer}
+  /* Stat cards */
+  .stat-card{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 8px;border-right:1px solid #e2e8f0;text-align:center}
+  .stat-card:last-child{border-right:0}
+</style>
+</head>
+<body class="bg-ink-100 text-ink-900">
+<div id="app" class="min-h-screen w-full flex overflow-hidden"></div>
+
+<script>
+window.PAGE = { id:'aviation', title:'Aviation', crumb:'Portfolio Details' };
+window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "density": "comfortable",
+  "accent": "blue",
+  "sidebarExpanded": false,
+  "showSparklines": true
+}/*EDITMODE-END*/;
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="shared/chrome.js?v=4"></script>
+<script>
+const SC = window.sharedChrome;
+
+/* ── Lucide icon helper (mirrors chrome.js pattern) ──────────────────────── */
+function lico(name, size = 16, color = 'currentColor', sw = 2) {
+  const data = window.lucide && lucide.icons && lucide.icons[name];
+  if (!data) return '';
+  const [tag, attrs, children] = data;
+  const a = { ...attrs, width: size, height: size, stroke: color, 'stroke-width': sw,
+               style: 'display:inline-block;vertical-align:middle;flex-shrink:0' };
+  const attrStr = Object.entries(a).map(([k, v]) => `${k}="${v}"`).join(' ');
+  const inner = (children || []).map(([ct, ca]) =>
+    `<${ct} ${Object.entries(ca).map(([k, v]) => `${k}="${v}"`).join(' ')}/>`
+  ).join('');
+  return `<${tag} ${attrStr}>${inner}</${tag}>`;
+}
+
+/* ── Load portfolio from session ── */
+const DEFAULT_PF = { name:'Air France / KLM', assets:312, exposure:'$28.3B' };
+const PF = (() => { try { const r = sessionStorage.getItem('selectedAviationPortfolio'); return r ? {...DEFAULT_PF,...JSON.parse(r)} : DEFAULT_PF; } catch { return DEFAULT_PF; } })();
+
+/* ── State ── */
+let summaryTab  = 'Summary Statistics';
+let policyView  = 'details';
+let policyPage  = 1;
+const PER_PAGE  = 25;
+const TOTAL     = 520;
+
+/* ── Generate policy rows ── */
+function genPolicies() {
+  const refs   = ['Butler-03','Butler-04','Butler-05','Butler-06','Butler-07','Butler-08','Butler-09','Butler-10','Hughes-01','Hughes-02','Avery-01','Avery-02','Kent-03','Kent-05'];
+  const rows = [];
+  for (let i = 0; i < PER_PAGE; i++) {
+    const id   = 157014758 + i;
+    const tiv  = (27.5 + i * 1.4).toFixed(1);
+    const hull = (25.0 + i * 1.2).toFixed(1);
+    const chw  = (14.1 + i * 0.15).toFixed(1);
+    const hullw= (12.5 + i * 0.45).toFixed(1);
+    const tlohw= (10.0 + i * 0.4).toFixed(1);
+    const appLim = Math.round(50 + i * 1.8);
+    const pass  = Math.round(100 + i * 3.5);
+    const bag   = (5 + i * 0.25).toFixed(1);
+    const cargo = Math.round(20 + i * 0.75);
+    const crew  = (10 + i * 0.35).toFixed(1);
+    const hang  = Math.round(15 + i * 0.6);
+    rows.push({
+      id: `Policy ${id}`,
+      ref: refs[i % refs.length],
+      tiv: `$${tiv}M`, hull:`$${hull}M`, chw:`$${chw}M`,
+      hullw:`$${hullw}M`, tlohw:`$${tlohw}M`,
+      appLim:`$${appLim}M`, pass:`$${pass}M`, bag:`$${bag}M`,
+      cargo:`$${cargo}M`, crew:`$${crew}M`, hang:`$${hang}M`,
+    });
+  }
+  return rows;
+}
+const POLICIES = genPolicies();
+
+/* ── Sort icon ── */
+function sortIcon() {
+  return `<span class="sort-ico">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+  </span>`;
+}
+
+/* ── Flag helper ── */
+function flag(cc, w=18, h=13) {
+  return `<img src="https://flagcdn.com/w40/${cc}.png" width="${w}" height="${h}" style="border-radius:2px;vertical-align:middle;display:inline-block;" />`;
+}
+
+/* ── Tab pill positioning ── */
+function positionTabPills() {
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.ds-tabs').forEach(group => {
+      const pill   = group.querySelector('[data-tab-pill]');
+      const active = group.querySelector('.ds-tab[aria-selected="true"]');
+      if (!pill || !active) return;
+      const gRect = group.getBoundingClientRect();
+      const aRect = active.getBoundingClientRect();
+      if (!aRect.width) return;
+      pill.style.width     = aRect.width + 'px';
+      pill.style.transform = `translateX(${aRect.left - gRect.left}px)`;
+      requestAnimationFrame(() => pill.classList.remove('is-init'));
+    });
+  });
+}
+
+/* ── Panel: Details ── */
+function PanelDetails() {
+  const rows = [
+    ['Name',                     PF.name],
+    ['Id',                       '737G0'],
+    ['Total number of Policies:', 529],
+    ['Number of Active Policies:',506],
+  ];
+  return `
+  <div class="bg-white rounded-xl border border-ink-200" style="box-shadow:0 1px 2px rgba(15,23,42,.06);display:flex;flex-direction:column;height:100%;">
+    <div class="px-4 pt-4 pb-2 border-b border-ink-100 shrink-0">
+      <div class="text-sm font-bold text-ink-900">Details</div>
+    </div>
+    <div class="px-4 py-2 space-y-0 flex-1">
+      ${rows.map(([k,v]) => `
+        <div class="flex items-center justify-between py-2.5 border-b border-ink-50 last:border-0 text-sm">
+          <span class="text-ink-500 text-xs">${k}</span>
+          <span class="${k==='Id'?'text-brand-600 font-semibold text-xs':'font-semibold text-ink-800 text-xs'}">${v}</span>
+        </div>`).join('')}
+    </div>
+    <div class="px-4 pb-4 pt-2 flex gap-2 shrink-0 mt-auto">
+      <button class="flex-1 flex items-center justify-center gap-1.5 border border-ink-200 rounded-lg py-2 text-xs font-semibold text-ink-700 hover:bg-ink-50">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="5 12 12 5 19 12"/></svg>
+        + Add Policy
+      </button>
+      <button class="flex-1 flex items-center justify-center gap-1.5 border border-ink-200 rounded-lg py-2 text-xs font-semibold text-ink-700 hover:bg-ink-50">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
+    </div>
+  </div>`;
+}
+
+/* ── Panel: Totals ── */
+function PanelTotals() {
+  const rows = [
+    ['Total Hull',                          '$534.7M'],
+    ['Total contingent hull war exposure:',  '$275.0M'],
+    ['Total hull war exposure:',             '$168.3M'],
+    ['Total loss only hull war exposure:',   '$91.4M'],
+  ];
+  return `
+  <div class="bg-white rounded-xl border border-ink-200" style="box-shadow:0 1px 2px rgba(15,23,42,.06);display:flex;flex-direction:column;height:100%;">
+    <div class="px-4 pt-4 pb-2 border-b border-ink-100 shrink-0">
+      <div class="text-sm font-bold text-ink-900">Totals</div>
+    </div>
+    <div class="px-4 py-2 space-y-0 flex-1">
+      ${rows.map(([k,v]) => `
+        <div class="flex items-center justify-between py-3 border-b border-ink-50 last:border-0">
+          <span class="text-ink-600 text-xs pr-4">${k}</span>
+          <span class="font-semibold text-ink-900 text-sm tabular-nums shrink-0">${v}</span>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+/* ── Panel: Summary Statistics ── */
+function PanelSummary() {
+  const planeIco   = lico('Plane',      22, '#2563eb', 1.5);
+  const dollarIco  = lico('DollarSign', 22, '#2563eb', 1.5);
+  const trendIco   = lico('TrendingUp', 22, '#2563eb', 1.5);
+  const depIco     = lico('Navigation', 22, '#2563eb', 1.5);
+
+  const fleet = [
+    { cc:'fr', name:'Air France',              count:224, pct:42.3 },
+    { cc:'fr', name:'Air France Hop',           count:48,  pct:9.1  },
+    { cc:'nl', name:'KLM Royal Dutch Airlines', count:121, pct:22.9 },
+    { cc:'nl', name:'KLM Cityhopper',           count:41,  pct:7.8  },
+    { cc:'nl', name:'Transavia',                count:95,  pct:10.0 },
+    { cc:'fr', name:'Transavia France',         count:17,  pct:3.2  },
+  ];
+  const minority = [
+    { cc:'ci', name:"Air Côte d'Ivoire", pct:'2%'    },
+    { cc:'nc', name:'Air Calédonie',      pct:'2.1%'  },
+    { cc:'mu', name:'Air Mauritius',      pct:'2.7%'  },
+    { cc:'gp', name:'Air Caraïbes',       pct:'11.55%'},
+    { cc:'pf', name:'Air Tahiti',         pct:'7.45%' },
+    { cc:'ke', name:'Kenya Airways',      pct:'7.62%' },
+    { cc:'ma', name:'Royal Air Maroc',    pct:'1.23%' },
+  ];
+
+  return `
+  <div class="bg-white rounded-xl border border-ink-200" style="box-shadow:0 1px 2px rgba(15,23,42,.06);display:flex;flex-direction:column;height:100%;">
+    <!-- Tab bar -->
+    <div class="px-4 pt-3 pb-0 border-b border-ink-100 flex items-center gap-3">
+      <div class="ds-tabs" id="summary-tabs">
+        <span class="ds-tab-pill is-init" data-tab-pill></span>
+        <button class="ds-tab" aria-selected="${summaryTab==='Summary Statistics'}" data-stab="Summary Statistics">
+          <span class="ds-tab-label">
+            ${lico('Plane', 13)}
+            Summary Statistics
+          </span>
+        </button>
+        <button class="ds-tab" aria-selected="${summaryTab==='Destinations'}" data-stab="Destinations">
+          <span class="ds-tab-label">
+            ${lico('Map', 13)}
+            Destinations
+          </span>
+        </button>
+      </div>
+      <button class="ml-auto flex items-center gap-1 border border-ink-200 rounded-lg px-3 py-1.5 text-xs font-semibold text-ink-700 hover:bg-ink-50">
+        Group
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+    </div>
+    <!-- Stat boxes -->
+    <div class="flex border-b border-ink-100">
+      <div class="stat-card">
+        ${planeIco}
+        <div class="text-[11px] text-ink-500 mt-0.5">Total Aircraft</div>
+        <div class="text-xl font-bold text-ink-900 tabular-nums mt-0.5">529</div>
+      </div>
+      <div class="stat-card">
+        ${dollarIco}
+        <div class="text-[11px] text-ink-500 mt-0.5">Avg. Cost Of Aircraft</div>
+        <div class="text-xl font-bold text-brand-600 tabular-nums mt-0.5">$156.8M</div>
+      </div>
+      <div class="stat-card">
+        ${trendIco}
+        <div class="text-[11px] text-ink-500 mt-0.5">Highest Value Aircraft</div>
+        <div class="text-xl font-bold text-brand-600 tabular-nums mt-0.5">$284.3M</div>
+      </div>
+      <div class="stat-card">
+        ${depIco}
+        <div class="text-[11px] text-ink-500 mt-0.5">Total Departures 2025</div>
+        <div class="text-xl font-bold text-ink-900 tabular-nums mt-0.5">142,856</div>
+      </div>
+    </div>
+    <!-- Fleet Breakdown -->
+    <div class="px-4 py-3 border-b border-ink-100">
+      <div class="text-xs font-semibold text-ink-700 mb-2">Fleet Breakdown:</div>
+      <div class="flex flex-wrap gap-x-4 gap-y-1.5">
+        ${fleet.map(f => `
+          <span class="flex items-center gap-1.5 text-xs text-ink-700">
+            ${flag(f.cc)} <span class="font-medium">${f.name}:</span> <span class="tabular-nums">${f.count}</span> <span class="text-ink-400">(${f.pct}%)</span>
+          </span>`).join('')}
+      </div>
+    </div>
+    <!-- Minority Shareholdings -->
+    <div class="px-4 py-3">
+      <div class="text-xs font-semibold text-ink-700 mb-2">Minority Shareholdings:</div>
+      <div class="flex flex-wrap gap-x-4 gap-y-1.5">
+        ${minority.map(m => `
+          <span class="flex items-center gap-1.5 text-xs text-ink-700">
+            ${flag(m.cc)} <span class="font-medium">${m.name}:</span> <span class="tabular-nums text-ink-500">${m.pct}</span>
+          </span>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── Policy Section ── */
+function PolicySection() {
+  const totalPages = Math.ceil(TOTAL / PER_PAGE);
+
+  return `
+  <div class="bg-white rounded-xl border border-ink-200" style="box-shadow:0 1px 2px rgba(15,23,42,.06);overflow:hidden;">
+    <!-- View switcher + toolbar -->
+    <div class="flex items-center gap-3 px-4 py-3 border-b border-ink-100 flex-wrap">
+      <div class="ds-tabs" id="policy-view-tabs">
+        <span class="ds-tab-pill is-init" data-tab-pill></span>
+        <button class="ds-tab" aria-selected="${policyView==='details'}" data-pvw="details">
+          <span class="ds-tab-label">
+            ${lico('FileText', 13)}
+            Policy Details
+          </span>
+        </button>
+        <button class="ds-tab" aria-selected="${policyView==='list'}" data-pvw="list">
+          <span class="ds-tab-label">
+            ${lico('List', 13)}
+            List
+          </span>
+        </button>
+        <button class="ds-tab" aria-selected="${policyView==='limits'}" data-pvw="limits">
+          <span class="ds-tab-label">
+            ${lico('Info', 13)}
+            Policy Limits
+          </span>
+        </button>
+        <button class="ds-tab" aria-selected="${policyView==='map'}" data-pvw="map">
+          <span class="ds-tab-label">
+            ${lico('Map', 13)}
+            Map
+          </span>
+        </button>
+      </div>
+      <div class="flex-1"></div>
+      <div class="relative">
+        <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search" class="pl-7 pr-3 py-1.5 text-xs border border-ink-200 rounded-lg focus:outline-none focus:border-blue-400 w-48" />
+      </div>
+      <button class="flex items-center gap-1 text-xs border border-ink-200 rounded-lg px-3 py-1.5 text-ink-700 font-semibold hover:bg-ink-50">
+        Edit Columns
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+    </div>
+    <!-- Delete bar -->
+    <div class="flex items-center gap-3 px-4 py-2 border-b border-ink-100 bg-ink-50/50">
+      <button class="flex items-center gap-1.5 text-xs border border-ink-200 rounded-md px-3 py-1 text-ink-600 hover:bg-ink-100 font-medium">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        Delete
+      </button>
+      <span class="text-xs text-ink-400">0 selected</span>
+    </div>
+    <!-- Table -->
+    <div class="overflow-x-auto scroll-thin">
+      <table class="pol-table">
+        <thead>
+          <tr>
+            <th style="width:36px;"><input type="checkbox" class="h-3.5 w-3.5 rounded accent-blue-600" /></th>
+            <th class="sortable">Skytek ID ${sortIcon()}</th>
+            <th class="sortable">Policy Ref ${sortIcon()}</th>
+            <th class="sortable">TIV ${sortIcon()}</th>
+            <th class="sortable">Hull ${sortIcon()}</th>
+            <th class="sortable">CHW ${sortIcon()}</th>
+            <th class="sortable">HULLW ${sortIcon()}</th>
+            <th class="sortable">TLOHW ${sortIcon()}</th>
+            <th class="sortable">Applicable Limits Headers Liability ${sortIcon()}</th>
+            <th class="sortable">Passenger Liability ${sortIcon()}</th>
+            <th class="sortable">Baggage Liability ${sortIcon()}</th>
+            <th class="sortable">Cargo Liability ${sortIcon()}</th>
+            <th class="sortable">Crew Liability ${sortIcon()}</th>
+            <th class="sortable">Hangar keepers Liability ${sortIcon()}</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${POLICIES.map(p => `
+            <tr>
+              <td><input type="checkbox" class="h-3.5 w-3.5 rounded accent-blue-600" /></td>
+              <td class="id-cell">${p.id}</td>
+              <td style="color:#475569;">${p.ref}</td>
+              <td class="tabular-nums">${p.tiv}</td>
+              <td class="tabular-nums">${p.hull}</td>
+              <td class="tabular-nums">${p.chw}</td>
+              <td class="tabular-nums">${p.hullw}</td>
+              <td class="tabular-nums">${p.tlohw}</td>
+              <td class="tabular-nums">${p.appLim}</td>
+              <td class="tabular-nums">${p.pass}</td>
+              <td class="tabular-nums">${p.bag}</td>
+              <td class="tabular-nums">${p.cargo}</td>
+              <td class="tabular-nums">${p.crew}</td>
+              <td class="tabular-nums">${p.hang}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <!-- Footer -->
+    <div class="flex items-center justify-between px-4 py-3 border-t border-ink-100 text-xs text-ink-500">
+      <div class="flex items-center gap-2">
+        <span>${TOTAL} results (${PER_PAGE} shown) | Items per page:</span>
+        <select class="sel" id="per-page-sel">
+          <option value="25" selected>25</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
+      </div>
+      <div class="flex items-center gap-1.5 text-ink-600">
+        <button id="pag-prev" class="flex items-center gap-1 px-2 py-1 rounded border border-ink-200 hover:bg-ink-50 disabled:opacity-40" ${policyPage<=1?'disabled':''}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> Previous
+        </button>
+        ${Array.from({length:Math.min(totalPages,5)},(_,i)=>`
+          <button data-pp="${i+1}" class="w-7 h-7 rounded border text-xs font-semibold ${policyPage===i+1?'bg-blue-600 text-white border-blue-600':'border-ink-200 hover:bg-ink-50'}">${i+1}</button>`).join('')}
+        ${totalPages > 5 ? `<span class="text-ink-400">…</span><button data-pp="${totalPages}" class="w-7 h-7 rounded border text-xs font-semibold border-ink-200 hover:bg-ink-50">${totalPages}</button>` : ''}
+        <button id="pag-next" class="flex items-center gap-1 px-2 py-1 rounded border border-ink-200 hover:bg-ink-50 disabled:opacity-40" ${policyPage>=totalPages?'disabled':''}>
+          Next <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <span class="ml-2 text-ink-400">Page ${policyPage} of ${totalPages}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── Render ── */
+window.render = function() {
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
+      ${SC.Topbar()}
+      <main id="main-content" class="flex-1 overflow-y-auto scroll-thin bg-ink-100 px-4 lg:px-5 py-4">
+        <!-- Top 3 panels -->
+        <div style="display:grid;grid-template-columns:minmax(0,4fr) minmax(0,3.5fr) minmax(0,10fr);gap:12px;margin-bottom:12px;align-items:stretch;">
+          ${PanelDetails()}
+          ${PanelTotals()}
+          ${PanelSummary()}
+        </div>
+        <!-- Policy section -->
+        ${PolicySection()}
+      </main>
+    </div>
+    ${SC.TweaksPanel()}
+  `;
+
+  SC.wireChrome();
+  requestAnimationFrame(positionTabPills);
+  setTimeout(positionTabPills, 150);
+  window.addEventListener('resize', positionTabPills, { passive:true });
+
+  /* Summary tabs */
+  document.querySelectorAll('[data-stab]').forEach(btn => {
+    btn.onclick = () => {
+      summaryTab = btn.dataset.stab;
+      const group = btn.closest('.ds-tabs');
+      if (group) {
+        group.querySelectorAll('.ds-tab').forEach(t => t.setAttribute('aria-selected', String(t===btn)));
+        positionTabPills();
+      }
+    };
+  });
+
+  /* Policy view tabs */
+  document.querySelectorAll('[data-pvw]').forEach(btn => {
+    btn.onclick = () => {
+      policyView = btn.dataset.pvw;
+      const group = btn.closest('.ds-tabs');
+      if (group) {
+        group.querySelectorAll('.ds-tab').forEach(t => t.setAttribute('aria-selected', String(t===btn)));
+        positionTabPills();
+      }
+    };
+  });
+
+  /* Pagination */
+  document.querySelectorAll('[data-pp]').forEach(btn => {
+    btn.onclick = () => { policyPage = parseInt(btn.dataset.pp); window.render(); };
+  });
+  const pp = document.getElementById('pag-prev');
+  const pn = document.getElementById('pag-next');
+  const tp = Math.ceil(TOTAL / PER_PAGE);
+  if (pp) pp.onclick = () => { if (policyPage > 1) { policyPage--; window.render(); } };
+  if (pn) pn.onclick = () => { if (policyPage < tp) { policyPage++; window.render(); } };
+};
+
+window.render();
+</script>
+</body>
+</html>

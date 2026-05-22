@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Assets — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+  .text-ink-900 { color: #0f172a; } .text-ink-700 { color: #334155; } .text-ink-600 { color: #475569; }
+  .text-ink-500 { color: #64748b; } .text-ink-400 { color: #94a3b8; }
+  .bg-ink-100  { background: #f1f5f9; } .bg-ink-50 { background: #f8fafc; }
+  .border-ink-100 { border-color: #f1f5f9; } .border-ink-200 { border-color: #e2e8f0; }
+  .text-brand  { color: #2563eb; }
+  .scroll-thin::-webkit-scrollbar { width: 5px; }
+  .scroll-thin::-webkit-scrollbar-track { background: transparent; }
+  .scroll-thin::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+
+  /* --- Asset type tab bar --- */
+  .asset-tabs { display: inline-flex; background: #fff; border: 1px solid #e2e8f0; border-radius: 999px; padding: 4px; gap: 2px; box-shadow: 0 1px 3px rgba(15,23,42,.08); }
+  .asset-tab  { display: inline-flex; align-items: center; gap: 6px; padding: 6px 18px; border-radius: 999px; border: 0; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 120ms, color 120ms; background: transparent; color: #64748b; }
+  .asset-tab.active { background: #2563eb; color: #fff; }
+  .asset-tab:not(.active):hover { background: #f1f5f9; color: #334155; }
+  .asset-tab svg { width: 15px; height: 15px; }
+
+  /* --- Search & filter bar --- */
+  .search-wrap { position: relative; flex: 1; max-width: 360px; }
+  .search-wrap input { width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 10px 6px 32px; font-size: 13px; color: #334155; background: #fff; outline: none; }
+  .search-wrap input:focus { border-color: #93c5fd; box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
+  .search-wrap .search-ico { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
+  .filter-btn { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; font-size: 12px; font-weight: 500; color: #334155; cursor: pointer; white-space: nowrap; transition: border-color 120ms, background 120ms; }
+  .filter-btn:hover { border-color: #93c5fd; background: #f8fafc; }
+  .filter-btn.reset { color: #475569; }
+  .filter-btn.edit-cols { font-weight: 600; color: #0f172a; border-color: #cbd5e1; }
+
+  /* --- Data table --- */
+  .assets-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .assets-table thead tr { border-bottom: 1px solid #e2e8f0; }
+  .assets-table th { padding: 10px 14px; text-align: left; font-size: 12px; font-weight: 600; color: #334155; white-space: nowrap; background: #fff; user-select: none; }
+  .assets-table th.sortable { cursor: pointer; }
+  .assets-table th.sortable:hover { color: #2563eb; }
+  .sort-ico { display: inline-flex; flex-direction: column; gap: 1px; margin-left: 4px; vertical-align: middle; opacity: .55; }
+  .sort-ico svg { width: 8px; height: 8px; }
+  .assets-table td { padding: 11px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; color: #334155; white-space: nowrap; }
+  .assets-table tbody tr:last-child td { border-bottom: 0; }
+  .assets-table tbody tr:hover td { background: #f8fafc; }
+  .assets-table td.name-cell { font-weight: 700; font-size: 12px; color: #0f172a; letter-spacing: .01em; }
+  .assets-table td .lnk { color: #2563eb; font-weight: 600; cursor: pointer; }
+  .assets-table td .lnk:hover { color: #1d4ed8; }
+
+  /* Type badges */
+  .badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 500; }
+  .badge-container { background: #dbeafe; color: #1d4ed8; }
+  .badge-vehicle   { background: #dcfce7; color: #15803d; }
+  .badge-bulk      { background: #fef9c3; color: #a16207; }
+  .badge-tanker    { background: #ede9fe; color: #6d28d9; }
+  .badge-other     { color: #64748b; }
+
+  /* --- Pagination --- */
+  .pag-wrap { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-top: 1px solid #f1f5f9; }
+  .pag-label { font-size: 12px; color: #64748b; display: flex; align-items: center; gap: 6px; }
+  .pag-select { border: 1px solid #e2e8f0; border-radius: 6px; padding: 3px 20px 3px 8px; font-size: 12px; color: #334155; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 6px center; -webkit-appearance: none; cursor: pointer; }
+  .pag-right { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #334155; }
+  .pag-arrow { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; cursor: pointer; color: #334155; transition: background 100ms; }
+  .pag-arrow:hover:not(:disabled) { background: #f1f5f9; }
+  .pag-arrow:disabled { opacity: .35; cursor: default; }
+</style>
+</head>
+<body class="bg-ink-100 text-ink-900">
+<div id="app" class="h-screen w-full flex overflow-hidden"></div>
+
+<script>
+window.PAGE = { id: 'assets', title: 'Assets', crumb: 'Search' };
+window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "density": "compact",
+  "accent": "blue",
+  "sidebarExpanded": false,
+  "showSparklines": true
+}/*EDITMODE-END*/;
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="shared/chrome.js?v=4"></script>
+<script>
+const SC = window.sharedChrome;
+
+/* ─── Data ─── */
+const ALL_VESSELS = [
+  { name:'SM NEW ORLEANS',      type:'Container',      flag:'mh', country:'Marshall Islands', callsign:'V7A2B', imo:'9876543',  mmsi:'538123456', owner:'Maritime Logistics Inc.',     lastSeen:'2026-01-19', estValue:'$48.5M', length:299, grossTonnage:'50,123',  dwtTonnage:'61,234',  yob:2015 },
+  { name:'LE HAVRE',            type:'Container',      flag:'cy', country:'Cyprus',           callsign:'C4PWZ', imo:'9307243',  mmsi:'209779000', owner:'Ramous Maritime Company Ltd', lastSeen:'2022-07-01', estValue:'$51.0M', length:336, grossTonnage:'108,069', dwtTonnage:'111,790', yob:2006 },
+  { name:'ELFRIEDE',            type:'Other Vessel',   flag:'de', country:'Germany',          callsign:'DG5514',imo:'N/A',      mmsi:'211445249', owner:'',                            lastSeen:'2022-07-01', estValue:'N/A',    length:86,  grossTonnage:'N/A',     dwtTonnage:'N/A',     yob:null },
+  { name:'ARCA BRILHANTE',      type:'Container',      flag:'pa', country:'Panama',           callsign:'3FBK4', imo:'9453484',  mmsi:'357648000', owner:'Turvalu Naviera S.A.',        lastSeen:'2022-07-01', estValue:'$18.2M', length:199, grossTonnage:'27,094',  dwtTonnage:'32,997',  yob:2010 },
+  { name:'WAN HE YU 99666',     type:'Other Vessel',   flag:'cn', country:'China',            callsign:'LYR',   imo:'N/A',      mmsi:'413798176', owner:'',                            lastSeen:'2022-07-01', estValue:'N/A',    length:33,  grossTonnage:'N/A',     dwtTonnage:'N/A',     yob:null },
+  { name:'HYUNDAI UNICORN',     type:'Container',      flag:'mh', country:'Marshall Islands', callsign:'V7GL3', imo:'9517439',  mmsi:'538007487', owner:'Ship Owner Investment Co.',   lastSeen:'2022-07-01', estValue:'$32.7M', length:294, grossTonnage:'52,518',  dwtTonnage:'63,384',  yob:2009 },
+  { name:'ETERNAL LIGHT',       type:'Vehicle Carrier',flag:'pa', country:'Panama',           callsign:'HDNF',  imo:'9214555',  mmsi:'352507000', owner:'Eternal Light Shipping Limited',lastSeen:'2022-07-01',estValue:'$3.8M',  length:106, grossTonnage:'3,660',   dwtTonnage:'8,896',   yob:2004 },
+  { name:'COSCO NETHERLANDS',   type:'Container',      flag:'cn', country:'China',            callsign:'VRMBS', imo:'9516439',  mmsi:'477219900', owner:'Cosco Netherlands Shipping',  lastSeen:'2022-07-01', estValue:'$62.4M', length:366, grossTonnage:'154,392', dwtTonnage:'156,549', yob:2013 },
+  { name:'WAN LU HANG 11-0666', type:'Other Vessel',   flag:'cn', country:'China',            callsign:'N/A',   imo:'N/A',      mmsi:'413054405', owner:'',                            lastSeen:'2022-07-01', estValue:'$21.1M', length:49,  grossTonnage:'N/A',     dwtTonnage:'N/A',     yob:null },
+  { name:'CMB 2909',            type:'Other Vessel',   flag:'cn', country:'China',            callsign:'N/A',   imo:'N/A',      mmsi:'413208100', owner:'',                            lastSeen:'2022-07-01', estValue:'N/A',    length:57,  grossTonnage:'N/A',     dwtTonnage:'N/A',     yob:null },
+  { name:'EVER GIVEN',          type:'Container',      flag:'pa', country:'Panama',           callsign:'HPOJ',  imo:'9811000',  mmsi:'353136000', owner:'Shoei Kisen Kaisha',          lastSeen:'2025-11-03', estValue:'$103.0M',length:399, grossTonnage:'219,079', dwtTonnage:'200,940', yob:2018 },
+];
+
+/* ─── State ─── */
+let currentTab     = 'marine';
+let searchQuery    = '';
+let currentPage    = 1;
+const PAGE_SIZE    = 10;
+let sortCol        = null;
+let sortDir        = 'asc';
+
+function badgeHtml(type) {
+  if (type === 'Container')       return `<span class="badge badge-container">${type}</span>`;
+  if (type === 'Vehicle Carrier') return `<span class="badge badge-vehicle">${type}</span>`;
+  if (type === 'Bulk Carrier')    return `<span class="badge badge-bulk">${type}</span>`;
+  if (type === 'Tanker')          return `<span class="badge badge-tanker">${type}</span>`;
+  return `<span class="badge badge-other">${type}</span>`;
+}
+
+function flagHtml(code, country) {
+  return `<span style="display:inline-flex;align-items:center;gap:5px;">
+    <img src="https://flagcdn.com/w20/${code}.png" width="16" style="border-radius:2px;vertical-align:middle;flex-shrink:0;" />
+    <span style="color:#334155;">${country}</span>
+  </span>`;
+}
+
+function sortIcon(col) {
+  const active = sortCol === col;
+  const upCol   = (active && sortDir === 'asc')  ? '#2563eb' : '#94a3b8';
+  const downCol = (active && sortDir === 'desc') ? '#2563eb' : '#94a3b8';
+  return `<span class="sort-ico">
+    <svg viewBox="0 0 24 24" fill="none" stroke="${upCol}" stroke-width="3" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="${downCol}" stroke-width="3" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+  </span>`;
+}
+
+function filteredRows() {
+  let rows = [...ALL_VESSELS];
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    rows = rows.filter(r => r.name.toLowerCase().includes(q) || r.imo.toLowerCase().includes(q) || r.mmsi.includes(q));
+  }
+  if (sortCol) {
+    rows.sort((a, b) => {
+      let av = a[sortCol], bv = b[sortCol];
+      if (av === null || av === 'N/A') av = sortDir === 'asc' ? Infinity : -Infinity;
+      if (bv === null || bv === 'N/A') bv = sortDir === 'asc' ? Infinity : -Infinity;
+      if (typeof av === 'string' && typeof bv === 'string') return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+      return sortDir === 'asc' ? av - bv : bv - av;
+    });
+  }
+  return rows;
+}
+
+function renderTable() {
+  const rows = filteredRows();
+  const total = rows.length;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const pageRows = rows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  const tabLabels = { marine:'Marine', property:'Property', aviation:'Aviation' };
+  const tabIcons  = {
+    marine:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg>`,
+    property: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="16 2 12 6 8 2"/></svg>`,
+    aviation: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4s-2 1-3.5 2.5L8 7 .8 8.4c-.5.1-.7.6-.4 1l1.8 1.8c.2.2.5.3.8.3L8 11l-2.5 5.4c-.1.3 0 .7.3.9l1.1.7c.4.3.9.2 1.2-.1L10 16l1 4 2.5 1.5c.4.2.9.1 1.2-.3l.8-1c.2-.3.2-.7-.2-1z"/></svg>`,
+  };
+
+  const sectionIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg>`;
+  const filterIcon  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>`;
+  const chevDown    = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+  const chevLeft    = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>`;
+  const chevRight   = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+
+  const colsMeta = [
+    { key:'name',         label:'Name',          sortable:true  },
+    { key:'type',         label:'Type',          sortable:true  },
+    { key:'country',      label:'Flag',          sortable:true  },
+    { key:null,           label:'Callsign',      sortable:false },
+    { key:null,           label:'IMO',           sortable:false },
+    { key:null,           label:'MMSI',          sortable:false },
+    { key:'owner',        label:'Owner',         sortable:true  },
+    { key:'lastSeen',     label:'Last Seen',     sortable:true  },
+    { key:null,           label:'Est. Value',    sortable:false },
+    { key:'length',       label:'Length',        sortable:true  },
+    { key:'grossTonnage', label:'Gross Tonnage', sortable:true  },
+    { key:'dwtTonnage',   label:'DWT Tonnage',   sortable:true  },
+    { key:'yob',          label:'YOB',           sortable:true  },
+  ];
+
+  return `
+    <!-- Tab bar -->
+    <div style="display:flex;justify-content:center;margin-bottom:20px;">
+      <div class="asset-tabs">
+        ${Object.entries(tabLabels).map(([id, lbl]) => `
+          <button class="asset-tab${currentTab === id ? ' active' : ''}" data-tab="${id}">
+            ${tabIcons[id]} ${lbl}
+          </button>`).join('')}
+      </div>
+    </div>
+
+    <!-- Card -->
+    <div style="background:#fff;border-radius:12px;border:1px solid #e2e8f0;box-shadow:0 1px 2px rgba(15,23,42,.07);overflow:hidden;">
+      <!-- Card header -->
+      <div style="padding:14px 16px 12px;border-bottom:1px solid #f1f5f9;">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;">
+          ${sectionIcon}
+          <span style="font-size:14px;font-weight:700;color:#0f172a;">
+            ${tabLabels[currentTab]} Assets
+          </span>
+          <span style="font-size:13px;font-weight:400;color:#94a3b8;">(${total} result${total !== 1 ? 's' : ''})</span>
+        </div>
+        <!-- Search + filters -->
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <div class="search-wrap">
+            <span class="search-ico">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
+            <input id="asset-search" type="text" placeholder="Search by IMO or vessel name" value="${searchQuery}" />
+          </div>
+          <button class="filter-btn reset" id="reset-filters-btn">${filterIcon} Reset Filters</button>
+          <button class="filter-btn">Asset Type ${chevDown}</button>
+          <button class="filter-btn">Flag ${chevDown}</button>
+          <button class="filter-btn">Length ${chevDown}</button>
+          <button class="filter-btn">Gross Tonnage ${chevDown}</button>
+          <button class="filter-btn">Deadweight ${chevDown}</button>
+          <button class="filter-btn">YOB ${chevDown}</button>
+          <button class="filter-btn edit-cols" style="margin-left:auto;">Edit Columns</button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div style="overflow-x:auto;" class="scroll-thin">
+        <table class="assets-table">
+          <thead>
+            <tr>
+              ${colsMeta.map(c => `
+                <th${c.sortable ? ` class="sortable" data-sort="${c.key}"` : ''} style="${c.key === 'grossTonnage' || c.key === 'dwtTonnage' ? 'min-width:120px;' : ''}">
+                  ${c.label}${c.sortable ? sortIcon(c.key) : ''}
+                </th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            ${pageRows.map(r => `
+              <tr>
+                <td class="name-cell">${r.name}</td>
+                <td>${badgeHtml(r.type)}</td>
+                <td>${flagHtml(r.flag, r.country)}</td>
+                <td style="color:#64748b;">${r.callsign}</td>
+                <td style="color:#64748b;">${r.imo}</td>
+                <td style="color:#64748b;">${r.mmsi}</td>
+                <td>${r.owner ? `<span class="lnk">${r.owner}</span>` : ''}</td>
+                <td style="color:#64748b;">${r.lastSeen}</td>
+                <td style="font-weight:600;color:${r.estValue.startsWith('$') ? '#2563eb' : '#94a3b8'};">${r.estValue}</td>
+                <td style="tabular-nums;">${r.length}</td>
+                <td style="tabular-nums;color:${r.grossTonnage === 'N/A' ? '#94a3b8' : '#334155'};">${r.grossTonnage}</td>
+                <td style="tabular-nums;color:${r.dwtTonnage === 'N/A' ? '#94a3b8' : '#334155'};">${r.dwtTonnage}</td>
+                <td style="tabular-nums;color:${r.yob === null ? '#94a3b8' : '#334155'};">${r.yob || 'N/A'}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pag-wrap">
+        <div class="pag-label">
+          Items per page:
+          <select class="pag-select" id="page-size-select">
+            <option value="10" ${PAGE_SIZE===10?'selected':''}>10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+          </select>
+        </div>
+        <div class="pag-right">
+          <button class="pag-arrow" id="pag-prev" ${currentPage <= 1 ? 'disabled' : ''}>${chevLeft}</button>
+          <span>Page <strong>${currentPage}</strong> of ${totalPages}</span>
+          <button class="pag-arrow" id="pag-next" ${currentPage >= totalPages ? 'disabled' : ''}>${chevRight}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ─── Render ─── */
+window.render = function () {
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
+      ${SC.Topbar()}
+      <div id="main-content" class="flex-1 overflow-y-auto scroll-thin px-6 py-6">
+        ${renderTable()}
+      </div>
+    </div>
+    ${SC.TweaksPanel()}
+  `;
+
+  SC.wireChrome();
+
+  /* Search */
+  const searchEl = document.getElementById('asset-search');
+  if (searchEl) {
+    searchEl.addEventListener('input', e => {
+      searchQuery = e.target.value;
+      currentPage = 1;
+      document.getElementById('main-content').innerHTML = renderTable();
+      wireTableEvents();
+    });
+  }
+
+  wireTableEvents();
+};
+
+function wireTableEvents() {
+  /* Tab switching */
+  document.querySelectorAll('[data-tab]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentTab  = btn.dataset.tab;
+      currentPage = 1;
+      document.getElementById('main-content').innerHTML = renderTable();
+      wireTableEvents();
+    });
+  });
+
+  /* Sort columns */
+  document.querySelectorAll('th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.sort;
+      if (sortCol === col) {
+        sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortCol = col;
+        sortDir = 'asc';
+      }
+      currentPage = 1;
+      document.getElementById('main-content').innerHTML = renderTable();
+      wireTableEvents();
+    });
+  });
+
+  /* Reset filters */
+  const resetBtn = document.getElementById('reset-filters-btn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      searchQuery = '';
+      sortCol     = null;
+      sortDir     = 'asc';
+      currentPage = 1;
+      document.getElementById('main-content').innerHTML = renderTable();
+      wireTableEvents();
+    });
+  }
+
+  /* Pagination */
+  const prevBtn = document.getElementById('pag-prev');
+  const nextBtn = document.getElementById('pag-next');
+  if (prevBtn) prevBtn.addEventListener('click', () => { currentPage--; document.getElementById('main-content').innerHTML = renderTable(); wireTableEvents(); });
+  if (nextBtn) nextBtn.addEventListener('click', () => { currentPage++; document.getElementById('main-content').innerHTML = renderTable(); wireTableEvents(); });
+
+  /* Re-hook search in case it was re-rendered */
+  const searchEl = document.getElementById('asset-search');
+  if (searchEl) {
+    searchEl.addEventListener('input', e => {
+      searchQuery = e.target.value;
+      currentPage = 1;
+      document.getElementById('main-content').innerHTML = renderTable();
+      wireTableEvents();
+    });
+    /* Keep focus + cursor position */
+    searchEl.focus();
+    const len = searchEl.value.length;
+    searchEl.setSelectionRange(len, len);
+  }
+}
+
+window.render();
+</script>
+</body>
+</html>

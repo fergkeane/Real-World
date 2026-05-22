@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Rule Sets — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  .scroll-thin::-webkit-scrollbar{width:5px}.scroll-thin::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
+  /* Table */
+  .rs-tbl{width:100%;border-collapse:collapse}
+  .rs-tbl th{padding:10px 16px;font-size:12px;font-weight:500;color:#94a3b8;text-align:left;border-bottom:1px solid #f1f5f9;white-space:nowrap;background:#fff;user-select:none}
+  .rs-tbl th.sortable{cursor:pointer}.rs-tbl th.sortable:hover{color:#64748b}.rs-tbl th.sorted{color:#2563eb}
+  .rs-tbl td{padding:13px 16px;font-size:13px;color:#334155;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+  .rs-tbl tr:last-child td{border-bottom:0}
+  .rs-tbl tbody tr:hover td{background:#fafafa}
+  /* Action buttons */
+  .actbtn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;border:0;background:transparent;cursor:pointer;color:#94a3b8;transition:background .1s,color .1s}
+  .actbtn:hover{background:#f1f5f9;color:#334155}
+  .actbtn.danger:hover{background:#fef2f2;color:#e11d48}
+  /* Pagination */
+  .pgbtn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;color:#334155;cursor:pointer;transition:background .1s}
+  .pgbtn:hover:not([disabled]){background:#f1f5f9}.pgbtn[disabled]{opacity:.4;cursor:not-allowed}
+  /* Modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.3);z-index:500;display:flex;justify-content:flex-end;animation:fadein 150ms ease}
+  @keyframes fadein{from{opacity:0}to{opacity:1}}
+  .modal-panel{width:460px;max-width:100vw;background:#fff;height:100%;display:flex;flex-direction:column;box-shadow:-12px 0 40px rgba(15,23,42,.14);animation:slidein 200ms cubic-bezier(.22,.1,.36,1)}
+  @keyframes slidein{from{transform:translateX(100%)}to{transform:translateX(0)}}
+  .form-label{font-size:11px;font-weight:700;color:#64748b;margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.04em}
+  .form-input{width:100%;height:36px;padding:0 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;color:#0f172a;outline:none;font-family:inherit;transition:border-color .15s,box-shadow .15s;background:#fff}
+  .form-input:focus{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+  .form-select{width:100%;height:36px;padding:0 28px 0 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;color:#0f172a;outline:none;font-family:inherit;background:#fff;appearance:none;-webkit-appearance:none;cursor:pointer}
+  .form-select:focus{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+</style>
+</head>
+<body class="bg-slate-100 text-slate-900">
+<div id="app" class="h-screen w-full flex overflow-hidden"></div>
+
+<script>
+window.PAGE = { id:'rulesets', title:'Rule Sets', crumb:'All Rule Sets' };
+window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "density": "compact",
+  "accent": "blue",
+  "sidebarExpanded": false,
+  "showSparklines": true
+}/*EDITMODE-END*/;
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="shared/chrome.js?v=4"></script>
+<script>
+const SC = window.sharedChrome;
+
+/* ── Data ─────────────────────────────────────────────────────────────────── */
+const RULESETS = [
+  { name:'AOI Monitored Ruleset',          icon:'target',  color:'#7c3aed', regions:['AOI'] },
+  { name:'Constanta Port and Anchorage',   icon:'pin',     color:'#0891b2', regions:['Constanta Port and Anchorage'] },
+  { name:'Libya [JWC] Monitored Ruleset',  icon:'globe',   color:'#dc2626', regions:['Libya [JWC]'] },
+  { name:'STS Hul - 1 Monitored Ruleset',  icon:'shield',  color:'#16a34a', regions:['STS Hul - 1'] },
+  { name:'Zone Loitering',                 icon:'clock',   color:'#ea580c', regions:['Syria - Baniyas','Northern Iraq','Baghdad','Beirut - Lebanon','Beirut - Sanayeh','Beirut district','Damascus','Erbil','Haiphong','Lattakia','Pirenopolis','Tartus'] },
+  { name:'Zone Monitoring',                icon:'shield',  color:'#16a34a', regions:['China - Beijing','Northern Iraq','Baghdad','Erbil'] },
+  { name:'Suez Canal Transit Monitoring',  icon:'pin',     color:'#0891b2', regions:['Suez Canal','Gulf of Suez','Red Sea'] },
+  { name:'North Sea Patrol Zone',          icon:'globe',   color:'#2563eb', regions:['North Sea','Norwegian Sea','Skagerrak'] },
+  { name:'Gibraltar Strait Watch',         icon:'dot',     color:'#d97706', regions:['Gibraltar Strait','Alboran Sea','Bay of Gibraltar'] },
+  { name:'Black Sea Security Zone',        icon:'shield',  color:'#16a34a', regions:['Black Sea','Sea of Azov','Bosphorus','Dardanelles'] },
+];
+
+/* ── State ────────────────────────────────────────────────────────────────── */
+let ST = {
+  query:'', sortCol:'name', sortDir:'asc',
+  page:1, perPage:10, showModal:false,
+  form:{ name:'', type:'target', color:'#7c3aed', regions:'' },
+};
+
+/* ── Icon SVGs ────────────────────────────────────────────────────────────── */
+const ICON_SVG = {
+  target: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
+  pin:    `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
+  globe:  `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+  shield: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+  clock:  `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+  dot:    `<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2.5"/></svg>`,
+};
+
+function rowIcon(icon, color) {
+  const hex = color.replace('#','');
+  const r = parseInt(hex.slice(0,2),16), g = parseInt(hex.slice(2,4),16), b = parseInt(hex.slice(4,6),16);
+  return `<span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:rgba(${r},${g},${b},.13);color:${color};flex-shrink:0">${ICON_SVG[icon] || ICON_SVG.dot}</span>`;
+}
+
+/* ── Sort arrow ───────────────────────────────────────────────────────────── */
+function sortArrow(col) {
+  if (ST.sortCol !== col) return `<svg width="9" height="12" viewBox="0 0 9 12" fill="none" style="display:inline-block;margin-left:2px;vertical-align:middle;opacity:.3"><path d="M4.5 1L1.5 4.5h6z" fill="currentColor"/><path d="M4.5 11L1.5 7.5h6z" fill="currentColor"/></svg>`;
+  const up = ST.sortDir === 'asc';
+  return `<svg width="9" height="12" viewBox="0 0 9 12" fill="none" style="display:inline-block;margin-left:2px;vertical-align:middle"><path d="M4.5 1L1.5 4.5h6z" fill="${up?'#2563eb':'#cbd5e1'}"/><path d="M4.5 11L1.5 7.5h6z" fill="${!up?'#2563eb':'#cbd5e1'}"/></svg>`;
+}
+
+const SVG = {
+  search:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+  chevDown:  `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`,
+  chevLeft:  `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`,
+  chevRight: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`,
+  eye:       `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+  edit:      `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
+  trash:     `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`,
+  x:         `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+  plus:      `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+};
+
+/* ── Filter / sort ────────────────────────────────────────────────────────── */
+function getFiltered() {
+  let rows = [...RULESETS];
+  const q = ST.query.trim().toLowerCase();
+  if (q) rows = rows.filter(r => r.name.toLowerCase().includes(q) || r.regions.join(' ').toLowerCase().includes(q));
+  rows.sort((a, b) => {
+    let va = ST.sortCol === 'name' ? a.name.toLowerCase() : a.regions.join(',').toLowerCase();
+    let vb = ST.sortCol === 'name' ? b.name.toLowerCase() : b.regions.join(',').toLowerCase();
+    return (va < vb ? -1 : va > vb ? 1 : 0) * (ST.sortDir === 'asc' ? 1 : -1);
+  });
+  return rows;
+}
+
+/* ── Modal ────────────────────────────────────────────────────────────────── */
+function renderModal() {
+  if (!ST.showModal) return '';
+  const f = ST.form;
+  const TYPES = [
+    {val:'target', label:'AOI / Target'},
+    {val:'pin',    label:'Port / Location'},
+    {val:'globe',  label:'Regional'},
+    {val:'shield', label:'Security Zone'},
+    {val:'clock',  label:'Time-based (Loitering)'},
+  ];
+  const COLORS = ['#7c3aed','#0891b2','#dc2626','#16a34a','#ea580c','#2563eb','#d97706','#475569'];
+
+  return `<div class="modal-bg" id="modal-bg">
+    <div class="modal-panel" id="modal-panel">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
+        <div>
+          <div class="text-base font-bold text-slate-900">Create New Rule Set</div>
+          <div class="text-xs text-slate-400 mt-0.5">Define monitoring rules and target regions</div>
+        </div>
+        <button id="modal-close" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;border:0;background:transparent;cursor:pointer;color:#94a3b8" onmouseover="this.style.background='#f1f5f9';this.style.color='#334155'" onmouseout="this.style.background='transparent';this.style.color='#94a3b8'">${SVG.x}</button>
+      </div>
+      <div class="flex-1 overflow-y-auto scroll-thin px-6 py-5" style="display:flex;flex-direction:column;gap:16px">
+
+        <div>
+          <label class="form-label">Rule Set Name</label>
+          <input class="form-input" id="form-name" type="text" placeholder="e.g. Persian Gulf Transit Watch" value="${f.name.replace(/"/g,'&quot;')}" />
+        </div>
+
+        <div>
+          <label class="form-label">Rule Type</label>
+          <div style="position:relative">
+            <select class="form-select" id="form-type">
+              ${TYPES.map(t => `<option value="${t.val}"${f.type===t.val?' selected':''}>${t.label}</option>`).join('')}
+            </select>
+            <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none;color:#64748b;display:flex">${SVG.chevDown}</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label">Icon Colour</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            ${COLORS.map(c => `<button data-pick-color="${c}" style="width:26px;height:26px;border-radius:50%;background:${c};border:${f.color===c?'2.5px solid #0f172a':'2px solid transparent'};cursor:pointer;outline:2px solid ${f.color===c?'rgba(15,23,42,.15)':'transparent'};outline-offset:1px;transition:transform .1s" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></button>`).join('')}
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label">Regions</label>
+          <input class="form-input" id="form-regions" type="text" placeholder="e.g. Strait of Hormuz, Gulf of Oman, Red Sea" value="${f.regions.replace(/"/g,'&quot;')}" />
+          <div style="font-size:11px;color:#94a3b8;margin-top:4px">Enter comma-separated region names.</div>
+        </div>
+
+        <!-- Preview -->
+        <div style="padding:12px;background:#f8fafc;border-radius:10px;border:1px solid #f1f5f9">
+          <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Preview</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            ${rowIcon(f.type, f.color)}
+            <span style="font-size:13px;font-weight:600;color:#0f172a">${f.name || 'Rule Set Name'}</span>
+          </div>
+        </div>
+      </div>
+      <div class="shrink-0 px-6 py-4 border-t border-slate-100 flex items-center gap-3">
+        <button id="modal-cancel" style="flex:1;height:36px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;font-size:13px;font-weight:500;color:#475569;cursor:pointer;font-family:inherit" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">Cancel</button>
+        <button id="modal-create" style="flex:1;height:36px;border-radius:8px;border:0;background:#2563eb;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">Create Rule Set</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── Page render ──────────────────────────────────────────────────────────── */
+function renderPage() {
+  const rows       = getFiltered();
+  const total      = rows.length;
+  const totalPages = Math.max(1, Math.ceil(total / ST.perPage));
+  if (ST.page > totalPages) ST.page = totalPages;
+  const start      = (ST.page - 1) * ST.perPage;
+  const pageRows   = rows.slice(start, start + ST.perPage);
+
+  return `
+  <!-- Create button row -->
+  <div class="shrink-0 px-4 pt-4 pb-3 flex justify-end">
+    <button id="create-rs-btn" style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px;border-radius:8px;background:#2563eb;color:#fff;font-size:13px;font-weight:600;border:0;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .15s" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+      ${SVG.plus} Create New Rule Set
+    </button>
+  </div>
+
+  <!-- Main card -->
+  <div class="flex-1 min-h-0 px-4 pb-4 flex flex-col">
+    <div class="bg-white rounded-xl border border-slate-200 flex flex-col overflow-hidden flex-1 min-h-0" style="box-shadow:0 1px 3px rgba(15,23,42,.06)">
+
+      <!-- Card header -->
+      <div class="shrink-0 px-5 py-3 border-b border-slate-100 flex items-center gap-3">
+        <div class="text-sm font-semibold text-slate-900">Rule Sets</div>
+        <div style="flex:1"></div>
+        <div style="position:relative">
+          <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:#94a3b8;pointer-events:none;display:flex">${SVG.search}</span>
+          <input id="rs-search" type="text" placeholder="Filter records"
+            value="${ST.query.replace(/"/g,'&quot;')}"
+            style="height:32px;width:200px;padding:0 10px 0 30px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;color:#0f172a;outline:none;font-family:inherit;background:#f8fafc;transition:border-color .15s,box-shadow .15s,background .15s" />
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="flex-1 min-h-0 overflow-auto scroll-thin">
+        <table class="rs-tbl">
+          <thead>
+            <tr>
+              <th class="sortable ${ST.sortCol==='name'?'sorted':''}" data-sort="name" style="min-width:220px">Name${sortArrow('name')}</th>
+              <th>Regions</th>
+              <th class="sortable ${ST.sortCol==='regions'?'sorted':''}" data-sort="regions" style="width:120px;text-align:right">Actions${sortArrow('regions')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${pageRows.length === 0 ? `
+              <tr><td colspan="3" style="text-align:center;padding:64px 0;color:#94a3b8;font-size:13px">No rule sets match your filter.</td></tr>
+            ` : pageRows.map(rs => `
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:10px">
+                  ${rowIcon(rs.icon, rs.color)}
+                  <span style="font-size:13px;font-weight:600;color:#0f172a">${rs.name}</span>
+                </div>
+              </td>
+              <td style="color:#64748b;font-size:13px">${rs.regions.join(', ')}</td>
+              <td style="text-align:right">
+                <div style="display:inline-flex;align-items:center;gap:1px">
+                  <button class="actbtn" title="View">${SVG.eye}</button>
+                  <button class="actbtn" title="Edit">${SVG.edit}</button>
+                  <button class="actbtn danger" title="Delete" style="color:#fca5a5">${SVG.trash}</button>
+                </div>
+              </td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="shrink-0 px-5 py-3 border-t border-slate-100 flex items-center gap-2.5">
+        <span class="text-xs text-slate-500 shrink-0">Items per page:</span>
+        <div style="position:relative">
+          <select id="per-page" style="appearance:none;-webkit-appearance:none;height:28px;padding:0 20px 0 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;color:#334155;background:#fff;cursor:pointer;font-family:inherit;outline:none">
+            ${[10,20,50].map(n => `<option value="${n}"${ST.perPage===n?' selected':''}>${n}</option>`).join('')}
+          </select>
+          <span style="position:absolute;right:4px;top:50%;transform:translateY(-50%);pointer-events:none;color:#64748b;display:flex">${SVG.chevDown}</span>
+        </div>
+        <div style="flex:1"></div>
+        <button class="pgbtn" id="pg-prev"${ST.page<=1?' disabled':''}>${SVG.chevLeft}</button>
+        <span class="text-xs font-semibold text-slate-700" style="white-space:nowrap">Page ${ST.page} of ${totalPages}</span>
+        <button class="pgbtn" id="pg-next"${ST.page>=totalPages?' disabled':''}>${SVG.chevRight}</button>
+      </div>
+    </div>
+  </div>
+
+  ${renderModal()}`;
+}
+
+/* ── Wire ─────────────────────────────────────────────────────────────────── */
+let _rsMain = null;
+let _outsideBound = false;
+
+function rc() {
+  if (!_rsMain) return;
+  const wasFocused = document.activeElement && document.activeElement.id === 'rs-search';
+  const selS = wasFocused ? document.activeElement.selectionStart : null;
+  const selE = wasFocused ? document.activeElement.selectionEnd : null;
+  _rsMain.innerHTML = renderPage();
+  wireRS();
+  if (wasFocused) {
+    const el = document.getElementById('rs-search');
+    if (el) { el.focus(); try { el.setSelectionRange(selS, selE); } catch(e) {} }
+  }
+}
+
+function wireRS() {
+  /* Search */
+  const si = document.getElementById('rs-search');
+  if (si) {
+    si.addEventListener('input', e => { ST.query = e.target.value; ST.page = 1; rc(); });
+    si.addEventListener('focus', e => { e.target.style.borderColor='#93c5fd'; e.target.style.boxShadow='0 0 0 3px rgba(59,130,246,.12)'; e.target.style.background='#fff'; });
+    si.addEventListener('blur',  e => { e.target.style.borderColor='#e2e8f0'; e.target.style.boxShadow=''; e.target.style.background='#f8fafc'; });
+  }
+
+  /* Sort */
+  document.querySelectorAll('.rs-tbl th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const c = th.dataset.sort;
+      if (ST.sortCol === c) ST.sortDir = ST.sortDir === 'asc' ? 'desc' : 'asc';
+      else { ST.sortCol = c; ST.sortDir = 'asc'; }
+      ST.page = 1; rc();
+    });
+  });
+
+  /* Per page */
+  const pp = document.getElementById('per-page');
+  if (pp) pp.addEventListener('change', () => { ST.perPage = parseInt(pp.value); ST.page = 1; rc(); });
+
+  /* Pagination */
+  const prev = document.getElementById('pg-prev');
+  const next  = document.getElementById('pg-next');
+  if (prev) prev.addEventListener('click', () => { if (ST.page > 1) { ST.page--; rc(); } });
+  if (next) next.addEventListener('click', () => {
+    const tp = Math.max(1, Math.ceil(getFiltered().length / ST.perPage));
+    if (ST.page < tp) { ST.page++; rc(); }
+  });
+
+  /* Create modal */
+  const createBtn = document.getElementById('create-rs-btn');
+  if (createBtn) createBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    ST.showModal = true;
+    ST.form = { name:'', type:'target', color:'#7c3aed', regions:'' };
+    rc();
+  });
+
+  /* Modal */
+  const closeBtn   = document.getElementById('modal-close');
+  const cancelBtn  = document.getElementById('modal-cancel');
+  const modalBg    = document.getElementById('modal-bg');
+  const modalPanel = document.getElementById('modal-panel');
+  const closeModal = () => { ST.showModal = false; rc(); };
+
+  if (closeBtn)   closeBtn.addEventListener('click',   e => { e.stopPropagation(); closeModal(); });
+  if (cancelBtn)  cancelBtn.addEventListener('click',  e => { e.stopPropagation(); closeModal(); });
+  if (modalBg)    modalBg.addEventListener('click',    e => { if (e.target === modalBg) closeModal(); });
+  if (modalPanel) modalPanel.addEventListener('click', e => e.stopPropagation());
+
+  /* Color swatches */
+  document.querySelectorAll('[data-pick-color]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      ST.form.color = btn.dataset.pickColor;
+      rc();
+    });
+  });
+
+  /* Form fields */
+  const fName = document.getElementById('form-name');
+  const fType = document.getElementById('form-type');
+  const fReg  = document.getElementById('form-regions');
+  if (fName) fName.addEventListener('input',  e => { ST.form.name    = e.target.value; rc(); });
+  if (fType) fType.addEventListener('change', e => { ST.form.type    = e.target.value; rc(); });
+  if (fReg)  fReg.addEventListener('input',   e => { ST.form.regions = e.target.value; });
+
+  /* Create action */
+  const createAction = document.getElementById('modal-create');
+  if (createAction) createAction.addEventListener('click', e => {
+    e.stopPropagation();
+    const f = ST.form;
+    if (!f.name.trim()) { alert('Please enter a rule set name.'); return; }
+    RULESETS.unshift({
+      name:    f.name.trim(),
+      icon:    f.type,
+      color:   f.color,
+      regions: f.regions.split(',').map(s => s.trim()).filter(Boolean),
+    });
+    ST.showModal = false;
+    rc();
+  });
+
+  /* Outside click closes modal */
+  if (!_outsideBound) {
+    _outsideBound = true;
+    document.addEventListener('click', () => {
+      if (ST.showModal && !document.getElementById('modal-panel')) {
+        ST.showModal = false; rc();
+      }
+    });
+  }
+}
+
+/* ── Main render ──────────────────────────────────────────────────────────── */
+window.render = function() {
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
+      ${SC.Topbar()}
+      <main id="rs-main" class="flex-1 min-h-0 overflow-hidden flex flex-col bg-slate-100"></main>
+    </div>
+    ${SC.TweaksPanel()}
+  `;
+  SC.wireChrome();
+  _rsMain = document.getElementById('rs-main');
+  rc();
+};
+
+window.render();
+</script>
+</body>
+</html>

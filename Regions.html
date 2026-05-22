@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Regions — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  .scroll-thin::-webkit-scrollbar{width:5px}.scroll-thin::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
+  #regions-map{position:absolute;inset:0}
+  #regions-map.leaflet-container{position:absolute!important}
+  /* Leaflet */
+  .leaflet-control-zoom,.leaflet-bar{border:1px solid #e2e8f0!important;box-shadow:0 1px 2px rgba(15,23,42,.08)!important;border-radius:8px!important;overflow:hidden}
+  .leaflet-bar a{background:#fff!important;color:#334155!important;line-height:30px!important}
+  .leaflet-bar a:hover{background:#f1f5f9!important}
+  .region-popup .leaflet-popup-content-wrapper{padding:0;border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,.15)}
+  .region-popup .leaflet-popup-content{margin:0}
+  .region-popup .leaflet-popup-tip-container{margin-top:-1px}
+  /* Category tabs — matches Portfolios style */
+  .cat-tabs{display:inline-flex;gap:4px;padding:4px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9999px;position:relative}
+  .cat-tab{position:relative;font:inherit;font-size:13px;font-weight:600;padding:8px 20px;background:transparent;border:0;border-radius:9999px;color:#64748b;cursor:pointer;transition:color 140ms;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+  .cat-tab:hover{color:#0f172a}
+  .cat-tab[aria-selected="true"]{color:#fff}
+  .cat-pill{position:absolute;top:4px;left:0;height:calc(100% - 8px);background:#2563eb;border-radius:9999px;box-shadow:0 1px 2px rgba(15,23,42,.12);z-index:0;transition:transform 320ms cubic-bezier(.34,1.2,.64,1),width 320ms cubic-bezier(.34,1.2,.64,1);pointer-events:none}
+  .cat-pill.is-init{transition:none}
+  .cat-tab-label{position:relative;z-index:1;display:inline-flex;align-items:center;gap:7px}
+  /* View toggle */
+  .view-toggle{display:inline-flex;gap:4px;padding:4px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9999px}
+  .view-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;font-size:13px;font-weight:600;border:0;cursor:pointer;font-family:inherit;transition:background 150ms,color 150ms;border-radius:9999px}
+  .view-btn.active{background:#2563eb;color:#fff}
+  .view-btn:not(.active){background:transparent;color:#64748b}
+  .view-btn:not(.active):hover{color:#0f172a}
+  /* Panel */
+  .info-panel{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;display:flex;flex-direction:column;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+  /* Region rows */
+  .r-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f8fafc;font-size:13px}
+  .r-row:last-child{border-bottom:0}
+  /* Coverage tabs */
+  .cov-tab{flex:1;padding:7px 8px;font-size:12.5px;font-weight:600;cursor:pointer;border:0;font-family:inherit;transition:background .15s,color .15s;border-radius:9999px;background:transparent;color:#64748b}
+  .cov-tab.active{background:#2563eb;color:#fff}
+  .cov-tab:not(.active):hover{color:#334155}
+  /* Stats table */
+  .rg-tbl{width:100%;border-collapse:collapse}
+  .rg-tbl th{padding:10px 14px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;text-align:left;border-bottom:1px solid #e2e8f0;background:#fff;white-space:nowrap}
+  .rg-tbl td{padding:11px 14px;font-size:13px;color:#334155;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+  .rg-tbl tr:hover td{background:#f8fafc}
+</style>
+</head>
+<body class="bg-white text-slate-900">
+<div id="app" class="h-screen w-full flex overflow-hidden"></div>
+
+<script>
+window.PAGE = { id:'regions', title:'Regions', crumb:'Overview' };
+window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "density": "compact",
+  "accent": "blue",
+  "sidebarExpanded": false,
+  "showSparklines": true
+}/*EDITMODE-END*/;
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="shared/chrome.js?v=4"></script>
+<script>
+const SC = window.sharedChrome;
+
+/* ── Data ─────────────────────────────────────────────────────────────────── */
+const TABS_DATA = {
+  marine: {
+    label:'Marine',
+    myRegions:[
+      {id:'oil-fields', name:'Oil Fields',      count:1346, exposure:'$302.2M', sub:[
+        {name:'North Sea Block A',            exposure:'$89.4M'},
+        {name:'Gulf of Mexico Zone 1',         exposure:'$76.2M'},
+        {name:'Persian Gulf Fields',           exposure:'$68.8M'},
+        {name:'Caspian Block 3',               exposure:'$42.1M'},
+        {name:'Niger Delta Region',            exposure:'$25.7M'},
+      ]},
+      {id:'parts', name:'Parts',                count:449,  exposure:'$21.0B',  sub:[
+        {name:'Hull & Machinery Components',   exposure:'$8.4B'},
+        {name:'Navigation & Safety Equipment', exposure:'$6.2B'},
+        {name:'Engine Room Parts',             exposure:'$4.1B'},
+        {name:'Deck Equipment',                exposure:'$2.3B'},
+      ]},
+      {id:'high-risk', name:'High Risk Areas',  count:619,  exposure:'$11.9M',  sub:[
+        {name:'Strait of Hormuz Zone',         exposure:'$4.2M'},
+        {name:'Red Sea Corridor',              exposure:'$3.1M'},
+        {name:'Gulf of Aden',                  exposure:'$2.8M'},
+        {name:'Black Sea Eastern Zone',        exposure:'$1.8M'},
+      ]},
+      {id:'country-fee', name:'Country Fee',    count:646,  exposure:'$11.4B',  sub:[
+        {name:'UK Continental Shelf',          exposure:'$4.8B'},
+        {name:'Norwegian Territorial Waters',  exposure:'$3.2B'},
+        {name:'Mediterranean Zone',            exposure:'$2.1B'},
+        {name:'Baltic Sea Region',             exposure:'$1.3B'},
+      ]},
+    ],
+    realRegions:[
+      {id:'rtr', name:'Real-Time Risk (Offshore)', exposure:'$215.6M', sub:[
+        {name:'Gulf of Mexico Offshore',       exposure:'$82.4M'},
+        {name:'North Sea Operations',          exposure:'$71.2M'},
+        {name:'Barents Sea Block',             exposure:'$38.6M'},
+        {name:'Caspian Platform Zone',         exposure:'$23.4M'},
+      ]},
+      {id:'rwh', name:'Rotatable Waterstaff Hg', exposure:'$105.4B', sub:[
+        {name:'Persian Gulf Terminals',        exposure:'$48.2B'},
+        {name:'Red Sea Routing Zone',          exposure:'$32.7B'},
+        {name:'Arabian Sea Coverage',          exposure:'$24.5B'},
+      ]},
+      {id:'smp', name:'Saint Mary Pacific Patterson Louisiana', exposure:'$55.4B', sub:[
+        {name:'Mississippi River Delta',       exposure:'$24.1B'},
+        {name:'Louisiana Continental Shelf',   exposure:'$18.3B'},
+        {name:'Gulf Coast Zone A',             exposure:'$13.0B'},
+      ]},
+    ],
+    statsTitle:'Marine Region Summary Statistics 2024',
+    covTabs:['CHW','HULLW','TLOHW'],
+    stats:{
+      CHW:   {avgExp:'$275.0M',avgA:125,hiExp:'$308.0M',hiDate:'Dec 20th 2024',hiA:150,loExp:'$180.0M',loDate:'Dec 25th 2024',loA:72},
+      HULLW: {avgExp:'$210.0M',avgA:98, hiExp:'$245.0M',hiDate:'Dec 18th 2024',hiA:120,loExp:'$145.0M',loDate:'Dec 27th 2024',loA:58},
+      TLOHW: {avgExp:'$165.0M',avgA:82, hiExp:'$198.0M',hiDate:'Dec 22nd 2024',hiA:95, loExp:'$112.0M',loDate:'Dec 26th 2024',loA:44},
+    },
+  },
+  property: {
+    label:'Property',
+    myRegions:[
+      {name:'Commercial Properties', count:2341, exposure:'$1.8T'},
+      {name:'Residential Zones',     count:892,  exposure:'$245.3B'},
+      {name:'Industrial Areas',      count:443,  exposure:'$89.2B'},
+      {name:'Coastal Properties',    count:158,  exposure:'$34.5B'},
+    ],
+    realRegions:[
+      {name:'European Markets',       exposure:'$892.4B'},
+      {name:'North American Portfolio',exposure:'$654.2B'},
+      {name:'Asia Pacific Holdings',  exposure:'$445.8B'},
+    ],
+    statsTitle:'Property Region Summary Statistics 2024',
+    covTabs:['PAR','FIRE','NatCat'],
+    stats:{
+      PAR:    {avgExp:'$1.2T',   avgA:2341,hiExp:'$1.4T',   hiDate:'Dec 15th 2024',hiA:2560,loExp:'$890.0B',loDate:'Dec 28th 2024',loA:1890},
+      FIRE:   {avgExp:'$845.0B', avgA:1820,hiExp:'$960.0B', hiDate:'Dec 12th 2024',hiA:2100,loExp:'$620.0B',loDate:'Dec 26th 2024',loA:1450},
+      NatCat: {avgExp:'$445.0B', avgA:1120,hiExp:'$510.0B', hiDate:'Dec 8th 2024', hiA:1380,loExp:'$310.0B',loDate:'Dec 31st 2024',loA:890},
+    },
+  },
+  aviation: {
+    label:'Aviation',
+    myRegions:[
+      {name:'Hub Airports',     count:124, exposure:'$98.4B'},
+      {name:'Regional Airports',count:562, exposure:'$23.1B'},
+      {name:'Private Airfields',count:889, exposure:'$4.2B'},
+      {name:'Heliports',        count:234, exposure:'$1.8B'},
+    ],
+    realRegions:[
+      {name:'Trans-Atlantic Routes', exposure:'$45.2B'},
+      {name:'Trans-Pacific Routes',  exposure:'$38.7B'},
+      {name:'European Airspace',     exposure:'$22.4B'},
+    ],
+    statsTitle:'Aviation Region Summary Statistics 2024',
+    covTabs:['AVN','HULL','WAR'],
+    stats:{
+      AVN:  {avgExp:'$45.2B',avgA:890,hiExp:'$52.8B',hiDate:'Dec 23rd 2024',hiA:1020,loExp:'$31.5B',loDate:'Dec 25th 2024',loA:680},
+      HULL: {avgExp:'$32.1B',avgA:650,hiExp:'$38.4B',hiDate:'Dec 20th 2024',hiA:780, loExp:'$22.8B',loDate:'Dec 28th 2024',loA:490},
+      WAR:  {avgExp:'$18.5B',avgA:420,hiExp:'$22.1B',hiDate:'Dec 19th 2024',hiA:510, loExp:'$12.3B',loDate:'Dec 27th 2024',loA:290},
+    },
+  },
+  energy: {
+    label:'Offshore/Energy',
+    myRegions:[
+      {name:'Oil Platforms',     count:234, exposure:'$425.6B'},
+      {name:'Gas Fields',        count:189, exposure:'$312.4B'},
+      {name:'Wind Farms',        count:445, exposure:'$89.3B'},
+      {name:'Pipeline Networks', count:234, exposure:'$78.2B'},
+    ],
+    realRegions:[
+      {name:'North Sea Operations',    exposure:'$285.4B'},
+      {name:'Gulf of Mexico Fields',   exposure:'$198.7B'},
+      {name:'Middle East Facilities',  exposure:'$156.2B'},
+    ],
+    statsTitle:'Offshore/Energy Summary Statistics 2024',
+    covTabs:['PCTLEL','WELLW','PCLEEL'],
+    stats:{
+      PCTLEL:{avgExp:'$285.0B',avgA:890,hiExp:'$325.0B',hiDate:'Dec 15th 2024',hiA:980,loExp:'$210.0B',loDate:'Dec 26th 2024',loA:720},
+      WELLW: {avgExp:'$198.0B',avgA:650,hiExp:'$235.0B',hiDate:'Dec 12th 2024',hiA:780,loExp:'$145.0B',loDate:'Dec 28th 2024',loA:490},
+      PCLEEL:{avgExp:'$145.0B',avgA:480,hiExp:'$172.0B',hiDate:'Dec 10th 2024',hiA:570,loExp:'$98.0B', loDate:'Dec 29th 2024',loA:320},
+    },
+  },
+};
+
+const MAP_REGIONS = [
+  {name:'North Sea / Scandinavia',  color:'#f59e0b', bounds:[[54,5],[72,28]],  exposure:'$89.4M',  assets:312,  risk:'Medium'},
+  {name:'Americas — Gulf Zone',     color:'#f59e0b', bounds:[[12,-112],[32,-86]],exposure:'$76.2M', assets:246,  risk:'High'},
+  {name:'Caribbean & Central America',color:'#f59e0b',bounds:[[5,-100],[18,-80]],exposure:'$24.4B', assets:646,  risk:'Medium'},
+  {name:'Western Europe',           color:'#3b82f6', bounds:[[43,-10],[58,28]], exposure:'$182.4B', assets:1240, risk:'Low'},
+  {name:'Middle East / Levant',     color:'#ef4444', bounds:[[20,24],[42,56]],  exposure:'$54.8B',  assets:892,  risk:'Critical'},
+  {name:'East Asia',                color:'#f59e0b', bounds:[[14,88],[52,136]], exposure:'$215.6M', assets:528,  risk:'Medium'},
+];
+
+/* ── State ────────────────────────────────────────────────────────────────── */
+let activeTab = 'marine';
+let activeCovTab = 'CHW';
+let viewMode = 'Map';
+let rMap = null, rTile = null;
+let expandedRegions = new Set();
+let rMapType = 'natgeo';
+let rLayersOpen = false;
+
+const MAP_TILES = {
+  natgeo:    'https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}',
+  street:    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  light:     'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  dark:      'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+  satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+};
+
+function setMapType(type) {
+  rMapType = type;
+  rLayersOpen = false;
+  if (!rMap) return;
+  if (rTile) rMap.removeLayer(rTile);
+  rTile = L.tileLayer(MAP_TILES[type], { attribution:'', maxZoom:12 }).addTo(rMap);
+  rTile.bringToBack();
+}
+
+/* ── SVG icons ────────────────────────────────────────────────────────────── */
+const FOLDER_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
+const CAL_SVG   = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
+const INFO_SVG  = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+const MAP_ICO   = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>`;
+const LIST_ICO  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`;
+
+function tabIcon(name, size=14) {
+  const d = window.lucide && window.lucide.icons && window.lucide.icons[name];
+  if (!d) return '';
+  const [tag, attrs, ch] = d;
+  const a = Object.entries({...attrs, width:size, height:size, class:''}).map(([k,v]) => `${k}="${v}"`).join(' ');
+  const inner = (ch||[]).map(([t,ca]) => `<${t} ${Object.entries(ca).map(([k,v])=>`${k}="${v}"`).join(' ')}/>`).join('');
+  return `<${tag} ${a}>${inner}</${tag}>`;
+}
+const TAB_ICONS = {
+  marine:   tabIcon('Ship'),
+  property: tabIcon('Building'),
+  aviation: tabIcon('Plane'),
+  energy:   tabIcon('Zap'),
+};
+
+/* ── Map ──────────────────────────────────────────────────────────────────── */
+function initMap() {
+  const el = document.getElementById('regions-map');
+  if (!el) return;
+  if (rMap) { rMap.remove(); rMap = null; rTile = null; }
+
+  rMap = L.map(el, { center:[28,18], zoom:2, zoomControl:true, scrollWheelZoom:true });
+  rTile = L.tileLayer(MAP_TILES[rMapType], { attribution:'', maxZoom:12 }).addTo(rMap);
+
+  MAP_REGIONS.forEach(r => {
+    const riskColor = {Low:'#16a34a',Medium:'#f97316',High:'#dc2626',Critical:'#7c3aed'}[r.risk]||'#64748b';
+    const popupHTML = `
+    <div style="font-family:'Inter',sans-serif;width:250px;border-radius:12px;overflow:hidden">
+      <div style="background:#2563eb;color:#fff;padding:11px 14px;display:flex;align-items:center;gap:8px">
+        <span style="width:11px;height:11px;border-radius:50%;background:${r.color};flex-shrink:0;border:1.5px solid rgba(255,255,255,.5)"></span>
+        <span style="font-size:14px;font-weight:700;flex:1">${r.name}</span>
+      </div>
+      <div style="background:#fff;padding:14px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:9px">
+          <span style="color:#64748b;font-size:13px">Our Exposure:</span>
+          <span style="font-weight:700;color:#0f172a;font-size:13px">${r.exposure}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:9px">
+          <span style="color:#64748b;font-size:13px">Assets:</span>
+          <span style="font-weight:700;color:#0f172a;font-size:13px">${r.assets.toLocaleString()}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:14px">
+          <span style="color:#64748b;font-size:13px">Risk Level:</span>
+          <span style="font-weight:700;font-size:13px;color:${riskColor}">${r.risk}</span>
+        </div>
+        <button onclick="sessionStorage.setItem('selectedMarineRegion','${r.name}');window.location.href='MarineRegionDetails.html'" style="width:100%;padding:8px;border:1.5px solid #2563eb;border-radius:8px;background:#fff;color:#2563eb;font-weight:600;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;transition:background .1s" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='#fff'">View Regional Details</button>
+      </div>
+    </div>`;
+
+    L.rectangle(r.bounds, {
+      color: r.color, weight:2, fillColor:r.color, fillOpacity:.2, opacity:.65,
+    }).addTo(rMap)
+      .bindPopup(popupHTML, { maxWidth:260, minWidth:250, closeButton:false, className:'region-popup' })
+      .on('click', function(){ this.openPopup(); })
+      .bindTooltip(r.name, { direction:'top', sticky:true });
+
+    const center = [(r.bounds[0][0]+r.bounds[1][0])/2, (r.bounds[0][1]+r.bounds[1][1])/2];
+    L.circleMarker(center, {
+      radius:6, fillColor:r.color, fillOpacity:1, color:'#fff', weight:2.5,
+    }).addTo(rMap);
+  });
+
+  setTimeout(() => {
+    const zin  = el.querySelector('.leaflet-control-zoom-in');
+    const zout = el.querySelector('.leaflet-control-zoom-out');
+    if (zin)  zin.innerHTML  = `<span style="font-size:18px;line-height:30px;display:block;text-align:center">+</span>`;
+    if (zout) zout.innerHTML = `<span style="font-size:20px;line-height:30px;display:block;text-align:center">&minus;</span>`;
+  }, 100);
+}
+
+/* ── Panels ───────────────────────────────────────────────────────────────── */
+function PanelMyRegions(d) {
+  const CHEV = (open) => `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform .15s;transform:${open?'rotate(90deg)':'rotate(0)'};flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>`;
+  return `
+  <div class="info-panel" style="flex:1;min-width:0;padding:0;display:flex;flex-direction:column">
+    <div style="padding:14px 16px;border-bottom:1px solid #f1f5f9;flex-shrink:0">
+      <div style="font-size:14px;font-weight:700;color:#0f172a">My Monitored Regions</div>
+    </div>
+    <div style="padding:6px 16px;display:flex;justify-content:space-between;font-size:11px;color:#94a3b8;border-bottom:1px solid #f1f5f9;flex-shrink:0">
+      <span>Name</span><span>Above Threshold / Our Exposure</span>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:0 16px" class="scroll-thin">
+      ${d.myRegions.map(r => {
+        const open = expandedRegions.has(r.id);
+        const hasSub = r.sub && r.sub.length > 0;
+        return `<div class="r-row" data-folder="${r.id}" style="cursor:${hasSub?'pointer':'default'}">
+          <span style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+            ${hasSub ? CHEV(open) : '<span style="width:10px"></span>'}
+            ${FOLDER_SVG}
+          </span>
+          <span style="flex:1;color:#2563eb;font-weight:500;font-size:13px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.name} <span style="color:#94a3b8;font-weight:400">(${r.count.toLocaleString()})</span></span>
+          <span style="color:#334155;font-weight:600;font-variant-numeric:tabular-nums;flex-shrink:0;margin-left:8px">${r.exposure}</span>
+        </div>
+        ${open && hasSub ? r.sub.map(s => `<div style="display:flex;align-items:center;gap:8px;padding:5px 0 5px 26px;border-bottom:1px solid #f8fafc;font-size:12.5px">
+          <span style="width:12px;height:1px;background:#e2e8f0;flex-shrink:0"></span>
+          <span style="flex:1;color:#2563eb;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;cursor:pointer" data-region-link="${s.name.replace(/"/g,'&quot;')}">${s.name}</span>
+          <span style="color:#64748b;font-variant-numeric:tabular-nums;font-size:12px">${s.exposure}</span>
+        </div>`).join('') : ''}`;
+      }).join('')}
+    </div>
+    <div style="padding:10px 16px;border-top:1px solid #f1f5f9;background:#f8fafc;flex-shrink:0">
+      <button style="height:28px;padding:0 14px;border:1px solid #2563eb;border-radius:8px;background:#fff;color:#2563eb;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='#fff'">Add New Region</button>
+    </div>
+  </div>`;
+}
+
+function PanelRealWorldRegions(d) {
+  const CHEV = (open) => `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform .15s;transform:${open?'rotate(90deg)':'rotate(0)'};flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>`;
+  return `
+  <div class="info-panel" style="flex:1;min-width:0;padding:0;display:flex;flex-direction:column">
+    <div style="padding:14px 16px;border-bottom:1px solid #f1f5f9;flex-shrink:0">
+      <div style="font-size:14px;font-weight:700;color:#0f172a">Real World Regions</div>
+    </div>
+    <div style="padding:6px 16px;display:flex;justify-content:space-between;font-size:11px;color:#94a3b8;border-bottom:1px solid #f1f5f9;flex-shrink:0">
+      <span>Name</span><span>Our Exposure</span>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:0 16px" class="scroll-thin">
+      ${d.realRegions.map(r => {
+        const open = expandedRegions.has(r.id);
+        const hasSub = r.sub && r.sub.length > 0;
+        return `<div class="r-row" data-folder="${r.id}" style="cursor:${hasSub?'pointer':'default'}">
+          <span style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+            ${hasSub ? CHEV(open) : '<span style="width:10px"></span>'}
+            ${FOLDER_SVG}
+          </span>
+          <span style="flex:1;color:#2563eb;font-weight:500;font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis">${r.name}</span>
+          <span style="color:#334155;font-weight:600;font-variant-numeric:tabular-nums;flex-shrink:0;margin-left:8px">${r.exposure}</span>
+        </div>
+        ${open && hasSub ? r.sub.map(s => `<div style="display:flex;align-items:center;gap:8px;padding:5px 0 5px 26px;border-bottom:1px solid #f8fafc;font-size:12.5px">
+          <span style="width:12px;height:1px;background:#e2e8f0;flex-shrink:0"></span>
+          <span style="flex:1;color:#2563eb;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;cursor:pointer" data-region-link="${s.name.replace(/"/g,'&quot;')}">${s.name}</span>
+          <span style="color:#64748b;font-variant-numeric:tabular-nums;font-size:12px">${s.exposure}</span>
+        </div>`).join('') : ''}`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function PanelStats(d) {
+  const s = d.stats[activeCovTab] || Object.values(d.stats)[0];
+  return `
+  <div class="info-panel" style="flex:2;min-width:0">
+    <div style="font-size:14px;font-weight:700;color:#0f172a;padding-bottom:10px;border-bottom:1px solid #f1f5f9;margin-bottom:10px">${d.statsTitle}</div>
+    <div style="font-size:11.5px;color:#64748b;margin-bottom:5px">Date Range:</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <input type="text" value="Dec 1st 2024" readonly style="flex:1;height:30px;border:1px solid #e2e8f0;border-radius:7px;padding:0 8px;font-size:12.5px;color:#334155;background:#f8fafc;outline:none;font-family:inherit;min-width:0" />
+      <span style="font-size:12px;color:#94a3b8;flex-shrink:0">to</span>
+      <div style="position:relative;flex:1;min-width:0">
+        <input type="text" value="Dec 31st 2024" readonly style="width:100%;height:30px;border:1px solid #e2e8f0;border-radius:7px;padding:0 28px 0 8px;font-size:12.5px;color:#334155;background:#f8fafc;outline:none;font-family:inherit" />
+        <span style="position:absolute;right:7px;top:50%;transform:translateY(-50%);display:flex">${CAL_SVG}</span>
+      </div>
+    </div>
+    <!-- Coverage tabs -->
+    <div style="display:flex;align-items:center;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9999px;padding:4px;gap:4px;margin-bottom:12px">
+      ${d.covTabs.map(t => `<button class="cov-tab ${t===activeCovTab?'active':''}" data-cov="${t}">${t}</button>`).join('')}
+    </div>
+    <!-- Stats grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid #f1f5f9;border-radius:10px;overflow:hidden">
+      <!-- Avg row -->
+      <div style="padding:10px 12px;border-right:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9">
+        <div style="font-size:11.5px;color:#94a3b8;margin-bottom:5px">Average Daily Exposure Value:</div>
+        <div style="display:inline-block;background:#eff6ff;color:#2563eb;font-size:13px;font-weight:700;padding:3px 10px;border-radius:6px">${s.avgExp}</div>
+      </div>
+      <div style="padding:10px 12px;border-bottom:1px solid #f1f5f9">
+        <div style="font-size:11.5px;color:#94a3b8;margin-bottom:5px;display:flex;align-items:center;gap:3px">${INFO_SVG}Average Daily Asset Count:</div>
+        <div style="display:inline-block;background:#f1f5f9;color:#334155;font-size:13px;font-weight:700;padding:3px 10px;border-radius:6px">${s.avgA}</div>
+      </div>
+      <!-- High row -->
+      <div style="padding:10px 12px;border-right:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9">
+        <div style="font-size:11.5px;color:#94a3b8;margin-bottom:5px">Highest Daily Exposure Value:</div>
+        <div style="display:inline-block;background:#eff6ff;color:#2563eb;font-size:13px;font-weight:700;padding:3px 10px;border-radius:6px;margin-bottom:3px">${s.hiExp}</div>
+        <div style="font-size:11px;color:#94a3b8">${s.hiDate}</div>
+      </div>
+      <div style="padding:10px 12px;border-bottom:1px solid #f1f5f9">
+        <div style="font-size:11.5px;color:#94a3b8;margin-bottom:5px;display:flex;align-items:center;gap:3px">${INFO_SVG}Highest Daily Asset Count:</div>
+        <div style="display:inline-block;background:#f1f5f9;color:#334155;font-size:13px;font-weight:700;padding:3px 10px;border-radius:6px;margin-bottom:3px">${s.hiA}</div>
+        <div style="font-size:11px;color:#94a3b8">${s.hiDate}</div>
+      </div>
+      <!-- Low row -->
+      <div style="padding:10px 12px;border-right:1px solid #f1f5f9">
+        <div style="font-size:11.5px;color:#94a3b8;margin-bottom:5px">Lowest Daily Exposure Value:</div>
+        <div style="display:inline-block;background:#eff6ff;color:#2563eb;font-size:13px;font-weight:700;padding:3px 10px;border-radius:6px;margin-bottom:3px">${s.loExp}</div>
+        <div style="font-size:11px;color:#94a3b8">${s.loDate}</div>
+      </div>
+      <div style="padding:10px 12px">
+        <div style="font-size:11.5px;color:#94a3b8;margin-bottom:5px;display:flex;align-items:center;gap:3px">${INFO_SVG}Lowest Daily Asset Count:</div>
+        <div style="display:inline-block;background:#f1f5f9;color:#334155;font-size:13px;font-weight:700;padding:3px 10px;border-radius:6px;margin-bottom:3px">${s.loA}</div>
+        <div style="font-size:11px;color:#94a3b8">${s.loDate}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── Map & List views ─────────────────────────────────────────────────────── */
+function MapView() {
+  const LAYER_OPTS = [
+    ['natgeo','NatGeo','#ddd4c0'],['street','Street','#e8e0d4'],
+    ['light','Light','#e8e8e8'],['dark','Dark','#1a1a2e'],['satellite','Satellite','#0b1e2e'],
+  ];
+  const LAYERS_ICO = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`;
+  return `
+  <div id="regions-map" style="position:absolute;inset:0"></div>
+  <!-- Top-right controls -->
+  <div style="position:absolute;top:12px;right:12px;z-index:400">
+    <button id="rg-layers-btn" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;color:#334155;box-shadow:0 1px 2px rgba(15,23,42,.08);cursor:pointer" title="Map type">${LAYERS_ICO}</button>
+    ${rLayersOpen ? `<div style="position:absolute;top:38px;right:0;width:150px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 4px 12px rgba(15,23,42,.12);overflow:hidden;z-index:9999">
+      <div style="padding:6px 10px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #f1f5f9">Map Type</div>
+      ${LAYER_OPTS.map(([k,l,c]) => `<div data-map-type="${k}" style="padding:8px 12px;font-size:12.5px;font-weight:${rMapType===k?'700':'500'};color:${rMapType===k?'#2563eb':'#334155'};background:${rMapType===k?'#eff6ff':'transparent'};cursor:pointer;display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:2px;background:${c};border:1px solid rgba(0,0,0,.15);flex-shrink:0"></span>${l}</div>`).join('')}
+    </div>` : ''}
+  </div>`;
+}
+
+function ListView(d) {
+  const all = [
+    ...d.myRegions.map(r => ({name:`${r.name} (${r.count.toLocaleString()})`, source:'My Regions', exposure:r.exposure})),
+    ...d.realRegions.map(r => ({name:r.name, source:'Real World', exposure:r.exposure})),
+  ];
+  return `
+  <div style="flex:1;min-height:0;overflow-y:auto" class="scroll-thin">
+    <table class="rg-tbl">
+      <thead><tr><th>Name</th><th>Source</th><th>Exposure</th></tr></thead>
+      <tbody>
+        ${all.map(r => `<tr>
+          <td><div style="display:flex;align-items:center;gap:8px">${FOLDER_SVG}<span style="font-weight:600;color:#0f172a">${r.name}</span></div></td>
+          <td style="color:#64748b">${r.source}</td>
+          <td style="font-weight:600;font-variant-numeric:tabular-nums">${r.exposure}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+/* ── Content ──────────────────────────────────────────────────────────────── */
+function Content() {
+  const d = TABS_DATA[activeTab];
+  return `
+  <div style="display:flex;flex-direction:column;min-height:100%">
+
+    <!-- Category tabs (centered, on gray canvas) -->
+    <div style="display:flex;justify-content:center;padding:12px 16px 0;flex-shrink:0">
+      <div class="cat-tabs" id="rg-cat-tabs">
+        <span class="cat-pill is-init" id="rg-cat-pill"></span>
+        ${Object.entries(TABS_DATA).map(([key,t]) => `
+        <button class="cat-tab" aria-selected="${key===activeTab}" data-main-tab="${key}">
+          <span class="cat-tab-label">${TAB_ICONS[key]||''} ${t.label}</span>
+        </button>`).join('')}
+      </div>
+    </div>
+
+    <!-- Three panels on the canvas -->
+    <div style="display:flex;gap:12px;padding:12px 16px;height:400px;flex-shrink:0">
+      ${PanelMyRegions(d)}
+      ${PanelRealWorldRegions(d)}
+      ${PanelStats(d)}
+    </div>
+
+    <!-- Map/List toggle -->
+    <div style="padding:0 16px 8px;flex-shrink:0">
+      <div class="view-toggle">
+        <button class="view-btn ${viewMode==='Map'?'active':''}" data-view="Map">${MAP_ICO} Map</button>
+        <button class="view-btn ${viewMode==='List'?'active':''}" data-view="List">${LIST_ICO} List</button>
+      </div>
+    </div>
+
+    <!-- Map or List — wrapped in a card -->
+    <div style="padding:0 16px 16px;flex-shrink:0">
+      <div style="height:500px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 1px 3px rgba(15,23,42,.06);overflow:hidden;position:relative;display:flex;flex-direction:column">
+        ${viewMode === 'Map' ? MapView() : ListView(d)}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── Wire ─────────────────────────────────────────────────────────────────── */
+let _main = null;
+
+function rc() {
+  if (!_main) return;
+  _main.innerHTML = Content();
+  wire();
+}
+
+function positionRegionPill() {
+  const group = document.getElementById('rg-cat-tabs');
+  const pill  = document.getElementById('rg-cat-pill');
+  if (!group || !pill) return;
+  const active = group.querySelector('.cat-tab[aria-selected="true"]');
+  if (!active) return;
+  const gRect = group.getBoundingClientRect();
+  const aRect = active.getBoundingClientRect();
+  pill.style.width = aRect.width + 'px';
+  pill.style.transform = `translateX(${aRect.left - gRect.left}px)`;
+  requestAnimationFrame(() => requestAnimationFrame(() => pill.classList.remove('is-init')));
+}
+
+function wire() {
+  document.querySelectorAll('[data-region-link]').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      sessionStorage.setItem('selectedMarineRegion', el.dataset.regionLink);
+      window.location.href = 'MarineRegionDetails.html';
+    });
+  });
+
+  document.querySelectorAll('[data-folder]').forEach(row => {
+    row.addEventListener('click', () => {
+      const id = row.dataset.folder;
+      if (expandedRegions.has(id)) expandedRegions.delete(id);
+      else expandedRegions.add(id);
+      rc();
+    });
+  });
+
+  document.querySelectorAll('[data-main-tab]').forEach(b => b.addEventListener('click', () => {
+    activeTab = b.dataset.mainTab;
+    activeCovTab = TABS_DATA[activeTab].covTabs[0];
+    rc();
+    requestAnimationFrame(positionRegionPill);
+  }));
+  document.querySelectorAll('[data-cov]').forEach(b => b.addEventListener('click', e => {
+    e.stopPropagation();
+    activeCovTab = b.dataset.cov;
+    rc();
+  }));
+  document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => {
+    viewMode = b.dataset.view;
+    rLayersOpen = false;
+    rc();
+    if (viewMode === 'Map') setTimeout(initMap, 50);
+  }));
+
+  /* Layers toggle */
+  const layersBtn = document.getElementById('rg-layers-btn');
+  if (layersBtn) layersBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    rLayersOpen = !rLayersOpen;
+    rc();
+    if (viewMode === 'Map' && !rMap) setTimeout(initMap, 50);
+  });
+
+  /* Map type selection */
+  document.querySelectorAll('[data-map-type]').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      setMapType(el.dataset.mapType);
+      rc();
+    });
+  });
+
+  /* Outside click closes layers dropdown */
+  document.addEventListener('click', () => {
+    if (rLayersOpen) { rLayersOpen = false; rc(); }
+  }, { once: true });
+
+  if (viewMode === 'Map') setTimeout(initMap, 50);
+  requestAnimationFrame(positionRegionPill);
+}
+
+/* ── Main render ──────────────────────────────────────────────────────────── */
+window.render = function() {
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
+      ${SC.Topbar()}
+      <main id="regions-main" class="flex-1 min-h-0 overflow-y-auto scroll-thin flex flex-col bg-slate-100"></main>
+    </div>
+    ${SC.TweaksPanel()}
+  `;
+  SC.wireChrome();
+  _main = document.getElementById('regions-main');
+  activeCovTab = TABS_DATA[activeTab].covTabs[0];
+  rc();
+};
+
+window.render();
+</script>
+</body>
+</html>

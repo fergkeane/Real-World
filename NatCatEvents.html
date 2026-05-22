@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Nat Cat Events — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  .scroll-thin::-webkit-scrollbar{width:5px}.scroll-thin::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
+  /* Map */
+  #nat-map{position:absolute;inset:0}
+  #nat-map-wrap.is-fullscreen{position:fixed!important;inset:0!important;z-index:9999!important;border-radius:0!important}
+  .leaflet-control-zoom,.leaflet-bar{border:1px solid #e2e8f0!important;box-shadow:0 1px 2px rgba(15,23,42,.08)!important;border-radius:8px!important;overflow:hidden}
+  .leaflet-bar a{background:#fff!important;color:#334155!important;line-height:30px!important}
+  .leaflet-bar a:hover{background:#f1f5f9!important}
+  /* Event card */
+  .ev-card{padding:12px 14px;cursor:pointer;border-bottom:1px solid #f1f5f9;transition:background .1s}
+  .ev-card:hover{background:#f8fafc}
+  .ev-card.active{background:#f0f9ff}
+  .ev-card:last-child{border-bottom:0}
+  /* Filter dropdowns */
+  .filt-sel{appearance:none;-webkit-appearance:none;height:32px;padding:0 28px 0 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:12.5px;color:#334155;background:#fff;cursor:pointer;font-family:inherit;outline:none;min-width:100px}
+  .filt-sel:focus{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+  /* Map btn */
+  .map-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;color:#334155;box-shadow:0 1px 2px rgba(15,23,42,.08);cursor:pointer}
+  .map-btn:hover{background:#f1f5f9}
+  /* Popup */
+  .nat-popup .leaflet-popup-content-wrapper{padding:0;border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,.18)}
+  .nat-popup .leaflet-popup-content{margin:0;width:220px!important;font-family:'Inter',sans-serif}
+  .nat-popup .leaflet-popup-close-button{color:#fff!important;top:8px!important;right:10px!important;font-size:20px!important;font-weight:300!important}
+</style>
+</head>
+<body class="bg-slate-100 text-slate-900">
+<div id="app" class="h-screen w-full flex overflow-hidden"></div>
+
+<script>
+window.PAGE = { id:'events', title:'Nat Cat Events', crumb:'Overview' };
+window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "density": "compact",
+  "accent": "blue",
+  "sidebarExpanded": false,
+  "showSparklines": true
+}/*EDITMODE-END*/;
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="shared/chrome.js?v=4"></script>
+<script>
+const SC = window.sharedChrome;
+
+/* ── Event data ───────────────────────────────────────────────────────────── */
+const EVENTS = [
+  { id:1,  name:'Cyclone Gezani',           type:'cyclone',    location:'Toamasina, Madagascar',                lat:-18.1, lng:49.4,   dateStart:'02/10/2026', dateEnd:'02/12/2026', cat:3, updated:'Feb 13, 2026, 9:15 UTC'   },
+  { id:2,  name:'Los Angeles Wildfire',     type:'wildfire',   location:'Pacific Palisades, Los Angeles, California', lat:34.0, lng:-118.5, dateStart:'01/07/2025', dateEnd:null, cat:null, updated:'Jan 10, 2025, 18:30 UTC' },
+  { id:3,  name:'Hurricane — Idalia',       type:'hurricane',  location:'Horseshoe Beach, Florida',            lat:29.4,  lng:-83.3,  dateStart:'08/30/2023', dateEnd:null,          cat:3, updated:'Sep 4, 2023, 2:21 UTC'    },
+  { id:4,  name:'Maui Wildfire',            type:'wildfire',   location:'Lahaina, Maui, Hawaii',               lat:20.9,  lng:-156.7, dateStart:'08/08/2023', dateEnd:'08/25/2023',  cat:null, updated:'Aug 11, 2023, 4:06 UTC' },
+  { id:5,  name:'Sylhet Flood',             type:'flood',      location:'Sylhet, Bangladesh',                  lat:24.9,  lng:91.9,   dateStart:'06/15/2023', dateEnd:null,          cat:null, updated:'Jun 25, 2023, 7:30 UTC'   },
+  { id:6,  name:'Hurricane Ian',            type:'hurricane',  location:'Fort Myers, Florida',                 lat:26.6,  lng:-81.9,  dateStart:'09/28/2022', dateEnd:'09/30/2022',  cat:4, updated:'Oct 3, 2022, 14:00 UTC'   },
+  { id:7,  name:'New Mexico Wildfires',     type:'wildfire',   location:'Las Vegas, New Mexico',               lat:35.6,  lng:-105.2, dateStart:'04/06/2022', dateEnd:'05/30/2022',  cat:null, updated:'Apr 14, 2022, 12:00 UTC' },
+  { id:8,  name:'Turkey-Syria Earthquake',  type:'earthquake', location:'Kahramanmaraş, Turkey',               lat:37.6,  lng:36.8,   dateStart:'02/06/2023', dateEnd:null,          cat:null, updated:'Feb 10, 2023, 9:00 UTC'   },
+  { id:9,  name:'Tropical Cyclone Freddy',  type:'cyclone',    location:'Quelimane, Mozambique',               lat:-17.9, lng:36.9,   dateStart:'03/12/2023', dateEnd:'03/15/2023',  cat:2, updated:'Mar 15, 2023, 7:00 UTC'   },
+  { id:10, name:'Hurricane Michael',        type:'hurricane',  location:'Mexico Beach, Florida',               lat:29.9,  lng:-85.4,  dateStart:'10/10/2018', dateEnd:null,          cat:5, updated:'Oct 12, 2018, 18:00 UTC'  },
+];
+
+const TYPE_CFG = {
+  cyclone:    { color:'#06b6d4', light:'#ecfeff' },
+  wildfire:   { color:'#f97316', light:'#fff7ed' },
+  hurricane:  { color:'#dc2626', light:'#fef2f2' },
+  flood:      { color:'#0ea5e9', light:'#f0f9ff' },
+  earthquake: { color:'#8b5cf6', light:'#f5f3ff' },
+};
+
+const ICON_SVG = {
+  cyclone:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>`,
+  wildfire:   `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>`,
+  hurricane:  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>`,
+  flood:      `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 16c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2c1.3 0 1.9.5 2.5 1"/><path d="M2 21c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2c1.3 0 1.9.5 2.5 1"/><path d="M12 2v9m-4-4 4-4 4 4"/></svg>`,
+  earthquake: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+};
+
+let natMapType = 'satellite';
+const NAT_TILES = {
+  satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  street:    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  light:     'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  dark:      'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+};
+function setNatMapType(type) {
+  natMapType = type;
+  if (!natMap) return;
+  if (natTile) natMap.removeLayer(natTile);
+  natTile = L.tileLayer(NAT_TILES[type]||NAT_TILES.satellite, { attribution:'', maxZoom:18 }).addTo(natMap);
+  natTile.bringToBack();
+  document.querySelectorAll('.map-type-opt').forEach(el => el.style.background = el.dataset.type===type?'#f1f5f9':'');
+}
+let ST = { query:'', year:'all', type:'all', selected:1 };
+let natMap = null, natTile = null;
+
+/* ── Helpers ──────────────────────────────────────────────────────────────── */
+function getFiltered() {
+  return EVENTS.filter(e => {
+    const q = ST.query.toLowerCase();
+    if (q && !e.name.toLowerCase().includes(q) && !e.location.toLowerCase().includes(q)) return false;
+    if (ST.type !== 'all' && e.type !== ST.type) return false;
+    if (ST.year !== 'all' && !e.dateStart.includes(ST.year)) return false;
+    return true;
+  });
+}
+
+function dots(cat, color) {
+  if (!cat) return '';
+  const filled = cat;
+  return `<div style="display:flex;align-items:center;gap:3px;margin-top:4px">
+    ${[1,2,3,4,5].map(i => `<span style="width:8px;height:8px;border-radius:50%;background:${i<=filled?color:'transparent'};border:1.5px solid ${i<=filled?color:'#cbd5e1'}"></span>`).join('')}
+    <span style="font-size:11px;font-weight:700;color:${color};margin-left:3px">CAT ${cat}</span>
+  </div>`;
+}
+
+function typeIconCircle(type, size=36) {
+  const cfg = TYPE_CFG[type] || TYPE_CFG.wildfire;
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${cfg.color};display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0">${ICON_SVG[type]||''}</div>`;
+}
+
+/* ── Map ──────────────────────────────────────────────────────────────────── */
+function mapMarkerHTML(type) {
+  const cfg = TYPE_CFG[type] || TYPE_CFG.wildfire;
+  const ico = ICON_SVG[type] || '';
+  if (type === 'earthquake') {
+    return `<div style="width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-bottom:32px solid ${cfg.color};position:relative;filter:drop-shadow(0 2px 5px rgba(0,0,0,.4))"><span style="position:absolute;top:9px;left:-6px;color:#fff;font-size:11px;font-weight:900;line-height:1">!</span></div>`;
+  }
+  return `<div style="width:34px;height:34px;border-radius:50%;background:${cfg.color};border:2.5px solid rgba(255,255,255,.85);display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.35)">${ico}</div>`;
+}
+
+function initMap() {
+  const el = document.getElementById('nat-map');
+  if (!el) return;
+  if (natMap) { natMap.remove(); natMap = null; natTile = null; }
+
+  natMap = L.map(el, { center:[25,-20], zoom:2, zoomControl:false, scrollWheelZoom:true });
+  natTile = L.tileLayer(NAT_TILES[natMapType], { attribution:'&copy; Esri, Maxar, Earthstar Geographics', maxZoom:18 }).addTo(natMap);
+
+  // Custom zoom position
+  L.control.zoom({ position:'topleft' }).addTo(natMap);
+  setTimeout(() => {
+    const zin  = el.querySelector('.leaflet-control-zoom-in');
+    const zout = el.querySelector('.leaflet-control-zoom-out');
+    if (zin)  zin.innerHTML  = `<span style="font-size:18px;line-height:30px;display:block;text-align:center">+</span>`;
+    if (zout) zout.innerHTML = `<span style="font-size:20px;line-height:30px;display:block;text-align:center">&minus;</span>`;
+    // Push zoom well below fullscreen button (32px btn + 12px top + 8px gap)
+    const zoomControl = el.querySelector('.leaflet-control-zoom');
+    if (zoomControl) zoomControl.style.marginTop = '52px';
+  }, 100);
+
+  // Add markers for all events
+  EVENTS.forEach(e => {
+    const cfg = TYPE_CFG[e.type] || TYPE_CFG.wildfire;
+    const anchor = e.type === 'earthquake' ? [18, 32] : [17, 17];
+    const icon = L.divIcon({
+      className: '',
+      html: mapMarkerHTML(e.type),
+      iconSize: e.type === 'earthquake' ? [36, 32] : [34, 34],
+      iconAnchor: anchor,
+    });
+
+    const popupHTML = `
+    <div>
+      <div style="background:${cfg.color};padding:10px 14px 8px;color:#fff">
+        <div style="font-size:13px;font-weight:700">${e.name}</div>
+        <div style="font-size:11px;opacity:.82;margin-top:2px">${e.location}</div>
+      </div>
+      <div style="padding:10px 14px;font-size:12.5px;color:#334155">
+        <div style="margin-bottom:4px"><span style="color:#94a3b8">Date: </span>${e.dateStart}${e.dateEnd?` — ${e.dateEnd}`:''}</div>
+        ${e.cat ? `<div style="margin-bottom:4px"><span style="color:#94a3b8">Category: </span><strong style="color:${cfg.color}">CAT ${e.cat}</strong></div>` : ''}
+        <div style="font-size:11px;color:#94a3b8;margin-top:6px">Updated ${e.updated}</div>
+      </div>
+    </div>`;
+
+    L.marker([e.lat, e.lng], { icon })
+      .bindPopup(popupHTML, { className:'nat-popup', maxWidth:220, minWidth:220, closeButton:true })
+      .addTo(natMap)
+      .on('click', () => { ST.selected = e.id; renderEvents(); });
+  });
+
+  // Fullscreen handled in window.render()
+}
+
+/* ── Events panel render ──────────────────────────────────────────────────── */
+function renderEvents() {
+  const panel = document.getElementById('ev-list');
+  if (!panel) return;
+  const filtered = getFiltered();
+  if (filtered.length === 0) {
+    panel.innerHTML = `<div style="padding:32px 16px;text-align:center;color:#94a3b8;font-size:13px">No events match your search.</div>`;
+    return;
+  }
+  panel.innerHTML = filtered.map(e => {
+    const cfg = TYPE_CFG[e.type] || TYPE_CFG.wildfire;
+    const active = e.id === ST.selected;
+    return `<div class="ev-card ${active?'active':''}" data-ev="${e.id}">
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        ${typeIconCircle(e.type, 34)}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:${cfg.color};margin-bottom:2px">${e.name}</div>
+          <div style="font-size:12px;color:#64748b">${e.location}</div>
+          <div style="font-size:12px;color:#64748b;margin-top:2px">${e.dateStart}${e.dateEnd?` until ${e.dateEnd}`:''}</div>
+          ${dots(e.cat, cfg.color)}
+          <div style="font-size:11px;color:#94a3b8;margin-top:4px">Updated ${e.updated}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Wire event card clicks
+  document.querySelectorAll('[data-ev]').forEach(card => {
+    card.addEventListener('click', () => {
+      ST.selected = parseInt(card.dataset.ev);
+      renderEvents();
+      // Pan map to event
+      if (natMap) {
+        const e = EVENTS.find(x => x.id === ST.selected);
+        if (e) natMap.setView([e.lat, e.lng], 5, { animate:true });
+      }
+    });
+  });
+}
+
+/* ── Main render ──────────────────────────────────────────────────────────── */
+const CHEV_DOWN = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+const LAYERS_ICO = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`;
+const TAG_ICO    = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`;
+const EXPAND_ICO = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>`;
+const BOLT_ICO   = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`;
+const SEARCH_ICO = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
+
+const YEARS = ['2026','2025','2024','2023','2022','2021','2020','2019','2018'];
+const TYPES = [['cyclone','Cyclone'],['wildfire','Wildfire'],['hurricane','Hurricane'],['flood','Flood'],['earthquake','Earthquake']];
+
+window.render = function() {
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
+      ${SC.Topbar()}
+      <main class="flex-1 overflow-hidden flex gap-3" style="min-height:0;background:#f1f5f9;padding:12px">
+
+        <!-- Events card -->
+        <div style="width:320px;flex-shrink:0;background:#fff;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 1px 3px rgba(15,23,42,.06);display:flex;flex-direction:column;overflow:hidden">
+
+          <!-- Header -->
+          <div style="padding:16px 16px 10px">
+            <div style="font-size:11px;font-weight:800;color:#334155;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px">Events</div>
+
+            <!-- Search -->
+            <div style="position:relative;margin-bottom:10px">
+              <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);display:flex;pointer-events:none">${SEARCH_ICO}</span>
+              <input id="ev-search" type="text" placeholder="Search" value="${ST.query}"
+                style="width:100%;height:34px;border:1px solid #e2e8f0;border-radius:8px;padding:0 10px 0 30px;font-size:13px;color:#0f172a;outline:none;font-family:inherit;background:#f8fafc;transition:border-color .15s,box-shadow .15s" />
+            </div>
+
+            <!-- Filters -->
+            <div style="display:flex;gap:8px">
+              <div style="position:relative;flex:1">
+                <select id="ev-year" class="filt-sel" style="width:100%">
+                  <option value="all" ${ST.year==='all'?'selected':''}>All Years</option>
+                  ${YEARS.map(y => `<option value="${y}" ${ST.year===y?'selected':''}>${y}</option>`).join('')}
+                </select>
+                <span style="position:absolute;right:7px;top:50%;transform:translateY(-50%);pointer-events:none;display:flex">${CHEV_DOWN}</span>
+              </div>
+              <div style="position:relative;flex:1">
+                <select id="ev-type" class="filt-sel" style="width:100%">
+                  <option value="all" ${ST.type==='all'?'selected':''}>All Events</option>
+                  ${TYPES.map(([v,l]) => `<option value="${v}" ${ST.type===v?'selected':''}>${l}</option>`).join('')}
+                </select>
+                <span style="position:absolute;right:7px;top:50%;transform:translateY(-50%);pointer-events:none;display:flex">${CHEV_DOWN}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Events list -->
+          <div id="ev-list" class="flex-1 overflow-y-auto scroll-thin" style="min-height:0"></div>
+        </div>
+
+        <!-- Map card -->
+        <div style="flex:1;background:#fff;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 1px 3px rgba(15,23,42,.06);display:flex;flex-direction:column;overflow:hidden;min-width:0">
+          <!-- Map title bar -->
+          <div style="height:48px;background:#fff;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;padding:0 16px;gap:8px;flex-shrink:0">
+            ${BOLT_ICO}
+            <span style="font-size:14px;font-weight:600;color:#0f172a">Natural Catastrophe Events Map</span>
+          </div>
+
+          <!-- Map -->
+          <div id="nat-map-wrap" style="flex:1;position:relative;min-height:0;overflow:hidden">
+            <div id="nat-map"></div>
+
+            <!-- Fullscreen -->
+            <button id="nat-fs-btn" class="map-btn" style="position:absolute;top:12px;left:12px;z-index:1000" title="Fullscreen">${EXPAND_ICO}</button>
+
+            <!-- Right controls -->
+            <div style="position:absolute;top:12px;right:12px;z-index:400;display:flex;flex-direction:column;gap:6px">
+              <div style="position:relative">
+                <button id="nat-layers-btn" class="map-btn" title="Map Type">${LAYERS_ICO}</button>
+                <div id="nat-layers-menu" style="display:none;position:absolute;top:38px;right:0;width:150px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 4px 12px rgba(15,23,42,.12);overflow:hidden;z-index:9999">
+                  <div style="padding:6px 10px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #f1f5f9">Map Type</div>
+                  ${[['satellite','Satellite','#0b1e2e'],['street','Street','#e8e0d4'],['light','Light','#e8e8e8'],['dark','Dark','#1a1a2e']].map(([k,l,c]) =>
+                    `<div class="map-type-opt" data-type="${k}" style="padding:8px 12px;font-size:12.5px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px;color:#334155" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''"><span style="width:8px;height:8px;border-radius:2px;background:${c};flex-shrink:0"></span>${l}</div>`
+                  ).join('')}
+                </div>
+              </div>
+              <button class="map-btn" title="Labels">${TAG_ICO}</button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    ${SC.TweaksPanel()}
+  `;
+
+  SC.wireChrome();
+
+  /* Search */
+  const si = document.getElementById('ev-search');
+  if (si) {
+    si.addEventListener('input', e => { ST.query = e.target.value; renderEvents(); });
+    si.addEventListener('focus', e => { e.target.style.borderColor='#93c5fd'; e.target.style.boxShadow='0 0 0 3px rgba(59,130,246,.12)'; e.target.style.background='#fff'; });
+    si.addEventListener('blur',  e => { e.target.style.borderColor='#e2e8f0'; e.target.style.boxShadow=''; e.target.style.background='#f8fafc'; });
+  }
+
+  /* Year / Type filters */
+  const yrSel = document.getElementById('ev-year');
+  if (yrSel) yrSel.addEventListener('change', () => { ST.year = yrSel.value; renderEvents(); });
+  const tySel = document.getElementById('ev-type');
+  if (tySel) tySel.addEventListener('change', () => { ST.type = tySel.value; renderEvents(); });
+
+  renderEvents();
+  setTimeout(initMap, 50);
+
+  /* Fullscreen — matches Marine Dashboard pattern */
+  const fsBtn = document.getElementById('nat-fs-btn');
+  const mapWrap = document.getElementById('nat-map-wrap');
+  const COMPRESS_ICO = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>`;
+  if (fsBtn && mapWrap) {
+    fsBtn.onclick = () => {
+      const isFs = mapWrap.classList.toggle('is-fullscreen');
+      fsBtn.innerHTML = isFs ? COMPRESS_ICO : EXPAND_ICO;
+      fsBtn.title = isFs ? 'Exit fullscreen' : 'Fullscreen';
+      document.body.style.overflow = isFs ? 'hidden' : '';
+      setTimeout(() => natMap && natMap.invalidateSize(), 260);
+    };
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && mapWrap.classList.contains('is-fullscreen')) fsBtn.onclick();
+    });
+  }
+  // Remove old body-level exit button if present
+  const oldExit = document.getElementById('nat-fs-exit');
+  if (oldExit) oldExit.remove();
+
+
+  /* Map type switcher */
+  const nlBtn  = document.getElementById('nat-layers-btn');
+  const nlMenu = document.getElementById('nat-layers-menu');
+  if (nlBtn && nlMenu) {
+    nlBtn.addEventListener('click', e => { e.stopPropagation(); nlMenu.style.display = nlMenu.style.display==='none'?'block':'none'; });
+    document.addEventListener('click', () => { if(nlMenu) nlMenu.style.display='none'; });
+  }
+  document.querySelectorAll('.map-type-opt').forEach(opt => {
+    opt.addEventListener('click', e => { e.stopPropagation(); setNatMapType(opt.dataset.type); if(nlMenu) nlMenu.style.display='none'; });
+  });
+};
+
+window.render();
+</script>
+</body>
+</html>
