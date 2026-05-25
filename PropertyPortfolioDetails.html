@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Property Portfolio Details — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Inter','ui-sans-serif','system-ui','sans-serif'] },
+        colors: {
+          brand: {50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',800:'#1e40af'},
+          ink:   {900:'#0f172a',800:'#1e293b',700:'#334155',600:'#475569',500:'#64748b',400:'#94a3b8',300:'#cbd5e1',200:'#e2e8f0',100:'#f1f5f9',50:'#f8fafc'},
+        },
+        boxShadow: {
+          'card':'0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06)',
+          'card-hover':'0 4px 10px -2px rgb(15 23 42 / 0.08), 0 8px 24px -4px rgb(15 23 42 / 0.08)',
+        },
+      },
+    },
+  };
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  .scroll-thin::-webkit-scrollbar{width:6px;height:6px}
+  .scroll-thin::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
+
+  /* DS pill tabs */
+  .ds-tabs{position:relative;display:inline-flex;gap:4px;padding:4px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9999px;}
+  .ds-tabs.is-stretch{display:flex;width:100%;}
+  .ds-tabs.is-stretch > .ds-tab{flex:1;}
+  .ds-tab{position:relative;font:inherit;font-size:13px;font-weight:600;padding:8px 16px;background:transparent;border:0;border-radius:9999px;color:#64748b;cursor:pointer;transition:color 140ms ease;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
+  .ds-tab:hover{color:#0f172a;}
+  .ds-tab[aria-selected="true"]{color:#fff;}
+  .ds-tab-pill{position:absolute;top:4px;left:0;height:calc(100% - 8px);background:#2563eb;border-radius:9999px;box-shadow:0 1px 2px rgba(15,23,42,.12);z-index:0;transition:transform 320ms cubic-bezier(.34,1.2,.64,1),width 320ms cubic-bezier(.34,1.2,.64,1);pointer-events:none;}
+  .ds-tab-pill.is-init{transition:none;}
+  .ds-tab-label{position:relative;z-index:1;display:inline-flex;align-items:center;gap:6px;}
+
+  /* Field rows */
+  .field-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid #f1f5f9;gap:16px;}
+  .field-row:last-of-type{border-bottom:0;}
+  .field-label{font-size:13px;color:#64748b;font-weight:500;}
+  .field-value{font-size:13px;font-weight:600;color:#0f172a;text-align:right;}
+  .field-value-link{font-size:13px;font-weight:600;color:#2563eb;text-align:right;cursor:pointer;}
+  .field-value-link:hover{text-decoration:underline;}
+
+  /* Buttons */
+  .btn-outline{display:inline-flex;align-items:center;gap:7px;padding:8px 18px;border:1.5px solid #2563eb;border-radius:8px;background:#fff;color:#2563eb;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s;}
+  .btn-outline:hover{background:#eff6ff;}
+  .btn-icon{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;border:0;background:transparent;color:#94a3b8;cursor:pointer;}
+  .btn-icon:hover{background:#f1f5f9;color:#334155;}
+
+  /* Status badges */
+  .badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;display:inline-block;white-space:nowrap;}
+  .badge-active{background:#fee2e2;color:#dc2626;}
+  .badge-monitoring{background:#fef3c7;color:#d97706;}
+  .badge-past{background:#f1f5f9;color:#64748b;}
+  .risk-tag{font-size:11px;font-weight:600;padding:3px 10px;border-radius:6px;background:#f1f5f9;color:#475569;display:inline-block;}
+
+  /* Map */
+  #pp-map{position:absolute;inset:0;background:#e0ebe9;}
+  #pp-map .leaflet-top.leaflet-left{top:56px;left:2px;}
+  #pp-map .leaflet-top.leaflet-left .leaflet-bar{margin-left:10px!important;}
+  .leaflet-control-zoom,.leaflet-bar{border:1px solid #e2e8f0!important;box-shadow:0 1px 2px rgb(15 23 42 / .08)!important;border-radius:8px!important;overflow:hidden;}
+  .leaflet-bar a{background:#fff!important;color:#334155!important;}
+  .leaflet-bar a:hover{background:#f1f5f9!important;}
+  .leaflet-control-zoom a{display:flex!important;align-items:center;justify-content:center;padding:0!important;}
+  .leaflet-control-zoom a svg{width:16px;height:16px;}
+  .map-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;color:#334155;box-shadow:0 1px 2px rgb(15 23 42 / .08);cursor:pointer;}
+  .map-btn:hover{background:#f1f5f9;}
+  .marker-icon{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#2563eb;border:2px solid #fff;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.25);color:#fff;}
+
+  /* Responsive */
+  .top-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch;}
+  @media(max-width:1023px){.top-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body class="bg-slate-100 text-slate-900">
+<div id="app" class="h-screen w-full flex overflow-hidden"></div>
+
+<script>
+window.PAGE = { id:'property', title:'Portfolio Details', crumb:'Portfolio Details' };
+window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "density":"compact","accent":"blue","sidebarExpanded":false
+}/*EDITMODE-END*/;
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="shared/chrome.js?v=5"></script>
+<script>
+const SC  = window.sharedChrome;
+const Ico = SC.I;
+
+/* ── Load portfolio ─────────────────────────────────────────────────────── */
+let pf = null;
+try { pf = JSON.parse(sessionStorage.getItem('selectedPropertyPortfolio') || 'null'); } catch(e) {}
+if (!pf) pf = { name:'Manhattan Commercial', props:156, exposure:'$24.4B' };
+
+/* Generate portfolio code from name */
+function makeCode(name) {
+  return name.split(/\s+/).map(w=>w[0]||'').join('').toUpperCase().slice(0,3)
+       + (Math.floor(Math.random()*900)+100)
+       + 'G';
+}
+const codeBase = pf.code || makeCode(pf.name);
+const policies = pf.props || pf.policies || 695;
+const activePolicies = Math.max(1, Math.floor(policies * 0.974));
+const exposure = pf.exposure || '$24.4B';
+
+/* ── Data ───────────────────────────────────────────────────────────────── */
+let state = {
+  topTab: 'Portfolio Details',
+  viewMode: 'Map',
+};
+
+const WEATHER_RISKS = [
+  { area:'California Wildfire Zone',  updated:'2025-07-01 14:30 UTC', status:'Active',     tone:'red',   tag:'Wildfire Risk' },
+  { area:'Hurricane Track - Florida', updated:'2025-07-01 13:45 UTC', status:'Active',     tone:'red',   tag:'Hurricane Category 2' },
+  { area:'Texas Tornado Alley',       updated:'2025-07-01 12:15 UTC', status:'Active',     tone:'red',   tag:'Severe Weather' },
+  { area:'New Madrid Seismic Zone',   updated:'2025-07-01 11:20 UTC', status:'Monitoring', tone:'amber', tag:'Earthquake Risk' },
+  { area:'Pacific Northwest Storm',   updated:'2025-06-30 22:10 UTC', status:'Past',       tone:'gray',  tag:'Storm Damage' },
+];
+
+/* Sample property locations (mock — NYC area to match portfolio) */
+const PROPERTIES = [
+  { lat:40.7484, lng:-73.9857, name:'Empire State Building',   value:'$2.1B' },
+  { lat:40.7589, lng:-73.9851, name:'Rockefeller Center',      value:'$1.8B' },
+  { lat:40.7505, lng:-73.9934, name:'Madison Square Garden',   value:'$1.2B' },
+  { lat:40.7488, lng:-73.9680, name:'Chrysler Building',       value:'$890M' },
+  { lat:40.7614, lng:-73.9776, name:'Plaza Hotel',             value:'$540M' },
+  { lat:40.7077, lng:-74.0083, name:'One World Trade Center',  value:'$3.8B' },
+];
+
+/* ── Icons ──────────────────────────────────────────────────────────────── */
+const IC = {
+  eye:      `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+  download: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
+  plus:     `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+  building: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>`,
+};
+
+/* ── Portfolio Details card ─────────────────────────────────────────────── */
+function PortfolioDetailsCard() {
+  return `
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="height:360px;">
+    <div class="p-3 border-b border-ink-100 shrink-0">
+      <div class="ds-tabs is-stretch" data-tab-group="data-top-tab">
+        <span class="ds-tab-pill is-init" data-tab-pill></span>
+        <button data-top-tab="Portfolio Details" aria-selected="${state.topTab==='Portfolio Details'}" class="ds-tab">
+          <span class="ds-tab-label">Portfolio Details</span>
+        </button>
+        <button data-top-tab="Portfolio Groups" aria-selected="${state.topTab==='Portfolio Groups'}" class="ds-tab">
+          <span class="ds-tab-label">Portfolio Groups</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Aggregated exposure tile -->
+    <div style="padding:14px 16px 0;" class="shrink-0">
+      <div style="display:flex;justify-content:center;">
+        <div style="background:#eff6ff;border:1px solid #dbeafe;border-radius:10px;padding:14px 40px;text-align:center;min-width:220px;">
+          <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:6px;">Our Aggregated Exposure</div>
+          <div style="font-size:28px;font-weight:700;color:#2563eb;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">${exposure}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fields -->
+    <div class="flex-1 overflow-y-auto scroll-thin" style="padding:6px 18px;">
+      <div class="field-row">
+        <span class="field-label">Name:</span>
+        <span class="field-value">${pf.name}</span>
+      </div>
+      <div class="field-row">
+        <span class="field-label">Id:</span>
+        <span class="field-value-link">${codeBase}</span>
+      </div>
+      <div class="field-row">
+        <span class="field-label">Total number of Policies:</span>
+        <span class="field-value">${policies.toLocaleString()}</span>
+      </div>
+      <div class="field-row">
+        <span class="field-label">Number of Active Policies:</span>
+        <span class="field-value">${activePolicies.toLocaleString()}</span>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-4 py-3 border-t border-ink-100 flex items-center justify-center gap-3 shrink-0">
+      <button class="btn-outline">${IC.plus} Add Policy</button>
+      <button class="btn-outline">${IC.download} Download</button>
+    </div>
+  </div>`;
+}
+
+/* ── Weather Risk card ──────────────────────────────────────────────────── */
+function WeatherRiskCard() {
+  const badgeClass = { red:'badge-active', amber:'badge-monitoring', gray:'badge-past' };
+  const dotColor   = { red:'#ef4444', amber:'#f59e0b', gray:'#94a3b8' };
+
+  return `
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="height:360px;">
+    <div class="px-4 py-3 border-b border-ink-100 shrink-0">
+      <div class="text-base font-semibold text-ink-900">Property Weather Risk</div>
+    </div>
+
+    <!-- Column headers -->
+    <div class="px-4 py-2 grid items-center text-[10px] font-bold tracking-wide uppercase text-ink-500 shrink-0" style="grid-template-columns:1fr auto auto;gap:0 12px;">
+      <span>Risk Area</span>
+      <span>Status</span>
+      <span style="width:24px;"></span>
+    </div>
+
+    <!-- Rows -->
+    <div class="flex-1 overflow-y-auto scroll-thin">
+      ${WEATHER_RISKS.map(w => `
+        <div class="px-4 py-3 hover:bg-ink-50 grid items-start border-t border-ink-100" style="grid-template-columns:1fr auto auto;gap:0 12px;">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="w-2 h-2 rounded-full shrink-0" style="background:${dotColor[w.tone]};"></span>
+              <span class="text-sm font-semibold text-brand-600 truncate">${w.area}</span>
+            </div>
+            <div class="text-[11px] text-ink-500 ml-4 mb-1">Updated: <span class="tabular-nums">${w.updated}</span></div>
+            <div class="ml-4">
+              <span class="risk-tag">${w.tag}</span>
+            </div>
+          </div>
+          <div class="pt-0.5">
+            <span class="badge ${badgeClass[w.tone]}">${w.status}</span>
+          </div>
+          <button class="btn-icon mt-0">${IC.eye}</button>
+        </div>`).join('')}
+    </div>
+
+    <!-- Footer -->
+    <div class="px-4 py-3 border-t border-ink-100 flex items-center justify-center shrink-0">
+      <button class="btn-outline">All Weather Risks</button>
+    </div>
+  </div>`;
+}
+
+/* ── Map card ───────────────────────────────────────────────────────────── */
+function MapCard() {
+  return `
+  <div id="map-container" class="bg-white rounded-xl border border-ink-200 shadow-card overflow-hidden flex flex-col flex-1 min-h-0">
+    <div class="p-3 border-b border-ink-100 flex items-center justify-between shrink-0">
+      <div class="ds-tabs" data-tab-group="data-view">
+        <span class="ds-tab-pill is-init" data-tab-pill></span>
+        <button data-view="Map"  aria-selected="${state.viewMode==='Map'}"  class="ds-tab" style="font-size:12px;padding:6px 14px;"><span class="ds-tab-label">Map</span></button>
+        <button data-view="List" aria-selected="${state.viewMode==='List'}" class="ds-tab" style="font-size:12px;padding:6px 14px;"><span class="ds-tab-label">List</span></button>
+      </div>
+    </div>
+
+    <div class="relative flex-1">
+      ${state.viewMode === 'Map' ? `
+        <div id="pp-map"></div>
+        <button id="pp-fs-btn" class="map-btn absolute z-[400]" title="Toggle fullscreen" style="top:12px;left:12px;">${Ico.maximize}</button>
+        <div class="absolute z-[400] flex flex-col gap-1 items-end" style="top:12px;right:12px;">
+          <div class="relative">
+            <button id="pp-layers-btn" class="map-btn" title="Map type">${Ico.layers}</button>
+            <div id="pp-layers-menu" class="hidden absolute top-0 right-[calc(100%+8px)] w-[160px] bg-white border border-ink-200 rounded-xl shadow-card overflow-hidden py-1">
+              ${[['satellite','Satellite'],['street','Street View'],['dark','Dark Mode'],['light','Light Mode']].map(([id,lbl])=>`
+              <button data-map-type="${id}" class="w-full flex items-center justify-between px-3 py-2 text-sm text-ink-700 hover:bg-ink-50 transition-colors">
+                <span>${lbl}</span>
+                <span class="text-brand-600 opacity-0" data-check>${Ico.check}</span>
+              </button>`).join('')}
+            </div>
+          </div>
+        </div>
+      ` : `
+        <div class="overflow-y-auto scroll-thin h-full">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-ink-50/60 border-b border-ink-100">
+                <th class="text-left px-4 py-2.5 text-[11px] font-bold tracking-wide uppercase text-ink-500">Property Name</th>
+                <th class="text-left px-4 py-2.5 text-[11px] font-bold tracking-wide uppercase text-ink-500">Coordinates</th>
+                <th class="text-right px-4 py-2.5 text-[11px] font-bold tracking-wide uppercase text-ink-500">Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${PROPERTIES.map(p => `
+              <tr class="border-b border-ink-100 hover:bg-ink-50">
+                <td class="px-4 py-2.5">
+                  <span class="font-semibold text-brand-600 cursor-pointer hover:underline">${p.name}</span>
+                </td>
+                <td class="px-4 py-2.5 text-ink-600 tabular-nums">${p.lat.toFixed(4)}°, ${p.lng.toFixed(4)}°</td>
+                <td class="px-4 py-2.5 text-right font-semibold text-ink-900 tabular-nums">${p.value}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      `}
+    </div>
+  </div>`;
+}
+
+/* ── Map init ───────────────────────────────────────────────────────────── */
+let ppMap = null, ppTile = null, currentMapType = 'street';
+const MAP_TILES = {
+  satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  street:    'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+  dark:      'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+  light:     'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+};
+
+function initMap() {
+  const el = document.getElementById('pp-map');
+  if (!el) return;
+  if (ppMap) { ppMap.remove(); ppMap = null; }
+  ppMap = L.map(el, { center:[40.7488, -73.9857], zoom:12, zoomControl:true, scrollWheelZoom:true });
+  ppTile = L.tileLayer(MAP_TILES[currentMapType], { attribution:'', maxZoom:19 }).addTo(ppMap);
+
+  // Custom zoom icons
+  setTimeout(() => {
+    const zin = el.querySelector('.leaflet-control-zoom-in');
+    const zout = el.querySelector('.leaflet-control-zoom-out');
+    if (zin) zin.innerHTML = `<span class="inline-flex items-center justify-center h-full w-full">${Ico.plus}</span>`;
+    if (zout) zout.innerHTML = `<span class="inline-flex items-center justify-center h-full w-full">${Ico.minus}</span>`;
+  }, 100);
+
+  // Markers
+  PROPERTIES.forEach(p => {
+    const icon = L.divIcon({
+      className:'',
+      html:`<div class="marker-icon">${IC.building}</div>`,
+      iconSize:[32,32],
+      iconAnchor:[16,16],
+    });
+    L.marker([p.lat, p.lng], { icon }).bindPopup(`<strong>${p.name}</strong><br/><span style="color:#64748b">${p.value}</span>`).addTo(ppMap);
+  });
+
+  // Fullscreen
+  const fsBtn = document.getElementById('pp-fs-btn');
+  const container = document.getElementById('map-container');
+  if (fsBtn && container) {
+    fsBtn.onclick = () => {
+      const isFs = container.classList.toggle('is-fullscreen');
+      if (isFs) { container.style.cssText = 'position:fixed;inset:0;z-index:9999;border-radius:0;height:100vh;'; document.body.style.overflow='hidden'; }
+      else      { container.style.cssText = ''; document.body.style.overflow=''; }
+      fsBtn.innerHTML = isFs ? Ico.minimize : Ico.maximize;
+      setTimeout(()=>ppMap && ppMap.invalidateSize(), 200);
+    };
+  }
+
+  // Map type
+  const lBtn = document.getElementById('pp-layers-btn');
+  const lMenu = document.getElementById('pp-layers-menu');
+  if (lBtn && lMenu) {
+    lBtn.onclick = (e) => { e.stopPropagation(); lMenu.classList.toggle('hidden'); };
+    document.addEventListener('click', () => lMenu.classList.add('hidden'));
+    lMenu.addEventListener('click', e => e.stopPropagation());
+    lMenu.querySelectorAll('[data-map-type]').forEach(opt => {
+      opt.onclick = () => {
+        currentMapType = opt.dataset.mapType;
+        if (ppTile) ppMap.removeLayer(ppTile);
+        ppTile = L.tileLayer(MAP_TILES[currentMapType], { attribution:'', maxZoom:19 }).addTo(ppMap);
+        lMenu.classList.add('hidden');
+        lMenu.querySelectorAll('[data-check]').forEach(c => c.style.opacity = '0');
+        const chk = opt.querySelector('[data-check]');
+        if (chk) chk.style.opacity = '1';
+      };
+    });
+    const init = lMenu.querySelector(`[data-map-type="${currentMapType}"] [data-check]`);
+    if (init) init.style.opacity = '1';
+  }
+}
+
+/* ── Pill positioning ───────────────────────────────────────────────────── */
+function positionTabPills() {
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.ds-tabs').forEach(group => {
+      const pill   = group.querySelector('[data-tab-pill]');
+      const active = group.querySelector('.ds-tab[aria-selected="true"]');
+      if (!pill || !active) return;
+      const gRect = group.getBoundingClientRect();
+      const aRect = active.getBoundingClientRect();
+      if (!aRect.width) return;
+      pill.style.width     = aRect.width + 'px';
+      pill.style.transform = `translateX(${aRect.left - gRect.left}px)`;
+      requestAnimationFrame(() => pill.classList.remove('is-init'));
+    });
+  });
+}
+
+/* ── Content ────────────────────────────────────────────────────────────── */
+function Content() {
+  return `
+  <div class="flex-1 min-h-0 px-4 lg:px-6 py-4" style="display:flex;flex-direction:column;gap:16px;">
+    <div class="top-grid">
+      ${PortfolioDetailsCard()}
+      ${WeatherRiskCard()}
+    </div>
+    ${MapCard()}
+  </div>`;
+}
+
+/* ── Render ─────────────────────────────────────────────────────────────── */
+window.render = function() {
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
+      ${SC.Topbar()}
+      ${Content()}
+    </div>
+    ${SC.TweaksPanel()}
+  `;
+  SC.wireChrome();
+
+  // Tab wiring with animation
+  document.querySelectorAll('[data-top-tab]').forEach(btn => {
+    btn.onclick = () => {
+      const v = btn.getAttribute('data-top-tab');
+      if (state.topTab === v) return;
+      state.topTab = v;
+      document.querySelectorAll('[data-top-tab]').forEach(b => b.setAttribute('aria-selected', String(b === btn)));
+      positionTabPills();
+    };
+  });
+  document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => {
+    state.viewMode = b.dataset.view;
+    window.render();
+  });
+
+  positionTabPills();
+  window.addEventListener('resize', positionTabPills, { passive:true });
+
+  if (state.viewMode === 'Map') setTimeout(initMap, 60);
+};
+
+window.render();
+</script>
+</body>
+</html>

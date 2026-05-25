@@ -6,6 +6,22 @@ try {
   }
 } catch {}
 
+/* Inject Exo display font across all pages (per Skytek DS) */
+(function injectGlobalFontStyle() {
+  if (document.getElementById('rw-font-overrides')) return;
+  const s = document.createElement('style');
+  s.id = 'rw-font-overrides';
+  s.textContent = `
+    h1, h2, h3, h4, h5, h6,
+    .font-display,
+    .topbar-brand-link {
+      font-family: 'Exo', 'Inter', system-ui, sans-serif;
+      letter-spacing: -0.005em;
+    }
+  `;
+  (document.head || document.documentElement).appendChild(s);
+})();
+
 /* ------------------ SHARED CHROME (sidebar, topbar, tweaks, icons) ------------------ */
 /* Expects: window.PAGE = { id, title, crumb } set before this script loads */
 
@@ -121,12 +137,6 @@ function Sidebar() {
         </${tag}>`;
       }).join('')}
     </nav>
-    <div class="border-t border-ink-200 p-2">
-      <button class="w-full flex items-center gap-2 h-9 rounded-lg px-2 text-ink-500 hover:text-ink-800 hover:bg-ink-100 ring-focus">
-        <span class="shrink-0 flex items-center justify-center w-7 h-7">${I.help}</span>
-        <span class="nav-label truncate hidden text-sm font-medium">Help</span>
-      </button>
-    </div>
   </aside>`;
 }
 
@@ -149,7 +159,6 @@ function Topbar() {
     </div>
     <div class="flex-1"></div>
     <div class="flex items-center gap-1">
-      <button class="hidden md:flex relative h-9 w-9 rounded-lg text-ink-500 hover:text-ink-800 hover:bg-ink-100 items-center justify-center ring-focus" title="Help">${I.help}</button>
       <button id="notif-btn" class="relative h-9 w-9 rounded-lg text-ink-500 hover:text-ink-800 hover:bg-ink-100 flex items-center justify-center ring-focus" title="Notifications">
         ${I.bell}<span class="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-rose-500 dot-pulse"></span>
       </button>
@@ -207,7 +216,7 @@ function Topbar() {
 }
 
 /* Tweaks */
-const TWEAK_DEFAULTS_SHARED = { density:'compact', accent:'blue', sidebarExpanded:true, showSparklines:true };
+const TWEAK_DEFAULTS_SHARED = { density:'compact', accent:'blue', sidebarExpanded:false, showSparklines:true };
 let TWEAKS = { ...TWEAK_DEFAULTS_SHARED, ...(window.TWEAK_DEFAULTS || {}) };
 let editMode = false;
 

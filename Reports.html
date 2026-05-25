@@ -5,17 +5,39 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Reports — Real World</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+        colors: {
+          brand: {50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',800:'#1e40af'},
+          ink:   {900:'#0f172a',800:'#1e293b',700:'#334155',600:'#475569',500:'#64748b',400:'#94a3b8',300:'#cbd5e1',200:'#e2e8f0',100:'#f1f5f9',50:'#f8fafc'},
+        },
+        boxShadow: {
+          'card': '0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06)',
+          'card-hover': '0 4px 10px -2px rgb(15 23 42 / 0.08), 0 8px 24px -4px rgb(15 23 42 / 0.08)',
+        },
+      },
+    },
+  };
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
   .scroll-thin::-webkit-scrollbar{width:5px}.scroll-thin::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
-  .rtab{display:inline-flex;align-items:center;gap:7px;padding:7px 16px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;border:0;font-family:inherit;transition:background .15s,color .15s;white-space:nowrap}
-  .rtab.active{background:#2563eb;color:#fff}
-  .rtab:not(.active){background:transparent;color:#64748b}
-  .rtab:not(.active):hover{background:#f1f5f9;color:#334155}
+  /* DS pill tabs — matching rest of system (defined in shared/chrome.js) */
+  .ds-tabs{position:relative;display:inline-flex;gap:4px;padding:4px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9999px;}
+  .ds-tab{position:relative;font:inherit;font-size:13px;font-weight:600;padding:7px 16px;background:transparent;border:0;border-radius:9999px;color:#64748b;cursor:pointer;transition:color 140ms ease;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+  .ds-tab:hover{color:#0f172a;}
+  .ds-tab[aria-selected="true"]{color:#fff;}
+  .ds-tab-pill{position:absolute;top:4px;left:0;height:calc(100% - 8px);background:#2563eb;border-radius:9999px;box-shadow:0 1px 2px rgba(15,23,42,.12);z-index:0;transition:transform 320ms cubic-bezier(.34,1.2,.64,1),width 320ms cubic-bezier(.34,1.2,.64,1);pointer-events:none;}
+  .ds-tab-pill.is-init{transition:none;}
+  .ds-tab-label{position:relative;z-index:1;display:inline-flex;align-items:center;gap:6px;}
   .chat-input{width:100%;height:46px;border:1px solid #e2e8f0;border-radius:12px;padding:0 52px 0 16px;font-size:14px;color:#0f172a;outline:none;font-family:inherit;background:#fff;transition:border-color .15s,box-shadow .15s}
   .chat-input:focus{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
   .chip{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:13px 16px;font-size:13px;font-weight:600;color:#0f172a;cursor:pointer;text-align:left;font-family:inherit;transition:border-color .15s,box-shadow .15s,background .1s}
@@ -69,7 +91,7 @@ window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 }/*EDITMODE-END*/;
 </script>
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
-<script src="shared/chrome.js?v=4"></script>
+<script src="shared/chrome.js?v=5"></script>
 <script>
 const SC = window.sharedChrome;
 
@@ -105,6 +127,39 @@ const SUGGESTED = [
 let activeTab  = 'builder';
 let messages   = [];
 let isLoading  = false;
+
+/* ── Weekly Fleet Reports data ─────────────────────────────────────── */
+const FLEET_REPORTS = [
+  { title:'Weekly Fleet Monitoring Report', date:'Jan 8, 2025 14:23', vessels:['MV Atlantic Star','MV Pacific Queen','MV Nordic Explorer','MV Mediterranean Sky'] },
+  { title:'Weekly Fleet Monitoring Report', date:'Jan 7, 2025 09:15', vessels:['MV Atlantic Star','MV Pacific Queen'] },
+  { title:'Weekly Fleet Monitoring Report', date:'Jan 6, 2025 16:42', vessels:['MV Nordic Explorer','MV Mediterranean Sky','MV Caribbean Pearl'] },
+  { title:'Weekly Fleet Monitoring Report', date:'Jan 5, 2025 11:30', vessels:['MV Atlantic Star','MV Caribbean Pearl','MV Aegean Star'] },
+  { title:'Weekly Fleet Monitoring Report', date:'Jan 4, 2025 13:55', vessels:['MV Pacific Queen','MV Arctic Navigator','MV Baltic Voyager','MV Atlantic Star'] },
+  { title:'Weekly Fleet Monitoring Report', date:'Jan 3, 2025 10:18', vessels:['MV Nordic Explorer','MV Baltic Voyager'] },
+  { title:'Weekly Fleet Monitoring Report', date:'Jan 2, 2025 15:07', vessels:['MV Mediterranean Sky','MV Aegean Star','MV Atlantic Star'] },
+  { title:'Weekly Fleet Monitoring Report', date:'Jan 1, 2025 08:45', vessels:['MV Atlantic Star','MV Pacific Queen','MV Nordic Explorer'] },
+];
+let fleetQuery = '';
+let fleetPage = 1;
+let fleetPerPage = 10;
+
+/* ── Competitor Analysis state + data ─────────────────────────────────── */
+const COMPETITOR_COMPANIES = [
+  { name:'Ramous Maritime Company Ltd',    type:'Shipping Company',   country:'Cyprus',           flag:'🇨🇾', code:'RMC-CY-001', fleet:25,  fleetVal:'$1.2B'  },
+  { name:'Turvalu Naviera S.A.',           type:'Shipping Company',   country:'Panama',           flag:'🇵🇦', code:'TVN-PA-001', fleet:8,   fleetVal:'$145M'  },
+  { name:'Ship Owner Investment Co.',      type:'Investment Company', country:'Marshall Islands', flag:'🇲🇭', code:'SOI-MI-001', fleet:35,  fleetVal:'$2.8B'  },
+  { name:'Eternal Light Shipping Limited', type:'Shipping Company',   country:'Panama',           flag:'🇵🇦', code:'ELS-PA-001', fleet:12,  fleetVal:'$68M'   },
+  { name:'Cosco Netherlands Shipping',     type:'Shipping Company',   country:'Netherlands',      flag:'🇳🇱', code:'CNS-NL-001', fleet:185, fleetVal:'$12.5B' },
+  { name:'Shell Canada Limited',           type:'Energy Company',     country:'Canada',           flag:'🇨🇦', code:'SCL-CA-001', fleet:45,  fleetVal:'$3.2B'  },
+  { name:'Nordic Maritime Solutions',      type:'Shipping Company',   country:'Norway',           flag:'🇳🇴', code:'NMS-NO-001', fleet:18,  fleetVal:'$420M'  },
+  { name:'Mediterranean Carriers Ltd',     type:'Shipping Company',   country:'Malta',            flag:'🇲🇹', code:'MCL-MT-001', fleet:22,  fleetVal:'$180M'  },
+  { name:'Baltic Shipping Enterprises',    type:'Shipping Company',   country:'Latvia',           flag:'🇱🇻', code:'BSE-LV-001', fleet:15,  fleetVal:'$95M'   },
+  { name:'Asian Pacific Maritime Corp',    type:'Conglomerate',       country:'Singapore',        flag:'🇸🇬', code:'APM-SG-001', fleet:95,  fleetVal:'$4.8B'  },
+  { name:'Meridian Tankers International', type:'Shipping Company',   country:'Greece',           flag:'🇬🇷', code:'MTI-GR-001', fleet:28,  fleetVal:'$890M'  },
+];
+let compQuery = '';
+let compSelected = [];
+let compDropdownOpen = false;
 let msgCounter = 0;
 
 // Active form state (lives alongside messages)
@@ -477,11 +532,279 @@ function wireChat() {
 }
 
 /* ── Tab content ──────────────────────────────────────────────────────────── */
+/* ── Weekly Fleet Reports table ───────────────────────────────────────── */
+const FLEET_ICONS = {
+  doc:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
+  anchor: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg>`,
+  search: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+  eye:    `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+  dl:     `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
+  chevL:  `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`,
+  chevR:  `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`,
+  chevD:  `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`,
+};
+
+function fleetTabContent() {
+  const q = fleetQuery.toLowerCase();
+  const filtered = q
+    ? FLEET_REPORTS.filter(r => r.title.toLowerCase().includes(q) || r.vessels.some(v => v.toLowerCase().includes(q)))
+    : FLEET_REPORTS;
+  const total = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / fleetPerPage));
+  if (fleetPage > totalPages) fleetPage = totalPages;
+  const start = (fleetPage - 1) * fleetPerPage;
+  const pageRows = filtered.slice(start, start + fleetPerPage);
+
+  const vesselsCell = (vs) => {
+    const visible = vs.slice(0, 2);
+    const extra = vs.length - 2;
+    return `
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+        ${visible.map(v => `
+          <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:#fff;border:1px solid #e2e8f0;border-radius:9999px;font-size:12px;font-weight:500;color:#334155;white-space:nowrap;">
+            <span style="color:#64748b;display:inline-flex;">${FLEET_ICONS.anchor}</span>${v}
+          </span>`).join('')}
+        ${extra > 0 ? `<span style="padding:4px 10px;background:#f1f5f9;border-radius:9999px;font-size:12px;font-weight:600;color:#475569;white-space:nowrap;">+${extra} more</span>` : ''}
+      </div>`;
+  };
+
+  const rowBtn = (icon, label) => `
+    <button class="fleet-act-btn" style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;font-size:12.5px;font-weight:500;color:#334155;cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s;">
+      ${icon} ${label}
+    </button>`;
+
+  return `
+  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;background:#fff;">
+    <div style="padding:16px 20px;border-bottom:1px solid #f1f5f9;flex-shrink:0;">
+      <div style="position:relative;max-width:480px;">
+        <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);display:flex;pointer-events:none;">${FLEET_ICONS.search}</span>
+        <input id="fleet-search" type="text" placeholder="Search by vessel name..." value="${fleetQuery.replace(/"/g,'&quot;')}"
+          style="width:100%;height:38px;padding:0 12px 0 38px;border:1px solid #e2e8f0;border-radius:9999px;font-size:13px;color:#334155;outline:none;background:#f8fafc;font-family:inherit;transition:border-color .15s,box-shadow .15s,background .15s;" />
+      </div>
+    </div>
+
+    <div style="flex:1;overflow:auto;" class="scroll-thin">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:840px;">
+        <thead>
+          <tr style="border-bottom:1px solid #e2e8f0;">
+            <th style="text-align:left;padding:12px 20px;font-size:12.5px;font-weight:700;color:#0f172a;white-space:nowrap;">Report Title</th>
+            <th style="text-align:left;padding:12px 16px;font-size:12.5px;font-weight:700;color:#0f172a;white-space:nowrap;">Date &amp; Time</th>
+            <th style="text-align:left;padding:12px 16px;font-size:12.5px;font-weight:700;color:#0f172a;white-space:nowrap;">Vessels Included</th>
+            <th style="text-align:right;padding:12px 20px;font-size:12.5px;font-weight:700;color:#0f172a;white-space:nowrap;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${pageRows.length === 0
+            ? `<tr><td colspan="4" style="padding:48px;text-align:center;color:#94a3b8;font-size:13.5px;">No reports match your search.</td></tr>`
+            : pageRows.map(r => `
+            <tr style="border-bottom:1px solid #f1f5f9;">
+              <td style="padding:14px 20px;">
+                <span style="display:inline-flex;align-items:center;gap:8px;font-weight:600;color:#2563eb;cursor:pointer;">
+                  ${FLEET_ICONS.doc}<span class="hover:underline">${r.title}</span>
+                </span>
+              </td>
+              <td style="padding:14px 16px;color:#475569;white-space:nowrap;">${r.date}</td>
+              <td style="padding:14px 16px;">${vesselsCell(r.vessels)}</td>
+              <td style="padding:14px 20px;text-align:right;white-space:nowrap;">
+                <div style="display:inline-flex;align-items:center;gap:6px;">
+                  ${rowBtn(FLEET_ICONS.eye, 'View')}
+                  ${rowBtn(FLEET_ICONS.dl, 'Download')}
+                </div>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div style="padding:12px 20px;border-top:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-shrink:0;background:#fff;">
+      <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#64748b;">
+        <span>Items per page:</span>
+        <div style="position:relative;">
+          <select id="fleet-per-page" style="appearance:none;-webkit-appearance:none;height:30px;padding:0 26px 0 12px;border:1px solid #e2e8f0;border-radius:9999px;background:#f1f5f9;font-size:13px;font-weight:600;color:#334155;cursor:pointer;font-family:inherit;outline:none;">
+            ${[5,10,20].map(n => `<option value="${n}" ${fleetPerPage===n?'selected':''}>${n}</option>`).join('')}
+          </select>
+          <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none;color:#64748b;display:flex;">${FLEET_ICONS.chevD}</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <button id="fleet-prev" ${fleetPage<=1?'disabled':''} style="display:inline-flex;align-items:center;gap:5px;padding:6px 14px;background:#fff;border:1px solid #e2e8f0;border-radius:9999px;font-size:12.5px;font-weight:500;color:${fleetPage<=1?'#94a3b8':'#334155'};cursor:${fleetPage<=1?'not-allowed':'pointer'};font-family:inherit;opacity:${fleetPage<=1?'.5':'1'};">
+          ${FLEET_ICONS.chevL} Previous
+        </button>
+        <button id="fleet-next" ${fleetPage>=totalPages?'disabled':''} style="display:inline-flex;align-items:center;gap:5px;padding:6px 14px;background:#fff;border:1px solid #e2e8f0;border-radius:9999px;font-size:12.5px;font-weight:500;color:${fleetPage>=totalPages?'#94a3b8':'#334155'};cursor:${fleetPage>=totalPages?'not-allowed':'pointer'};font-family:inherit;opacity:${fleetPage>=totalPages?'.5':'1'};">
+          Next ${FLEET_ICONS.chevR}
+        </button>
+      </div>
+      <div style="font-size:12.5px;color:#94a3b8;">${total} total items</div>
+    </div>
+  </div>`;
+}
+
+function wireFleetTab() {
+  const search = document.getElementById('fleet-search');
+  if (search) {
+    search.oninput = (e) => {
+      fleetQuery = e.target.value;
+      fleetPage = 1;
+      const contentEl = document.getElementById('reports-content');
+      if (contentEl) {
+        contentEl.innerHTML = tabContent();
+        wireFleetTab();
+        const s2 = document.getElementById('fleet-search');
+        if (s2) { s2.focus(); s2.setSelectionRange(s2.value.length, s2.value.length); }
+      }
+    };
+    search.onfocus = () => { search.style.borderColor = '#93c5fd'; search.style.boxShadow = '0 0 0 3px rgba(37,99,235,.12)'; search.style.background = '#fff'; };
+    search.onblur  = () => { search.style.borderColor = '#e2e8f0'; search.style.boxShadow = ''; search.style.background = '#f8fafc'; };
+  }
+  const pp = document.getElementById('fleet-per-page');
+  if (pp) pp.onchange = () => { fleetPerPage = parseInt(pp.value); fleetPage = 1; document.getElementById('reports-content').innerHTML = tabContent(); wireFleetTab(); };
+  const prev = document.getElementById('fleet-prev');
+  const next = document.getElementById('fleet-next');
+  if (prev) prev.onclick = () => { if (fleetPage > 1) { fleetPage--; document.getElementById('reports-content').innerHTML = tabContent(); wireFleetTab(); } };
+  if (next) next.onclick = () => { const tp = Math.max(1, Math.ceil(FLEET_REPORTS.length / fleetPerPage)); if (fleetPage < tp) { fleetPage++; document.getElementById('reports-content').innerHTML = tabContent(); wireFleetTab(); } };
+  document.querySelectorAll('.fleet-act-btn').forEach(b => {
+    b.onmouseenter = () => { b.style.background = '#f8fafc'; b.style.borderColor = '#cbd5e1'; };
+    b.onmouseleave = () => { b.style.background = '#fff'; b.style.borderColor = '#e2e8f0'; };
+  });
+}
+
+/* ── Competitor Analysis tab ──────────────────────────────────────────── */
+function competitorTabContent() {
+  const q = compQuery.toLowerCase();
+  const matches = q
+    ? COMPETITOR_COMPANIES
+        .filter(c => !compSelected.includes(c.name))
+        .filter(c => c.name.toLowerCase().includes(q) || c.type.toLowerCase().includes(q) || c.country.toLowerCase().includes(q))
+        .slice(0, 8)
+    : [];
+  const hasSelection = compSelected.length > 0;
+  const showDropdown = compDropdownOpen && q && matches.length > 0;
+
+  const emptyState = `
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;background:#fff;">
+      <div style="color:#94a3b8;margin-bottom:14px;">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </div>
+      <h3 style="font-size:18px;font-weight:700;color:#0f172a;margin-bottom:6px;text-align:center;">No Companies Selected for Comparison</h3>
+      <p style="font-size:13.5px;color:#64748b;line-height:1.6;max-width:340px;text-align:center;">Use the search field below to find and add companies to compare.</p>
+    </div>`;
+
+  const selectedView = `
+    <div style="flex:1;overflow-y:auto;padding:18px 24px;background:#fff;" class="scroll-thin">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+        <h3 style="font-size:15px;font-weight:700;color:#0f172a;">Selected Companies <span style="color:#94a3b8;font-weight:500;">(${compSelected.length})</span></h3>
+        <button onclick="window.__compClearAll()" style="font-size:12.5px;font-weight:600;color:#64748b;background:transparent;border:0;cursor:pointer;font-family:inherit;text-decoration:underline;">Clear all</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;">
+        ${compSelected.map(name => {
+          const c = COMPETITOR_COMPANIES.find(x => x.name === name);
+          if (!c) return '';
+          return `
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px;box-shadow:0 1px 2px rgba(15,23,42,.04);">
+            <div style="width:36px;height:36px;border-radius:8px;background:#eff6ff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${c.flag}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13.5px;font-weight:700;color:#0f172a;margin-bottom:2px;line-height:1.25;">${c.name}</div>
+              <div style="font-size:11.5px;color:#64748b;margin-bottom:6px;">${c.type} · ${c.country}</div>
+              <div style="display:flex;gap:10px;font-size:11.5px;color:#475569;">
+                <span><strong style="color:#0f172a;">${c.fleet}</strong> vessels</span>
+                <span style="color:#cbd5e1;">·</span>
+                <span><strong style="color:#2563eb;">${c.fleetVal}</strong></span>
+              </div>
+            </div>
+            <button onclick="window.__compRemove('${c.name.replace(/'/g,"\\'")}')" title="Remove" style="width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:0;background:transparent;color:#94a3b8;cursor:pointer;flex-shrink:0;font-family:inherit;font-size:18px;line-height:1;">×</button>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+
+  return `
+  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;background:#fff;">
+    ${hasSelection ? selectedView : emptyState}
+
+    <!-- Search bar -->
+    <div style="padding:0 24px 24px;background:#fff;display:flex;justify-content:center;flex-shrink:0;">
+      <div style="position:relative;width:100%;max-width:520px;">
+        <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);display:flex;pointer-events:none;color:#94a3b8;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+        <input id="comp-search" type="text" placeholder="Search by company name, type, or country..." value="${compQuery.replace(/"/g,'&quot;')}" autocomplete="off"
+          style="width:100%;height:42px;padding:0 14px 0 40px;border:1px solid #e2e8f0;border-radius:9999px;font-size:13.5px;color:#334155;outline:none;background:#f8fafc;font-family:inherit;transition:border-color .15s,box-shadow .15s,background .15s;" />
+
+        ${showDropdown ? `
+        <div id="comp-dropdown" style="position:absolute;left:0;right:0;bottom:calc(100% + 6px);max-height:280px;overflow-y:auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 10px 30px rgba(15,23,42,.15);z-index:50;padding:4px;" class="scroll-thin">
+          ${matches.map(c => `
+          <button class="comp-dd-item" data-cname="${c.name.replace(/"/g,'&quot;')}" style="width:100%;display:flex;align-items:center;gap:10px;padding:9px 12px;background:transparent;border:0;border-radius:8px;cursor:pointer;font-family:inherit;text-align:left;transition:background .12s;">
+            <span style="width:28px;height:28px;border-radius:6px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">${c.flag}</span>
+            <span style="flex:1;min-width:0;">
+              <span style="display:block;font-size:13px;font-weight:600;color:#0f172a;line-height:1.25;">${c.name}</span>
+              <span style="display:block;font-size:11.5px;color:#64748b;margin-top:1px;">${c.type} · ${c.country}</span>
+            </span>
+            <span style="font-size:11.5px;font-weight:600;color:#2563eb;flex-shrink:0;">${c.fleetVal}</span>
+          </button>`).join('')}
+        </div>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function wireCompetitorTab() {
+  const search = document.getElementById('comp-search');
+  if (search) {
+    search.oninput = (e) => {
+      compQuery = e.target.value;
+      compDropdownOpen = !!compQuery;
+      rerenderCompTab(true);
+    };
+    search.onfocus = () => {
+      search.style.borderColor = '#93c5fd';
+      search.style.boxShadow = '0 0 0 3px rgba(37,99,235,.12)';
+      search.style.background = '#fff';
+      if (compQuery) { compDropdownOpen = true; rerenderCompTab(true); }
+    };
+    search.onblur = () => {
+      search.style.borderColor = '#e2e8f0';
+      search.style.boxShadow = '';
+      search.style.background = '#f8fafc';
+      // Defer hide so click on dropdown registers
+      setTimeout(() => { compDropdownOpen = false; rerenderCompTab(false); }, 150);
+    };
+  }
+  document.querySelectorAll('.comp-dd-item').forEach(b => {
+    b.onmouseenter = () => { b.style.background = '#f1f5f9'; };
+    b.onmouseleave = () => { b.style.background = 'transparent'; };
+    b.onmousedown = (e) => { e.preventDefault(); }; // prevent blur
+    b.onclick = () => {
+      const name = b.dataset.cname;
+      if (name && !compSelected.includes(name)) compSelected.push(name);
+      compQuery = '';
+      compDropdownOpen = false;
+      rerenderCompTab(false);
+    };
+  });
+}
+
+function rerenderCompTab(restoreFocus) {
+  const contentEl = document.getElementById('reports-content');
+  if (!contentEl) return;
+  contentEl.innerHTML = tabContent();
+  wireCompetitorTab();
+  if (restoreFocus) {
+    const s = document.getElementById('comp-search');
+    if (s) { s.focus(); s.setSelectionRange(s.value.length, s.value.length); }
+  }
+}
+
+// Expose remove/clear handlers globally so inline onclick can reach them
+window.__compRemove  = (name) => { compSelected = compSelected.filter(n => n !== name); rerenderCompTab(false); };
+window.__compClearAll = () => { compSelected = []; rerenderCompTab(false); };
+
 function tabContent() {
   if (activeTab === 'builder') return `<div id="chat-area" style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;background:#f8fafc"></div>`;
-  const icon = activeTab === 'fleet' ? DOC_ICO.replace('width="14"','width="24"').replace('height="14"','height="24"') : CHT_ICO.replace('width="14"','width="24"').replace('height="14"','height="24"');
-  const title = activeTab === 'fleet' ? 'Weekly Fleet Reports' : 'Competitor Analysis';
-  const desc  = activeTab === 'fleet' ? 'Scheduled fleet performance and exposure summaries will appear here once generated.' : 'Benchmarking and competitive fleet analytics will appear here once configured.';
+  if (activeTab === 'fleet')   return fleetTabContent();
+  if (activeTab === 'comp')    return competitorTabContent();
+  const icon  = CHT_ICO.replace('width="14"','width="24"').replace('height="14"','height="24"');
+  const title = 'Competitor Analysis';
+  const desc  = 'Benchmarking and competitive fleet analytics will appear here once configured.';
   return `<div style="flex:1;display:flex;align-items:center;justify-content:center;background:#f8fafc"><div style="text-align:center;max-width:360px">
     <div style="width:56px;height:56px;border-radius:14px;background:#fff;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 1px 3px rgba(15,23,42,.06)">${icon}</div>
     <h3 style="font-size:16px;font-weight:700;color:#0f172a;margin-bottom:8px">${title}</h3>
@@ -497,21 +820,69 @@ window.render = function() {
       ${SC.Topbar()}
       <main class="flex-1 overflow-hidden flex flex-col" style="min-height:0;background:#f1f5f9;padding:12px">
         <div style="flex:1;min-height:0;background:#fff;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 1px 3px rgba(15,23,42,.06);display:flex;flex-direction:column;overflow:hidden">
-          <!-- Tabs in card header -->
+          <!-- DS pill tabs — matching rest of system -->
           <div style="padding:10px 16px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:4px;flex-shrink:0">
-            <button class="rtab ${activeTab==='builder'?'active':''}" data-tab="builder">${STR_ICO} Report Builder</button>
-            <button class="rtab ${activeTab==='fleet'?'active':''}"   data-tab="fleet">${DOC_ICO} Weekly Fleet Reports</button>
-            <button class="rtab ${activeTab==='comp'?'active':''}"    data-tab="comp">${CHT_ICO} Competitor Analysis</button>
+            <div class="ds-tabs" id="reports-tabs">
+              <span class="ds-tab-pill is-init" id="reports-pill"></span>
+              <button class="ds-tab" aria-selected="${activeTab==='builder'}" data-tab="builder">
+                <span class="ds-tab-label">${STR_ICO} Report Builder</span>
+              </button>
+              <button class="ds-tab" aria-selected="${activeTab==='fleet'}" data-tab="fleet">
+                <span class="ds-tab-label">${DOC_ICO} Weekly Fleet Reports</span>
+              </button>
+              <button class="ds-tab" aria-selected="${activeTab==='comp'}" data-tab="comp">
+                <span class="ds-tab-label">${CHT_ICO} Competitor Analysis</span>
+              </button>
+            </div>
           </div>
-          ${tabContent()}
+          <div id="reports-content">
+            ${tabContent()}
+          </div>
         </div>
       </main>
     </div>
     ${SC.TweaksPanel()}
   `;
   SC.wireChrome();
-  document.querySelectorAll('[data-tab]').forEach(btn => btn.addEventListener('click', () => { activeTab = btn.dataset.tab; window.render(); }));
+
+  /* Position sliding pill */
+  requestAnimationFrame(() => {
+    const group  = document.getElementById('reports-tabs');
+    const pill   = document.getElementById('reports-pill');
+    const active = group && group.querySelector('.ds-tab[aria-selected="true"]');
+    if (!pill || !active) return;
+    const gRect = group.getBoundingClientRect();
+    const aRect = active.getBoundingClientRect();
+    pill.style.width     = aRect.width + 'px';
+    pill.style.transform = `translateX(${aRect.left - gRect.left}px)`;
+    requestAnimationFrame(() => pill.classList.remove('is-init'));
+  });
+
+  document.querySelectorAll('[data-tab]').forEach(btn => btn.addEventListener('click', () => {
+    activeTab = btn.dataset.tab;
+    // Update aria-selected without re-rendering the tab bar (preserves pill animation)
+    document.querySelectorAll('[data-tab]').forEach(b => b.setAttribute('aria-selected', String(b === btn)));
+    // Animate pill to new position
+    const group = document.getElementById('reports-tabs');
+    const pill  = document.getElementById('reports-pill');
+    if (group && pill) {
+      const gRect = group.getBoundingClientRect();
+      const aRect = btn.getBoundingClientRect();
+      pill.style.width     = aRect.width + 'px';
+      pill.style.transform = `translateX(${aRect.left - gRect.left}px)`;
+    }
+    // Swap only the content area
+    const contentEl = document.getElementById('reports-content');
+    if (contentEl) {
+      contentEl.innerHTML = tabContent();
+      if (activeTab === 'builder') rerenderChat();
+      if (activeTab === 'fleet')   wireFleetTab();
+      if (activeTab === 'comp')    wireCompetitorTab();
+    }
+  }));
   if (activeTab === 'builder') rerenderChat();
+  if (activeTab === 'fleet')   wireFleetTab();
+  if (activeTab === 'comp')    wireCompetitorTab();
 };
 
 window.render();

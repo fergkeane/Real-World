@@ -7,7 +7,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
   integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 <style>
@@ -35,6 +35,9 @@
   .port-marker { width:30px; height:30px; border-radius:50%; background:#2563eb; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,.3); display:flex; align-items:center; justify-content:center; cursor:pointer; }
   .port-marker-sanctioned { width:30px; height:30px; border-radius:50%; background:#dc2626; border:2px solid #fff; box-shadow:0 2px 8px rgba(220,38,38,.5); display:flex; align-items:center; justify-content:center; cursor:pointer; animation:pulse-red 2s infinite; }
   @keyframes pulse-red { 0%,100%{box-shadow:0 2px 8px rgba(220,38,38,.5)} 50%{box-shadow:0 0 0 6px rgba(220,38,38,.15),0 2px 8px rgba(220,38,38,.4)} }
+  /* Port labels */
+  .port-label { background:#0f172a !important; border:0 !important; border-radius:5px !important; color:#fff !important; font-size:11px !important; font-weight:600 !important; padding:3px 7px !important; white-space:nowrap !important; box-shadow:0 2px 6px rgba(0,0,0,.3) !important; }
+  .port-label::before { border-top-color:#0f172a !important; }
 
   /* Popup */
   .port-popup .leaflet-popup-content-wrapper { padding:0; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(15,23,42,.25); }
@@ -81,7 +84,7 @@
 <script>
 window.PAGE = { id:'ports', title:'Ports', crumb:'Ports' };
 window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-  "density": "compact",
+  "density": "comfortable",
   "accent": "blue",
   "sidebarExpanded": false,
   "showSparklines": true
@@ -90,10 +93,13 @@ window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="shared/chrome.js?v=4"></script>
+<script src="shared/chrome.js?v=5"></script>
 <script>
 const SC = window.sharedChrome;
 const Ico = SC.I;
+
+/* ---- Map type state ---- */
+let showLabels = false;
 
 let viewMode = 'Map';
 
@@ -189,8 +195,9 @@ function setMapType(type) {
   if (portsTile) portsMap.removeLayer(portsTile);
   portsTile = L.tileLayer(MAP_TILES[type], { attribution:'', maxZoom:19 }).addTo(portsMap);
   portsTile.bringToBack();
-  document.querySelectorAll('.map-type-opt').forEach(el => {
-    el.style.background = el.dataset.type === type ? '#f1f5f9' : '';
+  document.querySelectorAll('[data-map-type]').forEach(opt => {
+    const chk = opt.querySelector('[data-check]');
+    if (chk) chk.style.opacity = opt.dataset.mapType === type ? '1' : '0';
   });
 }
 
@@ -210,28 +217,57 @@ function initMap() {
       iconSize: [30, 30],
       iconAnchor: [15, 15],
     });
-    L.marker([p.lat, p.lng], { icon })
-      .bindPopup(portPopupHTML(p, idx), { className:'port-popup', maxWidth:280, minWidth:280, closeButton:true, autoPanPadding:[30,30] })
-      .addTo(portsMap);
+    const marker = L.marker([p.lat, p.lng], { icon });
+    marker.bindTooltip(p.name, { permanent: showLabels, direction:'top', className:'port-label', offset:[0,-18] });
+    marker.bindPopup(portPopupHTML(p, idx), { className:'port-popup', maxWidth:280, minWidth:280, closeButton:true, autoPanPadding:[30,30] });
+    marker.addTo(portsMap);
   });
 
   /* Zoom icons */
   setTimeout(() => {
     const zin  = el.querySelector('.leaflet-control-zoom-in');
     const zout = el.querySelector('.leaflet-control-zoom-out');
-    if (zin)  zin.innerHTML  = `<span style="font-size:18px;line-height:30px;display:block;text-align:center;">+</span>`;
-    if (zout) zout.innerHTML = `<span style="font-size:20px;line-height:30px;display:block;text-align:center;">&minus;</span>`;
+    if (zin)  zin.innerHTML  = `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>`;
+    if (zout) zout.innerHTML = `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></span>`;
   }, 100);
 
-  /* Layers menu */
   const btn  = document.getElementById('layers-btn');
   const menu = document.getElementById('layers-menu');
   if (btn && menu) {
-    btn.addEventListener('click', e => { e.stopPropagation(); menu.style.display = menu.style.display === 'none' ? 'block' : 'none'; });
-    document.addEventListener('click', () => { if (menu) menu.style.display = 'none'; });
+    btn.addEventListener('click', e => { e.stopPropagation(); menu.classList.toggle('hidden'); });
+    document.addEventListener('click', () => { if (menu) menu.classList.add('hidden'); });
     menu.addEventListener('click', e => e.stopPropagation());
-    document.querySelectorAll('.map-type-opt').forEach(opt => {
-      opt.addEventListener('click', () => { setMapType(opt.dataset.type); menu.style.display = 'none'; });
+    menu.querySelectorAll('[data-map-type]').forEach(opt => {
+      opt.addEventListener('click', () => {
+        setMapType(opt.dataset.mapType);
+        menu.classList.add('hidden');
+        menu.querySelectorAll('[data-check]').forEach(c => c.style.opacity = '0');
+        const chk = opt.querySelector('[data-check]');
+        if (chk) chk.style.opacity = '1';
+      });
+    });
+    const initChk = menu.querySelector('[data-map-type="satellite"] [data-check]');
+    if (initChk) initChk.style.opacity = '1';
+  }
+
+  /* Labels toggle */
+  const labelsBtn = document.getElementById('labels-btn');
+  if (labelsBtn) {
+    labelsBtn.addEventListener('click', () => {
+      showLabels = !showLabels;
+      labelsBtn.style.background  = showLabels ? '#eff6ff' : '';
+      labelsBtn.style.borderColor = showLabels ? '#bfdbfe' : '';
+      labelsBtn.style.color       = showLabels ? '#2563eb' : '';
+      if (portsMap) {
+        portsMap.eachLayer(layer => {
+          if (layer.getTooltip && layer.getTooltip()) {
+            const tt = layer.getTooltip();
+            tt.options.permanent = showLabels;
+            layer.unbindTooltip();
+            layer.bindTooltip(tt.getContent(), { permanent: showLabels, direction:'top', className:'port-label', offset:[0,-18] });
+          }
+        });
+      }
     });
   }
 
@@ -240,8 +276,13 @@ function initMap() {
   if (fsBtn) {
     fsBtn.addEventListener('click', () => {
       const mapWrap = document.getElementById('map-wrap');
-      if (mapWrap.requestFullscreen) mapWrap.requestFullscreen();
-      setTimeout(() => portsMap.invalidateSize(), 300);
+      if (!mapWrap) return;
+      const isFs = mapWrap.classList.toggle('ports-is-fs');
+      if (isFs) { mapWrap.style.cssText = 'position:fixed;inset:0;z-index:9999;'; document.body.style.overflow = 'hidden'; }
+      else       { mapWrap.style.cssText = ''; document.body.style.overflow = ''; }
+      fsBtn.innerHTML = isFs ? Ico.minimize : Ico.maximize;
+      fsBtn.title = isFs ? 'Exit fullscreen' : 'Toggle fullscreen';
+      setTimeout(() => portsMap && portsMap.invalidateSize(), 200);
     });
   }
 }
@@ -251,29 +292,28 @@ function MapView() {
   return `
   <div id="map-wrap" class="relative flex-1">
     <div id="ports-map"></div>
-    <!-- Fullscreen btn -->
-    <button id="fs-btn" class="map-btn absolute z-[400]" style="top:12px;left:12px;" title="Fullscreen">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-    </button>
-    <!-- Right controls -->
-    <div class="absolute z-[400] flex flex-col gap-2" style="top:12px;right:12px;">
-      <!-- Layers -->
+    <!-- Fullscreen btn — top-left matching Marine Dashboard -->
+    <button id="fs-btn" class="map-btn absolute z-[400]" style="top:12px;left:12px;" title="Toggle fullscreen">${Ico.maximize}</button>
+    <!-- Right controls column — top-right matching Marine Dashboard -->
+    <div class="absolute z-[400] flex flex-col gap-1 items-end" style="top:12px;right:12px;">
+      <!-- Map type -->
       <div class="relative">
-        <button id="layers-btn" class="map-btn" title="Map type">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-        </button>
-        <div id="layers-menu" style="display:none;position:absolute;top:38px;right:0;width:150px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 4px 12px rgba(15,23,42,.12);overflow:hidden;">
-          <div style="padding:6px 10px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #f1f5f9;">Map Type</div>
-          <div class="map-type-opt" data-type="satellite"><span style="width:8px;height:8px;border-radius:2px;background:#0b1e2e;flex-shrink:0;"></span>Satellite</div>
-          <div class="map-type-opt" data-type="street"><span style="width:8px;height:8px;border-radius:2px;background:#a8d5a2;flex-shrink:0;"></span>Street</div>
-          <div class="map-type-opt" data-type="dark"><span style="width:8px;height:8px;border-radius:2px;background:#1a1a2e;flex-shrink:0;"></span>Dark</div>
-          <div class="map-type-opt" data-type="light"><span style="width:8px;height:8px;border-radius:2px;background:#e8e8e8;border:1px solid #ccc;flex-shrink:0;"></span>Light</div>
+        <button id="layers-btn" class="map-btn" title="Map type">${Ico.layers}</button>
+        <div id="layers-menu" class="hidden absolute top-0 right-[calc(100%+8px)] w-[160px] bg-white border border-ink-200 rounded-xl shadow-card-hover overflow-hidden py-1">
+          ${[
+            { id:'satellite', label:'Satellite' },
+            { id:'street',    label:'Street View' },
+            { id:'dark',      label:'Dark Mode' },
+            { id:'light',     label:'Light Mode' },
+          ].map(o => `
+            <button data-map-type="${o.id}" class="map-type-opt w-full flex items-center justify-between px-3 py-2 text-sm text-ink-700 hover:bg-ink-50 transition-colors">
+              <span>${o.label}</span>
+              <span class="text-brand-600 opacity-0" data-check>${Ico.check}</span>
+            </button>`).join('')}
         </div>
       </div>
-      <!-- Label toggle -->
-      <button class="map-btn" title="Labels">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-      </button>
+      <!-- Labels toggle -->
+      <button id="labels-btn" class="map-btn ${showLabels ? 'bg-brand-50 border-brand-200 text-brand-600' : ''}" title="Toggle port labels">${Ico.tag}</button>
     </div>
   </div>`;
 }

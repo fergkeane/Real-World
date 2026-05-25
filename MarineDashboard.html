@@ -127,7 +127,7 @@
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="shared/chrome.js?v=4"></script>
+<script src="shared/chrome.js?v=5"></script>
 <script>
 const SC = window.sharedChrome;
 const Ico = SC.I;
@@ -423,7 +423,7 @@ function PortfolioCard() {
       <span>Name</span>
       <span class="flex gap-6"><span>Policies</span><span>Exposure</span></span>
     </div>
-    <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-100">
+    <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-50">
       ${PORTFOLIOS.map((p, i) => `
         <button data-pf-idx="${i}" class="w-full text-left px-3 py-2 hover:bg-ink-50 flex items-center justify-between text-xs">
           <span class="truncate text-brand-600 font-semibold hover:underline">${p.name}</span>
@@ -459,7 +459,7 @@ function RegionsCard() {
       <span>Aggregation</span>
       <span>Risk Value${sortIco}</span>
     </div>
-    <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-100">
+    <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-50">
       ${EXPOSURE_AGGREGATIONS.map(a => `
         <div class="px-3 py-2 flex items-center justify-between text-xs hover:bg-ink-50">
           <span class="inline-flex items-center gap-1.5 min-w-0">
@@ -481,7 +481,7 @@ function RegionsCard() {
       <span class="text-rose-500">Above<br><span class="line-through decoration-rose-400">1,000,000.0</span></span>
       <span class="text-right">Our Exposure</span>
     </div>
-    <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-100">
+    <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-50">
       ${REGIONS.map(r => `
         <button class="w-full text-left px-3 py-2 hover:bg-ink-50 grid grid-cols-[1fr_auto_auto] gap-6 items-center text-xs">
           <span class="inline-flex items-center gap-2 min-w-0">
@@ -555,14 +555,87 @@ function AlertsCard() {
       <button class="mt-1 text-[11px] font-semibold text-brand-600 hover:text-brand-700">▸ Show More</button>
     </div>`;
 
+  const WEATHER_EVENTS = [
+    { name:'Hurricane Maria',  winds:'145 knots', region:'Caribbean Sea',   date:'2024-11-01', cat:'Category 5',   catTone:'rose'   },
+    { name:'Typhoon Haiyan',   winds:'125 knots', region:'Western Pacific', date:'2024-10-29', cat:'Category 4',   catTone:'orange' },
+    { name:'Storm Dennis',     winds:'85 knots',  region:'North Atlantic',  date:'2024-10-28', cat:'Severe Storm',  catTone:'amber'  },
+    { name:'Cyclone Amphan',   winds:'115 knots', region:'Bay of Bengal',   date:'2024-11-02', cat:'Category 4',   catTone:'orange' },
+    { name:'Winter Storm Uri', winds:'65 knots',  region:'Gulf of Mexico',  date:'2024-11-03', cat:'Winter Storm',  catTone:'yellow' },
+  ];
+
+  const catColor = { rose:'#dc2626', orange:'#ea580c', amber:'#d97706', yellow:'#ca8a04' };
+  const catBg    = { rose:'#fef2f2', orange:'#fff7ed', amber:'#fffbeb', yellow:'#fefce8' };
+
+  const windIco = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>`;
+
+  const weatherContent = `
+    <div class="px-3 py-2 grid text-[11px] font-bold tracking-micro uppercase text-ink-500 border-b border-ink-100 shrink-0" style="grid-template-columns:1fr auto auto;gap:0 12px;">
+      <span>Event Name</span>
+      <span>Region</span>
+      <span>Category</span>
+    </div>
+    <div class="divide-y divide-ink-50">
+      ${WEATHER_EVENTS.map(e => `
+      <div class="px-3 py-2.5 grid items-center" style="grid-template-columns:1fr auto auto;gap:0 12px;">
+        <div>
+          <a href="NatCatEventDetails.html" class="text-brand-600 font-semibold text-xs hover:underline">${e.name}</a>
+          <div class="flex items-center gap-1 mt-0.5 text-[11px] text-ink-400">
+            ${windIco} ${e.winds}
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-ink-600 whitespace-nowrap">${e.region}</div>
+          <div class="text-[11px] text-ink-400 mt-0.5">${e.date}</div>
+        </div>
+        <div>
+          <span style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;background:${catBg[e.catTone]};color:${catColor[e.catTone]};white-space:nowrap;">${e.cat}</span>
+        </div>
+      </div>`).join('')}
+    </div>`;
+
+  const flagIco = `<svg width="12" height="12" viewBox="0 0 24 24" fill="#dc2626" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>`;
+
+  const SANCTIONED_VESSELS = [
+    { name:'MSC Mediterran…', date:'Mar 15, 2024', portfolio:'Europe Shipping' },
+    { name:'Baltic Trader',   date:'Feb 28, 2024', portfolio:'Europe Shipping' },
+    { name:'Ocean Pioneer',   date:'Jan 12, 2024', portfolio:'Hot portfolios' },
+    { name:'Black Sea Navig…',date:'Dec 8, 2023',  portfolio:'Black Sea Portfolio' },
+    { name:'Auto Express',    date:'Apr 22, 2024', portfolio:'Car Carrier Fleet' },
+    { name:'Pacific Glory',   date:'Mar 30, 2024', portfolio:'Asian Trade Routes' },
+  ];
+
+  const complianceContent = `
+    <div class="flex flex-col items-center py-4 border-b border-ink-100">
+      <div style="width:44px;height:44px;border-radius:50%;background:#fef2f2;display:flex;align-items:center;justify-content:center;margin-bottom:6px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#dc2626" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+      </div>
+      <div style="font-size:13px;font-weight:700;color:#dc2626;">Sanctioned</div>
+    </div>
+    <div class="px-3 py-2 grid text-[11px] font-bold tracking-micro uppercase text-ink-500" style="grid-template-columns:1fr auto auto;gap:0 16px;border-bottom:1px solid #f1f5f9;">
+      <span>Vessel</span>
+      <span>Date Imposed</span>
+      <span>Portfolio</span>
+    </div>
+    <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-50">
+      ${SANCTIONED_VESSELS.map(v => `
+      <div class="px-3 py-2 grid items-center text-xs" style="grid-template-columns:1fr auto auto;gap:0 16px;">
+        <span class="flex items-center gap-1.5 min-w-0">
+          ${flagIco}
+          <a href="VesselDetails.html" class="text-brand-600 font-semibold truncate hover:underline">${v.name}</a>
+        </span>
+        <span class="text-ink-600 whitespace-nowrap">${v.date}</span>
+        <span class="text-brand-600 font-medium whitespace-nowrap">${v.portfolio}</span>
+      </div>`).join('')}
+    </div>`;
+
   return `
   <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
     <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Alerts','Compliance','Weather'], state.alertTab, 'data-alert-tab')}</div>
-    <div class="flex-1 overflow-y-auto scroll-thin">
-      ${ALERTS.map(row).join('')}
+    <div class="flex-1 overflow-y-auto scroll-thin flex flex-col min-h-0">
+      ${state.alertTab === 'Compliance' ? complianceContent : state.alertTab === 'Weather' ? weatherContent : ALERTS.map(row).join('')}
     </div>
-    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 text-center h-9 flex items-center justify-center">
-      <button class="text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">VIEW ALL</button>
+    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 text-center h-9 flex items-center justify-center shrink-0">
+      <button class="text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">${state.alertTab === 'Compliance' ? 'VIEW ALL' : 'VIEW ALL'}</button>
     </div>
   </div>`;
 }

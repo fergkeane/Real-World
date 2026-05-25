@@ -2,10 +2,10 @@
 const { useState, useEffect, useRef } = React;
 
 const SLIDES = [
-  { kind: 'Marine',   img: 'https://images.unsplash.com/photo-1494412519320-aa613dfb7738?auto=format&fit=crop&w=2400&q=80', tag: 'Marine'   },
-  { kind: 'Property', img: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=2400&q=80', tag: 'Property' },
-  { kind: 'Aviation', img: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=2400&q=80', tag: 'Aviation' },
-  { kind: 'Energy',   img: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=2400&q=80', tag: 'Energy'   },
+  { kind: 'Marine',   img: 'https://images.unsplash.com/photo-1494412519320-aa613dfb7738?auto=format&fit=crop&w=2400&q=80', tag: 'Marine',   title: 'An end-to-end solution for marine hull (re)insurers.' },
+  { kind: 'Property', img: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=2400&q=80', tag: 'Property', title: 'One intelligent view of your global property portfolio.' },
+  { kind: 'Aviation', img: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=2400&q=80', tag: 'Aviation', title: 'Aviation intelligence for a connected global portfolio.' },
+  { kind: 'Energy',   img: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=2400&q=80', tag: 'Energy',   title: 'Monitor risks and potential exposure for your fixed and mobile energy assets.' },
 ];
 
 function LoginScreen() {
@@ -69,11 +69,11 @@ function LoginScreen() {
             <span key={idx} className="kb-fadein">{SLIDES[idx].tag}</span>
           </div>
           <h1
-            className="mt-6 text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight"
+            key={idx}
+            className="mt-6 text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight kb-fadein"
             style={{ fontFamily: 'Exo, sans-serif' }}
           >
-            See every risk,<br/>
-            <span className="text-white/70">across every line.</span>
+            {SLIDES[idx].title}
           </h1>
           <p className="mt-5 text-base lg:text-lg text-white/80 max-w-md leading-relaxed">
             Marine, Property, Aviation, and Energy portfolios — unified on one global map. Real-time exposure, live alerts, deep portfolio analytics.
@@ -174,7 +174,7 @@ function LoginScreen() {
       </main>
 
       <footer className="relative z-10 px-8 pb-6 flex items-center justify-between text-[11px] text-white/60">
-        <span>© 2026 Real World Risk Intelligence</span>
+        <span>© 2026 Real World Risk Intelligence — Powered by <a href="https://www.skytek.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-white/80 hover:text-white transition-colors">Skytek</a></span>
         <div className="flex items-center gap-4">
           <a className="hover:text-white">Status</a>
           <a className="hover:text-white">Support</a>

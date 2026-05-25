@@ -7,7 +7,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
   integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 <style>
@@ -95,7 +95,7 @@
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="shared/chrome.js?v=4"></script>
+<script src="shared/chrome.js?v=5"></script>
 <script>
 const SC = window.sharedChrome;
 const Ico = SC.I;
@@ -217,9 +217,9 @@ function positionTabPills() {
 /* ----------- CARDS ----------- */
 function PortfolioCard() {
   return `
-  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:280px">
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
     <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Portfolio','Portfolio Groups'], state.portfolioTab, 'data-portfolio-tab')}</div>
-    <div class="flex-1 overflow-y-auto scroll-thin">
+    <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-50">
       <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto_auto] gap-6 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white">
         <span>Name</span>
         <span class="text-right">Assets ↑↓</span>
@@ -244,9 +244,9 @@ function PortfolioCard() {
 
 function RegionsCard() {
   return `
-  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:280px">
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
     <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Regions Aggregation','Exposure Aggregation'], state.regionsTab, 'data-regions-tab')}</div>
-    <div class="flex-1 overflow-y-auto scroll-thin">
+    <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-50">
       <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto_auto] gap-6 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white">
         <span>Name</span>
         <span class="text-right">Above Threshold ↑↓</span>
@@ -281,14 +281,14 @@ function WeatherCard() {
     return `<span class="px-2 py-0.5 rounded-md text-[10px] font-semibold ${bg}">${txt}</span>`;
   };
   return `
-  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:280px">
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
     <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Weather','Alerts'], state.weatherTab, 'data-weather-tab')}</div>
     <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto_auto] gap-3 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white">
       <span>Event Name</span>
       <span>Region</span>
       <span>Category</span>
     </div>
-    <div class="flex-1 overflow-y-auto scroll-thin">
+    <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-50">
       ${WEATHER.map(w => `
         <div class="px-3 py-2 hover:bg-ink-50 text-xs border-t border-ink-100 first:border-0">
           <div class="grid grid-cols-[1fr_auto] gap-3 mb-1">
