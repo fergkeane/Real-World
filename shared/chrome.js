@@ -1,8 +1,8 @@
 /* Cache version: clears stale localStorage on first load of new version */
 try {
-  if (localStorage.getItem('rw_cv') !== '2') {
-    localStorage.setItem('rw_theme', 'sky');
-    localStorage.setItem('rw_cv', '2');
+  if (localStorage.getItem('rw_cv') !== '3') {
+    localStorage.setItem('rw_theme', 'light');
+    localStorage.setItem('rw_cv', '3');
   }
 } catch {}
 
@@ -253,13 +253,13 @@ function TweaksPanel() {
 }
 
 function getTheme() {
-  try { return localStorage.getItem('rw_theme') || 'sky'; } catch { return 'sky'; }
+  try { return localStorage.getItem('rw_theme') || 'light'; } catch { return 'light'; }
 }
 function setTheme(id) {
   try { localStorage.setItem('rw_theme', id); } catch {}
   // Map theme to accent
   const themeAccent = { sky:'sky', light:'blue', dark:'blue' };
-  TWEAKS.accent = themeAccent[id] || 'sky';
+  TWEAKS.accent = themeAccent[id] || 'blue';
   applyTweaks();
 }
 

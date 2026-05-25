@@ -95,7 +95,7 @@
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="shared/chrome.js?v=5"></script>
+<script src="shared/chrome.js?v=6"></script>
 <script>
 const SC = window.sharedChrome;
 const Ico = SC.I;
@@ -243,6 +243,7 @@ function PortfolioCard() {
 }
 
 function RegionsCard() {
+  const folderSvg = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
   return `
   <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
     <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Regions Aggregation','Exposure Aggregation'], state.regionsTab, 'data-regions-tab')}</div>
@@ -256,7 +257,7 @@ function RegionsCard() {
       ${REGIONS.map(r => `
         <button class="w-full text-left px-3 py-2 hover:bg-ink-50 grid grid-cols-[1fr_auto_auto] gap-6 text-xs items-center">
           <span class="truncate text-brand-600 font-medium inline-flex items-center gap-2">
-            <span>${r.icon}</span>
+            ${folderSvg}
             <span>${r.name}</span>
           </span>
           <span class="tabular-nums text-orange-600 font-semibold">${r.above}</span>
