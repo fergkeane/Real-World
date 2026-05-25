@@ -43,6 +43,15 @@
   /* Stat cards */
   .stat-card{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 8px;border-right:1px solid #e2e8f0;text-align:center}
   .stat-card:last-child{border-right:0}
+  /* Mobile responsive */
+  .mobile-tab-select{display:none;width:100%;padding:7px 12px;border:1px solid #e2e8f0;border-radius:9999px;font-size:13px;font-weight:600;color:#334155;background:#f1f5f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;font-family:inherit;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;}
+  @media(max-width:767px){
+    .avi-top-panels{grid-template-columns:1fr!important;}
+    .mobile-tab-select{display:block!important;}
+    .tabs-desktop-wrap{display:none!important;}
+    .stat-cards-row{flex-wrap:wrap;}
+    .stat-card{min-width:50%;border-right:0;border-bottom:1px solid #e2e8f0;}
+  }
 </style>
 </head>
 <body class="bg-ink-100 text-ink-900">
@@ -253,7 +262,7 @@ function PanelSummary() {
       </button>
     </div>
     <!-- Stat boxes -->
-    <div class="flex border-b border-ink-100">
+    <div class="flex border-b border-ink-100 stat-cards-row">
       <div class="stat-card">
         ${planeIco}
         <div class="text-[11px] text-ink-500 mt-0.5">Total Aircraft</div>
@@ -306,33 +315,26 @@ function PolicySection() {
   <div class="bg-white rounded-xl border border-ink-200" style="box-shadow:0 1px 2px rgba(15,23,42,.06);overflow:hidden;">
     <!-- View switcher + toolbar -->
     <div class="flex items-center gap-3 px-4 py-3 border-b border-ink-100 flex-wrap">
-      <div class="ds-tabs" id="policy-view-tabs">
-        <span class="ds-tab-pill is-init" data-tab-pill></span>
-        <button class="ds-tab" aria-selected="${policyView==='details'}" data-pvw="details">
-          <span class="ds-tab-label">
-            ${lico('FileText', 13)}
-            Policy Details
-          </span>
-        </button>
-        <button class="ds-tab" aria-selected="${policyView==='list'}" data-pvw="list">
-          <span class="ds-tab-label">
-            ${lico('List', 13)}
-            List
-          </span>
-        </button>
-        <button class="ds-tab" aria-selected="${policyView==='limits'}" data-pvw="limits">
-          <span class="ds-tab-label">
-            ${lico('Info', 13)}
-            Policy Limits
-          </span>
-        </button>
-        <button class="ds-tab" aria-selected="${policyView==='map'}" data-pvw="map">
-          <span class="ds-tab-label">
-            ${lico('Map', 13)}
-            Map
-          </span>
-        </button>
+      <div class="tabs-desktop-wrap">
+        <div class="ds-tabs" id="policy-view-tabs">
+          <span class="ds-tab-pill is-init" data-tab-pill></span>
+          <button class="ds-tab" aria-selected="${policyView==='details'}" data-pvw="details">
+            <span class="ds-tab-label">${lico('FileText', 13)} Policy Details</span>
+          </button>
+          <button class="ds-tab" aria-selected="${policyView==='list'}" data-pvw="list">
+            <span class="ds-tab-label">${lico('List', 13)} List</span>
+          </button>
+          <button class="ds-tab" aria-selected="${policyView==='limits'}" data-pvw="limits">
+            <span class="ds-tab-label">${lico('Info', 13)} Policy Limits</span>
+          </button>
+          <button class="ds-tab" aria-selected="${policyView==='map'}" data-pvw="map">
+            <span class="ds-tab-label">${lico('Map', 13)} Map</span>
+          </button>
+        </div>
       </div>
+      <select class="mobile-tab-select" id="policy-view-mobile-sel" style="max-width:260px;">
+        ${[['details','Policy Details'],['list','List'],['limits','Policy Limits'],['map','Map']].map(([v,l])=>`<option value="${v}" ${policyView===v?'selected':''}>${l}</option>`).join('')}
+      </select>
       <div class="flex-1"></div>
       <div class="relative">
         <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -427,7 +429,7 @@ window.render = function() {
       ${SC.Topbar()}
       <main id="main-content" class="flex-1 overflow-y-auto scroll-thin bg-ink-100 px-4 lg:px-5 py-4">
         <!-- Top 3 panels -->
-        <div style="display:grid;grid-template-columns:minmax(0,4fr) minmax(0,3.5fr) minmax(0,10fr);gap:12px;margin-bottom:12px;align-items:stretch;">
+        <div class="avi-top-panels" style="display:grid;grid-template-columns:minmax(0,4fr) minmax(0,3.5fr) minmax(0,10fr);gap:12px;margin-bottom:12px;align-items:stretch;">
           ${PanelDetails()}
           ${PanelTotals()}
           ${PanelSummary()}
@@ -467,6 +469,8 @@ window.render = function() {
       }
     };
   });
+  const pvwSel = document.getElementById('policy-view-mobile-sel');
+  if (pvwSel) pvwSel.onchange = () => { policyView = pvwSel.value; window.render(); };
 
   /* Pagination */
   document.querySelectorAll('[data-pp]').forEach(btn => {

@@ -70,6 +70,14 @@
   .hdr-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600}
   .hdr-badge-gray{background:#f1f5f9;color:#475569}
   .hdr-badge-blue{background:#eff6ff;color:#2563eb}
+  /* Mobile responsive */
+  .mobile-tab-select{display:none;width:100%;padding:7px 12px;border:1px solid #e2e8f0;border-radius:9999px;font-size:13px;font-weight:600;color:#334155;background:#f1f5f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;font-family:inherit;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;}
+  @media(max-width:767px){
+    .airport-row1,.airport-row2{grid-template-columns:1fr!important;}
+    .mobile-tab-select{display:block!important;}
+    .tabs-desktop-wrap{display:none!important;}
+    .summary-date-row{flex-wrap:wrap;}
+  }
 </style>
 </head>
 <body class="bg-ink-100 text-ink-900 antialiased" data-density="compact">
@@ -389,13 +397,18 @@ function CardAircraftTable() {
   return `
   <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col">
     <div class="p-3 border-b border-ink-100 shrink-0">
-      <div class="ds-tabs is-stretch" data-tab-group="table-tab">
-        <span class="ds-tab-pill is-init" data-tab-pill></span>
-        ${allTabs.map(t=>`
-          <button data-table-tab="${t}" aria-selected="${t===tableTab}" class="ds-tab" style="font-size:12px;padding:6px 14px;">
-            <span class="ds-tab-label">${t}</span>
-          </button>`).join('')}
+      <div class="tabs-desktop-wrap">
+        <div class="ds-tabs is-stretch" data-tab-group="table-tab">
+          <span class="ds-tab-pill is-init" data-tab-pill></span>
+          ${allTabs.map(t=>`
+            <button data-table-tab="${t}" aria-selected="${t===tableTab}" class="ds-tab" style="font-size:12px;padding:6px 14px;">
+              <span class="ds-tab-label">${t}</span>
+            </button>`).join('')}
+        </div>
       </div>
+      <select class="mobile-tab-select" id="aircraft-table-tab-sel">
+        ${allTabs.map(t=>`<option value="${t}" ${t===tableTab?'selected':''}>${t}</option>`).join('')}
+      </select>
     </div>
     <div class="overflow-x-auto">
       <table class="data-table">
@@ -430,12 +443,12 @@ function CardAircraftTable() {
 function Content() {
   return `
   <div class="flex-1 overflow-y-auto px-4 lg:px-6 py-4 space-y-3">
-    <div class="grid gap-3" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);align-items:stretch;">
+    <div class="grid gap-3 airport-row1" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);align-items:stretch;">
       ${CardPortfolioGround()}
       ${CardExposure()}
       ${CardSummary()}
     </div>
-    <div class="grid gap-3" style="grid-template-columns:minmax(0,1fr) minmax(0,2fr);align-items:start;">
+    <div class="grid gap-3 airport-row2" style="grid-template-columns:minmax(0,1fr) minmax(0,2fr);align-items:start;">
       ${CardGeneralInfo()}
       ${CardAirportView()}
     </div>
@@ -469,6 +482,8 @@ function wireInteractions() {
     tablePage = 1;
     render();
   });
+  const atSel = document.getElementById('aircraft-table-tab-sel');
+  if (atSel) atSel.onchange = () => { tableTab = atSel.value; tablePage = 1; render(); };
   const prev = document.getElementById('pg-prev');
   const next = document.getElementById('pg-next');
   if (prev) prev.onclick = () => { if(tablePage>1){tablePage--;render();} };

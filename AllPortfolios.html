@@ -69,6 +69,15 @@
   /* Action btns */
   .action-btn { width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; border-radius:6px; border:0; background:transparent; color:#94a3b8; cursor:pointer; }
   .action-btn:hover { background:#f1f5f9; color:#334155; }
+  /* Mobile responsive */
+  .mobile-tab-select{display:none;width:100%;padding:8px 12px;border:1px solid #e2e8f0;border-radius:9999px;font-size:13px;font-weight:600;color:#334155;background:#f1f5f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;font-family:inherit;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;}
+  @media(max-width:767px){
+    .mobile-tab-select{display:block!important;}
+    .cat-tabs-desktop{display:none!important;}
+    .card-subtabs-row{flex-direction:column!important;align-items:stretch!important;gap:8px!important;}
+    .card-subtabs-row .search-input{width:100%!important;}
+    .card-subtabs-row .search-input input{width:100%!important;}
+  }
 </style>
 </head>
 <body class="bg-ink-100 text-ink-900 antialiased">
@@ -178,14 +187,19 @@ function Content() {
     </div>
 
     <!-- Category tabs (centered) -->
-    <div class="flex justify-center px-6 pb-4">
-      <div class="cat-tabs" id="cat-tabs">
-        <span class="cat-pill is-init" id="cat-pill"></span>
-        ${Object.keys(PORTFOLIOS).map(cat => `
-          <button class="cat-tab" aria-selected="${cat === catTab}" data-cat="${cat}">
-            <span class="cat-tab-label">${CAT_ICONS[cat]} ${cat}</span>
-          </button>`).join('')}
+    <div class="px-6 pb-4">
+      <div class="flex justify-center cat-tabs-desktop">
+        <div class="cat-tabs" id="cat-tabs">
+          <span class="cat-pill is-init" id="cat-pill"></span>
+          ${Object.keys(PORTFOLIOS).map(cat => `
+            <button class="cat-tab" aria-selected="${cat === catTab}" data-cat="${cat}">
+              <span class="cat-tab-label">${CAT_ICONS[cat]} ${cat}</span>
+            </button>`).join('')}
+        </div>
       </div>
+      <select class="mobile-tab-select" id="cat-tab-mobile-sel">
+        ${Object.keys(PORTFOLIOS).map(cat=>`<option value="${cat}" ${cat===catTab?'selected':''}>${cat}</option>`).join('')}
+      </select>
     </div>
 
     <!-- Table card -->
@@ -193,7 +207,7 @@ function Content() {
       <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col h-full overflow-hidden">
 
         <!-- Sub tabs + search -->
-        <div class="flex items-center justify-between px-4 py-3 border-b border-ink-100">
+        <div class="card-subtabs-row flex items-center justify-between px-4 py-3 border-b border-ink-100">
           <div class="flex items-center gap-1">
             <button class="sub-tab ${subTab==='Portfolios'?'active':''}" data-sub="Portfolios">Portfolios</button>
             <button class="sub-tab ${subTab==='Portfolio Groups'?'active':''}" data-sub="Portfolio Groups">Portfolio Groups</button>
@@ -290,6 +304,8 @@ window.render = function() {
     requestAnimationFrame(positionCatPill);
   }));
   requestAnimationFrame(positionCatPill);
+  const catMobileSel = document.getElementById('cat-tab-mobile-sel');
+  if (catMobileSel) catMobileSel.onchange = () => { catTab = catMobileSel.value; render(); };
 
   /* Sub tab clicks */
   document.querySelectorAll('[data-sub]').forEach(b => b.addEventListener('click', () => {

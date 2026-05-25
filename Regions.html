@@ -50,6 +50,14 @@
   .rg-tbl th{padding:10px 14px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;text-align:left;border-bottom:1px solid #e2e8f0;background:#fff;white-space:nowrap}
   .rg-tbl td{padding:11px 14px;font-size:13px;color:#334155;border-bottom:1px solid #f1f5f9;vertical-align:middle}
   .rg-tbl tr:hover td{background:#f8fafc}
+  /* Mobile responsive */
+  .mobile-tab-select{display:none;width:100%;padding:8px 12px;border:1px solid #e2e8f0;border-radius:9999px;font-size:13px;font-weight:600;color:#334155;background:#f1f5f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;font-family:inherit;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;}
+  @media(max-width:767px){
+    .mobile-tab-select{display:block!important;}
+    .rg-cat-tabs-desktop{display:none!important;}
+    .rg-panels-row{flex-direction:column!important;height:auto!important;}
+    .rg-panels-row>div{flex:none!important;min-height:250px;}
+  }
 </style>
 </head>
 <body class="bg-white text-slate-900">
@@ -472,19 +480,24 @@ function Content() {
   return `
   <div style="display:flex;flex-direction:column;min-height:100%">
 
-    <!-- Category tabs (centered, on gray canvas) -->
-    <div style="display:flex;justify-content:center;padding:12px 16px 0;flex-shrink:0">
-      <div class="cat-tabs" id="rg-cat-tabs">
-        <span class="cat-pill is-init" id="rg-cat-pill"></span>
-        ${Object.entries(TABS_DATA).map(([key,t]) => `
-        <button class="cat-tab" aria-selected="${key===activeTab}" data-main-tab="${key}">
-          <span class="cat-tab-label">${TAB_ICONS[key]||''} ${t.label}</span>
-        </button>`).join('')}
+    <!-- Category tabs -->
+    <div style="padding:12px 16px 0;flex-shrink:0">
+      <div class="rg-cat-tabs-desktop" style="display:flex;justify-content:center;">
+        <div class="cat-tabs" id="rg-cat-tabs">
+          <span class="cat-pill is-init" id="rg-cat-pill"></span>
+          ${Object.entries(TABS_DATA).map(([key,t]) => `
+          <button class="cat-tab" aria-selected="${key===activeTab}" data-main-tab="${key}">
+            <span class="cat-tab-label">${TAB_ICONS[key]||''} ${t.label}</span>
+          </button>`).join('')}
+        </div>
       </div>
+      <select class="mobile-tab-select" id="rg-cat-mobile-sel">
+        ${Object.entries(TABS_DATA).map(([key,t])=>`<option value="${key}" ${key===activeTab?'selected':''}>${t.label}</option>`).join('')}
+      </select>
     </div>
 
     <!-- Three panels on the canvas -->
-    <div style="display:flex;gap:12px;padding:12px 16px;height:400px;flex-shrink:0">
+    <div class="rg-panels-row" style="display:flex;gap:12px;padding:12px 16px;height:400px;flex-shrink:0">
       ${PanelMyRegions(d)}
       ${PanelRealWorldRegions(d)}
       ${PanelStats(d)}
@@ -553,6 +566,12 @@ function wire() {
     rc();
     requestAnimationFrame(positionRegionPill);
   }));
+  const rgCatSel = document.getElementById('rg-cat-mobile-sel');
+  if (rgCatSel) rgCatSel.onchange = () => {
+    activeTab = rgCatSel.value;
+    activeCovTab = TABS_DATA[activeTab].covTabs[0];
+    rc();
+  };
   document.querySelectorAll('[data-cov]').forEach(b => b.addEventListener('click', e => {
     e.stopPropagation();
     activeCovTab = b.dataset.cov;

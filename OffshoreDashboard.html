@@ -74,6 +74,10 @@
   .asset-popup .leaflet-popup-tip { background:#fff; }
   .asset-popup .leaflet-popup-close-button { color:#fff !important; top:8px !important; right:10px !important; font-size:22px !important; font-weight:300 !important; width:24px !important; height:24px !important; opacity:1 !important; line-height:1 !important; border-radius:4px; }
   .asset-popup .leaflet-popup-close-button:hover { background:rgba(255,255,255,.2) !important; color:#fff !important; }
+  /* Mobile responsive */
+  @media(max-width:1023px){
+    .offshore-top-row { grid-template-columns:1fr!important; }
+  }
 </style>
 </head>
 <body class="bg-ink-100 text-ink-900 antialiased" data-density="compact">
@@ -439,7 +443,7 @@ function initMap() {
 function Content() {
   return `
   <div class="px-4 lg:px-6 py-4 space-y-3">
-    <section class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-3 offshore-top-row">
       ${PortfolioCard()}
       ${RegionsCard()}
       ${WeatherCard()}

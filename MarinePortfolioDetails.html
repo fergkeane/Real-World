@@ -75,6 +75,13 @@
   .sel { border:1px solid #e2e8f0; border-radius:6px; padding:4px 24px 4px 8px; font-size:12px; color:#334155; background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 6px center; -webkit-appearance:none; cursor:pointer; font-family:inherit; }
   /* Compliance circle */
   .compliance-circle { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,#22c55e,#16a34a); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 16px rgba(22,163,74,.3); }
+  /* Mobile responsive */
+  @media(max-width:767px){
+    .top-panels-grid { grid-template-columns:1fr!important; }
+    .psc-grid { grid-template-columns:1fr 1fr!important; }
+    .analysis-tabs-scroll { overflow-x:auto; }
+    .analysis-tabs-scroll .ds-tabs { display:flex; flex-wrap:nowrap; }
+  }
 </style>
 </head>
 <body class="bg-ink-100 text-ink-900" data-density="compact">
@@ -306,8 +313,8 @@ function AnalysisTabBar() {
     'Portfolio Casualties': `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg>`,
   };
   return `
-  <div class="p-3 border-b border-ink-100">
-    <div class="ds-tabs" id="analysis-tabs">
+  <div class="p-3 border-b border-ink-100 analysis-tabs-scroll" style="overflow-x:auto;">
+    <div class="ds-tabs" id="analysis-tabs" style="min-width:max-content;">
       <span class="ds-tab-pill is-init" data-tab-pill></span>
       ${ANALYSIS_TABS.map(t => `
         <button class="ds-tab" aria-selected="${t===analysisTab}" data-atab="${t}">
@@ -336,7 +343,7 @@ const PSC_BOXES = [
 
 function PSCContent() {
   return `
-  <div class="grid grid-cols-4 gap-3">
+  <div class="psc-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
     ${PSC_BOXES.map(b => `
       <div class="psc-box">
         <div class="psc-head">${b.title}</div>
@@ -505,7 +512,7 @@ window.render = function() {
       ${SC.Topbar()}
       <main id="main-content" class="flex-1 overflow-y-auto scroll-thin bg-ink-100 px-4 lg:px-6 py-5">
         <!-- Top 4 panels -->
-        <div style="display:grid;grid-template-columns:minmax(0,5fr) minmax(0,9fr) minmax(0,5fr) minmax(0,4fr);gap:12px;margin-bottom:12px;align-items:stretch;">
+        <div class="top-panels-grid" style="display:grid;grid-template-columns:minmax(0,5fr) minmax(0,9fr) minmax(0,5fr) minmax(0,4fr);gap:12px;margin-bottom:12px;align-items:stretch;">
           ${PanelPortfolioDetails()}
           ${PanelPortfolioActivity()}
           ${PanelRiskBreakdown()}

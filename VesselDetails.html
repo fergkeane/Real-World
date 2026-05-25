@@ -78,6 +78,16 @@
   .timeline-track { position:relative; height:6px; background:rgba(255,255,255,.25); border-radius:999px; cursor:pointer; flex:1; }
   .timeline-fill  { position:absolute; left:0; top:0; bottom:0; background:#3b82f6; border-radius:999px; pointer-events:none; }
   .timeline-thumb { position:absolute; top:50%; transform:translate(-50%,-50%); width:16px; height:16px; background:#fff; border:2px solid #3b82f6; border-radius:999px; box-shadow:0 2px 6px rgba(0,0,0,.4); pointer-events:none; cursor:grab; }
+  /* Mobile responsive */
+  .mobile-tab-select{display:none;width:100%;padding:7px 12px;border:1px solid #e2e8f0;border-radius:9999px;font-size:13px;font-weight:600;color:#334155;background:#f1f5f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;font-family:inherit;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;}
+  @media(max-width:767px){
+    .mobile-tab-select{display:block!important;}
+    .tabs-desktop-wrap{display:none!important;}
+    .vessel-top-section>div{height:auto!important;min-height:300px;}
+    .hist-date-row{flex-direction:column!important;align-items:flex-start!important;gap:6px!important;}
+    .hist-date-row input{width:100%!important;box-sizing:border-box;}
+    .hist-date-arrow{display:none!important;}
+  }
 </style>
 </head>
 <body class="bg-ink-100 text-ink-900 antialiased" data-density="compact">
@@ -704,14 +714,19 @@ function InspectionTable() {
   
   return `
   <div class="bg-white rounded-lg border border-ink-200 shadow-card overflow-hidden">
-    <div class="px-4 py-3 border-b border-ink-200 flex gap-2 overflow-x-auto scroll-thin">
-      ${iconTabs([
-        { k:'Inspection Data', icon:'clipboard' },
-        { k:'Associations', icon:'users' },
-        { k:'Sanction Compliance', icon:'shield' },
-        { k:'Ship-To-Ship', icon:'anchor' },
-        { k:'Suspicious Activity', icon:'alertTri' },
-      ], state.sectionTab, 'data-section-tab')}
+    <div class="px-4 py-3 border-b border-ink-200 scroll-thin" style="overflow-x:auto;">
+      <div class="tabs-desktop-wrap">
+        ${iconTabs([
+          { k:'Inspection Data', icon:'clipboard' },
+          { k:'Associations', icon:'users' },
+          { k:'Sanction Compliance', icon:'shield' },
+          { k:'Ship-To-Ship', icon:'anchor' },
+          { k:'Suspicious Activity', icon:'alertTri' },
+        ], state.sectionTab, 'data-section-tab')}
+      </div>
+      <select class="mobile-tab-select" id="section-tab-mobile-sel">
+        ${['Inspection Data','Associations','Sanction Compliance','Ship-To-Ship','Suspicious Activity'].map(t=>`<option value="${t}" ${t===state.sectionTab?'selected':''}>${t}</option>`).join('')}
+      </select>
     </div>
     <div class="overflow-x-auto">
       ${state.sectionTab === 'Associations' ? `
@@ -953,8 +968,13 @@ function EnvironmentalRatingCard() {
 
   return `
   <div class="bg-white rounded-lg border border-ink-200 shadow-card">
-    <div class="px-4 py-3 border-b border-ink-200 flex gap-2 overflow-x-auto scroll-thin">
-      ${iconTabs(bottomTabs, state.bottomLeftTab, 'data-bottom-left-tab')}
+    <div class="px-4 py-3 border-b border-ink-200 scroll-thin" style="overflow-x:auto;">
+      <div class="tabs-desktop-wrap">
+        ${iconTabs(bottomTabs, state.bottomLeftTab, 'data-bottom-left-tab')}
+      </div>
+      <select class="mobile-tab-select" id="bottom-left-tab-mobile-sel">
+        ${bottomTabs.map(t=>`<option value="${t.k}" ${t.k===state.bottomLeftTab?'selected':''}>${t.k}</option>`).join('')}
+      </select>
     </div>
     <div class="p-4">
       <div class="text-sm font-semibold text-ink-900 mb-4">Environmental Rating 2025Q4</div>
@@ -1066,17 +1086,22 @@ function VesselTrackingCard() {
 function HistoricalEventsCard() {
   return `
   <div class="bg-white rounded-lg border border-ink-200 shadow-card flex flex-col h-full">
-    <div class="px-4 py-3 border-b border-ink-200 flex gap-2">
-      ${iconTabs([
-        { k:'Historical Events', icon:'clock' },
-        { k:'Alerts', icon:'bell' },
-      ], 'Historical Events', 'data-bottom-right-tab')}
+    <div class="px-4 py-3 border-b border-ink-200">
+      <div class="ds-tabs is-stretch" data-tab-group="data-bottom-right-tab" style="display:flex;width:100%;">
+        <span class="ds-tab-pill is-init" data-tab-pill></span>
+        <button data-bottom-right-tab="Historical Events" aria-selected="true" class="ds-tab" style="font-size:12px;padding:8px 14px;flex:1;">
+          <span class="ds-tab-label"><span class="inline-flex items-center" style="width:14px;height:14px;flex-shrink:0;">${SC.I.clock}</span> Historical Events</span>
+        </button>
+        <button data-bottom-right-tab="Alerts" aria-selected="false" class="ds-tab" style="font-size:12px;padding:8px 14px;flex:1;">
+          <span class="ds-tab-label"><span class="inline-flex items-center" style="width:14px;height:14px;flex-shrink:0;">${SC.I.bell}</span> Alerts</span>
+        </button>
+      </div>
     </div>
     <div class="px-4 py-3 border-b border-ink-200">
-      <div class="flex items-center gap-2 text-xs">
+      <div class="hist-date-row flex items-center gap-2 text-xs flex-wrap">
         <span class="text-ink-500">From</span>
         <input type="text" value="2024/01/01" class="px-2 py-1.5 border border-ink-200 rounded-md text-ink-700 text-xs" />
-        <svg class="w-4 h-4 text-ink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        <svg class="w-4 h-4 text-ink-400 hist-date-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
         <span class="text-ink-500">To</span>
         <input type="text" value="2024/01/01" class="px-2 py-1.5 border border-ink-200 rounded-md text-ink-700 text-xs" />
       </div>
@@ -1294,7 +1319,7 @@ function wireTimeline() {
 function Content() {
   return `
   <div class="px-4 lg:px-6 py-4 space-y-3">
-    <section class="grid grid-cols-1 md:grid-cols-12 gap-3">
+    <section class="grid grid-cols-1 md:grid-cols-12 gap-3 vessel-top-section">
       <div class="md:col-span-4" style="height:440px;">${VesselDetailsCard()}</div>
       <div class="md:col-span-2" style="height:440px;">${PolicyDetailsCard()}</div>
       <div class="md:col-span-2" style="height:440px;">${PortCallsCard()}</div>
@@ -1343,6 +1368,10 @@ window.render = function render() {
   wireTab('data-top-right-tab',   'topRightTab');
   wireTab('data-section-tab',     'sectionTab');
   wireTab('data-bottom-left-tab', 'bottomLeftTab');
+  const sectionTabSel = document.getElementById('section-tab-mobile-sel');
+  if (sectionTabSel) sectionTabSel.onchange = () => { state.sectionTab = sectionTabSel.value; render(); };
+  const bottomLeftTabSel = document.getElementById('bottom-left-tab-mobile-sel');
+  if (bottomLeftTabSel) bottomLeftTabSel.onchange = () => { state.bottomLeftTab = bottomLeftTabSel.value; render(); };
   // Casualty expand/collapse
   document.querySelectorAll('[data-casualty]').forEach(btn => {
     btn.onclick = () => {

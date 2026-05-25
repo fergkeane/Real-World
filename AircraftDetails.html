@@ -35,6 +35,14 @@
   .map-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;color:#334155;box-shadow:0 1px 2px rgb(15 23 42/.08);cursor:pointer;flex-shrink:0}
   .map-btn:hover{background:#f1f5f9}
   .shadow-card-hover{box-shadow:0 4px 16px rgba(15,23,42,.12),0 0 0 1px rgba(15,23,42,.04)}
+  /* Mobile responsive */
+  @media(max-width:767px){
+    .aircraft-body{flex-direction:column!important;}
+    .aircraft-left-panel{width:100%!important;border-right:0!important;border-bottom:1px solid #e2e8f0;}
+    .aircraft-right-panel{min-width:0!important;}
+    .dep-arr-grid{grid-template-columns:1fr!important;}
+    .spec-grid{grid-template-columns:1fr 1fr!important;}
+  }
   /* Spec grid */
   .spec-grid{display:grid;grid-template-columns:repeat(3,1fr)}
   .spec-cell{padding:11px 16px;border-bottom:1px solid #f1f5f9}
@@ -359,7 +367,7 @@ function SectionDepArr() {
   const pinIco = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
   const NAMES  = { LHR:'London Heathrow', DXB:'Dubai International', JFK:'John F. Kennedy International', LAX:'Los Angeles International', ORD:"Chicago O'Hare", SIN:'Singapore Changi', AMS:'Amsterdam Schiphol', FRA:'Frankfurt Airport', CDG:'Charles de Gaulle', HND:'Tokyo Haneda' };
   return `
-  <div class="grid grid-cols-2 gap-3">
+  <div class="grid grid-cols-2 gap-3 dep-arr-grid">
     <div class="bg-white rounded-xl border border-ink-200 shadow-card">
       <div class="px-4 py-2.5 flex items-center gap-2 border-b border-ink-100 text-ink-600">${plnIco} <span class="text-sm font-semibold text-ink-900">Departure</span></div>
       <div class="p-4">
@@ -409,8 +417,8 @@ function SectionSpecs() {
 function Content() {
   return `
   <div class="flex flex-col flex-1 min-h-0">
-    <div class="flex flex-1 min-h-0 overflow-y-auto scroll-thin">
-      <div class="shrink-0 bg-ink-50 self-start" style="width:316px;border-right:1px solid #e2e8f0;min-height:100%;">
+    <div class="flex flex-1 min-h-0 overflow-y-auto scroll-thin aircraft-body">
+      <div class="shrink-0 bg-ink-50 self-start aircraft-left-panel" style="width:316px;border-right:1px solid #e2e8f0;min-height:100%;">
         <div class="p-3 flex flex-col gap-3">
           ${CardValue()}
           ${CardInfo()}
@@ -419,7 +427,7 @@ function Content() {
           ${CardFIR()}
         </div>
       </div>
-      <div class="flex-1 min-w-0">
+      <div class="flex-1 min-w-0 aircraft-right-panel">
         <div class="p-4 flex flex-col gap-3">
           ${SectionMap()}
           ${SectionDepArr()}

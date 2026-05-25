@@ -354,6 +354,7 @@ function wireChrome() {
     sidebarEl.classList.remove('max-md:-translate-x-full');
     sidebarEl.classList.add('max-md:translate-x-0');
     sidebarEl.style.width = '212px';
+    sidebarEl.dataset.expanded = 'true';
     document.querySelectorAll('.nav-label').forEach(el => el.classList.remove('hidden'));
     if (backdropEl) backdropEl.classList.remove('hidden');
   };
