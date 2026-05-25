@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Company Details — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  .scroll-thin::-webkit-scrollbar{width:5px}.scroll-thin::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
+  /* Card */
+  .card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+  /* Field rows in Company Details card */
+  .field-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9;gap:16px}
+  .field-row:last-of-type{border-bottom:0}
+  .field-label{font-size:12.5px;color:#94a3b8;display:flex;align-items:center;gap:6px;flex-shrink:0;white-space:nowrap}
+  .field-value{font-size:13px;font-weight:600;color:#0f172a;text-align:right}
+  /* Buttons */
+  .btn-outline{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border:1.5px solid #2563eb;border-radius:8px;background:#fff;color:#2563eb;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s;white-space:nowrap}
+  .btn-outline:hover{background:#eff6ff}
+  .btn-gray{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1.5px solid #e2e8f0;border-radius:8px;background:#fff;color:#334155;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s}
+  .btn-gray:hover{background:#f8fafc}
+  /* Compliance badge */
+  .comp-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;display:inline-block;white-space:nowrap}
+  .cb-compliant{background:#f0fdf4;color:#16a34a}
+  .cb-minor{background:#fffbeb;color:#d97706}
+  .cb-noncompliant{background:#fef2f2;color:#dc2626}
+  /* Assets table */
+  .at-tbl{width:100%;border-collapse:collapse;min-width:540px}
+  .at-tbl th{padding:9px 14px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;text-align:left;border-bottom:1px solid #e2e8f0;white-space:nowrap;background:#fff}
+  .at-tbl td{padding:11px 14px;font-size:13px;color:#334155;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+  .at-tbl tr:last-child td{border-bottom:0}
+  .at-tbl tbody tr:hover td{background:#f8fafc}
+  .at-tbl td:first-child{font-weight:700;color:#0f172a}
+  /* Search */
+  .search-wrap{position:relative;display:inline-flex;align-items:center}
+  .search-wrap input{height:32px;padding:0 10px 0 30px;border:1px solid #e2e8f0;border-radius:8px;font-size:12.5px;color:#334155;font-family:inherit;outline:none;width:200px;transition:border-color .15s,box-shadow .15s}
+  .search-wrap input:focus{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+  .search-icon{position:absolute;left:9px;color:#94a3b8;display:flex;pointer-events:none}
+  /* Pagination */
+  .pgbtn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;color:#334155;cursor:pointer;transition:background .1s}
+  .pgbtn:hover:not([disabled]){background:#f1f5f9}.pgbtn[disabled]{opacity:.4;cursor:not-allowed}
+  /* Responsive top row */
+  .top-row-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:stretch}
+  @media(max-width:1023px){.top-row-grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:639px){.top-row-grid{grid-template-columns:1fr}}
+  /* Asset header bar wraps on mobile */
+  .asset-hdr{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid #e2e8f0}
+  .asset-hdr-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto}
+  @media(max-width:599px){
+    .asset-hdr-controls{margin-left:0;width:100%}
+    .search-wrap,.search-wrap input{width:100%}
+    .asset-hdr-controls select{flex:1}
+  }
+  /* Pagination row */
+  .pg-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;border-top:1px solid #e2e8f0}
+</style>
+</head>
+<body class="bg-slate-100 text-slate-900">
+<div id="app" class="h-screen w-full flex overflow-hidden"></div>
+
+<script>
+window.PAGE = { id:'companies', title:'Company Details', crumb:'Company Details' };
+window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "density":"compact","accent":"blue","sidebarExpanded":false
+}/*EDITMODE-END*/;
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="shared/chrome.js?v=4"></script>
+<script>
+const SC = window.sharedChrome;
+
+/* ── Load company from sessionStorage ────────────────────────────────────── */
+let co = null;
+try { co = JSON.parse(sessionStorage.getItem('selectedCompany') || 'null'); } catch(e) {}
+if (!co) {
+  co = {
+    name:'Ramous Maritime Company Ltd', type:'Shipping Company', country:'Cyprus',
+    flag:'🇨🇾', hq:'Limassol', reg:'HE 123456', fleet:25, fleetVal:'$1.2B',
+    services:['Container Shipping','Bulk Cargo'], est:1995, employees:450, status:'Active',
+    code:'RMC-CY-001', countryControl:'United Kingdom', avgRisk:75,
+    sanctioned:true, updatedDate:'2025-07-22'
+  };
+}
+const coCode          = co.code          || co.reg  || 'N/A';
+const countryControl  = co.countryControl || co.country || '—';
+const avgRisk         = co.avgRisk        !== undefined ? co.avgRisk : 55;
+const sanctioned      = co.sanctioned     || false;
+const updatedDate     = co.updatedDate    || '2025-05-25';
+const complianceLabel = co.complianceLabel || (sanctioned ? 'Sanctioned' : 'Compliant');
+
+/* ── Assets seed based on company type ───────────────────────────────────── */
+const ASSET_SEEDS = {
+  'Shipping Company': [
+    { name:'MV Baltic Star',        type:'Marine',   risk:65, compliance:'Compliant',     value:'$45M'  },
+    { name:'Container Terminal A',  type:'Property', risk:42, compliance:'Compliant',     value:'$120M' },
+    { name:'MV Ocean Explorer',     type:'Marine',   risk:58, compliance:'Compliant',     value:'$38M'  },
+    { name:'Freight Aircraft B737', type:'Aviation', risk:71, compliance:'Minor Issues',  value:'$25M'  },
+    { name:'Warehouse Complex B',   type:'Property', risk:38, compliance:'Compliant',     value:'$18M'  },
+    { name:'MV Neptune',            type:'Marine',   risk:82, compliance:'Non-Compliant', value:'$52M'  },
+    { name:'MV Atlantic Pride',     type:'Marine',   risk:44, compliance:'Compliant',     value:'$67M'  },
+    { name:'Cargo Terminal B',      type:'Property', risk:31, compliance:'Compliant',     value:'$95M'  },
+    { name:'MV Pacific Star',       type:'Marine',   risk:77, compliance:'Minor Issues',  value:'$41M'  },
+    { name:'Bulk Carrier Titan',    type:'Marine',   risk:55, compliance:'Compliant',     value:'$33M'  },
+  ],
+  'Energy Company': [
+    { name:'Offshore Platform Alpha', type:'Offshore', risk:60, compliance:'Compliant',     value:'$320M' },
+    { name:'LNG Tanker Poseidon',     type:'Marine',   risk:48, compliance:'Compliant',     value:'$185M' },
+    { name:'Pipeline Section 7',      type:'Property', risk:35, compliance:'Compliant',     value:'$90M'  },
+    { name:'Refinery Terminal C',     type:'Property', risk:72, compliance:'Minor Issues',  value:'$440M' },
+    { name:'MV Energy Star',          type:'Marine',   risk:55, compliance:'Compliant',     value:'$78M'  },
+    { name:'Platform Beta',           type:'Offshore', risk:83, compliance:'Non-Compliant', value:'$210M' },
+    { name:'Storage Facility D',      type:'Property', risk:29, compliance:'Compliant',     value:'$65M'  },
+    { name:'Crude Carrier Titan',     type:'Marine',   risk:68, compliance:'Minor Issues',  value:'$95M'  },
+  ],
+  'Investment Company': [
+    { name:'MV Meridian Star',      type:'Marine',    risk:52, compliance:'Compliant',     value:'$80M'  },
+    { name:'Logistics Hub A',       type:'Property',  risk:38, compliance:'Compliant',     value:'$150M' },
+    { name:'Cargo Aircraft 777F',   type:'Aviation',  risk:65, compliance:'Minor Issues',  value:'$55M'  },
+    { name:'MV Pacific Venture',    type:'Marine',    risk:76, compliance:'Minor Issues',  value:'$62M'  },
+    { name:'Warehouse District 4',  type:'Property',  risk:31, compliance:'Compliant',     value:'$210M' },
+    { name:'Chemical Tanker Lyra',  type:'Marine',    risk:84, compliance:'Non-Compliant', value:'$48M'  },
+    { name:'Container Depot E',     type:'Property',  risk:40, compliance:'Compliant',     value:'$95M'  },
+  ],
+  'Conglomerate': [
+    { name:'Container Terminal 1',  type:'Property',  risk:42, compliance:'Compliant',     value:'$380M' },
+    { name:'MV Asian Sunrise',      type:'Marine',    risk:58, compliance:'Compliant',     value:'$112M' },
+    { name:'A380 Freighter Alpha',  type:'Aviation',  risk:33, compliance:'Compliant',     value:'$90M'  },
+    { name:'Offshore Rig Kappa',    type:'Offshore',  risk:79, compliance:'Minor Issues',  value:'$450M' },
+    { name:'Port Logistics Hub 3',  type:'Property',  risk:45, compliance:'Compliant',     value:'$290M' },
+    { name:'MV Pacific Express',    type:'Marine',    risk:62, compliance:'Compliant',     value:'$78M'  },
+    { name:'B747 Cargo Vessel',     type:'Aviation',  risk:88, compliance:'Non-Compliant', value:'$65M'  },
+    { name:'MV Orient Star',        type:'Marine',    risk:38, compliance:'Compliant',     value:'$95M'  },
+    { name:'Industrial Park F',     type:'Property',  risk:29, compliance:'Compliant',     value:'$180M' },
+  ],
+};
+const ALL_ASSETS = ASSET_SEEDS[co.type] || ASSET_SEEDS['Shipping Company'];
+
+/* ── State ────────────────────────────────────────────────────────────────── */
+let assetQuery   = '';
+let assetFilter  = 'all';
+let assetPage    = 1;
+let assetPerPage = 5;
+
+/* ── SVG icons ────────────────────────────────────────────────────────────── */
+const IC = {
+  search:   `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+  chevDown: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`,
+  chevLeft: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`,
+  chevRight:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`,
+  ship:     `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 21c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M19.38 20A11.6 11.6 0 0 0 21 14l-9-4-9 4c0 2.9.94 5.34 2.81 7.76"/><path d="M19 13V7a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1v6"/><path d="M12 10v4"/></svg>`,
+  building: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>`,
+  plane:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 2c-2-2-4-2-5.5-.5L10 5 1.8 6.2a1 1 0 0 0-.5 1.7l2.5 2.5-1 3.5 3.5-1 2.5 2.5a1 1 0 0 0 1.7-.5z"/></svg>`,
+  offshore: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="14" width="20" height="8" rx="2"/><path d="M7 14V8"/><path d="M17 14V8"/><path d="M7 8h10"/><path d="M12 8V4"/></svg>`,
+  compare:  `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>`,
+  coIco:    `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>`,
+  codeIco:  `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>`,
+  tagIco:   `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`,
+  pinIco:   `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
+  globeIco: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+};
+
+function riskColor(r) {
+  if (r < 40) return '#16a34a';
+  if (r < 75) return '#d97706';
+  return '#dc2626';
+}
+
+function complianceCls(c) {
+  if (c === 'Compliant')     return 'cb-compliant';
+  if (c === 'Minor Issues')  return 'cb-minor';
+  return 'cb-noncompliant';
+}
+
+function typeDisplay(t) {
+  const ico   = { Marine:IC.ship, Property:IC.building, Aviation:IC.plane, Offshore:IC.offshore }[t] || IC.building;
+  const color = { Marine:'#2563eb', Property:'#7c3aed', Aviation:'#0891b2', Offshore:'#0d9488' }[t] || '#64748b';
+  return `<span style="color:${color};display:inline-flex;align-items:center;gap:5px">${ico} ${t}</span>`;
+}
+
+/* ── Donut chart SVG ─────────────────────────────────────────────────────── */
+function DonutChart(risk) {
+  const r    = 56;
+  const circ = 2 * Math.PI * r;       // ≈ 351.86
+  const fill = (risk / 100) * circ;
+  const gap  = circ - fill;
+  const off  = circ * 0.25;           // start at 12 o'clock
+  const col  = riskColor(risk);
+  return `
+  <svg viewBox="0 0 160 160" width="148" height="148" style="display:block;margin:0 auto;overflow:visible">
+    <circle cx="80" cy="80" r="${r}" fill="none" stroke="#e2e8f0" stroke-width="15"/>
+    <circle cx="80" cy="80" r="${r}" fill="none" stroke="${col}" stroke-width="15"
+      stroke-dasharray="${fill.toFixed(2)} ${gap.toFixed(2)}"
+      stroke-dashoffset="${off.toFixed(2)}"
+      stroke-linecap="round"/>
+    <text x="80" y="74" text-anchor="middle" font-size="10.5" fill="#94a3b8"
+      font-family="Inter,sans-serif" font-weight="500">Avg. Risk:</text>
+    <text x="80" y="98" text-anchor="middle" font-size="30" fill="#0f172a"
+      font-family="Inter,sans-serif" font-weight="700">${risk}</text>
+  </svg>`;
+}
+
+/* ── Card: Company Details ───────────────────────────────────────────────── */
+function CardCompanyDetails() {
+  const fields = [
+    { ico: IC.coIco,    lbl:'Name:',                 val: co.name || '—'       },
+    { ico: IC.codeIco,  lbl:'Code:',                 val: coCode               },
+    { ico: IC.tagIco,   lbl:'Type:',                 val: co.type || '—'       },
+    { ico: IC.pinIco,   lbl:'Country Registration:', val: co.country || '—'    },
+    { ico: IC.globeIco, lbl:'Country Control:',      val: countryControl       },
+  ];
+  return `
+  <div class="card flex flex-col" style="min-height:280px">
+    <div style="padding:10px 14px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:8px">
+      ${IC.coIco}
+      <span style="font-size:14px;font-weight:700;color:#0f172a">Company Details</span>
+    </div>
+    <div class="flex-1 overflow-y-auto scroll-thin" style="padding:0 14px;scrollbar-color:#bfdbfe #f1f5f9">
+      ${fields.map(f => `
+      <div class="field-row">
+        <span class="field-label">${f.ico} ${f.lbl}</span>
+        <span class="field-value">${f.val}</span>
+      </div>`).join('')}
+    </div>
+    <div style="padding:10px 14px;border-top:1px solid #f1f5f9;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <button class="btn-outline">${IC.compare} Compare This Company</button>
+      <button class="btn-gray">Find Similar... ${IC.chevDown}</button>
+    </div>
+  </div>`;
+}
+
+/* ── Card: Risk Breakdown ────────────────────────────────────────────────── */
+function CardRiskBreakdown() {
+  return `
+  <div class="card flex flex-col">
+    <div style="padding:10px 14px;border-bottom:1px solid #f1f5f9">
+      <span style="font-size:14px;font-weight:700;color:#0f172a">Risk Breakdown</span>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;gap:18px">
+      ${DonutChart(avgRisk)}
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;font-size:11px;color:#64748b">
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#16a34a;display:inline-block;flex-shrink:0"></span>Good [0 → 10]</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#d97706;display:inline-block;flex-shrink:0"></span>Average [10+ → 25]</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#dc2626;display:inline-block;flex-shrink:0"></span>Below Average [25+ → 100]</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── Card: Overall Compliance ────────────────────────────────────────────── */
+function CardCompliance() {
+  const isSanctioned = sanctioned;
+  const circleColor  = isSanctioned ? '#dc2626' : '#16a34a';
+  const glow         = isSanctioned ? 'rgba(220,38,38,.28)' : 'rgba(22,163,74,.28)';
+  const label        = complianceLabel;
+  const icon = isSanctioned
+    ? `<svg width="36" height="36" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15" stroke-width="2"/></svg>`
+    : `<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+  return `
+  <div class="card flex flex-col">
+    <div style="padding:10px 14px;border-bottom:1px solid #f1f5f9">
+      <span style="font-size:14px;font-weight:700;color:#0f172a">Overall Compliance</span>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px;gap:12px">
+      <div style="width:88px;height:88px;border-radius:50%;background:${circleColor};display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px ${glow}">
+        ${icon}
+      </div>
+      <div style="font-size:19px;font-weight:700;color:${circleColor}">${label}</div>
+      <div style="font-size:12px;color:#94a3b8">Updated at: ${updatedDate}</div>
+    </div>
+    <div style="padding:10px 14px;border-top:1px solid #f1f5f9;display:flex;align-items:center;justify-content:center">
+      <button class="btn-outline">View Policies</button>
+    </div>
+  </div>`;
+}
+
+/* ── Card: Assets ────────────────────────────────────────────────────────── */
+function CardAssets() {
+  let rows = [...ALL_ASSETS];
+  if (assetQuery)         rows = rows.filter(a => a.name.toLowerCase().includes(assetQuery.toLowerCase()) || a.type.toLowerCase().includes(assetQuery.toLowerCase()));
+  if (assetFilter !== 'all') rows = rows.filter(a => a.type === assetFilter);
+  const total      = rows.length;
+  const totalPages = Math.max(1, Math.ceil(total / assetPerPage));
+  if (assetPage > totalPages) assetPage = totalPages;
+  const start    = (assetPage - 1) * assetPerPage;
+  const pageRows = rows.slice(start, start + assetPerPage);
+  const types    = [...new Set(ALL_ASSETS.map(a => a.type))];
+
+  return `
+  <div class="card flex flex-col">
+    <div class="asset-hdr">
+      <div style="display:flex;align-items:center;gap:8px">
+        ${IC.coIco}
+        <span style="font-size:14px;font-weight:700;color:#0f172a">Assets</span>
+      </div>
+      <div class="asset-hdr-controls">
+        <div class="search-wrap">
+          <span class="search-icon">${IC.search}</span>
+          <input id="asset-search" type="text" placeholder="Search assets..." value="${assetQuery.replace(/"/g,'&quot;')}" />
+        </div>
+        <div style="position:relative">
+          <select id="asset-filter" style="appearance:none;-webkit-appearance:none;height:32px;padding:0 28px 0 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:12.5px;color:#334155;background:#fff;cursor:pointer;font-family:inherit;outline:none;font-weight:600">
+            <option value="all" ${assetFilter==='all'?'selected':''}>All Assets</option>
+            ${types.map(t=>`<option value="${t}" ${assetFilter===t?'selected':''}>${t}</option>`).join('')}
+          </select>
+          <span style="position:absolute;right:7px;top:50%;transform:translateY(-50%);pointer-events:none;color:#64748b;display:flex">${IC.chevDown}</span>
+        </div>
+      </div>
+    </div>
+    <div class="overflow-x-auto scroll-thin">
+      <table class="at-tbl">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Risk Score</th>
+            <th>Compliance</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${pageRows.length === 0
+            ? `<tr><td colspan="5" style="text-align:center;padding:48px;color:#94a3b8;font-size:13px">No assets found.</td></tr>`
+            : pageRows.map(a => `
+          <tr>
+            <td>${(()=>{
+              const pageMap = {Marine:'VesselDetails.html', Property:'PropertyDetails.html', Aviation:'AircraftDetails.html', Offshore:'AssetOffshoreDetails.html'};
+              const href = pageMap[a.type];
+              if (!href) return `<span style="font-weight:700;color:#0f172a">${a.name}</span>`;
+              const key = {Marine:'selectedVessel', Property:'selectedProperty', Aviation:'selectedAircraft', Offshore:'selectedOffshore'}[a.type];
+              const payload = JSON.stringify({name:a.name,type:a.type,risk:a.risk,compliance:a.compliance,value:a.value,company:co.name}).replace(/'/g,"\\'");
+              return `<a href="${href}" style="color:#2563eb;font-weight:700;text-decoration:none;cursor:pointer" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'" onclick="sessionStorage.setItem('${key}','${payload}');return true;">${a.name}</a>`;
+            })()}</td>
+            <td>${typeDisplay(a.type)}</td>
+            <td style="font-weight:700;color:${riskColor(a.risk)}">${a.risk}</td>
+            <td><span class="comp-badge ${complianceCls(a.compliance)}">${a.compliance}</span></td>
+            <td style="font-weight:600">${a.value}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div class="pg-row">
+      <span style="font-size:12px;color:#64748b;flex-shrink:0">Items per page:</span>
+      <div style="position:relative">
+        <select id="asset-per-page" style="appearance:none;-webkit-appearance:none;height:28px;padding:0 22px 0 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;color:#334155;background:#fff;cursor:pointer;font-family:inherit;outline:none">
+          ${[5,10,20].map(n=>`<option value="${n}" ${assetPerPage===n?'selected':''}>${n}</option>`).join('')}
+        </select>
+        <span style="position:absolute;right:4px;top:50%;transform:translateY(-50%);pointer-events:none;color:#64748b;display:flex">${IC.chevDown}</span>
+      </div>
+      <div style="flex:1"></div>
+      <button class="pgbtn" id="asset-prev" ${assetPage<=1?'disabled':''}>${IC.chevLeft}</button>
+      <span style="font-size:12px;font-weight:600;color:#334155;white-space:nowrap">Page ${assetPage} of ${totalPages}</span>
+      <button class="pgbtn" id="asset-next" ${assetPage>=totalPages?'disabled':''}>${IC.chevRight}</button>
+    </div>
+  </div>`;
+}
+
+/* ── Content ─────────────────────────────────────────────────────────────── */
+function Content() {
+  return `
+  <div class="flex-1 overflow-y-auto scroll-thin px-4 lg:px-6 py-4" style="display:flex;flex-direction:column;gap:16px">
+    <div class="top-row-grid">
+      ${CardCompanyDetails()}
+      ${CardRiskBreakdown()}
+      ${CardCompliance()}
+    </div>
+    ${CardAssets()}
+  </div>`;
+}
+
+/* ── Wire ────────────────────────────────────────────────────────────────── */
+function wireInteractions() {
+  const assetSearch = document.getElementById('asset-search');
+  if (assetSearch) {
+    assetSearch.oninput = () => { assetQuery = assetSearch.value; assetPage = 1; rc(); };
+    assetSearch.onfocus = () => { assetSearch.style.borderColor='#93c5fd'; assetSearch.style.boxShadow='0 0 0 3px rgba(59,130,246,.12)'; };
+    assetSearch.onblur  = () => { assetSearch.style.borderColor='#e2e8f0';  assetSearch.style.boxShadow=''; };
+  }
+  const filterSel = document.getElementById('asset-filter');
+  if (filterSel) filterSel.onchange = () => { assetFilter = filterSel.value; assetPage = 1; rc(); };
+  const ppSel = document.getElementById('asset-per-page');
+  if (ppSel) ppSel.onchange = () => { assetPerPage = parseInt(ppSel.value); assetPage = 1; rc(); };
+  const prev = document.getElementById('asset-prev');
+  const next  = document.getElementById('asset-next');
+  if (prev) prev.onclick = () => { if (assetPage > 1) { assetPage--; rc(); } };
+  if (next) next.onclick = () => {
+    const tp = Math.max(1, Math.ceil(ALL_ASSETS.length / assetPerPage));
+    if (assetPage < tp) { assetPage++; rc(); }
+  };
+}
+
+let _main = null;
+function rc() {
+  if (!_main) return;
+  _main.innerHTML = Content();
+  wireInteractions();
+}
+
+window.render = function() {
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
+      ${SC.Topbar()}
+      <main id="cd-main" class="flex-1 min-h-0 overflow-hidden flex flex-col bg-slate-100"></main>
+    </div>
+    ${SC.TweaksPanel()}
+  `;
+  SC.wireChrome();
+  _main = document.getElementById('cd-main');
+  rc();
+};
+
+window.render();
+</script>
+</body>
+</html>

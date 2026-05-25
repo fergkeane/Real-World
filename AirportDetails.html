@@ -72,8 +72,10 @@
   .hdr-badge-blue{background:#eff6ff;color:#2563eb}
   /* Mobile responsive */
   .mobile-tab-select{display:none;width:100%;padding:7px 12px;border:1px solid #e2e8f0;border-radius:9999px;font-size:13px;font-weight:600;color:#334155;background:#f1f5f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;font-family:inherit;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;}
+  .airport-row1 { grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); }
+  .airport-row2 { grid-template-columns:minmax(0,1fr) minmax(0,2fr); }
   @media(max-width:767px){
-    .airport-row1,.airport-row2{grid-template-columns:1fr!important;}
+    .airport-row1,.airport-row2{ grid-template-columns:1fr; }
     .mobile-tab-select{display:block!important;}
     .tabs-desktop-wrap{display:none!important;}
     .summary-date-row{flex-wrap:wrap;}
@@ -173,8 +175,8 @@ function CardPortfolioGround() {
     </div>
     <div class="px-4 py-3 shrink-0">
       <div class="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-center">
-        <div class="text-[11px] text-ink-500 mb-1">Total Exposure</div>
-        <div class="text-xl font-bold text-brand-600">$1.5B</div>
+        <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:4px;">Total Exposure</div>
+        <div style="font-size:26px;font-weight:700;color:#2563eb;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$1.5B</div>
       </div>
     </div>
     <div class="flex-1 overflow-y-auto scroll-thin">
@@ -207,11 +209,11 @@ function CardExposure() {
         <span class="hdr-badge hdr-badge-blue">$3.2B</span>
       </div>
     </div>
-    <div class="grid grid-cols-4 divide-x divide-ink-100 border-b border-ink-100 shrink-0">
-      ${[['Total Hull','$3.2B'],['Total CHW','$2.4B'],['Total HULLW','$582M'],['Total TLOHW','$280M']].map(([l,v])=>`
-        <div class="p-3 text-center">
-          <div class="text-[10px] font-bold tracking-micro uppercase text-ink-500">${l}</div>
-          <div class="text-base font-bold text-brand-600 tabular-nums mt-1">${v}</div>
+    <div style="margin:10px 12px 0;background:#eff6ff;border:1px solid #dbeafe;border-radius:8px;overflow:hidden;display:flex;" class="shrink-0">
+      ${[['Total Hull','$3.2B'],['Total CHW','$2.4B'],['Total HULLW','$582M'],['Total TLOHW','$280M']].map(([l,v],i)=>`
+        <div style="flex:1;padding:10px 8px;text-align:center;${i<3?'border-right:1px solid #dbeafe;':''}">
+          <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:3px;">${l}</div>
+          <div style="font-size:22px;font-weight:700;color:#2563eb;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">${v}</div>
         </div>`).join('')}
     </div>
     <div class="flex-1 overflow-y-auto scroll-thin">
@@ -443,12 +445,12 @@ function CardAircraftTable() {
 function Content() {
   return `
   <div class="flex-1 overflow-y-auto px-4 lg:px-6 py-4 space-y-3">
-    <div class="grid gap-3 airport-row1" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);align-items:stretch;">
+    <div class="grid gap-3 airport-row1" style="align-items:stretch;">
       ${CardPortfolioGround()}
       ${CardExposure()}
       ${CardSummary()}
     </div>
-    <div class="grid gap-3 airport-row2" style="grid-template-columns:minmax(0,1fr) minmax(0,2fr);align-items:start;">
+    <div class="grid gap-3 airport-row2" style="align-items:start;">
       ${CardGeneralInfo()}
       ${CardAirportView()}
     </div>

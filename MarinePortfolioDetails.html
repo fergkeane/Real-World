@@ -77,11 +77,13 @@
   .compliance-circle { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,#22c55e,#16a34a); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 16px rgba(22,163,74,.3); }
   /* Mobile responsive */
   @media(max-width:767px){
-    .top-panels-grid { grid-template-columns:1fr!important; }
-    .psc-grid { grid-template-columns:1fr 1fr!important; }
+    .top-panels-grid { grid-template-columns:1fr; }
+    .psc-grid { grid-template-columns:1fr 1fr; }
     .analysis-tabs-scroll { overflow-x:auto; }
     .analysis-tabs-scroll .ds-tabs { display:flex; flex-wrap:nowrap; }
   }
+  .top-panels-grid { grid-template-columns:minmax(0,5fr) minmax(0,9fr) minmax(0,5fr) minmax(0,4fr); }
+  .psc-grid { grid-template-columns:repeat(4,1fr); }
 </style>
 </head>
 <body class="bg-ink-100 text-ink-900" data-density="compact">
@@ -172,8 +174,8 @@ function PanelPortfolioDetails() {
       </div>
     </div>
     <div class="mx-3 mt-3 rounded-lg bg-brand-50 border border-brand-100 px-4 py-3 text-center">
-      <div class="text-[10px] font-bold tracking-widest uppercase text-brand-600 mb-0.5">Our Aggregated Exposure</div>
-      <div class="text-2xl font-bold text-brand-600 font-display">${PORTFOLIO.exposure || '$24.4B'}</div>
+      <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:4px;">Our Aggregated Exposure</div>
+      <div style="font-size:26px;font-weight:700;color:#2563eb;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">${PORTFOLIO.exposure || '$24.4B'}</div>
     </div>
     <div class="flex-1 px-3 py-2 space-y-0">
       ${[
@@ -343,7 +345,7 @@ const PSC_BOXES = [
 
 function PSCContent() {
   return `
-  <div class="psc-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+  <div class="psc-grid" style="display:grid;gap:12px;">
     ${PSC_BOXES.map(b => `
       <div class="psc-box">
         <div class="psc-head">${b.title}</div>
@@ -512,7 +514,7 @@ window.render = function() {
       ${SC.Topbar()}
       <main id="main-content" class="flex-1 overflow-y-auto scroll-thin bg-ink-100 px-4 lg:px-6 py-5">
         <!-- Top 4 panels -->
-        <div class="top-panels-grid" style="display:grid;grid-template-columns:minmax(0,5fr) minmax(0,9fr) minmax(0,5fr) minmax(0,4fr);gap:12px;margin-bottom:12px;align-items:stretch;">
+        <div class="top-panels-grid" style="display:grid;gap:12px;margin-bottom:12px;align-items:stretch;">
           ${PanelPortfolioDetails()}
           ${PanelPortfolioActivity()}
           ${PanelRiskBreakdown()}

@@ -142,6 +142,14 @@ const PORTFOLIOS = [
   { name:'Pacific Rim Carriers',policies:68,  exposure:'$318.9B' },
 ];
 
+const PORTFOLIO_GROUPS = [
+  { name:'EMED',           policies:'201',           policiesActive:null,  exposure:'$760.7M', portfolios:['Europe Shipping','Black sea portfolio'] },
+  { name:'Marine Hull2',   policies:'5,983',         policiesActive:5977,  exposure:'$360.8B', portfolios:['Buena Vista Shipp…','LLC Holdings','North Atlantic Grp'] },
+  { name:'OffshoreTest',   policies:'3,384',         policiesActive:null,  exposure:'$281.3B', portfolios:['Pacific Rim Carriers'] },
+  { name:'Property',       policies:'5,692',         policiesActive:null,  exposure:'$276.0B', portfolios:['Europe Shipping','Pacific Rim Carriers'] },
+  { name:'RU ships of in…',policies:'2,046',         policiesActive:null,  exposure:'$40.8B',  portfolios:['Black sea portfolio','LLC Holdings'] },
+];
+
 const REGIONS = [
   { cc:'us', name:'USA',          above:'$298', ours:'$204.1B' },
   { cc:'eu', name:'Europe',       above:'$156', ours:'$178.5B', expand:true },
@@ -151,8 +159,14 @@ const REGIONS = [
   { cc:'za', name:'Africa',       above:'$67',  ours:'$89.4B'  },
 ];
 
+const EXPOSURE_AGGREGATIONS = [
+  { name:'Marine Hull',      count:14626, riskValue:'$430.4B' },
+  { name:'Yacht',            count:690,   riskValue:'$65.9B'  },
+  { name:'Property',         count:5667,  riskValue:'$238.5B' },
+  { name:'Energy / Offshore',count:3410,  riskValue:'$319.0B' },
+];
+
 const BENCHMARK = [
-  { kind:'Container',        count:'9,234',  pct:18.2, color:'#2563eb' },
   { kind:'Bulk Carrier',     count:'12,483', pct:24.6, color:'#3b82f6' },
   { kind:'Tanker',           count:'8,021',  pct:17.8, color:'#ef4444' },
   { kind:'Gas Carrier',      count:'3,456',  pct:6.8,  color:'#f97316' },
@@ -283,6 +297,7 @@ let state = {
   alertTab: 'Alerts',
   vesselFilter: new Set(VESSEL_TYPES.map(t => t.k)),
   showLabels: false,
+  expandedGroups: new Set(),
 };
 
 // Flag icon helper — ISO 3166-1 alpha-2 code → flagcdn.com image.
@@ -322,19 +337,88 @@ function positionTabPills() {
 }
 
 function PortfolioCard() {
-  return `
-  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:280px">
+  const folderIco = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
+  const sortIco = `<span style="font-size:10px;color:#94a3b8;vertical-align:middle;"> ↕</span>`;
+
+  const statsRow = `
+    <div style="padding:10px 12px 0;">
+      <div style="display:flex;background:#eff6ff;border:1px solid #dbeafe;border-radius:8px;overflow:hidden;">
+        <div style="flex:1;padding:12px 16px;text-align:center;border-right:1px solid #dbeafe;">
+          <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:4px;">Total Policies</div>
+          <div style="font-size:26px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">4,932</div>
+        </div>
+        <div style="flex:1;padding:12px 16px;text-align:center;">
+          <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:4px;">Total Exposure</div>
+          <div style="font-size:26px;font-weight:700;color:#2563eb;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$605.2B</div>
+        </div>
+      </div>
+    </div>`;
+
+  if (state.portfolioTab === 'Portfolio Groups') {
+    const rows = PORTFOLIO_GROUPS.map((g, gi) => {
+      const isExpanded = state.expandedGroups.has(gi);
+      const chevron = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform .2s;transform:rotate(${isExpanded?'90':'0'}deg);flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>`;
+      const policiesLabel = g.policiesActive ? `${g.policies} (${g.policiesActive.toLocaleString()})` : g.policies;
+
+      const groupRow = `
+        <div class="border-b border-ink-100 last:border-0">
+          <button data-group-idx="${gi}" class="w-full text-left px-3 py-2 hover:bg-ink-50 flex items-center justify-between gap-2 text-xs" style="gap:8px">
+            <span class="inline-flex items-center gap-1.5 min-w-0 flex-1">
+              <span style="color:#94a3b8;flex-shrink:0">${chevron}</span>
+              ${folderIco}
+              <span class="text-brand-600 font-semibold truncate hover:underline">${g.name}</span>
+            </span>
+            <span class="flex items-center shrink-0" style="gap:20px">
+              <span class="tabular-nums text-ink-600 text-right" style="min-width:80px">${policiesLabel}</span>
+              <span class="tabular-nums font-semibold text-ink-900 text-right" style="min-width:60px">${g.exposure}</span>
+            </span>
+          </button>
+          ${isExpanded ? g.portfolios.map(pName => {
+            const pf = PORTFOLIOS.find(p => p.name === pName) || { name: pName, policies: '—', exposure: '—' };
+            const pfIdx = PORTFOLIOS.indexOf(pf);
+            return `
+          <button data-pf-idx="${pfIdx}" class="w-full text-left pl-9 pr-3 py-1.5 hover:bg-ink-50 flex items-center justify-between gap-2 text-xs bg-ink-50/60">
+            <span class="text-brand-500 font-medium truncate">${pf.name}</span>
+            <span class="flex items-center shrink-0" style="gap:20px">
+              <span class="tabular-nums text-ink-500 text-right" style="min-width:80px">${typeof pf.policies === 'number' ? pf.policies : pf.policies}</span>
+              <span class="tabular-nums font-semibold text-ink-700 text-right" style="min-width:60px">${pf.exposure}</span>
+            </span>
+          </button>`;
+          }).join('') : ''}
+        </div>`;
+      return groupRow;
+    }).join('');
+
+    return `
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
     <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Portfolios','Portfolio Groups'], state.portfolioTab, 'data-portfolio-tab')}</div>
-    <div class="grid grid-cols-2 divide-x divide-ink-100 border-b border-ink-100">
-      <div class="p-3 text-center">
-        <div class="text-[10px] font-bold tracking-micro uppercase text-ink-500">Total Policies</div>
-        <div class="mt-1 text-xl font-bold text-brand-600 tabular-nums">4,932</div>
-      </div>
-      <div class="p-3 text-center">
-        <div class="text-[10px] font-bold tracking-micro uppercase text-ink-500">Total Exposure</div>
-        <div class="mt-1 text-xl font-bold text-brand-600 tabular-nums">$605.2B</div>
-      </div>
+    ${statsRow}
+    <div class="px-3 py-1.5 flex items-center justify-between text-[10px] font-bold tracking-micro uppercase text-ink-500 border-b border-ink-100">
+      <span>Name</span>
+      <span class="flex items-center shrink-0" style="gap:20px">
+        <span style="min-width:80px;text-align:right">Policies${sortIco}</span>
+        <span style="min-width:60px;text-align:right">Our Exposure${sortIco}</span>
+      </span>
     </div>
+    <div class="flex-1 overflow-y-auto scroll-thin">
+      ${rows}
+    </div>
+    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 flex items-center justify-between text-xs h-9">
+      <button class="inline-flex items-center gap-1 text-brand-600 font-semibold hover:text-brand-700 tracking-micro">
+        <span class="inline-flex items-center [&_svg]:h-3.5 [&_svg]:w-3.5">${Ico.plus}</span><span>Add Group</span>
+      </button>
+      <button class="inline-flex items-center gap-1 text-brand-600 font-semibold hover:text-brand-700 tracking-micro">
+        <span>All Groups</span><span class="inline-flex items-center [&_svg]:h-3.5 [&_svg]:w-3.5">${Ico.chev}</span>
+      </button>
+    </div>
+  </div>`;
+  }
+
+  // Default: Portfolios tab
+  return `
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
+    <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Portfolios','Portfolio Groups'], state.portfolioTab, 'data-portfolio-tab')}</div>
+    ${statsRow}
     <div class="px-3 pt-2 pb-1 flex items-center justify-between text-[10px] font-bold tracking-micro uppercase text-ink-500">
       <span>Name</span>
       <span class="flex gap-6"><span>Policies</span><span>Exposure</span></span>
@@ -358,8 +442,39 @@ function PortfolioCard() {
 }
 
 function RegionsCard() {
+  const folderIco = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
+  const sortIco = `<span style="font-size:10px;color:#94a3b8;vertical-align:middle;"> ↕</span>`;
+
+  if (state.regionTab === 'Exposure Aggregation') {
+    return `
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
+    <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Regions Aggregation','Exposure Aggregation'], state.regionTab, 'data-region-tab')}</div>
+    <div class="px-4 py-3 flex justify-center border-b border-ink-100">
+      <div style="background:#eff6ff;border:1px solid #dbeafe;border-radius:12px;padding:10px 32px;text-align:center;min-width:180px">
+        <div class="text-[10px] font-bold tracking-micro uppercase text-ink-500">Total Exposure</div>
+        <div class="mt-1 text-xl font-bold text-brand-600 tabular-nums">$605.2B</div>
+      </div>
+    </div>
+    <div class="px-3 py-1.5 flex items-center justify-between text-[10px] font-bold tracking-micro uppercase text-ink-500 border-b border-ink-100">
+      <span>Aggregation</span>
+      <span>Risk Value${sortIco}</span>
+    </div>
+    <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-100">
+      ${EXPOSURE_AGGREGATIONS.map(a => `
+        <div class="px-3 py-2 flex items-center justify-between text-xs hover:bg-ink-50">
+          <span class="inline-flex items-center gap-1.5 min-w-0">
+            ${folderIco}
+            <span class="text-brand-600 font-semibold">${a.name}</span>
+            <span class="text-ink-400">(${a.count.toLocaleString()})</span>
+          </span>
+          <span class="tabular-nums font-semibold text-ink-900 shrink-0">${a.riskValue}</span>
+        </div>`).join('')}
+    </div>
+  </div>`;
+  }
+
   return `
-  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:280px">
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
     <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Regions Aggregation','Exposure Aggregation'], state.regionTab, 'data-region-tab')}</div>
     <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto_auto] gap-6 text-[10px] font-bold tracking-micro uppercase text-ink-500">
       <span>Name</span>
@@ -389,7 +504,7 @@ function BenchmarkCard() {
   // teardrop marker — matches the filter menu + map vessel icons
   const marker = (color) => `<svg viewBox="0 0 24 24" class="h-4 w-4 shrink-0" style="transform:rotate(45deg); color:${color};" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"><path d="M12 2 L19 20 L12 16 L5 20 Z"/></svg>`;
   return `
-  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:280px">
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
     <div class="px-4 pt-4 pb-3 shrink-0 border-b border-ink-100">
       <div class="text-sm font-semibold text-ink-900">Benchmark against Global Fleet</div>
     </div>
@@ -441,7 +556,7 @@ function AlertsCard() {
     </div>`;
 
   return `
-  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:280px">
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
     <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Alerts','Compliance','Weather'], state.alertTab, 'data-alert-tab')}</div>
     <div class="flex-1 overflow-y-auto scroll-thin">
       ${ALERTS.map(row).join('')}
@@ -795,6 +910,16 @@ window.render = function render() {
   wireTab('data-portfolio-tab', 'portfolioTab');
   wireTab('data-region-tab',    'regionTab');
   wireTab('data-alert-tab',     'alertTab');
+
+  /* Group expand/collapse */
+  document.querySelectorAll('[data-group-idx]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const gi = parseInt(btn.dataset.groupIdx);
+      if (state.expandedGroups.has(gi)) state.expandedGroups.delete(gi);
+      else state.expandedGroups.add(gi);
+      render();
+    });
+  });
 
   /* Portfolio name → details page */
   document.querySelectorAll('[data-pf-idx]').forEach(btn => {

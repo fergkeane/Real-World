@@ -79,7 +79,8 @@
     .mobile-tab-select{display:block!important;}
     .tabs-desktop-wrap{display:none!important;}
     .avia-top-row{grid-template-columns:1fr!important;}
-    .airport-metrics{grid-template-columns:1fr 1fr!important;}
+    .airport-metrics{flex-wrap:wrap;}
+    .airport-metrics>div{min-width:50%;border-bottom:1px solid #dbeafe;}
   }
 </style>
 </head>
@@ -258,22 +259,22 @@ function AirportCard() {
         ${['Airport Exposure','Region Exposure','Engines & Spares'].map(t=>`<option value="${t}" ${t===state.airportTab?'selected':''}>${t}</option>`).join('')}
       </select>
     </div>
-    <div class="airport-metrics grid grid-cols-4 divide-x divide-ink-100 border-b border-ink-100">
-      <div class="p-3 text-center">
-        <div class="text-[10px] font-bold tracking-micro uppercase text-ink-500">Total</div>
-        <div class="mt-1 text-xl font-bold text-brand-600 tabular-nums">$287.6B</div>
+    <div class="airport-metrics" style="margin:10px 12px 0;background:#eff6ff;border:1px solid #dbeafe;border-radius:8px;overflow:hidden;display:flex;">
+      <div style="flex:1;padding:10px 8px;text-align:center;border-right:1px solid #dbeafe;">
+        <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:3px;">Total</div>
+        <div style="font-size:22px;font-weight:700;color:#2563eb;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$287.6B</div>
       </div>
-      <div class="p-3 text-center">
-        <div class="text-[10px] font-bold tracking-micro uppercase text-ink-500">Total CHW</div>
-        <div class="mt-1 text-xl font-bold text-brand-600 tabular-nums">$0</div>
+      <div style="flex:1;padding:10px 8px;text-align:center;border-right:1px solid #dbeafe;">
+        <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:3px;">Total CHW</div>
+        <div style="font-size:22px;font-weight:700;color:#2563eb;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$0</div>
       </div>
-      <div class="p-3 text-center">
-        <div class="text-[10px] font-bold tracking-micro uppercase text-ink-500">Total HULLW</div>
-        <div class="mt-1 text-xl font-bold text-brand-600 tabular-nums">$159.8B</div>
+      <div style="flex:1;padding:10px 8px;text-align:center;border-right:1px solid #dbeafe;">
+        <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:3px;">Total HULLW</div>
+        <div style="font-size:22px;font-weight:700;color:#2563eb;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$159.8B</div>
       </div>
-      <div class="p-3 text-center">
-        <div class="text-[10px] font-bold tracking-micro uppercase text-ink-500">Total TLOHW</div>
-        <div class="mt-1 text-xl font-bold text-brand-600 tabular-nums">$191.4B</div>
+      <div style="flex:1;padding:10px 8px;text-align:center;">
+        <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:3px;">Total TLOHW</div>
+        <div style="font-size:22px;font-weight:700;color:#2563eb;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$191.4B</div>
       </div>
     </div>
     <div class="flex-1 overflow-y-auto scroll-thin">
@@ -540,8 +541,11 @@ function Content() {
     <section class="bg-white rounded-xl border border-ink-200 shadow-card overflow-hidden" id="map-container" style="height:calc(100vh - 380px); min-height:400px;">
       <div class="p-3 border-b border-ink-100 flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <button data-view="Map" class="px-3 py-1 rounded-md ${state.viewMode==='Map'?'bg-brand-600 text-white font-semibold':'text-ink-600 hover:bg-ink-100'} text-xs transition-colors">Map</button>
-          <button data-view="List" class="px-3 py-1 rounded-md ${state.viewMode==='List'?'bg-brand-600 text-white font-semibold':'text-ink-600 hover:bg-ink-100'} text-xs transition-colors">List</button>
+          <div class="ds-tabs" data-tab-group="data-view">
+            <span class="ds-tab-pill is-init" data-tab-pill></span>
+            <button data-view="Map"  aria-selected="${state.viewMode==='Map'}"  class="ds-tab" style="font-size:12px;padding:6px 14px;"><span class="ds-tab-label">Map</span></button>
+            <button data-view="List" aria-selected="${state.viewMode==='List'}" class="ds-tab" style="font-size:12px;padding:6px 14px;"><span class="ds-tab-label">List</span></button>
+          </div>
         </div>
       </div>
       <div class="relative flex-1" style="height:calc(100% - 53px);">

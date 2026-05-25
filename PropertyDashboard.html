@@ -200,14 +200,16 @@ function PortfolioCard() {
   return `
   <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:280px">
     <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Portfolios','Portfolio Groups'], state.portfolioTab, 'data-portfolio-tab')}</div>
-    <div class="grid grid-cols-2 divide-x divide-ink-100 border-b border-ink-100">
-      <div class="p-3 text-center">
-        <div class="text-[10px] font-bold tracking-micro uppercase text-ink-500">Total Exposure</div>
-        <div class="mt-1 text-xl font-bold text-brand-600 tabular-nums">$96.4B</div>
-      </div>
-      <div class="p-3 text-center">
-        <div class="text-[10px] font-bold tracking-micro uppercase text-ink-500">Properties</div>
-        <div class="mt-1 text-xl font-bold text-brand-600 tabular-nums">1,093</div>
+    <div style="padding:10px 12px 0;">
+      <div style="display:flex;background:#eff6ff;border:1px solid #dbeafe;border-radius:8px;overflow:hidden;">
+        <div style="flex:1;padding:12px 16px;text-align:center;border-right:1px solid #dbeafe;background:#eff6ff">
+          <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:4px;">Total Exposure</div>
+          <div style="font-size:26px;font-weight:700;color:#2563eb;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$96.4B</div>
+        </div>
+        <div style="flex:1;padding:12px 16px;text-align:center;background:#eff6ff">
+          <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:4px;">Properties</div>
+          <div style="font-size:26px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">1,093</div>
+        </div>
       </div>
     </div>
     <div class="flex-1 overflow-y-auto scroll-thin">
@@ -426,8 +428,11 @@ function Content() {
     <section class="bg-white rounded-xl border border-ink-200 shadow-card overflow-hidden" id="map-container" style="height:calc(100vh - 380px); min-height:400px;">
       <div class="p-3 border-b border-ink-100 flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <button data-view="Map" class="px-3 py-1 rounded-md ${state.viewMode==='Map'?'bg-brand-600 text-white font-semibold':'text-ink-600 hover:bg-ink-100'} text-xs transition-colors">Map</button>
-          <button data-view="List" class="px-3 py-1 rounded-md ${state.viewMode==='List'?'bg-brand-600 text-white font-semibold':'text-ink-600 hover:bg-ink-100'} text-xs transition-colors">List</button>
+          <div class="ds-tabs" data-tab-group="data-view">
+            <span class="ds-tab-pill is-init" data-tab-pill></span>
+            <button data-view="Map"  aria-selected="${state.viewMode==='Map'}"  class="ds-tab" style="font-size:12px;padding:6px 14px;"><span class="ds-tab-label">Map</span></button>
+            <button data-view="List" aria-selected="${state.viewMode==='List'}" class="ds-tab" style="font-size:12px;padding:6px 14px;"><span class="ds-tab-label">List</span></button>
+          </div>
         </div>
       </div>
       <div class="relative flex-1" style="height:calc(100% - 53px);">

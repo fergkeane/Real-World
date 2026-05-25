@@ -98,8 +98,8 @@ function Sidebar() {
     #sidebar[data-expanded="true"] .sidebar-logo { opacity:1 !important; pointer-events:auto !important; }
     #sidebar:not([data-expanded="true"]) .sidebar-logo { opacity:0 !important; pointer-events:none !important; width:0 !important; overflow:hidden !important; }
   </style>
-  <div id="sidebar-backdrop" class="hidden md:!hidden fixed inset-0 bg-black/40 z-[99]"></div>
-  <aside id="sidebar" class="shrink-0 bg-white border-r border-ink-200 h-screen sticky top-0 flex flex-col transition-[width,transform] duration-200 max-md:fixed max-md:left-0 max-md:top-0 max-md:-translate-x-full" style="width:56px; z-index:100">
+  <div id="sidebar-backdrop" class="hidden md:!hidden fixed inset-0 bg-black/40 z-[1999]"></div>
+  <aside id="sidebar" class="shrink-0 bg-white border-r border-ink-200 h-screen sticky top-0 flex flex-col transition-[width,transform] duration-200 max-md:fixed max-md:left-0 max-md:top-0 max-md:-translate-x-full" style="width:56px; z-index:2000">
     <div class="h-14 flex items-center border-b border-ink-200 px-2 gap-2">
       <img src="images/skytek-realworld-landscape-color.png" alt="Real World" class="sidebar-logo" style="height:28px;object-fit:contain;opacity:0;pointer-events:none;transition:opacity 150ms;flex:1;min-width:0;" />
       <button id="collapse-btn" class="shrink-0 p-2 rounded-lg hover:bg-ink-100 text-ink-700 ring-focus" title="Toggle menu">${I.menu}</button>
@@ -355,6 +355,12 @@ function wireChrome() {
     sidebarEl.classList.add('max-md:translate-x-0');
     sidebarEl.style.width = '212px';
     sidebarEl.dataset.expanded = 'true';
+    // Explicitly enforce left-aligned nav + logo (overrides any CSS that may still target collapsed state)
+    const logoEl = sidebarEl.querySelector('.sidebar-logo');
+    if (logoEl) { logoEl.style.opacity = '1'; logoEl.style.pointerEvents = 'auto'; logoEl.style.width = ''; logoEl.style.overflow = ''; }
+    const headerDiv = sidebarEl.querySelector(':scope>div:first-child');
+    if (headerDiv) { headerDiv.style.justifyContent = 'space-between'; headerDiv.style.paddingLeft = '8px'; headerDiv.style.paddingRight = '8px'; headerDiv.style.gap = '8px'; }
+    sidebarEl.querySelectorAll('.nav-item').forEach(el => { el.style.justifyContent = 'flex-start'; el.style.paddingLeft = '8px'; el.style.paddingRight = '8px'; });
     document.querySelectorAll('.nav-label').forEach(el => el.classList.remove('hidden'));
     if (backdropEl) backdropEl.classList.remove('hidden');
   };
@@ -363,6 +369,12 @@ function wireChrome() {
     sidebarEl.classList.add('max-md:-translate-x-full');
     sidebarEl.classList.remove('max-md:translate-x-0');
     if (backdropEl) backdropEl.classList.add('hidden');
+    // Clear inline style overrides so applyTweaks re-applies correct state
+    const logoEl = sidebarEl.querySelector('.sidebar-logo');
+    if (logoEl) { logoEl.style.opacity = ''; logoEl.style.pointerEvents = ''; logoEl.style.width = ''; logoEl.style.overflow = ''; }
+    const headerDiv = sidebarEl.querySelector(':scope>div:first-child');
+    if (headerDiv) { headerDiv.style.justifyContent = ''; headerDiv.style.paddingLeft = ''; headerDiv.style.paddingRight = ''; headerDiv.style.gap = ''; }
+    sidebarEl.querySelectorAll('.nav-item').forEach(el => { el.style.justifyContent = ''; el.style.paddingLeft = ''; el.style.paddingRight = ''; });
     applyTweaks();
   };
   if (mobileMenuBtn) mobileMenuBtn.onclick = (e) => { e.stopPropagation(); openMobile(); };
