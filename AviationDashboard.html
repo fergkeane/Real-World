@@ -81,6 +81,17 @@
     .avia-top-row{grid-template-columns:1fr!important;}
     .airport-metrics{flex-wrap:wrap;}
     .airport-metrics>div{min-width:50%;border-bottom:1px solid #dbeafe;}
+    /* Shrink the big metric numbers so they don't push the row wider than the card */
+    .airport-metrics>div>div:last-child{font-size:18px!important;}
+    /* Airport rows: hide CHW / HULLW / TLOHW columns on mobile (data is in the summary bar);
+       keep Airport + Total. */
+    .airport-row-grid{grid-template-columns:1fr auto!important;gap:8px!important;}
+    .airport-row-grid>.is-mcol{display:none!important;}
+  }
+  /* Page-level overflow guard \u2014 prevent any stray wide child from pushing the body
+     off-screen on small viewports. */
+  @media(max-width:1023px){
+    #app{overflow-x:hidden;}
   }
 </style>
 </head>
@@ -99,7 +110,7 @@
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="shared/chrome.js?v=6"></script>
+<script src="shared/chrome.js?v=11"></script>
 <script>
 const SC = window.sharedChrome;
 const Ico = SC.I;
@@ -262,40 +273,40 @@ function AirportCard() {
     <div class="airport-metrics" style="margin:10px 12px 0;background:#eff6ff;border:1px solid #dbeafe;border-radius:8px;overflow:hidden;display:flex;">
       <div style="flex:1;padding:10px 8px;text-align:center;border-right:1px solid #dbeafe;">
         <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:3px;">Total</div>
-        <div style="font-size:22px;font-weight:700;color:#2563eb;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$287.6B</div>
+        <div style="font-size:22px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$287.6B</div>
       </div>
       <div style="flex:1;padding:10px 8px;text-align:center;border-right:1px solid #dbeafe;">
         <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:3px;">Total CHW</div>
-        <div style="font-size:22px;font-weight:700;color:#2563eb;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$0</div>
+        <div style="font-size:22px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$0</div>
       </div>
       <div style="flex:1;padding:10px 8px;text-align:center;border-right:1px solid #dbeafe;">
         <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:3px;">Total HULLW</div>
-        <div style="font-size:22px;font-weight:700;color:#2563eb;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$159.8B</div>
+        <div style="font-size:22px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$159.8B</div>
       </div>
       <div style="flex:1;padding:10px 8px;text-align:center;">
         <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:3px;">Total TLOHW</div>
-        <div style="font-size:22px;font-weight:700;color:#2563eb;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$191.4B</div>
+        <div style="font-size:22px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$191.4B</div>
       </div>
     </div>
     <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-50">
-      <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white items-center">
+      <div class="airport-row-grid px-3 pt-2 pb-1 grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white items-center">
         <span>Airport</span>
         <span class="text-right">Total</span>
-        <span class="inline-flex items-center gap-1">${infoIcon} CHW</span>
-        <span class="inline-flex items-center gap-1">${infoIcon} HULLW</span>
-        <span class="inline-flex items-center gap-1">${infoIcon} TLOHW</span>
+        <span class="is-mcol inline-flex items-center gap-1">${infoIcon} CHW</span>
+        <span class="is-mcol inline-flex items-center gap-1">${infoIcon} HULLW</span>
+        <span class="is-mcol inline-flex items-center gap-1">${infoIcon} TLOHW</span>
       </div>
       ${AIRPORTS.map(a => `
-        <div class="px-3 py-2 hover:bg-ink-50 grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 text-xs items-center">
+        <div class="airport-row-grid px-3 py-2 hover:bg-ink-50 grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 text-xs items-center">
           <div class="flex items-center gap-2 min-w-0">
             ${flag(a.flag)}
             <span class="font-semibold text-brand-600">${a.code}</span>
             <span class="text-ink-600 truncate">- ${a.name}</span>
           </div>
           <span class="tabular-nums text-right font-semibold text-ink-900">${a.total}</span>
-          <span class="tabular-nums text-right text-ink-700">${a.chw}</span>
-          <span class="tabular-nums text-right text-ink-700">${a.hullw}</span>
-          <span class="tabular-nums text-right text-ink-700">${a.tlohw}</span>
+          <span class="is-mcol tabular-nums text-right text-ink-700">${a.chw}</span>
+          <span class="is-mcol tabular-nums text-right text-ink-700">${a.hullw}</span>
+          <span class="is-mcol tabular-nums text-right text-ink-700">${a.tlohw}</span>
         </div>
       `).join('')}
     </div>

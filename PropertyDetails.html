@@ -58,6 +58,19 @@
   .map-type-option:hover { background:#f8fafc; }
   /* Flag badge */
   .flag-badge { display:inline-flex; align-items:center; gap:5px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:999px; padding:2px 8px 2px 4px; }
+  /* Page grid — stack on mobile, side-by-side on desktop */
+  .pd-grid { display:grid; grid-template-columns:1fr; align-items:start; }
+  .pd-map-col { height:60vh; min-height:360px; }
+  @media (min-width: 1024px) {
+    .pd-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+    .pd-map-col { height: calc(100vh - 112px); }
+  }
+  @media (max-width: 1023px) {
+    /* Property Information turns from 2-col into 1-col on mobile to avoid cramped values */
+    .pi-grid { grid-template-columns: 1fr; }
+    .pi-cell:not(:nth-child(2n)) { border-right: 0; }
+    .pi-cell { border-bottom: 1px solid #f1f5f9; }
+  }
 </style>
 </head>
 <body class="bg-ink-100 text-ink-900 antialiased" data-density="compact">
@@ -75,7 +88,7 @@ window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="shared/chrome.js?v=6"></script>
+<script src="shared/chrome.js?v=11"></script>
 <script>
 const SC = window.sharedChrome;
 const Ico = SC.I;
@@ -248,12 +261,12 @@ function CardMap() {
 function Content() {
   return `
   <div class="flex-1 overflow-y-auto scroll-thin px-4 lg:px-6 py-4">
-    <div class="grid gap-3 h-full" style="grid-template-columns:minmax(0,5fr) minmax(0,7fr);align-items:start;">
+    <div class="pd-grid gap-3 h-full">
       <div class="flex flex-col gap-3">
         ${CardPropertyInfo()}
         ${CardWeatherRisk()}
       </div>
-      <div style="height:calc(100vh - 112px);">
+      <div class="pd-map-col">
         ${CardMap()}
       </div>
     </div>

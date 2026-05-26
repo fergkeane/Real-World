@@ -27,6 +27,13 @@
   .asset-tab.active { background: #2563eb; color: #fff; }
   .asset-tab:not(.active):hover { background: #f1f5f9; color: #334155; }
   .asset-tab svg { width: 15px; height: 15px; }
+  /* Mobile tabs dropdown */
+  .asset-tabs-dd { display: none; width: 100%; max-width: 320px; height: 40px; padding: 0 36px 0 14px; border: 1px solid #e2e8f0; border-radius: 999px; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 14px center; box-shadow: 0 1px 3px rgba(15,23,42,.08); font: inherit; font-size: 13px; font-weight: 600; color: #0f172a; appearance: none; -webkit-appearance: none; cursor: pointer; outline: none; text-align: center; text-align-last: center; }
+  .asset-tabs-dd:focus { border-color: #93c5fd; box-shadow: 0 1px 3px rgba(15,23,42,.08), 0 0 0 3px rgba(37,99,235,.12); }
+  @media (max-width: 640px) {
+    .asset-tabs { display: none !important; }
+    .asset-tabs-dd { display: block !important; }
+  }
 
   /* --- Search & filter bar --- */
   .search-wrap { position: relative; flex: 1; max-width: 360px; }
@@ -37,6 +44,29 @@
   .filter-btn:hover { border-color: #93c5fd; background: #f8fafc; }
   .filter-btn.reset { color: #475569; }
   .filter-btn.edit-cols { font-weight: 600; color: #0f172a; border-color: #cbd5e1; }
+
+  /* --- Mobile filter button + popover --- */
+  .filter-row { position: relative; }
+  .filters-mobile-btn { display: none; align-items: center; justify-content: center; width: 34px; height: 34px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; color: #334155; cursor: pointer; flex-shrink: 0; position: relative; }
+  .filters-mobile-btn:hover { background: #f8fafc; border-color: #93c5fd; }
+  .filters-mobile-btn .dot { position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; border-radius: 999px; background: #2563eb; border: 1.5px solid #fff; }
+  .filter-controls { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1; }
+  @media (max-width: 720px) {
+    .filters-mobile-btn { display: inline-flex; }
+    .filter-controls { display: none; }
+    .filter-controls.is-open {
+      display: flex; flex-direction: column; align-items: stretch; gap: 6px;
+      position: absolute; top: calc(100% + 6px); right: 0; left: 0;
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(15,23,42,.12);
+      padding: 10px; z-index: 50;
+    }
+    .filter-controls.is-open .filter-btn {
+      width: 100%; justify-content: space-between; padding: 9px 12px; font-size: 13px;
+    }
+    .filter-controls.is-open .filter-btn.edit-cols { margin-left: 0 !important; border-top: 1px solid #f1f5f9; margin-top: 2px; padding-top: 11px; border-radius: 0 0 8px 8px; }
+    .search-wrap { max-width: none; min-width: 0; }
+  }
 
   /* --- Data table --- */
   .assets-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
@@ -88,14 +118,14 @@
 <script>
 window.PAGE = { id: 'assets', title: 'Assets', crumb: 'Search' };
 window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-  "density": "compact",
+  "density": "comfortable",
   "accent": "blue",
   "sidebarExpanded": false,
   "showSparklines": true
 }/*EDITMODE-END*/;
 </script>
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
-<script src="shared/chrome.js?v=6"></script>
+<script src="shared/chrome.js?v=11"></script>
 <script>
 const SC = window.sharedChrome;
 
@@ -171,11 +201,12 @@ function renderTable() {
   const totalPages = Math.ceil(total / PAGE_SIZE);
   const pageRows = rows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-  const tabLabels = { marine:'Marine', property:'Property', aviation:'Aviation' };
+  const tabLabels = { marine:'Marine', property:'Property', aviation:'Aviation', offshore:'Offshore / Energy' };
   const tabIcons  = {
     marine:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg>`,
     property: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="16 2 12 6 8 2"/></svg>`,
     aviation: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4s-2 1-3.5 2.5L8 7 .8 8.4c-.5.1-.7.6-.4 1l1.8 1.8c.2.2.5.3.8.3L8 11l-2.5 5.4c-.1.3 0 .7.3.9l1.1.7c.4.3.9.2 1.2-.1L10 16l1 4 2.5 1.5c.4.2.9.1 1.2-.3l.8-1c.2-.3.2-.7-.2-1z"/></svg>`,
+    offshore: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22h18"/><path d="M5 22V10l7-4 7 4v12"/><path d="M12 6V2"/><path d="M10 2h4"/><path d="M9 14h6"/><path d="M9 18h6"/></svg>`,
   };
 
   const sectionIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg>`;
@@ -209,6 +240,9 @@ function renderTable() {
             ${tabIcons[id]} ${lbl}
           </button>`).join('')}
       </div>
+      <select id="asset-tabs-dd" class="asset-tabs-dd" aria-label="Asset category">
+        ${Object.entries(tabLabels).map(([id, lbl]) => `<option value="${id}" ${currentTab===id?'selected':''}>${lbl}</option>`).join('')}
+      </select>
     </div>
 
     <!-- Card -->
@@ -223,21 +257,27 @@ function renderTable() {
           <span style="font-size:13px;font-weight:400;color:#94a3b8;">(${total} result${total !== 1 ? 's' : ''})</span>
         </div>
         <!-- Search + filters -->
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <div class="filter-row" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           <div class="search-wrap">
             <span class="search-ico">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             </span>
             <input id="asset-search" type="text" placeholder="Search by IMO or vessel name" value="${searchQuery}" />
           </div>
-          <button class="filter-btn reset" id="reset-filters-btn">${filterIcon} Reset Filters</button>
-          <button class="filter-btn">Asset Type ${chevDown}</button>
-          <button class="filter-btn">Flag ${chevDown}</button>
-          <button class="filter-btn">Length ${chevDown}</button>
-          <button class="filter-btn">Gross Tonnage ${chevDown}</button>
-          <button class="filter-btn">Deadweight ${chevDown}</button>
-          <button class="filter-btn">YOB ${chevDown}</button>
-          <button class="filter-btn edit-cols" style="margin-left:auto;">Edit Columns</button>
+          <button class="filters-mobile-btn" id="filters-mobile-btn" aria-label="Show filters" aria-expanded="false">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            ${(searchQuery || sortCol) ? '<span class="dot"></span>' : ''}
+          </button>
+          <div class="filter-controls" id="filter-controls">
+            <button class="filter-btn reset" id="reset-filters-btn">${filterIcon} Reset Filters</button>
+            <button class="filter-btn">Asset Type ${chevDown}</button>
+            <button class="filter-btn">Flag ${chevDown}</button>
+            <button class="filter-btn">Length ${chevDown}</button>
+            <button class="filter-btn">Gross Tonnage ${chevDown}</button>
+            <button class="filter-btn">Deadweight ${chevDown}</button>
+            <button class="filter-btn">YOB ${chevDown}</button>
+            <button class="filter-btn edit-cols" style="margin-left:auto;">Edit Columns</button>
+          </div>
         </div>
       </div>
 
@@ -332,6 +372,17 @@ function wireTableEvents() {
     });
   });
 
+  /* Mobile tabs dropdown */
+  const tabsDD = document.getElementById('asset-tabs-dd');
+  if (tabsDD) {
+    tabsDD.addEventListener('change', () => {
+      currentTab  = tabsDD.value;
+      currentPage = 1;
+      document.getElementById('main-content').innerHTML = renderTable();
+      wireTableEvents();
+    });
+  }
+
   /* Sort columns */
   document.querySelectorAll('th[data-sort]').forEach(th => {
     th.addEventListener('click', () => {
@@ -366,6 +417,23 @@ function wireTableEvents() {
   const nextBtn = document.getElementById('pag-next');
   if (prevBtn) prevBtn.addEventListener('click', () => { currentPage--; document.getElementById('main-content').innerHTML = renderTable(); wireTableEvents(); });
   if (nextBtn) nextBtn.addEventListener('click', () => { currentPage++; document.getElementById('main-content').innerHTML = renderTable(); wireTableEvents(); });
+
+  /* Mobile filters toggle */
+  const fmBtn  = document.getElementById('filters-mobile-btn');
+  const fmCtrl = document.getElementById('filter-controls');
+  if (fmBtn && fmCtrl) {
+    fmBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = fmCtrl.classList.toggle('is-open');
+      fmBtn.setAttribute('aria-expanded', String(open));
+    });
+    document.addEventListener('click', (e) => {
+      if (!fmCtrl.classList.contains('is-open')) return;
+      if (fmCtrl.contains(e.target) || fmBtn.contains(e.target)) return;
+      fmCtrl.classList.remove('is-open');
+      fmBtn.setAttribute('aria-expanded', 'false');
+    });
+  }
 
   /* Re-hook search in case it was re-rendered */
   const searchEl = document.getElementById('asset-search');

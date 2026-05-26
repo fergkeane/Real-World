@@ -71,14 +71,14 @@
 window.PAGE = { id:'cargo', title:'Cargo', crumb:'Voyage Analysis' };
 window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "density": "comfortable",
-  "accent": "sky",
+  "accent": "blue",
   "sidebarExpanded": false,
   "showSparklines": true
 }/*EDITMODE-END*/;
 </script>
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="shared/chrome.js?v=6"></script>
+<script src="shared/chrome.js?v=11"></script>
 <script>
 const SC = window.sharedChrome;
 
@@ -594,9 +594,18 @@ function wireContent() {
   if (fi) {
     fi.addEventListener('input', () => {
       st.filter = fi.value;
+      st._refocusFilter = true;
       window.render();
     });
-    fi.focus();
+    // Only re-focus after a user-initiated re-render (e.g. typing in the filter).
+    // Skipping the initial focus prevents mobile browsers from auto-scrolling the
+    // page down to bring the off-screen filter input into view on first load.
+    if (st._refocusFilter) {
+      fi.focus({ preventScroll: true });
+      // Restore caret to end
+      const v = fi.value; fi.setSelectionRange(v.length, v.length);
+      st._refocusFilter = false;
+    }
   }
 
   /* Row expand */

@@ -38,6 +38,13 @@
   .ds-tab-pill{position:absolute;top:4px;left:0;height:calc(100% - 8px);background:#2563eb;border-radius:9999px;box-shadow:0 1px 2px rgba(15,23,42,.12);z-index:0;transition:transform 320ms cubic-bezier(.34,1.2,.64,1),width 320ms cubic-bezier(.34,1.2,.64,1);pointer-events:none;}
   .ds-tab-pill.is-init{transition:none;}
   .ds-tab-label{position:relative;z-index:1;display:inline-flex;align-items:center;gap:6px;}
+  /* Responsive: swap pill tabs → dropdown on small screens */
+  .reports-tabs-dd{display:none;width:100%;max-width:320px;height:36px;padding:0 32px 0 12px;border:1px solid #e2e8f0;border-radius:10px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center;font:inherit;font-size:13px;font-weight:600;color:#0f172a;appearance:none;-webkit-appearance:none;cursor:pointer;outline:none;}
+  .reports-tabs-dd:focus{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(37,99,235,.12);}
+  @media (max-width: 640px){
+    .ds-tabs#reports-tabs{display:none !important;}
+    .reports-tabs-dd{display:block !important;}
+  }
   .chat-input{width:100%;height:46px;border:1px solid #e2e8f0;border-radius:12px;padding:0 52px 0 16px;font-size:14px;color:#0f172a;outline:none;font-family:inherit;background:#fff;transition:border-color .15s,box-shadow .15s}
   .chat-input:focus{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
   .chip{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:13px 16px;font-size:13px;font-weight:600;color:#0f172a;cursor:pointer;text-align:left;font-family:inherit;transition:border-color .15s,box-shadow .15s,background .1s}
@@ -91,7 +98,7 @@ window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 }/*EDITMODE-END*/;
 </script>
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
-<script src="shared/chrome.js?v=6"></script>
+<script src="shared/chrome.js?v=11"></script>
 <script>
 const SC = window.sharedChrome;
 
@@ -834,6 +841,11 @@ window.render = function() {
                 <span class="ds-tab-label">${CHT_ICO} Competitor Analysis</span>
               </button>
             </div>
+            <select id="reports-tabs-dd" class="reports-tabs-dd" aria-label="Section">
+              <option value="builder" ${activeTab==='builder'?'selected':''}>Report Builder</option>
+              <option value="fleet"   ${activeTab==='fleet'  ?'selected':''}>Weekly Fleet Reports</option>
+              <option value="comp"    ${activeTab==='comp'   ?'selected':''}>Competitor Analysis</option>
+            </select>
           </div>
           <div id="reports-content">
             ${tabContent()}
@@ -858,8 +870,34 @@ window.render = function() {
     requestAnimationFrame(() => pill.classList.remove('is-init'));
   });
 
+  // Mobile dropdown — mirrors tab state
+  const tabDD = document.getElementById('reports-tabs-dd');
+  function switchTab(next){
+    activeTab = next;
+    document.querySelectorAll('[data-tab]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === next)));
+    if (tabDD && tabDD.value !== next) tabDD.value = next;
+    const grp = document.getElementById('reports-tabs');
+    const pl  = document.getElementById('reports-pill');
+    const act = grp && grp.querySelector('.ds-tab[aria-selected="true"]');
+    if (grp && pl && act && grp.offsetParent !== null) {
+      const gR = grp.getBoundingClientRect();
+      const aR = act.getBoundingClientRect();
+      pl.style.width = aR.width + 'px';
+      pl.style.transform = `translateX(${aR.left - gR.left}px)`;
+    }
+    const contentEl = document.getElementById('reports-content');
+    if (contentEl) {
+      contentEl.innerHTML = tabContent();
+      if (activeTab === 'builder') rerenderChat();
+      if (activeTab === 'fleet')   wireFleetTab();
+      if (activeTab === 'comp')    wireCompetitorTab();
+    }
+  }
+  if (tabDD) tabDD.addEventListener('change', () => switchTab(tabDD.value));
   document.querySelectorAll('[data-tab]').forEach(btn => btn.addEventListener('click', () => {
+    // legacy click handler kept for the pill animation below; route through switchTab for content
     activeTab = btn.dataset.tab;
+    if (tabDD) tabDD.value = activeTab;
     // Update aria-selected without re-rendering the tab bar (preserves pill animation)
     document.querySelectorAll('[data-tab]').forEach(b => b.setAttribute('aria-selected', String(b === btn)));
     // Animate pill to new position

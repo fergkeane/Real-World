@@ -17,6 +17,24 @@
   .leaflet-control-zoom,.leaflet-bar{border:1px solid #e2e8f0!important;box-shadow:0 1px 2px rgba(15,23,42,.08)!important;border-radius:8px!important;overflow:hidden}
   .leaflet-bar a{background:#fff!important;color:#334155!important;line-height:30px!important}
   .leaflet-bar a:hover{background:#f1f5f9!important}
+  /* Region popup — matches Regions page */
+  .region-popup .leaflet-popup-content-wrapper{padding:0;border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,.15)}
+  .region-popup .leaflet-popup-content{margin:0}
+  .region-popup .leaflet-popup-tip-container{margin-top:-1px}
+  /* Make the close × visible against the blue popup header */
+  .region-popup .leaflet-popup-close-button{
+    color:#fff !important;
+    opacity:.85;
+    font:700 20px/1 'Inter',sans-serif !important;
+    width:26px;height:26px;
+    padding:2px 0 0 0 !important;
+    top:6px !important;right:6px !important;
+    border-radius:6px;
+    text-align:center;
+    text-decoration:none !important;
+    transition:opacity .12s, background .12s;
+  }
+  .region-popup .leaflet-popup-close-button:hover{opacity:1;background:rgba(255,255,255,.18)}
   /* Pill tabs (Skytek DS — animated sliding pill) */
   .ds-tabs{position:relative;display:inline-flex;gap:4px;padding:4px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9999px;}
   .ds-tab{position:relative;font:inherit;font-size:13px;font-weight:600;padding:7px 16px;background:transparent;border:0;border-radius:9999px;color:#64748b;cursor:pointer;transition:color 140ms ease;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
@@ -54,6 +72,10 @@
   /* Mobile responsive */
   .mrd-top-row{display:flex;gap:12px;margin-bottom:12px;min-height:0;}
   .mrd-left-panel{width:220px;flex-shrink:0;}
+  /* Card tab dropdown — used in place of pill tabs */
+  .tab-dd{display:inline-block;min-width:240px;max-width:100%;padding:8px 36px 8px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:600;color:#0f172a;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;background-size:12px;font-family:inherit;cursor:pointer;appearance:none;-webkit-appearance:none;transition:border-color .15s,box-shadow .15s;}
+  .tab-dd:hover{border-color:#cbd5e1;}
+  .tab-dd:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15);}
   .mobile-tab-select{display:none;width:100%;padding:7px 12px;border:1px solid #e2e8f0;border-radius:9999px;font-size:13px;font-weight:600;color:#334155;background:#f1f5f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;font-family:inherit;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;}
   @media(max-width:767px){
     .mrd-top-row{flex-direction:column;}
@@ -75,7 +97,7 @@ window.PAGE = { id:'regions', title:'Marine Region', crumb: regionName };
 </script>
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="shared/chrome.js?v=6"></script>
+<script src="shared/chrome.js?v=11"></script>
 <script>
 const SC = window.sharedChrome;
 
@@ -155,17 +177,91 @@ function initMap() {
     [32.7,-117.3],[32.5,-117.1],[32.5,-119.0],[33.5,-119.5],[34.4,-121.5],
     [35.5,-122.0],[37.0,-123.0],[38.5,-124.0],[40.0,-124.8],[42.0,-124.5],
   ];
-  L.polygon(coastPoly, { color:'#2563eb', weight:2, fillColor:'#3b82f6', fillOpacity:0.18 }).addTo(rMap);
+  const regionRisk      = 'High';
+  const regionRiskColor = {Low:'#16a34a',Medium:'#f97316',High:'#dc2626',Critical:'#7c3aed'}[regionRisk] || '#64748b';
+  const regionDotColor  = '#2563eb';
+  const regionExposure  = '$5.5B';
+  const regionAssets    = 1247;
+  const regionPopupHTML = `
+    <div style="font-family:'Inter',sans-serif;width:250px;border-radius:12px;overflow:hidden">
+      <div style="background:#2563eb;color:#fff;padding:11px 14px;display:flex;align-items:center;gap:8px">
+        <span style="width:11px;height:11px;border-radius:50%;background:${regionDotColor};flex-shrink:0;border:1.5px solid rgba(255,255,255,.5)"></span>
+        <span style="font-size:14px;font-weight:700;flex:1">${regionName}</span>
+      </div>
+      <div style="background:#fff;padding:14px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:9px">
+          <span style="color:#64748b;font-size:13px">Our Exposure:</span>
+          <span style="font-weight:700;color:#0f172a;font-size:13px">${regionExposure}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:9px">
+          <span style="color:#64748b;font-size:13px">Assets:</span>
+          <span style="font-weight:700;color:#0f172a;font-size:13px">${regionAssets.toLocaleString()}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:#64748b;font-size:13px">Risk Level:</span>
+          <span style="font-weight:700;font-size:13px;color:${regionRiskColor}">${regionRisk}</span>
+        </div>
+      </div>
+    </div>`;
+  L.polygon(coastPoly, { color:'#2563eb', weight:2, fillColor:'#3b82f6', fillOpacity:0.18 })
+    .addTo(rMap)
+    .bindPopup(regionPopupHTML, { maxWidth:260, minWidth:250, closeButton:true, className:'region-popup' });
 
   // Port markers
-  const ports = [[37.80,-122.28],[37.33,-121.89],[33.73,-118.26],[32.72,-117.22],[34.01,-118.49]];
-  ports.forEach(([lat,lng]) => {
+  const ports = [
+    { coord:[37.80,-122.28], name:'Port of Oakland',     exposure:'$420M', assets: 312, risk:'Medium' },
+    { coord:[37.33,-121.89], name:'Port of San Jose',    exposure:'$185M', assets: 142, risk:'Low'    },
+    { coord:[33.73,-118.26], name:'Port of Long Beach',  exposure:'$1.2B', assets: 684, risk:'High'   },
+    { coord:[32.72,-117.22], name:'Port of San Diego',   exposure:'$340M', assets: 218, risk:'Medium' },
+    { coord:[34.01,-118.49], name:'Port of Los Angeles', exposure:'$1.4B', assets: 752, risk:'High'   },
+  ];
+  ports.forEach(p => {
     const icon = L.divIcon({
       className:'',
       html:`<div style="width:26px;height:26px;border-radius:50%;background:#2563eb;border:2.5px solid #fff;box-shadow:0 2px 6px rgba(37,99,235,.4);display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>`,
       iconSize:[26,26], iconAnchor:[13,13],
     });
-    L.marker([lat,lng],{icon}).bindPopup(`<div style="font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:4px 2px">Marine Port</div>`).addTo(rMap);
+    const portRiskColor = {Low:'#16a34a',Medium:'#f97316',High:'#dc2626',Critical:'#7c3aed'}[p.risk] || '#64748b';
+    const portPopupHTML = `
+      <div style="font-family:'Inter',sans-serif;width:250px;border-radius:12px;overflow:hidden">
+        <div style="background:#2563eb;color:#fff;padding:11px 14px;display:flex;align-items:center;gap:8px">
+          <span style="width:11px;height:11px;border-radius:50%;background:#fff;flex-shrink:0;border:1.5px solid rgba(255,255,255,.5);display:inline-flex;align-items:center;justify-content:center">
+            <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </span>
+          <span style="font-size:14px;font-weight:700;flex:1">${p.name}</span>
+        </div>
+        <div style="background:#fff;padding:14px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:9px">
+            <span style="color:#64748b;font-size:13px">Our Exposure:</span>
+            <span style="font-weight:700;color:#0f172a;font-size:13px">${p.exposure}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:9px">
+            <span style="color:#64748b;font-size:13px">Assets:</span>
+            <span style="font-weight:700;color:#0f172a;font-size:13px">${p.assets.toLocaleString()}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:12px">
+            <span style="color:#64748b;font-size:13px">Risk Level:</span>
+            <span style="font-weight:700;font-size:13px;color:${portRiskColor}">${p.risk}</span>
+          </div>
+          <button data-port="${p.name.replace(/"/g,'&quot;')}" style="width:100%;padding:8px;border:1.5px solid #2563eb;border-radius:8px;background:#fff;color:#2563eb;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='#fff'">View Details</button>
+        </div>
+      </div>`;
+    L.marker(p.coord,{icon})
+      .bindPopup(portPopupHTML, { maxWidth:260, minWidth:250, closeButton:true, className:'region-popup' })
+      .addTo(rMap);
+  });
+
+  // Wire “View Details” buttons inside port popups (event delegation, since popup
+  // markup is injected only when a marker is opened)
+  rMap.on('popupopen', (e) => {
+    const node = e.popup.getElement();
+    if (!node) return;
+    const btn = node.querySelector('button[data-port]');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      sessionStorage.setItem('selectedPort', btn.dataset.port);
+      window.location.href = 'PortDetails.html';
+    });
   });
 
   // Controls
@@ -249,11 +345,10 @@ function Content() {
       <!-- RIGHT: Region Summary Statistics -->
       <div style="flex:2;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06);overflow:hidden;display:flex;flex-direction:column">
         <div style="padding:10px 12px;border-bottom:1px solid #f1f5f9;flex-shrink:0">
-          <div class="ds-tabs" data-tab-group="data-rtab">
-            <span class="ds-tab-pill is-init" data-tab-pill></span>
-            <button class="ds-tab" aria-selected="${rightTab==='stats'}"  data-rtab="stats"><span class="ds-tab-label">Region Summary Statistics</span></button>
-            <button class="ds-tab" aria-selected="${rightTab==='report'}" data-rtab="report"><span class="ds-tab-label">Create Region Report</span></button>
-          </div>
+          <select id="rtab-sel" class="tab-dd" aria-label="Section">
+            <option value="stats"  ${rightTab==='stats'  ? 'selected' : ''}>Region Summary Statistics</option>
+            <option value="report" ${rightTab==='report' ? 'selected' : ''}>Create Region Report</option>
+          </select>
         </div>
         ${rightTab === 'stats' ? `
         <div style="flex:1;overflow-y:auto;padding:12px 16px" class="scroll-thin">
@@ -339,16 +434,10 @@ function Content() {
 
     <!-- Bottom: tab bar + map -->
     <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06);overflow:hidden;display:flex;flex-direction:column;min-height:420px">
-      <!-- Tab bar -->
-      <div style="padding:8px 14px;border-bottom:1px solid #f1f5f9;flex-shrink:0;" class="scroll-thin">
-        <div class="tabs-desktop-wrap" style="display:inline-flex;">
-          <div class="ds-tabs" data-tab-group="data-mtab">
-            <span class="ds-tab-pill is-init" data-tab-pill></span>
-            ${[['map',MAP_PIN,'Map'],['policies','<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>','Policies'],['notif','<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>','Notifications'],['history','<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>','Region History'],['casualties','<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>','Region Casualties']].map(([id,ico,lbl]) => `
-            <button class="ds-tab" aria-selected="${mapTab===id}" data-mtab="${id}"><span class="ds-tab-label">${ico} ${lbl}</span></button>`).join('')}
-          </div>
-        </div>
-        <select class="mobile-tab-select" id="map-tab-mobile-sel">
+      <!-- Tab selector -->
+      <div style="padding:10px 14px;border-bottom:1px solid #f1f5f9;flex-shrink:0;">
+        <label for="map-tab-sel" style="display:block;font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">View</label>
+        <select class="tab-dd" id="map-tab-sel" aria-label="Select view">
           <option value="map" ${mapTab==='map'?'selected':''}>Map</option>
           <option value="policies" ${mapTab==='policies'?'selected':''}>Policies</option>
           <option value="notif" ${mapTab==='notif'?'selected':''}>Notifications</option>
@@ -406,11 +495,11 @@ function rc() {
 }
 function wire() {
   document.querySelectorAll('[data-ltab]').forEach(b => b.addEventListener('click', () => { leftTab  = b.dataset.ltab;  rc(); }));
-  document.querySelectorAll('[data-rtab]').forEach(b => b.addEventListener('click', () => { rightTab = b.dataset.rtab;  rc(); }));
+  const rtabSel = document.getElementById('rtab-sel');
+  if (rtabSel) rtabSel.onchange = () => { rightTab = rtabSel.value; rc(); };
   document.querySelectorAll('[data-stab]').forEach(b => b.addEventListener('click', () => { statSub  = b.dataset.stab;  rc(); }));
-  document.querySelectorAll('[data-mtab]').forEach(b => b.addEventListener('click', () => { mapTab   = b.dataset.mtab;  rc(); }));
   window.addEventListener('resize', positionTabPills, { passive: true });
-  const mapTabSel = document.getElementById('map-tab-mobile-sel');
+  const mapTabSel = document.getElementById('map-tab-sel');
   if (mapTabSel) mapTabSel.onchange = () => { mapTab = mapTabSel.value; rc(); };
 }
 

@@ -74,11 +74,16 @@
   .mobile-tab-select{display:none;width:100%;padding:7px 12px;border:1px solid #e2e8f0;border-radius:9999px;font-size:13px;font-weight:600;color:#334155;background:#f1f5f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;font-family:inherit;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;}
   .airport-row1 { grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); }
   .airport-row2 { grid-template-columns:minmax(0,1fr) minmax(0,2fr); }
+  /* Overflow guard: nothing in the page should bleed past the right edge on small viewports */
+  .page-col, .page-content { min-width: 0; }
+  @media(max-width:1023px){ .page-col, .page-content { overflow-x: hidden; } }
   @media(max-width:767px){
     .airport-row1,.airport-row2{ grid-template-columns:1fr; }
     .mobile-tab-select{display:block!important;}
     .tabs-desktop-wrap{display:none!important;}
     .summary-date-row{flex-wrap:wrap;}
+    /* Pagination strip wraps cleanly on narrow screens */
+    .pager-strip{flex-direction:column;gap:6px;align-items:flex-start;}
   }
 </style>
 </head>
@@ -97,7 +102,7 @@ window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="shared/chrome.js?v=6"></script>
+<script src="shared/chrome.js?v=11"></script>
 <script>
 const SC = window.sharedChrome;
 const Ico = SC.I;
@@ -112,6 +117,9 @@ const AIRPORT = (() => {
   try { const r = sessionStorage.getItem('selectedAirport'); return r ? JSON.parse(r) : DEFAULT_AIRPORT; }
   catch(e) { return DEFAULT_AIRPORT; }
 })();
+
+/* Push airport name into the topbar breadcrumb: AVIATION / <airport name> */
+if (window.PAGE) window.PAGE.crumb = AIRPORT.name;
 
 /* ---- Data ---- */
 const AIRCRAFT_GROUND = [
@@ -176,7 +184,7 @@ function CardPortfolioGround() {
     <div class="px-4 py-3 shrink-0">
       <div class="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-center">
         <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:4px;">Total Exposure</div>
-        <div style="font-size:26px;font-weight:700;color:#2563eb;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$1.5B</div>
+        <div style="font-size:26px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$1.5B</div>
       </div>
     </div>
     <div class="flex-1 overflow-y-auto scroll-thin">
@@ -213,7 +221,7 @@ function CardExposure() {
       ${[['Total Hull','$3.2B'],['Total CHW','$2.4B'],['Total HULLW','$582M'],['Total TLOHW','$280M']].map(([l,v],i)=>`
         <div style="flex:1;padding:10px 8px;text-align:center;${i<3?'border-right:1px solid #dbeafe;':''}">
           <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:3px;">${l}</div>
-          <div style="font-size:22px;font-weight:700;color:#2563eb;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">${v}</div>
+          <div style="font-size:22px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">${v}</div>
         </div>`).join('')}
     </div>
     <div class="flex-1 overflow-y-auto scroll-thin">
@@ -265,8 +273,9 @@ function CardSummary() {
           <select class="border border-ink-200 rounded-md px-2 py-1.5 text-xs text-ink-900 flex-1 min-w-[100px]"><option>All portfolios</option></select>
         </div>
       </div>
-      <div class="seg-tabs" id="seg-tabs">
-        ${tabs.map(t=>`<button class="seg-tab${t===statsTab?' active':''}" data-seg="${t}">${t}</button>`).join('')}
+      <div class="ds-tabs is-stretch" data-tab-group="seg-tab">
+        <span class="ds-tab-pill is-init" data-tab-pill></span>
+        ${tabs.map(t=>`<button class="ds-tab" data-seg="${t}" aria-selected="${t===statsTab}" style="font-size:12px;padding:6px 14px;"><span class="ds-tab-label">${t}</span></button>`).join('')}
       </div>
       <div class="flex flex-col gap-4 flex-1">
         <div class="grid grid-cols-2 gap-3">
@@ -431,7 +440,7 @@ function CardAircraftTable() {
         </tbody>
       </table>
     </div>
-    <div class="px-4 py-3 border-t border-ink-100 flex items-center justify-between text-xs text-ink-500 bg-ink-50">
+    <div class="px-4 py-3 border-t border-ink-100 flex items-center justify-between text-xs text-ink-500 bg-ink-50 pager-strip">
       <span>Showing ${start+1} to ${Math.min(start+PAGE_SIZE,total)} of ${total} results</span>
       <div class="flex items-center gap-3">
         <button id="pg-prev" class="text-xs font-semibold ${tablePage<=1?'text-ink-300 cursor-not-allowed':'text-ink-600 hover:text-ink-900'}">&lsaquo; Previous</button>
@@ -444,7 +453,7 @@ function CardAircraftTable() {
 
 function Content() {
   return `
-  <div class="flex-1 overflow-y-auto px-4 lg:px-6 py-4 space-y-3">
+  <div class="page-content flex-1 overflow-y-auto px-4 lg:px-6 py-4 space-y-3">
     <div class="grid gap-3 airport-row1" style="align-items:stretch;">
       ${CardPortfolioGround()}
       ${CardExposure()}
@@ -492,7 +501,7 @@ function wireInteractions() {
   if (next) next.onclick = () => { if(tablePage<Math.ceil(AIRCRAFT_TABLE.length/PAGE_SIZE)){tablePage++;render();} };
   document.querySelectorAll('[data-seg]').forEach(b => b.onclick = () => {
     statsTab = b.getAttribute('data-seg');
-    document.querySelectorAll('[data-seg]').forEach(x=>x.classList.toggle('active',x===b));
+    render();
   });
   positionTabPills();
 }
@@ -500,7 +509,7 @@ function wireInteractions() {
 window.render = function() {
   document.getElementById('app').innerHTML = `
     ${SC.Sidebar()}
-    <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
+    <div class="page-col flex-1 min-w-0 flex flex-col overflow-hidden">
       ${SC.Topbar()}
       ${Content()}
     </div>

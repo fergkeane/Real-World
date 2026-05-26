@@ -70,6 +70,35 @@
   .leaflet-top.leaflet-left { top:44px !important; }
   .map-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:#fff; border:1px solid #e2e8f0; border-radius:8px; color:#334155; box-shadow:0 1px 2px rgba(15,23,42,.08); cursor:pointer; }
   .map-btn:hover { background:#f1f5f9; }
+
+  /* Layout rows — stack to a single column on small screens */
+  .pd-row { display: grid; gap: 12px; align-items: start; }
+  .pd-row-2 { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+  .pd-row-2-rev { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+  /* Exposure card inner split */
+  .exposure-inner { display: grid; grid-template-columns: 140px 1fr; }
+  /* Risk table horizontal scroll on small screens */
+  .risk-scroll { overflow-x: auto; }
+  .risk-scroll .risk-table { min-width: 600px; }
+  /* Vessels table scroll — keep min-width so columns don't squish */
+  .vessels-scroll { overflow-x: auto; }
+  .vessels-scroll .dt { min-width: 560px; }
+  /* Trends summary 4-col table */
+  .trends-summary-scroll { overflow-x: auto; }
+  .trends-summary-scroll .trends-summary-grid { min-width: 520px; }
+
+  @media (max-width: 900px) {
+    .pd-row-2, .pd-row-2-rev { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    .exposure-inner { grid-template-columns: 1fr; }
+    .exposure-inner > div:first-child { border-right: 0 !important; border-bottom: 1px solid #f1f5f9; flex-direction: row !important; flex-wrap: wrap; gap: 12px !important; }
+    .exposure-inner > div:first-child > div { flex: 1 1 calc(50% - 6px); min-width: 120px; }
+    .card-hdr { flex-wrap: wrap; gap: 8px; row-gap: 6px; }
+    .stab-btn { font-size: 10.5px; padding: 4px 9px; }
+    /* Prevent horizontal page overflow */
+    html, body { overflow-x: hidden; }
+  }
 </style>
 </head>
 <body class="bg-ink-100 text-ink-900 antialiased">
@@ -85,7 +114,7 @@ window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 </script>
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="shared/chrome.js?v=6"></script>
+<script src="shared/chrome.js?v=11"></script>
 <script>
 const SC = window.sharedChrome;
 
@@ -227,16 +256,16 @@ function CardExposure() {
       </div>
       <span style="font-size:13px;font-weight:700;color:#2563eb;margin-left:8px;">$3.34B</span>
     </div>
-    <div style="display:grid;grid-template-columns:140px 1fr;">
+    <div class="exposure-inner">
       <!-- Left panel -->
       <div style="padding:14px;border-right:1px solid #f1f5f9;display:flex;flex-direction:column;gap:10px;">
         <div>
           <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:3px;">Skytek Exposure</div>
-          <div style="font-size:22px;font-weight:700;color:#2563eb;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$6.31M</div>
+          <div style="font-size:22px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$6.31M</div>
         </div>
         <div>
           <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:3px;">Total Exposure</div>
-          <div style="font-size:22px;font-weight:700;color:#2563eb;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$7.89B</div>
+          <div style="font-size:22px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$7.89B</div>
         </div>
         <div>
           <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:4px;">Select past exposure</div>
@@ -271,15 +300,15 @@ function CardTrendsSummary() {
   return `
   <div class="card">
     <div class="card-hdr"><span class="card-title">Trends &amp; Statistics</span></div>
-    <div style="padding:0;">
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;border-bottom:1px solid #f1f5f9;">
+    <div style="padding:0;" class="trends-summary-scroll">
+      <div class="trends-summary-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;border-bottom:1px solid #f1f5f9;">
         <div style="padding:8px 14px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;"></div>
         <div style="padding:8px 14px;font-size:11px;font-weight:700;color:#64748b;text-align:center;">2023</div>
         <div style="padding:8px 14px;font-size:11px;font-weight:700;color:#0f172a;text-align:center;border-bottom:2px solid #2563eb;">2024</div>
         <div style="padding:8px 14px;font-size:11px;font-weight:700;color:#64748b;text-align:center;">YTD</div>
       </div>
       ${rows.map(r => `
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;border-bottom:1px solid #f1f5f9;">
+        <div class="trends-summary-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;border-bottom:1px solid #f1f5f9;">
           <div style="padding:10px 14px;"><span class="lnk" style="font-size:12px;">${r.label}</span></div>
           <div style="padding:10px 14px;text-align:center;font-size:12px;color:#64748b;">${r.y2023}</div>
           <div style="padding:10px 14px;text-align:center;font-size:12px;font-weight:600;color:#0f172a;">${r.y2024}</div>
@@ -293,7 +322,7 @@ function CardVessels() {
   return `
   <div class="card" style="overflow:hidden;max-height:320px;display:flex;flex-direction:column;">
     <div class="card-hdr"><span class="card-title">Current Vessels In Port</span></div>
-    <div style="flex:1;overflow-y:auto;" class="scroll-thin">
+    <div style="flex:1;overflow-y:auto;" class="scroll-thin vessels-scroll">
       <table class="dt">
         <thead><tr><th>Asset</th><th>Flag</th><th>MMSI</th><th>Type</th><th>Length</th><th>Width</th></tr></thead>
         <tbody>
@@ -372,7 +401,8 @@ function CardRiskExposure() {
       <span class="card-title">Port Side Risk Exposure</span>
       <button style="background:none;border:0;cursor:pointer;padding:4px;">${exportIco}</button>
     </div>
-    <table class="risk-table">
+    <div class="risk-scroll">
+    <table class="risk-table" style="width:100%;">
       <thead><tr><th>Zone</th><th>Asset Type</th><th>Count/Area</th><th>Unit Value</th><th>Total Value</th></tr></thead>
       <tbody>
         ${RISK_ZONES.map(z => `
@@ -385,6 +415,7 @@ function CardRiskExposure() {
           </tr>`).join('')}
       </tbody>
     </table>
+    </div>
   </div>`;
 }
 
@@ -456,12 +487,12 @@ window.render = function() {
       <div class="flex-1 overflow-y-auto scroll-thin px-4 py-4">
         <div style="display:flex;flex-direction:column;gap:12px;">
           <!-- Row 1 -->
-          <div style="display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:12px;align-items:start;">
+          <div class="pd-row pd-row-2">
             ${CardExposure()}
             ${CardTrendsSummary()}
           </div>
           <!-- Row 2 -->
-          <div style="display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:12px;align-items:start;">
+          <div class="pd-row pd-row-2">
             ${CardVessels()}
             ${CardMap()}
           </div>
@@ -470,7 +501,7 @@ window.render = function() {
           <!-- Row 4: Risk -->
           ${CardRiskExposure()}
           <!-- Row 5: Terminals + Berth -->
-          <div style="display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:12px;align-items:start;">
+          <div class="pd-row pd-row-2-rev">
             ${CardTerminals()}
             ${CardBerthPurpose()}
           </div>

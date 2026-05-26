@@ -45,7 +45,7 @@ const LUCIDE_NAMES = {
 const LUCIDE_SIZES = {
   ship:'h-10 w-10', building2:'h-10 w-10', plane2:'h-10 w-10', bolt2:'h-10 w-10',
   anchor2:'h-8 w-8', pin:'h-8 w-8', cloudrain:'h-8 w-8', cloudicon:'h-8 w-8',
-  docs2:'h-8 w-8', search2:'h-8 w-8', factory:'h-8 w-8',
+  docs2:'h-8 w-8', search2:'h-8 w-8', factory:'h-8 w-8', cargo:'h-8 w-8',
   search:'h-4 w-4', chev:'h-4 w-4', chevDown:'h-4 w-4', plus:'h-4 w-4', minus:'h-4 w-4', x:'h-4 w-4',
   arrowUp:'h-3 w-3', arrowDown:'h-3 w-3',
 };
@@ -81,11 +81,21 @@ const NAV = [
   { id:'weather',    label:'Weather',         icon:'cloud',        href:'Weather.html' },
 ];
 
+// Inline SVGs for profile-menu leading icons (14×14, stroke=currentColor)
+const SVG_USER   = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+const SVG_HELP   = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+const SVG_SHIELD = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
+const SVG_BLDG   = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M16 6h.01M8 10h.01M16 10h.01M8 14h.01M16 14h.01M12 6h.01M12 10h.01M12 14h.01"/></svg>`;
+const SVG_RULES  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 7 5 9 9 5"/><polyline points="3 17 5 19 9 15"/><line x1="13" y1="7" x2="21" y2="7"/><line x1="13" y1="17" x2="21" y2="17"/></svg>`;
+const SVG_EXTRAS = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.439 7.85c-.049.322.059.648.289.878l1.568 1.568c.47.47.706 1.087.706 1.704s-.235 1.233-.706 1.704l-1.611 1.611a.98.98 0 0 1-.837.276c-.47-.07-.802-.48-.968-.925a2.501 2.501 0 1 0-3.214 3.214c.446.166.855.497.925.968a.979.979 0 0 1-.276.837l-1.61 1.61a2.404 2.404 0 0 1-1.705.707 2.402 2.402 0 0 1-1.704-.706l-1.568-1.568a1.026 1.026 0 0 0-.877-.29c-.493.074-.84.504-1.02.968a2.5 2.5 0 1 1-3.237-3.237c.464-.18.894-.527.967-1.02a1.026 1.026 0 0 0-.289-.877l-1.568-1.568A2.402 2.402 0 0 1 1.998 12c0-.617.236-1.234.706-1.704L4.23 8.77c.24-.24.581-.353.917-.303.515.077.877.528 1.073 1.01a2.5 2.5 0 1 0 3.259-3.259c-.482-.196-.933-.558-1.01-1.073-.05-.336.062-.676.303-.917l1.525-1.525A2.402 2.402 0 0 1 12 1.998c.617 0 1.234.236 1.704.706l1.568 1.568c.23.23.556.338.877.29.493-.074.84-.504 1.02-.968a2.5 2.5 0 1 1 3.237 3.237c-.464.18-.894.527-.967 1.02Z"/></svg>`;
+const SVG_NEWS   = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8M15 18h-5M10 6h8v4h-8z"/></svg>`;
+const SVG_SIGNOUT= `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`;
+
 const PROFILE_LINKS = [
-  { label:'Organisations', href:'Organisations.html' },
-  { label:'Rule Sets',     href:'RuleSets.html' },
-  { label:'Extras',        href:'Extras.html' },
-  { label:'News',          href:'News.html' },
+  { label:'Organisations', href:'Organisations.html', icon: SVG_BLDG },
+  { label:'Rule Sets',     href:'RuleSets.html',      icon: SVG_RULES },
+  { label:'Extras',        href:'Extras.html',        icon: SVG_EXTRAS },
+  { label:'News',          href:'News.html',          icon: SVG_NEWS },
 ];
 
 const NOTIFS = [
@@ -151,14 +161,13 @@ function Topbar() {
   return `
   <header class="h-14 shrink-0 bg-white border-b border-ink-200 flex items-center px-4 gap-3 sticky top-0 z-30">
     <button id="mobile-menu-btn" class="md:hidden h-9 w-9 rounded-lg text-ink-700 hover:bg-ink-100 flex items-center justify-center ring-focus" title="Menu">${I.menu}</button>
-    <div class="flex items-center gap-3 min-w-0">
+    <div class="flex items-center gap-3 min-w-0 flex-1">
       ${titleEl}
-      <div class="hidden md:flex items-center gap-1 text-xs text-ink-400">
-        <span>/</span><span>${crumb}</span>
+      <div class="flex items-center gap-1 text-xs text-ink-400 min-w-0">
+        <span class="shrink-0">/</span><span class="truncate">${crumb}</span>
       </div>
     </div>
-    <div class="flex-1"></div>
-    <div class="flex items-center gap-1">
+    <div class="flex items-center gap-1 shrink-0">
       <button id="notif-btn" class="relative h-9 w-9 rounded-lg text-ink-500 hover:text-ink-800 hover:bg-ink-100 flex items-center justify-center ring-focus" title="Notifications">
         ${I.bell}<span class="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-rose-500 dot-pulse"></span>
       </button>
@@ -173,12 +182,12 @@ function Topbar() {
         </div>
       </button>
     </div>
-    <div id="notif-pop" class="hidden absolute top-12 right-24 w-[360px] bg-white border border-ink-200 rounded-xl shadow-card-hover overflow-hidden z-40 pop-enter">
+    <div id="notif-pop" class="hidden fixed top-14 right-2 sm:right-16 left-2 sm:left-auto sm:w-[360px] max-w-[360px] sm:max-w-none mx-auto sm:mx-0 bg-white border border-ink-200 rounded-xl shadow-card-hover overflow-hidden pop-enter" style="z-index:9999">
       <div class="flex items-center justify-between px-4 py-3 border-b border-ink-100">
         <div class="text-sm font-semibold text-ink-900">Notifications</div>
         <button class="text-xs text-brand-600 hover:underline">Mark all read</button>
       </div>
-      <div class="max-h-[360px] overflow-y-auto scroll-thin divide-y divide-ink-100">
+      <div class="max-h-[60vh] sm:max-h-[360px] overflow-y-auto scroll-thin divide-y divide-ink-100">
         ${NOTIFS.map(n => {
           const t = toneClasses(n.tone);
           return `<div class="flex items-start gap-3 p-3 hover:bg-ink-50 cursor-pointer">
@@ -195,21 +204,21 @@ function Topbar() {
         <button class="text-xs font-medium text-brand-600 hover:underline">View all activity</button>
       </div>
     </div>
-    <div id="user-pop" class="hidden absolute top-12 right-4 w-56 bg-white border border-ink-200 rounded-xl shadow-card-hover overflow-hidden z-40 pop-enter">
+    <div id="user-pop" class="hidden fixed top-14 right-2 w-56 bg-white border border-ink-200 rounded-xl shadow-card-hover overflow-hidden pop-enter" style="z-index:9999">
       <div class="p-3 border-b border-ink-100">
         <div class="text-sm font-semibold text-ink-900">Paul Kiernan</div>
         <div class="text-xs text-ink-500">paul.k@realworld.co</div>
       </div>
       <div class="py-1 text-sm">
-        <a href="Profile.html" class="block w-full text-left px-3 py-1.5 hover:bg-ink-100 text-ink-700 no-underline">My profile</a>
-        <button class="w-full text-left px-3 py-1.5 hover:bg-ink-100 text-ink-700">Support</button>
-        <a href="Administration.html" class="block w-full text-left px-3 py-1.5 hover:bg-ink-100 text-ink-700 no-underline">Administration</a>
+        <a href="Profile.html" class="flex items-center gap-2.5 w-full text-left px-3 py-1.5 hover:bg-ink-100 text-ink-700 no-underline"><span class="text-ink-500">${SVG_USER}</span>My profile</a>
+        <button class="flex items-center gap-2.5 w-full text-left px-3 py-1.5 hover:bg-ink-100 text-ink-700"><span class="text-ink-500">${SVG_HELP}</span>Support</button>
+        <a href="Administration.html" class="flex items-center gap-2.5 w-full text-left px-3 py-1.5 hover:bg-ink-100 text-ink-700 no-underline"><span class="text-ink-500">${SVG_SHIELD}</span>Administration</a>
       </div>
       <div class="py-1 border-t border-ink-100 text-sm">
-        ${PROFILE_LINKS.map(l => `<a href="${l.href}" class="block w-full text-left px-3 py-1.5 hover:bg-ink-100 text-ink-700 no-underline">${l.label}</a>`).join('')}
+        ${PROFILE_LINKS.map(l => `<a href="${l.href}" class="flex items-center gap-2.5 w-full text-left px-3 py-1.5 hover:bg-ink-100 text-ink-700 no-underline"><span class="text-ink-500">${l.icon}</span>${l.label}</a>`).join('')}
       </div>
       <div class="py-1 border-t border-ink-100">
-        <a href="index.html" class="block w-full text-left px-3 py-1.5 hover:bg-ink-100 text-rose-600 text-sm no-underline">Sign out</a>
+        <a href="index.html" class="flex items-center gap-2.5 w-full text-left px-3 py-1.5 hover:bg-ink-100 text-rose-600 text-sm no-underline"><span>${SVG_SIGNOUT}</span>Sign out</a>
       </div>
     </div>
   </header>`;
@@ -392,6 +401,11 @@ function wireChrome() {
   const notifPop = document.getElementById('notif-pop');
   const userBtn  = document.getElementById('user-btn');
   const userPop  = document.getElementById('user-pop');
+  // Move popups out of the sticky <header> (z-30 stacking context) and into <body>
+  // so position:fixed + z-index:9999 actually wins against map controls (z-400+) and
+  // Leaflet panes (z-1000). Without this, the header traps both popups beneath maps.
+  if (notifPop && notifPop.parentElement !== document.body) document.body.appendChild(notifPop);
+  if (userPop  && userPop.parentElement  !== document.body) document.body.appendChild(userPop);
   function closeAll(except) {
     if (notifPop && except!==notifPop) notifPop.classList.add('hidden');
     if (userPop  && except!==userPop)  userPop.classList.add('hidden');

@@ -59,7 +59,7 @@
   }/*EDITMODE-END*/;
 </script>
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
-<script src="shared/chrome.js?v=6"></script>
+<script src="shared/chrome.js?v=11"></script>
 <script>
 const SC = window.sharedChrome;
 const Ico = SC.I;
@@ -78,10 +78,14 @@ const CATEGORIES = [
   { id:'energy',    label:'Offshore/Energy', icon:'bolt2',    value:'$385M',  assets:'10',    portfolios:2,  trend:[4,5,7,6,8,10,9,11],    href:'OffshoreDashboard.html' },
 ];
 const QUICK = [
-  { label:'Reports', icon:'docs2' }, { label:'Ports & Cargo', icon:'anchor2' },
-  { label:'Regions', icon:'pin' }, { label:'Nat Cat Events', icon:'cloudrain', alert:true },
-  { label:'Weather', icon:'cloudicon' }, { label:'Asset Search', icon:'search2' },
-  { label:'Company Search', icon:'factory' },
+  { label:'Reports',         icon:'docs2',     href:'Reports.html' },
+  { label:'Ports',           icon:'anchor2',   href:'Ports.html' },
+  { label:'Cargo',           icon:'cargo',     href:'CargoDashboard.html' },
+  { label:'Regions',         icon:'pin',       href:'Regions.html' },
+  { label:'Nat Cat Events',  icon:'cloudrain', href:'NatCatEvents.html', alert:true },
+  { label:'Weather',         icon:'cloudicon', href:'Weather.html' },
+  { label:'Asset Search',    icon:'search2',   href:'AssetsSearch.html' },
+  { label:'Company Search',  icon:'factory',   href:'Companies.html' },
 ];
 // make sidebar-sized lucide icons available for category cards
 Object.assign(window.sharedChrome, { _ok:true });
@@ -144,12 +148,12 @@ function Content() {
       }).join('')}
     </section>
 
-    <section class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-density mb-10">
-      ${QUICK.map(q => `<button class="group relative bg-white rounded-xl border border-ink-200 p-5 shadow-card hover:shadow-card-hover hover:border-brand-300 tile-hover ring-focus flex flex-col items-center justify-center gap-2 min-h-[116px]">
+    <section class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-density mb-10">
+      ${QUICK.map(q => `<a href="${q.href}" class="group relative bg-white rounded-xl border border-ink-200 p-5 shadow-card hover:shadow-card-hover hover:border-brand-300 tile-hover ring-focus flex flex-col items-center justify-center gap-2 min-h-[116px] no-underline">
         <div class="text-brand-600 group-hover:text-brand-700 transition-colors">${Ico[q.icon]}</div>
         <div class="text-sm font-semibold text-brand-600 group-hover:text-brand-700 transition-colors">${q.label}</div>
         ${q.alert ? `<span class="absolute top-2 right-3 h-1.5 w-1.5 rounded-full bg-rose-500 dot-pulse"></span>` : ''}
-      </button>`).join('')}
+      </a>`).join('')}
     </section>
 
     <section class="border-t border-ink-200 pt-4 pb-8 flex flex-wrap items-center justify-between gap-3 text-[11px] text-ink-500">

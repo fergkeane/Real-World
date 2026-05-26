@@ -70,7 +70,7 @@ window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 }/*EDITMODE-END*/;
 </script>
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
-<script src="shared/chrome.js?v=6"></script>
+<script src="shared/chrome.js?v=11"></script>
 <script>
 const SC = window.sharedChrome;
 
@@ -235,17 +235,197 @@ function CardCompanyDetails() {
 
 /* ── Card: Risk Breakdown ────────────────────────────────────────────────── */
 function CardRiskBreakdown() {
+  const rsScore   = avgRisk;
+  const rs2024    = Math.max(0, Math.round(avgRisk * 0.78));
+  const rs2023    = Math.max(0, Math.round(avgRisk * 0.55));
+  const rsDelta25 = rsScore - rs2024;
+  const rsDelta24 = rs2024  - rs2023;
+  const rsPct     = rs2024 > 0 ? Math.round(Math.abs(rsDelta25) / rs2024 * 100) : 0;
+  const risk = rsScore <= 10
+    ? { label:'GOOD',         c:'#16a34a', glow:'#86efac', pillBg:'#dcfce7', pillTxt:'#15803d' }
+    : rsScore <= 25
+    ? { label:'AVERAGE RISK', c:'#f97316', glow:'#fed7aa', pillBg:'#fef3c7', pillTxt:'#b45309' }
+    : { label:'HIGH RISK',    c:'#ef4444', glow:'#fca5a5', pillBg:'#fee2e2', pillTxt:'#dc2626' };
+  // Gauge geometry: 270° arc, start=135° (7:30), sweep clockwise
+  const CX=100, CY=108, R=80, RO=95, SW=11;
+  const toRad = d => d * Math.PI / 180;
+  const pt    = (a, r) => [+(CX + r*Math.cos(toRad(a))).toFixed(2), +(CY + r*Math.sin(toRad(a))).toFixed(2)];
+  const [sox,soy] = pt(135, RO);
+  const [eox,eoy] = pt(45,  RO);
+  const GAUGE_MAX = 50, GAUGE_START = 135, GAUGE_SWEEP_DEG = 270;
+  const gAngle = s => GAUGE_START + (Math.min(s, GAUGE_MAX) / GAUGE_MAX) * GAUGE_SWEEP_DEG;
+  const arcD = (a1, a2, r) => {
+    const [x1,y1] = pt(a1, r), [x2,y2] = pt(a2, r);
+    const sw = ((a2 - a1) % 360 + 360) % 360;
+    return `M ${x1},${y1} A ${r},${r} 0 ${sw > 180 ? 1 : 0},1 ${x2},${y2}`;
+  };
+  const lerpHex = (c1, c2, t) => {
+    const h = s => parseInt(s, 16);
+    const f = (a, b) => Math.round(h(a) + (h(b) - h(a)) * t).toString(16).padStart(2, '0');
+    return '#' + f(c1.slice(1,3),c2.slice(1,3)) + f(c1.slice(3,5),c2.slice(3,5)) + f(c1.slice(5,7),c2.slice(5,7));
+  };
+  const gaugeColor = s => {
+    const stops = [[0,'#22c55e'],[10,'#eab308'],[25,'#f97316'],[50,'#ef4444']];
+    for (let i = 0; i < stops.length - 1; i++) {
+      if (s <= stops[i+1][0]) {
+        const t = (s - stops[i][0]) / (stops[i+1][0] - stops[i][0]);
+        return lerpHex(stops[i][1], stops[i+1][1], t);
+      }
+    }
+    return stops[stops.length-1][1];
+  };
+  const N = 54;
+  const gaugeScore = Math.min(rsScore, GAUGE_MAX);
+  const segPaths = Array.from({length: N}, (_, i) => {
+    const a1 = gAngle(i * GAUGE_MAX / N);
+    const a2 = gAngle((i + 1) * GAUGE_MAX / N);
+    const midScore = (i + 0.5) * GAUGE_MAX / N;
+    const filled = midScore <= gaugeScore;
+    return `<path d="${arcD(a1, a2, R)}" fill="none" stroke="${filled ? gaugeColor(midScore) : '#e2e8f0'}" stroke-width="${SW}" stroke-linecap="butt"/>`;
+  }).join('');
+  const glowColor = rsScore <= 10 ? '#86efac' : rsScore <= 25 ? '#fcd34d' : '#fca5a5';
+  const fillTipA  = gAngle(gaugeScore);
+  const fillTipB  = gAngle(Math.max(0, gaugeScore - GAUGE_MAX * 0.08));
+  const glowPath  = gaugeScore > 0 ? `<path d="${arcD(fillTipB, fillTipA, R)}" fill="none" stroke="${glowColor}" stroke-width="${SW + 8}" stroke-linecap="round" opacity="0.3"/>` : '';
+  // Distribution across the company's assets (mock; sums to 100)
+  const dist = { good: 14, avg: 55, below: 31 };
+  // Risk factor breakdown — company-level signals
+  const factors = [
+    { name:'Sanctions Exposure',     score:0,  impact:0    },
+    { name:'Beneficial Ownership',   score:18, impact:0.85 },
+    { name:'AIS Coverage',           score:22, impact:1.10 },
+    { name:'PSC Deficiencies',       score:44, impact:6.62 },
+    { name:'Major Incidents',        score:0,  impact:0    },
+    { name:'Minor Incidents',        score:12, impact:0.40 },
+    { name:'Overall Compliance',     score:0,  impact:0    },
+  ];
   return `
   <div class="card flex flex-col">
     <div style="padding:10px 14px;border-bottom:1px solid #f1f5f9">
       <span style="font-size:14px;font-weight:700;color:#0f172a">Risk Breakdown</span>
     </div>
-    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;gap:18px">
-      ${DonutChart(avgRisk)}
-      <div style="display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;font-size:11px;color:#64748b">
-        <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#16a34a;display:inline-block;flex-shrink:0"></span>Good [0 → 10]</span>
-        <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#d97706;display:inline-block;flex-shrink:0"></span>Average [10+ → 25]</span>
-        <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#dc2626;display:inline-block;flex-shrink:0"></span>Below Average [25+ → 100]</span>
+    <div style="padding:12px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <!-- Gauge -->
+        <div style="background:#f8fafc;border-radius:12px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;">
+          <div style="position:relative;width:100%;max-width:185px;">
+            <svg viewBox="0 0 200 192" style="width:100%;height:auto;overflow:visible;" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <radialGradient id="rsGaugeGlowCo" cx="50%" cy="55%" r="42%">
+                  <stop offset="0%" stop-color="${risk.glow}" stop-opacity="0.55"/>
+                  <stop offset="100%" stop-color="${risk.glow}" stop-opacity="0"/>
+                </radialGradient>
+              </defs>
+              <ellipse cx="100" cy="108" rx="70" ry="60" fill="url(#rsGaugeGlowCo)"/>
+              <path d="M ${sox},${soy} A ${RO},${RO} 0 1,1 ${eox},${eoy}"
+                fill="none" stroke="#dde4ef" stroke-width="1.5"
+                stroke-dasharray="3 8.2" stroke-linecap="round"/>
+              ${glowPath}
+              ${segPaths}
+              <text x="100" y="122" text-anchor="middle" font-size="52" font-weight="800" fill="#0f172a" font-family="Inter,sans-serif">${rsScore}</text>
+            </svg>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;margin-top:-14px;margin-bottom:7px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="${risk.c}" stroke-width="2.5" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.8" fill="${risk.c}"/></svg>
+            <span style="font-size:10px;font-weight:700;color:${risk.c};letter-spacing:0.06em;">${risk.label}</span>
+          </div>
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px;text-align:center;width:100%;">
+            <div style="display:flex;align-items:center;justify-content:center;gap:3px;color:${risk.c};font-weight:700;font-size:13px;">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+              ${rsDelta25 >= 0 ? '+' : ''}${rsDelta25} (${rsDelta25 >= 0 ? '+' : ''}${rsPct}%)
+            </div>
+            <div style="font-size:10px;color:#64748b;margin-top:1px;">vs 2024</div>
+          </div>
+        </div>
+        <!-- Year comparisons -->
+        <div style="background:#f8fafc;border-radius:12px;padding:12px 8px;display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:start;">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+            <span style="background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:999px;">2025</span>
+            <div style="font-size:9px;color:#64748b;text-align:center;line-height:1.4;">Avg. Risk Score</div>
+            <div style="font-size:34px;font-weight:800;color:${risk.c};line-height:1;">${rsScore}</div>
+            <div style="background:${risk.pillBg};color:${risk.pillTxt};font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;display:flex;align-items:center;gap:2px;white-space:nowrap;">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+              + ${rsDelta25}
+            </div>
+            <div style="font-size:9px;color:#64748b;">vs 2024</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+            <span style="background:#2563eb;color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:999px;">2024</span>
+            <div style="font-size:9px;color:#64748b;text-align:center;line-height:1.4;">Avg. Risk Score</div>
+            <div style="font-size:34px;font-weight:800;color:#0f172a;line-height:1;">${rs2024}</div>
+            <div style="background:#dbeafe;color:#1d4ed8;font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;display:flex;align-items:center;gap:2px;white-space:nowrap;">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+              + ${rsDelta24}
+            </div>
+            <div style="font-size:9px;color:#64748b;">vs 2023</div>
+          </div>
+        </div>
+      </div>
+      <!-- Risk Level Guide -->
+      <div>
+        <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:7px;">Risk Level Guide</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:8px 7px;">
+            <div style="display:flex;align-items:center;gap:5px;margin-bottom:5px;">
+              <div style="width:26px;height:26px;background:#dcfce7;border-radius:999px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="12" height="12" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <div style="min-width:0;flex:1;">
+                <div style="font-size:11px;font-weight:700;color:#16a34a;">Good</div>
+                <div style="font-size:9px;color:#64748b;">0 – 10</div>
+              </div>
+              <div style="font-size:13px;font-weight:800;color:#0f172a;flex-shrink:0;">${dist.good}%</div>
+            </div>
+            <div style="height:4px;background:#e2e8f0;border-radius:999px;overflow:hidden;"><div style="width:${dist.good}%;height:100%;background:#16a34a;border-radius:999px;"></div></div>
+          </div>
+          <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:8px 7px;">
+            <div style="display:flex;align-items:center;gap:5px;margin-bottom:5px;">
+              <div style="width:26px;height:26px;background:#fef3c7;border-radius:999px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="12" height="12" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16" stroke-width="3"/></svg>
+              </div>
+              <div style="min-width:0;flex:1;">
+                <div style="font-size:11px;font-weight:700;color:#d97706;">Average</div>
+                <div style="font-size:9px;color:#64748b;">10 – 25</div>
+              </div>
+              <div style="font-size:13px;font-weight:800;color:#0f172a;flex-shrink:0;">${dist.avg}%</div>
+            </div>
+            <div style="height:4px;background:#e2e8f0;border-radius:999px;overflow:hidden;"><div style="width:${dist.avg}%;height:100%;background:#f59e0b;border-radius:999px;"></div></div>
+          </div>
+          <div style="background:#fff1f2;border:1px solid #fecdd3;border-radius:10px;padding:8px 7px;">
+            <div style="display:flex;align-items:center;gap:5px;margin-bottom:5px;">
+              <div style="width:26px;height:26px;background:#fee2e2;border-radius:999px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="12" height="12" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+              </div>
+              <div style="min-width:0;flex:1;">
+                <div style="font-size:10px;font-weight:700;color:#dc2626;white-space:nowrap;">Below Avg.</div>
+                <div style="font-size:9px;color:#64748b;">25 – 100</div>
+              </div>
+              <div style="font-size:13px;font-weight:800;color:#0f172a;flex-shrink:0;">${dist.below}%</div>
+            </div>
+            <div style="height:4px;background:#e2e8f0;border-radius:999px;overflow:hidden;"><div style="width:${dist.below}%;height:100%;background:#ef4444;border-radius:999px;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Risk Factor Breakdown table -->
+      <div style="margin-top:6px;">
+        <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
+          <thead>
+            <tr style="border-bottom:1px solid #e2e8f0;">
+              <th style="text-align:left;padding:7px 4px;font-size:11px;font-weight:700;color:#0f172a;">Name</th>
+              <th style="text-align:right;padding:7px 8px;font-size:11px;font-weight:700;color:#0f172a;">Score</th>
+              <th style="text-align:right;padding:7px 4px;font-size:11px;font-weight:700;color:#2563eb;">Impact</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${factors.map(r => `
+            <tr style="border-bottom:1px solid #f1f5f9;">
+              <td style="padding:8px 4px;color:#334155;font-size:12px;">${r.name}</td>
+              <td style="padding:8px 8px;text-align:right;font-weight:600;color:#0f172a;font-size:12px;">${r.score}</td>
+              <td style="padding:8px 4px;text-align:right;font-weight:600;color:${r.impact > 0 ? '#d97706' : '#94a3b8'};font-size:12px;">${r.impact > 0 ? r.impact.toFixed(2) : '0'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
       </div>
     </div>
   </div>`;

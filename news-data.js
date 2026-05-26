@@ -1,0 +1,158 @@
+/* News article fixtures.
+   Categories: marine | property | aviation | offshore | regulatory
+   `url` MUST be a real external link (opens in new tab).
+   `published` is a relative offset (hours ago) for the formatter. */
+window.NEWS_SOURCES = [
+  { id:'lloyds-list',  name:"Lloyd's List",        color:'#0c2340', short:'LL' },
+  { id:'tradewinds',   name:'TradeWinds',          color:'#005ca9', short:'TW' },
+  { id:'gcaptain',     name:'gCaptain',            color:'#003366', short:'gC' },
+  { id:'maritime-exec',name:'The Maritime Executive', color:'#003e7e', short:'ME' },
+  { id:'splash247',    name:'Splash247',           color:'#e11d48', short:'S2' },
+  { id:'reinsurance-news', name:'Reinsurance News', color:'#0f766e', short:'RN' },
+  { id:'insurance-journal', name:'Insurance Journal', color:'#1e3a8a', short:'IJ' },
+  { id:'artemis',      name:'Artemis.bm',          color:'#7c2d12', short:'Ar' },
+  { id:'flight-global',name:'FlightGlobal',        color:'#0891b2', short:'FG' },
+  { id:'ainonline',    name:'AIN',                 color:'#7c3aed', short:'AI' },
+  { id:'offshore-eng', name:'Offshore Engineer',   color:'#047857', short:'OE' },
+  { id:'upstream',     name:'Upstream Online',     color:'#dc2626', short:'Up' },
+  { id:'pc360',        name:'PropertyCasualty360', color:'#9333ea', short:'PC' },
+  { id:'reuters',      name:'Reuters',             color:'#ff8000', short:'Rt' },
+];
+
+window.NEWS_CATEGORIES = [
+  { id:'all',        label:'All News',   icon:'newspaper' },
+  { id:'marine',     label:'Marine',     icon:'anchor' },
+  { id:'property',   label:'Property',   icon:'building-2' },
+  { id:'aviation',   label:'Aviation',   icon:'plane' },
+  { id:'offshore',   label:'Offshore',   icon:'fuel' },
+  { id:'regulatory', label:'Regulatory', icon:'scale' },
+];
+
+window.NEWS_ARTICLES = [
+  {
+    id:'n1', cat:'marine', source:'lloyds-list',
+    title:'Red Sea attacks push hull war premiums to multi-decade highs as insurers reprice transit risk',
+    snippet:'Underwriters are quoting additional war-risk premiums on Bab el-Mandeb voyages at levels not seen since the Iran-Iraq tanker war, with several syndicates pulling capacity entirely.',
+    url:'https://www.lloydslist.com/LL1149999/Marine-insurance-rates-soar-as-Red-Sea-risk-escalates',
+    hoursAgo:2, featured:true,
+  },
+  {
+    id:'n2', cat:'property', source:'reinsurance-news',
+    title:'Florida property market sees first softening in five years as new capacity arrives at June renewals',
+    snippet:'Reinsurers offered rate reductions of 5–15% on loss-free programmes, with some buyers achieving improved terms after years of double-digit hikes.',
+    url:'https://www.reinsurancene.ws/florida-property-cat-renewals-2026/',
+    hoursAgo:5,
+  },
+  {
+    id:'n3', cat:'aviation', source:'flight-global',
+    title:'Russia aircraft lessor settlements top $4bn as insurers continue case-by-case agreements',
+    snippet:'AerCap and SMBC Aviation Capital have now recovered more than half of their stranded-fleet exposure through direct deals with Russian carriers and their reinsurers.',
+    url:'https://www.flightglobal.com/airlines/russian-lessor-claims-2026-update/',
+    hoursAgo:8,
+  },
+  {
+    id:'n4', cat:'offshore', source:'offshore-eng',
+    title:'Gulf of Mexico hurricane season forecast prompts early review of offshore energy aggregates',
+    snippet:'NOAA\'s above-normal outlook has triggered portfolio rebalancing among offshore energy underwriters, with several books reducing maximum single-platform line size.',
+    url:'https://www.oedigital.com/news/insurance-aggregates-2026-hurricane-season',
+    hoursAgo:11,
+  },
+  {
+    id:'n5', cat:'marine', source:'tradewinds',
+    title:'Houthi missile strike on bulker triggers $42m total-loss claim — largest of the conflict to date',
+    snippet:'The 180,000-dwt vessel was abandoned by its crew after a successful strike near Hodeidah; H&M insurers are expected to declare a constructive total loss within 30 days.',
+    url:'https://www.tradewindsnews.com/casualties/red-sea-total-loss-2026/',
+    hoursAgo:14,
+  },
+  {
+    id:'n6', cat:'regulatory', source:'insurance-journal',
+    title:'EU Sanctions Package 19: maritime insurers face new attestation requirements on G7 oil price cap',
+    snippet:'Brussels has tightened the documentation regime requiring P&I clubs and hull underwriters to collect itinerary attestations for every Russia-origin cargo voyage.',
+    url:'https://www.insurancejournal.com/news/international/2026/eu-sanctions-19-maritime/',
+    hoursAgo:18,
+  },
+  {
+    id:'n7', cat:'property', source:'pc360',
+    title:'Wildfire model overhaul: RMS v25 lifts Western US AAL by 22% as smoke-damage coverage expands',
+    snippet:'The new vendor model captures structure-level vegetation density and incorporates ember-cast simulations down to 100m resolution. Carriers are running parallel runs through Q3.',
+    url:'https://www.propertycasualty360.com/2026/rms-v25-wildfire-model-release/',
+    hoursAgo:22,
+  },
+  {
+    id:'n8', cat:'aviation', source:'ainonline',
+    title:'Boeing 737 MAX 9 grounding aftermath: ground-risk insurers signal tighter quality-escape exclusions',
+    snippet:'Aviation underwriters are revising product-liability wordings to limit recovery on losses tied to documented manufacturing defects rather than operator error.',
+    url:'https://www.ainonline.com/aviation-news/business-aviation/2026/737-max9-insurance',
+    hoursAgo:28,
+  },
+  {
+    id:'n9', cat:'offshore', source:'upstream',
+    title:'Floating production unit fire in Campos Basin highlights gaps in business-interruption deductibles',
+    snippet:'A 30-day production outage on a Petrobras-leased FPSO has raised industry questions about waiting-period adequacy for ageing converted-VLCC hulls.',
+    url:'https://www.upstreamonline.com/casualties/campos-basin-fpso-fire-2026/',
+    hoursAgo:32,
+  },
+  {
+    id:'n10', cat:'marine', source:'gcaptain',
+    title:'P&I clubs report combined ratios above 110% for third year, signal further general increases',
+    snippet:'The 13 IG clubs face mounting pressure from pool-claim volatility, with several mutuals expected to call for 7.5–12.5% general increases at February renewal.',
+    url:'https://gcaptain.com/p-and-i-clubs-2026-general-increase/',
+    hoursAgo:38,
+  },
+  {
+    id:'n11', cat:'property', source:'artemis',
+    title:'Cat bond issuance crosses $20bn YTD as ILS investors absorb record peak-peril spreads',
+    snippet:'Florida wind exposure dominates 2026 deal flow, with new triggers based on parametric storm-surge indices gaining traction among Caribbean cedents.',
+    url:'https://www.artemis.bm/news/cat-bond-issuance-2026-ytd-record/',
+    hoursAgo:46,
+  },
+  {
+    id:'n12', cat:'aviation', source:'flight-global',
+    title:'War-risk hull rates for Israeli carriers stabilise as routings normalise across Eastern Mediterranean',
+    snippet:'After 18 months of elevated AP, leading aviation war markets are quoting 15–25% reductions for compliant operators with clean loss records.',
+    url:'https://www.flightglobal.com/airlines/israel-war-risk-aviation-insurance-2026/',
+    hoursAgo:54,
+  },
+  {
+    id:'n13', cat:'regulatory', source:'reuters',
+    title:'IMO 2030 emissions levy: P&I cover for carbon-related liabilities still in formative stage',
+    snippet:'The International Group is consulting members on how pool reinsurance will respond to claims arising under the forthcoming greenhouse-gas pricing mechanism.',
+    url:'https://www.reuters.com/business/sustainable-business/imo-emissions-2026/',
+    hoursAgo:62,
+  },
+  {
+    id:'n14', cat:'offshore', source:'offshore-eng',
+    title:'Subsea cable severance claims double year-on-year, prompting capacity review at Lloyd\'s',
+    snippet:'Anchor-drag and trawl incidents account for 70% of reported losses; underwriters are introducing minimum chart-plotter requirements for vessels operating in cable corridors.',
+    url:'https://www.oedigital.com/news/subsea-cable-claims-2026/',
+    hoursAgo:70,
+  },
+  {
+    id:'n15', cat:'marine', source:'splash247',
+    title:'Dark-fleet tanker fire off Singapore raises pollution-liability questions as ownership remains opaque',
+    snippet:'The 19-year-old Aframax, registered in São Tomé and flagged through three jurisdictions in 12 months, had no verifiable P&I cover at the time of the incident.',
+    url:'https://splash247.com/dark-fleet-singapore-fire-2026/',
+    hoursAgo:80,
+  },
+  {
+    id:'n16', cat:'property', source:'reinsurance-news',
+    title:'Convective storm losses on track for record year as US insurers report Q1 cat ratios above 18%',
+    snippet:'A series of severe thunderstorm outbreaks across the Plains and Midwest has already produced $24bn in insured losses through April, eclipsing the prior YTD record.',
+    url:'https://www.reinsurancene.ws/scs-losses-q1-2026/',
+    hoursAgo:96,
+  },
+  {
+    id:'n17', cat:'aviation', source:'ainonline',
+    title:'Business-jet hull values stabilise as pre-owned inventory rises and insurers loosen pilot-warranty terms',
+    snippet:'Owner-flown light jets are seeing renewed competition among aviation underwriters, with several markets dropping minimum-hour requirements on type-rated pilots.',
+    url:'https://www.ainonline.com/aviation-news/business-aviation/2026/biz-jet-hull-2026/',
+    hoursAgo:110,
+  },
+  {
+    id:'n18', cat:'regulatory', source:'lloyds-list',
+    title:'OFAC tightens disclosure expectations on AIS-gap voyages, putting screening obligations on brokers',
+    snippet:'New guidance issued this week clarifies that the prohibition on shipping services for sanctioned-origin cargo extends to placement brokers, not just direct insurers.',
+    url:'https://www.lloydslist.com/LL1150214/OFAC-AIS-gaps-2026-broker-obligations',
+    hoursAgo:140,
+  },
+];
