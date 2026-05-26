@@ -44,6 +44,24 @@
   [data-density="comfortable"] .gap-density { gap: 1rem; }
   .kbd { font-family: ui-monospace, Menlo, monospace; font-size: 10.5px; padding: 1px 5px; border: 1px solid #e2e8f0; border-bottom-width: 2px; border-radius: 4px; background: #f8fafc; color: #475569; }
   .ring-focus:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; border-radius: 8px; }
+
+  /* Solid-hover tiles: turn brand-blue with all text/icons in white on hover.
+     Written as plain CSS because Tailwind CDN doesn't always JIT-compile group-hover
+     classes inside dynamically-rendered template strings. */
+  .dashboard-tile:hover,
+  .quick-tile:hover {
+    background:var(--brand-600) !important;
+    border-color:var(--brand-600) !important;
+  }
+  .dashboard-tile:hover *,
+  .quick-tile:hover * {
+    color:#fff !important;
+    border-color:rgba(255,255,255,.25) !important;
+  }
+  .dashboard-tile:hover svg,
+  .quick-tile:hover svg {
+    stroke:#fff !important;
+  }
 </style>
 </head>
 <body class="bg-ink-100 text-ink-900 antialiased" data-density="compact">
@@ -136,22 +154,22 @@ function Content() {
       ${CATEGORIES.map(c => {
         const tag = c.href ? 'a' : 'button';
         const hrefAttr = c.href ? `href="${c.href}"` : '';
-        return `<${tag} ${hrefAttr} class="group bg-white rounded-xl border border-ink-200 p-5 shadow-card hover:shadow-card-hover hover:border-brand-300 tile-hover ring-focus relative overflow-hidden block no-underline">
-          <div class="flex items-center justify-center text-brand-600 h-14">${Ico[c.icon]}</div>
-          <div class="mt-2 text-center text-base font-semibold text-brand-600">${c.label}</div>
-          <div class="mt-1 text-center text-2xl font-bold tabular-nums text-brand-600" style="letter-spacing:-.02em;line-height:1;">${c.value}</div>
-          <div class="mt-3 pt-3 border-t border-ink-100 grid grid-cols-2 gap-2">
-            <div class="text-[11px]"><span class="text-ink-500">Assets: </span><span class="inline-flex items-center gap-1 font-semibold text-ink-800"><span class="text-brand-500">${Ico.bolt}</span>${c.assets}</span></div>
-            <div class="text-[11px] text-right"><span class="text-ink-500">Portfolios: </span><span class="inline-flex items-center gap-1 font-semibold text-ink-800"><span class="text-brand-500">${Ico.briefcase}</span>${c.portfolios}</span></div>
+        return `<${tag} ${hrefAttr} class="dashboard-tile group bg-white rounded-xl border border-ink-200 p-5 shadow-card hover:shadow-card-hover tile-hover ring-focus relative overflow-hidden block no-underline transition-colors">
+          <div class="flex items-center justify-center text-brand-600 group-hover:text-white h-14 transition-colors">${Ico[c.icon]}</div>
+          <div class="mt-2 text-center text-base font-semibold text-brand-600 group-hover:text-white transition-colors">${c.label}</div>
+          <div class="mt-1 text-center text-2xl font-bold tabular-nums text-brand-600 group-hover:text-white transition-colors" style="letter-spacing:-.02em;line-height:1;">${c.value}</div>
+          <div class="mt-3 pt-3 border-t border-ink-100 group-hover:border-white/30 grid grid-cols-2 gap-2 text-[11px] transition-colors">
+            <div class="flex items-center justify-between gap-2"><span class="text-ink-500 group-hover:text-white/80 transition-colors">Assets</span><span class="inline-flex items-center gap-1 font-semibold text-ink-800 group-hover:text-white transition-colors"><span class="text-brand-500 group-hover:text-white inline-flex [&_svg]:!h-3.5 [&_svg]:!w-3.5 transition-colors">${Ico[c.icon]}</span><span class="tabular-nums">${c.assets}</span></span></div>
+            <div class="flex items-center justify-between gap-2"><span class="text-ink-500 group-hover:text-white/80 transition-colors">Portfolios</span><span class="inline-flex items-center gap-1 font-semibold text-ink-800 group-hover:text-white transition-colors"><span class="text-brand-500 group-hover:text-white transition-colors">${Ico.briefcase}</span><span class="tabular-nums">${c.portfolios}</span></span></div>
           </div>
         </${tag}>`;
       }).join('')}
     </section>
 
     <section class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-density mb-10">
-      ${QUICK.map(q => `<a href="${q.href}" class="group relative bg-white rounded-xl border border-ink-200 p-5 shadow-card hover:shadow-card-hover hover:border-brand-300 tile-hover ring-focus flex flex-col items-center justify-center gap-2 min-h-[116px] no-underline">
-        <div class="text-brand-600 group-hover:text-brand-700 transition-colors">${Ico[q.icon]}</div>
-        <div class="text-sm font-semibold text-brand-600 group-hover:text-brand-700 transition-colors">${q.label}</div>
+      ${QUICK.map(q => `<a href="${q.href}" class="quick-tile group relative bg-white rounded-xl border border-ink-200 p-5 shadow-card hover:shadow-card-hover tile-hover ring-focus flex flex-col items-center justify-center gap-2 min-h-[116px] no-underline transition-colors">
+        <div class="text-brand-600 group-hover:text-white transition-colors">${Ico[q.icon]}</div>
+        <div class="text-sm font-semibold text-brand-600 group-hover:text-white transition-colors">${q.label}</div>
         ${q.alert ? `<span class="absolute top-2 right-3 h-1.5 w-1.5 rounded-full bg-rose-500 dot-pulse"></span>` : ''}
       </a>`).join('')}
     </section>

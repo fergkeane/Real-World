@@ -42,6 +42,12 @@
   .az-tbl tbody tr:last-child td{border-bottom:0}
   .az-tbl tbody tr:hover td{background:#f8fafc}
   .type-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:9999px;font-size:11px;font-weight:600;white-space:nowrap}
+  /* Top row: 2-up on desktop, stacked on small screens */
+  .evt-top-row{display:grid;grid-template-columns:360px 1fr;gap:12px;height:480px;min-height:480px;flex-shrink:0}
+  @media(max-width:900px){
+    .evt-top-row{grid-template-columns:1fr;height:auto;min-height:0}
+    .evt-top-row > *{height:480px;min-height:480px}
+  }
 </style>
 </head>
 <body class="bg-slate-100">
@@ -50,9 +56,9 @@
 <script>
 window.PAGE = { id:'weather', title:'Weather', crumb:'Event Details' };
 window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-  "density": "compact",
-  "accent": "blue",
-  "sidebarExpanded": false,
+  "density": "comfortable",
+  "accent": "sky",
+  "sidebarExpanded": true,
   "showSparklines": true
 }/*EDITMODE-END*/;
 </script>
@@ -236,7 +242,7 @@ window.render = function() {
       <main class="flex-1 overflow-y-auto scroll-thin bg-slate-100 p-3" style="min-height:0;display:flex;flex-direction:column;gap:12px">
 
         <!-- Top row -->
-        <div style="display:grid;grid-template-columns:360px 1fr;gap:12px;height:480px;min-height:0">
+        <div class="evt-top-row">
 
           <!-- Portfolio Summary -->
           <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 1px 3px rgba(15,23,42,.06);display:flex;flex-direction:column;overflow:hidden">
@@ -314,7 +320,7 @@ window.render = function() {
         </div>
 
         <!-- Assets in Zone -->
-        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 1px 3px rgba(15,23,42,.06);overflow:hidden">
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 1px 3px rgba(15,23,42,.06);overflow:hidden;flex-shrink:0">
           <div style="padding:12px 16px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center">
             <span style="font-size:13px;font-weight:700;color:#0f172a">Assets in Zone</span>
             <div style="margin-left:auto">

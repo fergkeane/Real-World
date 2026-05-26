@@ -16,17 +16,19 @@
   .text-ink-500 { color: #64748b; } .text-ink-400 { color: #94a3b8; }
   .bg-ink-100  { background: #f1f5f9; } .bg-ink-50 { background: #f8fafc; }
   .border-ink-100 { border-color: #f1f5f9; } .border-ink-200 { border-color: #e2e8f0; }
-  .text-brand  { color: #2563eb; }
+  .text-brand  { color: var(--brand-600, #2563eb); }
   .scroll-thin::-webkit-scrollbar { width: 5px; }
   .scroll-thin::-webkit-scrollbar-track { background: transparent; }
   .scroll-thin::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
 
   /* --- Asset type tab bar --- */
-  .asset-tabs { display: inline-flex; background: #fff; border: 1px solid #e2e8f0; border-radius: 999px; padding: 4px; gap: 2px; box-shadow: 0 1px 3px rgba(15,23,42,.08); }
-  .asset-tab  { display: inline-flex; align-items: center; gap: 6px; padding: 6px 18px; border-radius: 999px; border: 0; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 120ms, color 120ms; background: transparent; color: #64748b; }
-  .asset-tab.active { background: #2563eb; color: #fff; }
-  .asset-tab:not(.active):hover { background: #f1f5f9; color: #334155; }
+  .asset-tabs { position: relative; display: inline-flex; background: #fff; border: 1px solid #e2e8f0; border-radius: 999px; padding: 4px; gap: 2px; box-shadow: 0 1px 3px rgba(15,23,42,.08); }
+  .asset-tab  { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 6px; padding: 6px 18px; border-radius: 999px; border: 0; background: transparent; color: #64748b; font-size: 13px; font-weight: 600; cursor: pointer; transition: color 140ms; font-family: inherit; }
+  .asset-tab.active { background: transparent; color: #fff; }
+  .asset-tab:not(.active):hover { color: #334155; }
   .asset-tab svg { width: 15px; height: 15px; }
+  .asset-pill { position: absolute; top: 4px; left: 0; height: calc(100% - 8px); background: var(--brand-600, #2563eb); border-radius: 999px; box-shadow: 0 1px 2px rgba(15,23,42,.12); z-index: 0; transition: transform 320ms cubic-bezier(.34,1.2,.64,1), width 320ms cubic-bezier(.34,1.2,.64,1); }
+  .asset-pill.is-init { transition: none; }
   /* Mobile tabs dropdown */
   .asset-tabs-dd { display: none; width: 100%; max-width: 320px; height: 40px; padding: 0 36px 0 14px; border: 1px solid #e2e8f0; border-radius: 999px; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 14px center; box-shadow: 0 1px 3px rgba(15,23,42,.08); font: inherit; font-size: 13px; font-weight: 600; color: #0f172a; appearance: none; -webkit-appearance: none; cursor: pointer; outline: none; text-align: center; text-align-last: center; }
   .asset-tabs-dd:focus { border-color: #93c5fd; box-shadow: 0 1px 3px rgba(15,23,42,.08), 0 0 0 3px rgba(37,99,235,.12); }
@@ -49,7 +51,7 @@
   .filter-row { position: relative; }
   .filters-mobile-btn { display: none; align-items: center; justify-content: center; width: 34px; height: 34px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; color: #334155; cursor: pointer; flex-shrink: 0; position: relative; }
   .filters-mobile-btn:hover { background: #f8fafc; border-color: #93c5fd; }
-  .filters-mobile-btn .dot { position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; border-radius: 999px; background: #2563eb; border: 1.5px solid #fff; }
+  .filters-mobile-btn .dot { position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; border-radius: 999px; background: var(--brand-600, #2563eb); border: 1.5px solid #fff; }
   .filter-controls { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1; }
   @media (max-width: 720px) {
     .filters-mobile-btn { display: inline-flex; }
@@ -73,15 +75,15 @@
   .assets-table thead tr { border-bottom: 1px solid #e2e8f0; }
   .assets-table th { padding: 10px 14px; text-align: left; font-size: 12px; font-weight: 600; color: #334155; white-space: nowrap; background: #fff; user-select: none; }
   .assets-table th.sortable { cursor: pointer; }
-  .assets-table th.sortable:hover { color: #2563eb; }
+  .assets-table th.sortable:hover { color: var(--brand-600, #2563eb); }
   .sort-ico { display: inline-flex; flex-direction: column; gap: 1px; margin-left: 4px; vertical-align: middle; opacity: .55; }
   .sort-ico svg { width: 8px; height: 8px; }
   .assets-table td { padding: 11px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; color: #334155; white-space: nowrap; }
   .assets-table tbody tr:last-child td { border-bottom: 0; }
   .assets-table tbody tr:hover td { background: #f8fafc; }
   .assets-table td.name-cell { font-weight: 700; font-size: 12px; color: #0f172a; letter-spacing: .01em; }
-  .assets-table td .lnk { color: #2563eb; font-weight: 600; cursor: pointer; }
-  .assets-table td .lnk:hover { color: #1d4ed8; }
+  .assets-table td .lnk { color: var(--brand-600, #2563eb); font-weight: 600; cursor: pointer; }
+  .assets-table td .lnk:hover { color: var(--brand-700, #1d4ed8); }
   /* Sticky first column */
   .assets-table th:first-child,
   .assets-table td:first-child {
@@ -96,7 +98,7 @@
 
   /* Type badges */
   .badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 500; }
-  .badge-container { background: #dbeafe; color: #1d4ed8; }
+  .badge-container { background: var(--brand-100, #dbeafe); color: var(--brand-700, #1d4ed8); }
   .badge-vehicle   { background: #dcfce7; color: #15803d; }
   .badge-bulk      { background: #fef9c3; color: #a16207; }
   .badge-tanker    { background: #ede9fe; color: #6d28d9; }
@@ -169,11 +171,12 @@ function flagHtml(code, country) {
 
 function sortIcon(col) {
   const active = sortCol === col;
-  const upCol   = (active && sortDir === 'asc')  ? '#2563eb' : '#94a3b8';
-  const downCol = (active && sortDir === 'desc') ? '#2563eb' : '#94a3b8';
+  const brand = 'var(--brand-600, #2563eb)';
+  const upCol   = (active && sortDir === 'asc')  ? brand : '#94a3b8';
+  const downCol = (active && sortDir === 'desc') ? brand : '#94a3b8';
   return `<span class="sort-ico">
-    <svg viewBox="0 0 24 24" fill="none" stroke="${upCol}" stroke-width="3" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
-    <svg viewBox="0 0 24 24" fill="none" stroke="${downCol}" stroke-width="3" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" style="stroke:${upCol}" stroke-width="3" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" style="stroke:${downCol}" stroke-width="3" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
   </span>`;
 }
 
@@ -235,6 +238,7 @@ function renderTable() {
     <!-- Tab bar -->
     <div style="display:flex;justify-content:center;margin-bottom:20px;">
       <div class="asset-tabs">
+        <span class="asset-pill is-init" id="asset-pill"></span>
         ${Object.entries(tabLabels).map(([id, lbl]) => `
           <button class="asset-tab${currentTab === id ? ' active' : ''}" data-tab="${id}">
             ${tabIcons[id]} ${lbl}
@@ -303,7 +307,7 @@ function renderTable() {
                 <td style="color:#64748b;">${r.mmsi}</td>
                 <td>${r.owner ? `<span class="lnk">${r.owner}</span>` : ''}</td>
                 <td style="color:#64748b;">${r.lastSeen}</td>
-                <td style="font-weight:600;color:${r.estValue.startsWith('$') ? '#2563eb' : '#94a3b8'};">${r.estValue}</td>
+                <td style="font-weight:600;color:${r.estValue.startsWith('$') ? 'var(--brand-600, #2563eb)' : '#94a3b8'};">${r.estValue}</td>
                 <td style="tabular-nums;">${r.length}</td>
                 <td style="tabular-nums;color:${r.grossTonnage === 'N/A' ? '#94a3b8' : '#334155'};">${r.grossTonnage}</td>
                 <td style="tabular-nums;color:${r.dwtTonnage === 'N/A' ? '#94a3b8' : '#334155'};">${r.dwtTonnage}</td>
@@ -361,7 +365,40 @@ window.render = function () {
   wireTableEvents();
 };
 
+function positionAssetPill() {
+  const tabs = document.querySelector('.asset-tabs');
+  const pill = document.getElementById('asset-pill');
+  if (!tabs || !pill) return;
+  const active = tabs.querySelector('.asset-tab.active');
+  if (!active) return;
+  const tRect = tabs.getBoundingClientRect();
+  const aRect = active.getBoundingClientRect();
+  const targetW = aRect.width;
+  const targetX = aRect.left - tRect.left;
+  if (window._assetPrevPill) {
+    // Apply previous position with transition disabled, then animate to target via double-rAF.
+    pill.classList.add('is-init');
+    pill.style.width = window._assetPrevPill.w + 'px';
+    pill.style.transform = `translateX(${window._assetPrevPill.x}px)`;
+    requestAnimationFrame(() => {
+      pill.classList.remove('is-init');
+      requestAnimationFrame(() => {
+        pill.style.width = targetW + 'px';
+        pill.style.transform = `translateX(${targetX}px)`;
+      });
+    });
+  } else {
+    pill.style.width = targetW + 'px';
+    pill.style.transform = `translateX(${targetX}px)`;
+    requestAnimationFrame(() => requestAnimationFrame(() => pill.classList.remove('is-init')));
+  }
+  window._assetPrevPill = { w: targetW, x: targetX };
+}
+
 function wireTableEvents() {
+  /* Position sliding tab pill (animates between tabs by reusing previously saved position). */
+  requestAnimationFrame(positionAssetPill);
+
   /* Tab switching */
   document.querySelectorAll('[data-tab]').forEach(btn => {
     btn.addEventListener('click', () => {

@@ -45,13 +45,13 @@
   .cat-tab{position:relative;font:inherit;font-size:13px;font-weight:600;padding:8px 20px;background:transparent;border:0;border-radius:9999px;color:#64748b;cursor:pointer;transition:color 140ms;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
   .cat-tab:hover{color:#0f172a}
   .cat-tab[aria-selected="true"]{color:#fff}
-  .cat-pill{position:absolute;top:4px;left:0;height:calc(100% - 8px);background:#2563eb;border-radius:9999px;box-shadow:0 1px 2px rgba(15,23,42,.12);z-index:0;transition:transform 320ms cubic-bezier(.34,1.2,.64,1),width 320ms cubic-bezier(.34,1.2,.64,1);pointer-events:none}
+  .cat-pill{position:absolute;top:4px;left:0;height:calc(100% - 8px);background:var(--brand-600,#2563eb);border-radius:9999px;box-shadow:0 1px 2px rgba(15,23,42,.12);z-index:0;transition:transform 320ms cubic-bezier(.34,1.2,.64,1),width 320ms cubic-bezier(.34,1.2,.64,1);pointer-events:none}
   .cat-pill.is-init{transition:none}
   .cat-tab-label{position:relative;z-index:1;display:inline-flex;align-items:center;gap:7px}
   /* View toggle */
   .view-toggle{display:inline-flex;gap:4px;padding:4px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9999px}
   .view-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;font-size:13px;font-weight:600;border:0;cursor:pointer;font-family:inherit;transition:background 150ms,color 150ms;border-radius:9999px}
-  .view-btn.active{background:#2563eb;color:#fff}
+  .view-btn.active{background:var(--brand-600,#2563eb);color:#fff}
   .view-btn:not(.active){background:transparent;color:#64748b}
   .view-btn:not(.active):hover{color:#0f172a}
   /* Panel */
@@ -61,7 +61,7 @@
   .r-row:last-child{border-bottom:0}
   /* Coverage tabs */
   .cov-tab{flex:1;padding:7px 8px;font-size:12.5px;font-weight:600;cursor:pointer;border:0;font-family:inherit;transition:background .15s,color .15s;border-radius:9999px;background:transparent;color:#64748b}
-  .cov-tab.active{background:#2563eb;color:#fff}
+  .cov-tab.active{background:var(--brand-600,#2563eb);color:#fff}
   .cov-tab:not(.active):hover{color:#334155}
   /* Stats table */
   .rg-tbl{width:100%;border-collapse:collapse}
@@ -399,7 +399,7 @@ function initMap() {
     const riskColor = {Low:'#16a34a',Medium:'#f97316',High:'#dc2626',Critical:'#7c3aed'}[r.risk]||'#64748b';
     const popupHTML = `
     <div style="font-family:'Inter',sans-serif;width:250px;border-radius:12px;overflow:hidden">
-      <div style="background:#2563eb;color:#fff;padding:11px 14px;display:flex;align-items:center;gap:8px">
+      <div style="background:var(--brand-600,#2563eb);color:#fff;padding:11px 14px;display:flex;align-items:center;gap:8px">
         <span style="width:11px;height:11px;border-radius:50%;background:${r.color};flex-shrink:0;border:1.5px solid rgba(255,255,255,.5)"></span>
         <span style="font-size:14px;font-weight:700;flex:1">${r.name}</span>
       </div>
@@ -416,7 +416,7 @@ function initMap() {
           <span style="color:#64748b;font-size:13px">Risk Level:</span>
           <span style="font-weight:700;font-size:13px;color:${riskColor}">${r.risk}</span>
         </div>
-        <button onclick="sessionStorage.setItem('selectedMarineRegion','${r.name}');window.location.href='MarineRegionDetails.html'" style="width:100%;padding:8px;border:1.5px solid #2563eb;border-radius:8px;background:#fff;color:#2563eb;font-weight:600;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;transition:background .1s" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='#fff'">View Regional Details</button>
+        <button onclick="window.__regionGo('${r.name.replace(/'/g,"\\'")}')" style="width:100%;padding:8px;border:1.5px solid #2563eb;border-radius:8px;background:#fff;color:#2563eb;font-weight:600;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;transition:background .1s" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='#fff'">View Regional Details</button>
       </div>
     </div>`;
 
@@ -664,7 +664,7 @@ function rc() {
   wire();
 }
 
-function positionRegionPill() {
+function positionRegionPill(animate) {
   const group = document.getElementById('rg-cat-tabs');
   const pill  = document.getElementById('rg-cat-pill');
   if (!group || !pill) return;
@@ -672,17 +672,47 @@ function positionRegionPill() {
   if (!active) return;
   const gRect = group.getBoundingClientRect();
   const aRect = active.getBoundingClientRect();
-  pill.style.width = aRect.width + 'px';
-  pill.style.transform = `translateX(${aRect.left - gRect.left}px)`;
-  requestAnimationFrame(() => requestAnimationFrame(() => pill.classList.remove('is-init')));
+  const targetW = aRect.width;
+  const targetX = aRect.left - gRect.left;
+  // If we have a saved previous position and want to animate from it, apply it first
+  if (animate && window._rgPrevPill) {
+    pill.classList.add('is-init');
+    pill.style.width = window._rgPrevPill.w + 'px';
+    pill.style.transform = `translateX(${window._rgPrevPill.x}px)`;
+    // Double-rAF: first frame commits the old transform/width with transition off,
+    // second frame re-enables transition and sets the target — browser animates the diff.
+    requestAnimationFrame(() => {
+      pill.classList.remove('is-init');
+      requestAnimationFrame(() => {
+        pill.style.width = targetW + 'px';
+        pill.style.transform = `translateX(${targetX}px)`;
+      });
+    });
+  } else {
+    pill.style.width = targetW + 'px';
+    pill.style.transform = `translateX(${targetX}px)`;
+    requestAnimationFrame(() => requestAnimationFrame(() => pill.classList.remove('is-init')));
+  }
+  window._rgPrevPill = { w: targetW, x: targetX };
 }
 
 function wire() {
+  const REGION_PAGE = {
+    marine:   { page: 'MarineRegionDetails.html',   key: 'selectedMarineRegion' },
+    property: { page: 'PropertyRegionDetails.html', key: 'selectedPropertyRegion' },
+    aviation: { page: 'AviationRegionDetails.html', key: 'selectedAviationRegion' },
+    energy:   { page: 'MarineRegionDetails.html',   key: 'selectedMarineRegion' },
+  };
+  const linkFor = () => REGION_PAGE[activeTab] || REGION_PAGE.marine;
+  window.__regionGo = (name) => {
+    const { page, key } = linkFor();
+    sessionStorage.setItem(key, name);
+    window.location.href = page;
+  };
   document.querySelectorAll('[data-region-link]').forEach(el => {
     el.addEventListener('click', e => {
       e.stopPropagation();
-      sessionStorage.setItem('selectedMarineRegion', el.dataset.regionLink);
-      window.location.href = 'MarineRegionDetails.html';
+      window.__regionGo(el.dataset.regionLink);
     });
   });
 
@@ -699,7 +729,7 @@ function wire() {
     activeTab = b.dataset.mainTab;
     activeCovTab = TABS_DATA[activeTab].covTabs[0];
     rc();
-    requestAnimationFrame(positionRegionPill);
+    // wire() already schedules positionRegionPill via rAF — it will use the saved _rgPrevPill to animate.
   }));
   const rgCatSel = document.getElementById('rg-cat-mobile-sel');
   if (rgCatSel) rgCatSel.onchange = () => {

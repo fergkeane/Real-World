@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Property Region Details — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  .scroll-thin::-webkit-scrollbar{width:5px}.scroll-thin::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
+  #region-map{position:absolute;inset:0}
+  .leaflet-control-zoom,.leaflet-bar{border:1px solid #e2e8f0!important;box-shadow:0 1px 2px rgba(15,23,42,.08)!important;border-radius:8px!important;overflow:hidden}
+  .leaflet-bar a{background:#fff!important;color:#334155!important;line-height:30px!important}
+  .leaflet-bar a:hover{background:#f1f5f9!important}
+  .region-popup .leaflet-popup-content-wrapper{padding:0;border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,.15)}
+  .region-popup .leaflet-popup-content{margin:0}
+  .region-popup .leaflet-popup-tip-container{margin-top:-1px}
+  .region-popup .leaflet-popup-close-button{color:#fff !important;opacity:.85;font:700 20px/1 'Inter',sans-serif !important;width:26px;height:26px;padding:2px 0 0 0 !important;top:6px !important;right:6px !important;border-radius:6px;text-align:center;text-decoration:none !important;transition:opacity .12s,background .12s}
+  .region-popup .leaflet-popup-close-button:hover{opacity:1;background:rgba(255,255,255,.18)}
+  /* Pill tabs */
+  .ds-tabs{position:relative;display:inline-flex;gap:4px;padding:4px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9999px}
+  .ds-tab{position:relative;font:inherit;font-size:13px;font-weight:600;padding:7px 16px;background:transparent;border:0;border-radius:9999px;color:#64748b;cursor:pointer;transition:color 140ms ease;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+  .ds-tab:hover{color:#0f172a}
+  .ds-tab[aria-selected="true"]{color:#fff}
+  .ds-tab-pill{position:absolute;top:4px;left:0;height:calc(100% - 8px);background:var(--brand-600,#2563eb);border-radius:9999px;box-shadow:0 1px 2px rgba(15,23,42,.12);z-index:0;transition:transform 320ms cubic-bezier(.34,1.2,.64,1),width 320ms cubic-bezier(.34,1.2,.64,1);pointer-events:none}
+  .ds-tab-pill.is-init{transition:none}
+  .ds-tab-label{position:relative;z-index:1;display:inline-flex;align-items:center;gap:6px}
+  /* Details list */
+  .det-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:12.5px}
+  .det-row:last-child{border-bottom:0}
+  .det-label{color:var(--brand-600,#2563eb);font-weight:500}
+  .det-value{color:#0f172a;font-weight:600;text-align:right}
+  /* Portfolio table */
+  .pf-tbl{width:100%;border-collapse:collapse}
+  .pf-tbl th{padding:8px 10px;font-size:12px;font-weight:600;color:#64748b;text-align:left;border-bottom:1px solid #f1f5f9;white-space:nowrap}
+  .pf-tbl td{padding:9px 10px;font-size:13px;color:#334155;border-bottom:1px solid #f8fafc;vertical-align:middle}
+  .pf-tbl tr:last-child td{border-bottom:0}
+  .pf-tbl tbody tr:hover td{background:#fafafa}
+  /* Stat pills */
+  .spill-blue{display:inline-block;background:var(--brand-50,#eff6ff);color:var(--brand-600,#2563eb);font-size:13px;font-weight:700;padding:3px 10px;border-radius:8px;font-variant-numeric:tabular-nums}
+  /* Map btn */
+  .map-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;color:#334155;box-shadow:0 1px 2px rgba(15,23,42,.08);cursor:pointer}
+  .map-btn:hover{background:#f1f5f9}
+  /* Layout */
+  .prd-top-row{display:grid;grid-template-columns:260px minmax(0,1fr) minmax(0,1fr);gap:12px;margin-bottom:12px}
+  /* Card tab dropdown */
+  .tab-dd{display:inline-block;min-width:240px;max-width:100%;padding:8px 36px 8px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:600;color:#0f172a;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;background-size:12px;font-family:inherit;cursor:pointer;appearance:none;-webkit-appearance:none;transition:border-color .15s,box-shadow .15s}
+  .tab-dd:hover{border-color:#cbd5e1}
+  .tab-dd:focus{outline:none;border-color:var(--brand-600,#2563eb);box-shadow:0 0 0 3px rgba(37,99,235,.15)}
+  .mobile-tab-select{display:none;width:100%;padding:7px 12px;border:1px solid #e2e8f0;border-radius:9999px;font-size:13px;font-weight:600;color:#334155;background:#f1f5f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;font-family:inherit;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none}
+  @media(max-width:1023px){.prd-top-row{grid-template-columns:1fr}}
+  @media(max-width:767px){.mobile-tab-select{display:block!important}.tabs-desktop-wrap{display:none!important}}
+</style>
+</head>
+<body class="bg-slate-100 text-slate-900">
+<div id="app" class="h-screen w-full flex overflow-hidden"></div>
+
+<script>
+window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "density":"compact","accent":"blue","sidebarExpanded":false,"showSparklines":true
+}/*EDITMODE-END*/;
+const regionName = sessionStorage.getItem('selectedPropertyRegion') || 'Miami';
+window.PAGE = { id:'regions', title:'Property Region', crumb: regionName };
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="shared/chrome.js?v=11"></script>
+<script>
+const SC = window.sharedChrome;
+
+/* ── State ─────────────────────────────────────────────────────────────── */
+let rightTab = 'stats';
+let mapTab   = 'map';
+let rMap = null, rTile = null;
+
+/* ── Data ──────────────────────────────────────────────────────────────── */
+const REGION_DETAILS = {
+  type:'Monitored Region',
+  createdAt:'2023-12-01',
+  affectedPolicies:37,
+  affectedAssets:37,
+  exposureThreshold:'$4.0B',
+  assetCountThreshold:200,
+  countries:'🇺🇸',
+};
+const PORTFOLIO_EXPOSURE = {
+  totalExposure:'$530.0M',
+  totalWarExposure:'0',
+  rows: [
+    { name:'Property - Marriott Hotels (US)', policies:33, hull:'$330.0M', war:'0' },
+    { name:'Top 500 yachts',                  policies:4,  hull:'$200.0M', war:'0' },
+  ],
+};
+const STATS = {
+  avgAssetCount:8,         hiAssetDate:'Mar 30th 2025',  hiAssetCount:20,       loAssetDate:'Jul 23rd 2025', loAssetCount:1,
+  avgExp:'$249.4M',        hiExpDate:'Apr 5th 2025',     hiExp:'$860.5M',       loExpDate:'Jul 23rd 2025',   loExp:'$40.0M',
+  avgWar:'0',              hiWarDate:'Nov 24th 2025',    hiWar:'0',             loWarDate:'Nov 24th 2025',   loWar:'0',
+  avgMkt:'$639.5M',        hiMktDate:'Nov 16th 2025',    hiMkt:'$3.4B',         loMktDate:'Dec 31st 2025',   loMkt:'$4.8M',
+};
+
+/* ── SVGs ──────────────────────────────────────────────────────────────── */
+const EDIT_ICO   = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+const TRASH_ICO  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>`;
+const SORT_ICO   = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 4 18 9"/><polyline points="6 15 12 20 18 15"/></svg>`;
+const CAL_SVG    = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
+const EXPAND_ICO = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>`;
+
+/* ── Map ───────────────────────────────────────────────────────────────── */
+function initMap() {
+  const el = document.getElementById('region-map');
+  if (!el) return;
+  if (rMap) { rMap.remove(); rMap = null; rTile = null; }
+  rMap = L.map(el, { center:[25.78,-80.18], zoom:11, zoomControl:false, scrollWheelZoom:true });
+  rTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { attribution:'', maxZoom:19 }).addTo(rMap);
+  L.control.zoom({ position:'topleft' }).addTo(rMap);
+
+  // Miami / South Beach monitoring polygon
+  const regionPoly = [
+    [25.92,-80.13],[25.88,-80.11],[25.84,-80.10],[25.80,-80.11],[25.76,-80.13],
+    [25.72,-80.15],[25.68,-80.16],[25.65,-80.17],[25.63,-80.15],[25.66,-80.12],
+    [25.69,-80.11],[25.72,-80.13],[25.76,-80.14],[25.80,-80.13],[25.84,-80.13],
+    [25.88,-80.13],[25.92,-80.13],
+  ];
+  L.polygon(regionPoly, { color:'var(--brand-600,#2563eb)', weight:2.5, fillColor:'#3b82f6', fillOpacity:0.22 })
+    .addTo(rMap);
+
+  // Property markers (mix of hotels and yachts)
+  const props = [
+    { coord:[25.795,-80.130], name:'Marriott Stanton South Beach', value:'$48.5M', type:'Hotel' },
+    { coord:[25.811,-80.131], name:'Marriott Marquis Miami',       value:'$92.0M', type:'Hotel' },
+    { coord:[25.785,-80.190], name:'JW Marriott Marquis Miami',    value:'$110.2M',type:'Hotel' },
+    { coord:[25.770,-80.137], name:'Courtyard Miami Beach',        value:'$22.8M', type:'Hotel' },
+    { coord:[25.741,-80.156], name:'Yacht Berth A12',              value:'$8.5M',  type:'Yacht' },
+    { coord:[25.704,-80.165], name:'Yacht Berth B08',              value:'$6.9M',  type:'Yacht' },
+    { coord:[25.832,-80.124], name:'Marriott Aventura',            value:'$36.4M', type:'Hotel' },
+    { coord:[25.856,-80.119], name:'Marriott Sunny Isles',         value:'$54.0M', type:'Hotel' },
+  ];
+  props.forEach(p => {
+    const icon = L.divIcon({
+      className:'',
+      html:`<div style="width:26px;height:26px;border-radius:6px;background:#f97316;border:2.5px solid #fff;box-shadow:0 2px 6px rgba(249,115,22,.4);display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/></svg></div>`,
+      iconSize:[26,26], iconAnchor:[13,13],
+    });
+    const popupHTML = `
+      <div style="font-family:'Inter',sans-serif;width:240px;border-radius:12px;overflow:hidden">
+        <div style="background:var(--brand-600,#2563eb);color:#fff;padding:11px 14px"><span style="font-size:14px;font-weight:700">${p.name}</span></div>
+        <div style="background:#fff;padding:14px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:9px"><span style="color:#64748b;font-size:13px">Type:</span><span style="font-weight:700;color:#0f172a;font-size:13px">${p.type}</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:#64748b;font-size:13px">Value:</span><span style="font-weight:700;color:#0f172a;font-size:13px">${p.value}</span></div>
+        </div>
+      </div>`;
+    L.marker(p.coord,{icon})
+      .bindPopup(popupHTML, { maxWidth:260, minWidth:240, closeButton:true, className:'region-popup' })
+      .addTo(rMap);
+  });
+
+  setTimeout(() => {
+    const zin  = el.querySelector('.leaflet-control-zoom-in');
+    const zout = el.querySelector('.leaflet-control-zoom-out');
+    if (zin)  zin.innerHTML  = `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>`;
+    if (zout) zout.innerHTML = `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></span>`;
+  }, 100);
+  const fsBtn = document.getElementById('prd-fs');
+  if (fsBtn) fsBtn.addEventListener('click', () => { const w=document.getElementById('prd-map-wrap'); if(w&&w.requestFullscreen)w.requestFullscreen(); setTimeout(()=>rMap&&rMap.invalidateSize(),300); });
+}
+
+/* ── Stat cell helper ──────────────────────────────────────────────────── */
+function statCell(label, date, value) {
+  return `
+  <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:5px;padding:4px 0">
+    <div style="font-size:11.5px;font-weight:700;color:#0f172a">${label}</div>
+    ${date ? `<div style="font-size:10.5px;color:#f97316;font-weight:600">${date}</div>` : `<div style="height:1px"></div>`}
+    <span class="spill-blue">${value}</span>
+  </div>`;
+}
+
+/* ── Render ────────────────────────────────────────────────────────────── */
+function Content() {
+  const d = REGION_DETAILS;
+  const pe = PORTFOLIO_EXPOSURE;
+  const s = STATS;
+  return `
+  <div class="flex-1 min-h-0 overflow-y-auto scroll-thin" style="padding:12px 16px;background:#f1f5f9">
+
+    <!-- Top row: 3 cards -->
+    <div class="prd-top-row">
+
+      <!-- LEFT: Details -->
+      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06);display:flex;flex-direction:column">
+        <div style="padding:12px 14px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:14px;font-weight:700;color:#0f172a">Details</span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <button class="map-btn" title="Edit" style="width:26px;height:26px">${EDIT_ICO}</button>
+            <button class="map-btn" title="Delete" style="width:26px;height:26px">${TRASH_ICO}</button>
+          </div>
+        </div>
+        <div style="padding:8px 14px;flex:1">
+          <div class="det-row"><span class="det-label">Region Type:</span><span class="det-value">${d.type}</span></div>
+          <div class="det-row"><span class="det-label">Created at:</span><span class="det-value">${d.createdAt}</span></div>
+          <div class="det-row"><span class="det-label">Affected Policies:</span><span class="det-value">${d.affectedPolicies}</span></div>
+          <div class="det-row"><span class="det-label">Affected Assets:</span><span class="det-value">${d.affectedAssets}</span></div>
+          <div class="det-row"><span class="det-label">Region Exposure Threshold:</span><span class="det-value">${d.exposureThreshold}</span></div>
+          <div class="det-row"><span class="det-label">Asset Count Threshold:</span><span class="det-value">${d.assetCountThreshold}</span></div>
+          <div class="det-row"><span class="det-label">Monitored Countries:</span><span class="det-value" style="font-size:16px">${d.countries}</span></div>
+        </div>
+        <div style="padding:10px 14px;border-top:1px solid #f1f5f9;text-align:right">
+          <a href="#" style="font-size:13px;font-weight:600;color:var(--brand-600,#2563eb);text-decoration:none;display:inline-flex;align-items:center;gap:4px">Further Investigate
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- MIDDLE: Region Exposure by Portfolio -->
+      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06);display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:12px 14px;border-bottom:1px solid #f1f5f9">
+          <span style="font-size:14px;font-weight:700;color:#0f172a">Region Exposure by Portfolio</span>
+        </div>
+        <!-- Total Exposure metric blocks -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;background:var(--brand-50,#eff6ff);border-bottom:1px solid #f1f5f9">
+          <div style="padding:14px;text-align:center;border-right:1px solid #e0eaff">
+            <div style="font-size:11.5px;color:#64748b;margin-bottom:4px">Total Exposure</div>
+            <div style="font-size:20px;font-weight:800;color:#0f172a;font-variant-numeric:tabular-nums">${pe.totalExposure}</div>
+          </div>
+          <div style="padding:14px;text-align:center">
+            <div style="font-size:11.5px;color:#64748b;margin-bottom:4px">Total War Exposure</div>
+            <div style="font-size:20px;font-weight:800;color:#0f172a;font-variant-numeric:tabular-nums">${pe.totalWarExposure}</div>
+          </div>
+        </div>
+        <!-- Portfolio rows table -->
+        <div style="flex:1;overflow-y:auto" class="scroll-thin">
+          <table class="pf-tbl">
+            <thead><tr>
+              <th><span style="display:inline-flex;align-items:center;gap:4px">Name ${SORT_ICO}</span></th>
+              <th><span style="display:inline-flex;align-items:center;gap:4px">Policies ${SORT_ICO}</span></th>
+              <th><span style="display:inline-flex;align-items:center;gap:4px">Hull ${SORT_ICO}</span></th>
+              <th><span style="display:inline-flex;align-items:center;gap:4px">War ${SORT_ICO}</span></th>
+            </tr></thead>
+            <tbody>
+              ${pe.rows.map(r => `<tr>
+                <td style="color:var(--brand-600,#2563eb);font-weight:500;cursor:pointer">${r.name}</td>
+                <td>${r.policies}</td>
+                <td>${r.hull}</td>
+                <td>${r.war}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RIGHT: Region Summary Statistics / Create Region Report -->
+      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06);display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:10px 12px;border-bottom:1px solid #f1f5f9">
+          <div class="tabs-desktop-wrap">
+            <div class="ds-tabs" id="rtab-tabs" style="width:100%">
+              <span class="ds-tab-pill is-init" data-tab-pill></span>
+              <button class="ds-tab" style="flex:1;justify-content:center" aria-selected="${rightTab==='stats'}"  data-rtab="stats"><span class="ds-tab-label">Region Summary Statistics</span></button>
+              <button class="ds-tab" style="flex:1;justify-content:center" aria-selected="${rightTab==='report'}" data-rtab="report"><span class="ds-tab-label">Create Region Report</span></button>
+            </div>
+          </div>
+          <select id="rtab-sel" class="mobile-tab-select" aria-label="Section">
+            <option value="stats"  ${rightTab==='stats'  ? 'selected' : ''}>Region Summary Statistics</option>
+            <option value="report" ${rightTab==='report' ? 'selected' : ''}>Create Region Report</option>
+          </select>
+        </div>
+        ${rightTab === 'stats' ? `
+        <div style="flex:1;overflow-y:auto;padding:12px 14px" class="scroll-thin">
+          <!-- Date range + portfolio filter -->
+          <div style="font-size:11.5px;color:#64748b;margin-bottom:5px">Date Range:</div>
+          <div style="display:grid;grid-template-columns:1fr 14px 1fr 1fr;align-items:center;gap:8px;margin-bottom:14px">
+            <div style="position:relative">
+              <input type="text" value="Jan 1st 2025" readonly style="width:100%;height:30px;border:1px solid #e2e8f0;border-radius:7px;padding:0 26px 0 8px;font-size:12.5px;color:#334155;background:#f8fafc;outline:none;font-family:inherit" />
+              <span style="position:absolute;right:7px;top:50%;transform:translateY(-50%);display:flex">${CAL_SVG}</span>
+            </div>
+            <span style="font-size:12px;color:#94a3b8;text-align:center">to</span>
+            <div style="position:relative">
+              <input type="text" value="Dec 31st 2025" readonly style="width:100%;height:30px;border:1px solid #e2e8f0;border-radius:7px;padding:0 26px 0 8px;font-size:12.5px;color:#334155;background:#f8fafc;outline:none;font-family:inherit" />
+              <span style="position:absolute;right:7px;top:50%;transform:translateY(-50%);display:flex">${CAL_SVG}</span>
+            </div>
+            <select style="height:30px;border:1px solid #e2e8f0;border-radius:7px;padding:0 24px 0 8px;font-size:12.5px;color:#334155;background:#fff url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%2210%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2364748b%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpolyline points=%226 9 12 15 18 9%22/%3E%3C/svg%3E') no-repeat right 7px center;background-size:10px;font-family:inherit;outline:none;appearance:none;-webkit-appearance:none;cursor:pointer">
+              <option>All Portfolios</option>
+              <option>Marriott Hotels (US)</option>
+              <option>Top 500 yachts</option>
+            </select>
+          </div>
+          <!-- Stats grid: 4 rows × 3 cols -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;column-gap:10px;row-gap:14px">
+            ${statCell('Average Daily Asset Count',  '', s.avgAssetCount)}
+            ${statCell('Highest Daily Asset Count',  s.hiAssetDate, s.hiAssetCount)}
+            ${statCell('Lowest Daily Asset Count',   s.loAssetDate, s.loAssetCount)}
+
+            ${statCell('Average Daily Exposure Value', '', s.avgExp)}
+            ${statCell('Highest Daily Exposure Value', s.hiExpDate, s.hiExp)}
+            ${statCell('Lowest Daily Exposure Value',  s.loExpDate, s.loExp)}
+
+            ${statCell('Average Daily War Value', '', s.avgWar)}
+            ${statCell('Highest Daily War Value', s.hiWarDate, s.hiWar)}
+            ${statCell('Lowest Daily War Value',  s.loWarDate, s.loWar)}
+
+            ${statCell('Average Daily Market Value', '', s.avgMkt)}
+            ${statCell('Highest Daily Market Value', s.hiMktDate, s.hiMkt)}
+            ${statCell('Lowest Daily Market Value',  s.loMktDate, s.loMkt)}
+          </div>
+        </div>` : `
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:24px">
+          <div style="text-align:center;color:#94a3b8;font-size:13px">Report builder coming soon</div>
+        </div>`}
+      </div>
+    </div>
+
+    <!-- Bottom: tab bar + map -->
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06);overflow:hidden;display:flex;flex-direction:column;min-height:520px">
+      <div style="padding:10px 14px;border-bottom:1px solid #f1f5f9;flex-shrink:0">
+        <div class="tabs-desktop-wrap">
+          <div class="ds-tabs" id="map-view-tabs">
+            <span class="ds-tab-pill is-init" data-tab-pill></span>
+            <button class="ds-tab" aria-selected="${mapTab==='map'}"      data-mtab="map"><span class="ds-tab-label">Map</span></button>
+            <button class="ds-tab" aria-selected="${mapTab==='policies'}" data-mtab="policies"><span class="ds-tab-label">Policies</span></button>
+            <button class="ds-tab" aria-selected="${mapTab==='notif'}"    data-mtab="notif"><span class="ds-tab-label">Notifications</span></button>
+            <button class="ds-tab" aria-selected="${mapTab==='history'}"  data-mtab="history"><span class="ds-tab-label">Region History</span></button>
+          </div>
+        </div>
+        <select class="mobile-tab-select" id="map-tab-sel" aria-label="Select view">
+          <option value="map" ${mapTab==='map'?'selected':''}>Map</option>
+          <option value="policies" ${mapTab==='policies'?'selected':''}>Policies</option>
+          <option value="notif" ${mapTab==='notif'?'selected':''}>Notifications</option>
+          <option value="history" ${mapTab==='history'?'selected':''}>Region History</option>
+        </select>
+      </div>
+      ${mapTab === 'map' ? `
+      <div id="prd-map-wrap" style="position:relative;flex:1">
+        <div id="region-map"></div>
+        <button id="prd-fs" class="map-btn" style="position:absolute;top:12px;left:12px;z-index:400">${EXPAND_ICO}</button>
+      </div>` : `
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:13px;padding:48px">
+        <div style="text-align:center"><div style="font-size:32px;margin-bottom:12px">📋</div>${mapTab.charAt(0).toUpperCase()+mapTab.slice(1)} data coming soon</div>
+      </div>`}
+    </div>
+  </div>`;
+}
+
+/* ── Wire + render ─────────────────────────────────────────────────────── */
+let _main = null;
+function positionTabPills() {
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.ds-tabs').forEach(group => {
+      const pill   = group.querySelector('[data-tab-pill]');
+      const active = group.querySelector('.ds-tab[aria-selected="true"]');
+      if (!pill || !active) return;
+      const gRect = group.getBoundingClientRect();
+      const aRect = active.getBoundingClientRect();
+      const targetW = aRect.width;
+      const targetX = aRect.left - gRect.left;
+      const key = group.id || '';
+      window._prdPillCache = window._prdPillCache || {};
+      const prev = key && window._prdPillCache[key];
+      if (prev) {
+        pill.classList.add('is-init');
+        pill.style.width = prev.w + 'px';
+        pill.style.transform = `translateX(${prev.x}px)`;
+        requestAnimationFrame(() => {
+          pill.classList.remove('is-init');
+          requestAnimationFrame(() => {
+            pill.style.width = targetW + 'px';
+            pill.style.transform = `translateX(${targetX}px)`;
+          });
+        });
+      } else {
+        pill.style.width = targetW + 'px';
+        pill.style.transform = `translateX(${targetX}px)`;
+        requestAnimationFrame(() => pill.classList.remove('is-init'));
+      }
+      if (key) window._prdPillCache[key] = { w: targetW, x: targetX };
+    });
+  });
+}
+
+function rc() {
+  if (!_main) return;
+  _main.innerHTML = Content();
+  wire();
+  positionTabPills();
+  if (mapTab === 'map') setTimeout(initMap, 50);
+}
+
+function wire() {
+  document.querySelectorAll('[data-rtab]').forEach(b => b.addEventListener('click', () => { rightTab = b.dataset.rtab; rc(); }));
+  const rtabSel = document.getElementById('rtab-sel');
+  if (rtabSel) rtabSel.onchange = () => { rightTab = rtabSel.value; rc(); };
+  document.querySelectorAll('[data-mtab]').forEach(b => b.addEventListener('click', () => { mapTab = b.dataset.mtab; rc(); }));
+  const mapTabSel = document.getElementById('map-tab-sel');
+  if (mapTabSel) mapTabSel.onchange = () => { mapTab = mapTabSel.value; rc(); };
+  window.addEventListener('resize', positionTabPills, { passive: true });
+}
+
+window.render = function() {
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
+      ${SC.Topbar()}
+      <main id="prd-main" class="flex-1 min-h-0 overflow-hidden flex flex-col"></main>
+    </div>
+    ${SC.TweaksPanel()}
+  `;
+  SC.wireChrome();
+  _main = document.getElementById('prd-main');
+  rc();
+};
+
+window.render();
+</script>
+</body>
+</html>

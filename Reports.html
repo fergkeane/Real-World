@@ -93,7 +93,7 @@ window.PAGE = { id:'reports', title:'Reports', crumb:'Report Builder' };
 window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "density": "compact",
   "accent": "blue",
-  "sidebarExpanded": true,
+  "sidebarExpanded": false,
   "showSparklines": true
 }/*EDITMODE-END*/;
 </script>
@@ -152,17 +152,17 @@ let fleetPerPage = 10;
 
 /* ── Competitor Analysis state + data ─────────────────────────────────── */
 const COMPETITOR_COMPANIES = [
-  { name:'Ramous Maritime Company Ltd',    type:'Shipping Company',   country:'Cyprus',           flag:'🇨🇾', code:'RMC-CY-001', fleet:25,  fleetVal:'$1.2B'  },
-  { name:'Turvalu Naviera S.A.',           type:'Shipping Company',   country:'Panama',           flag:'🇵🇦', code:'TVN-PA-001', fleet:8,   fleetVal:'$145M'  },
-  { name:'Ship Owner Investment Co.',      type:'Investment Company', country:'Marshall Islands', flag:'🇲🇭', code:'SOI-MI-001', fleet:35,  fleetVal:'$2.8B'  },
-  { name:'Eternal Light Shipping Limited', type:'Shipping Company',   country:'Panama',           flag:'🇵🇦', code:'ELS-PA-001', fleet:12,  fleetVal:'$68M'   },
-  { name:'Cosco Netherlands Shipping',     type:'Shipping Company',   country:'Netherlands',      flag:'🇳🇱', code:'CNS-NL-001', fleet:185, fleetVal:'$12.5B' },
-  { name:'Shell Canada Limited',           type:'Energy Company',     country:'Canada',           flag:'🇨🇦', code:'SCL-CA-001', fleet:45,  fleetVal:'$3.2B'  },
-  { name:'Nordic Maritime Solutions',      type:'Shipping Company',   country:'Norway',           flag:'🇳🇴', code:'NMS-NO-001', fleet:18,  fleetVal:'$420M'  },
-  { name:'Mediterranean Carriers Ltd',     type:'Shipping Company',   country:'Malta',            flag:'🇲🇹', code:'MCL-MT-001', fleet:22,  fleetVal:'$180M'  },
-  { name:'Baltic Shipping Enterprises',    type:'Shipping Company',   country:'Latvia',           flag:'🇱🇻', code:'BSE-LV-001', fleet:15,  fleetVal:'$95M'   },
-  { name:'Asian Pacific Maritime Corp',    type:'Conglomerate',       country:'Singapore',        flag:'🇸🇬', code:'APM-SG-001', fleet:95,  fleetVal:'$4.8B'  },
-  { name:'Meridian Tankers International', type:'Shipping Company',   country:'Greece',           flag:'🇬🇷', code:'MTI-GR-001', fleet:28,  fleetVal:'$890M'  },
+  { name:'Ramous Maritime Company Ltd',    type:'Shipping Company',   country:'Cyprus',           flag:'🇨🇾', code:'HE 123456',  fleet:25,  fleetVal:'$1.2B',  risk:75, hq:'Limassol',       established:1995, countryControl:'Cyprus',           countryDomicile:'Cyprus',           website:'www.ramous-maritime.com',    compliance:'Not Sanctioned' },
+  { name:'Turvalu Naviera S.A.',           type:'Shipping Company',   country:'Panama',           flag:'🇵🇦', code:'PA-456789',  fleet:8,   fleetVal:'$145M',  risk:65, hq:'Panama City',    established:2008, countryControl:'Panama',           countryDomicile:'Panama',           website:'www.turvalu-naviera.pa',     compliance:'Not Sanctioned' },
+  { name:'Ship Owner Investment Co.',      type:'Investment Company', country:'Marshall Islands', flag:'🇲🇭', code:'MI-008211',  fleet:35,  fleetVal:'$2.8B',  risk:42, hq:'Majuro',         established:2002, countryControl:'United States',    countryDomicile:'Marshall Islands', website:'www.ship-owner-inv.com',     compliance:'Not Sanctioned' },
+  { name:'Eternal Light Shipping Limited', type:'Shipping Company',   country:'Panama',           flag:'🇵🇦', code:'PA-117823',  fleet:12,  fleetVal:'$68M',   risk:88, hq:'Colón',          established:2012, countryControl:'China',            countryDomicile:'Panama',           website:'www.eternallight.com.pa',    compliance:'Sanctioned'     },
+  { name:'Cosco Netherlands Shipping',     type:'Shipping Company',   country:'Netherlands',      flag:'🇳🇱', code:'NL-220011',  fleet:185, fleetVal:'$12.5B', risk:18, hq:'Rotterdam',      established:1984, countryControl:'China',            countryDomicile:'Netherlands',      website:'www.cosco-nl.com',           compliance:'Not Sanctioned' },
+  { name:'Shell Canada Limited',           type:'Energy Company',     country:'Canada',           flag:'🇨🇦', code:'CA-100450',  fleet:45,  fleetVal:'$3.2B',  risk:8,  hq:'Calgary',        established:1911, countryControl:'United Kingdom',   countryDomicile:'Canada',           website:'www.shell.ca',               compliance:'Not Sanctioned' },
+  { name:'Nordic Maritime Solutions',      type:'Shipping Company',   country:'Norway',           flag:'🇳🇴', code:'NO-998120',  fleet:18,  fleetVal:'$420M',  risk:14, hq:'Oslo',           established:1998, countryControl:'Norway',           countryDomicile:'Norway',           website:'www.nordic-maritime.no',     compliance:'Not Sanctioned' },
+  { name:'Mediterranean Carriers Ltd',     type:'Shipping Company',   country:'Malta',            flag:'🇲🇹', code:'MT-301190',  fleet:22,  fleetVal:'$180M',  risk:33, hq:'Valletta',       established:2005, countryControl:'Italy',            countryDomicile:'Malta',            website:'www.med-carriers.mt',        compliance:'Not Sanctioned' },
+  { name:'Baltic Shipping Enterprises',    type:'Shipping Company',   country:'Latvia',           flag:'🇱🇻', code:'LV-664221',  fleet:15,  fleetVal:'$95M',   risk:51, hq:'Riga',           established:1996, countryControl:'Latvia',           countryDomicile:'Latvia',           website:'www.balticshipping.lv',      compliance:'Not Sanctioned' },
+  { name:'Asian Pacific Maritime Corp',    type:'Conglomerate',       country:'Singapore',        flag:'🇸🇬', code:'SG-201145',  fleet:95,  fleetVal:'$4.8B',  risk:22, hq:'Singapore',      established:1979, countryControl:'Singapore',        countryDomicile:'Singapore',        website:'www.apm-corp.sg',            compliance:'Not Sanctioned' },
+  { name:'Meridian Tankers International', type:'Shipping Company',   country:'Greece',           flag:'🇬🇷', code:'GR-455920',  fleet:28,  fleetVal:'$890M',  risk:38, hq:'Piraeus',        established:1988, countryControl:'Greece',           countryDomicile:'Greece',           website:'www.meridian-tankers.gr',    compliance:'Not Sanctioned' },
 ];
 let compQuery = '';
 let compSelected = [];
@@ -676,6 +676,93 @@ function wireFleetTab() {
 }
 
 /* ── Competitor Analysis tab ──────────────────────────────────────────── */
+function riskColor(r) { return r <= 10 ? '#16a34a' : r <= 25 ? '#f59e0b' : '#dc2626'; }
+function riskDonut(r, size = 132) {
+  const stroke = 14;
+  const radius = (size - stroke) / 2;
+  const circ = 2 * Math.PI * radius;
+  const pct = Math.min(100, Math.max(0, r));
+  const dash = (pct / 100) * circ;
+  const color = riskColor(r);
+  return `
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+      <circle cx="${size/2}" cy="${size/2}" r="${radius}" fill="none" stroke="#e2e8f0" stroke-width="${stroke}"/>
+      <circle cx="${size/2}" cy="${size/2}" r="${radius}" fill="none" stroke="${color}" stroke-width="${stroke}"
+              stroke-dasharray="${dash} ${circ - dash}" stroke-dashoffset="${circ/4}" stroke-linecap="round"
+              transform="rotate(-90 ${size/2} ${size/2})"
+              style="transform-origin:${size/2}px ${size/2}px;transform:none"/>
+      <text x="50%" y="46%" text-anchor="middle" dominant-baseline="middle" style="font:500 11px 'Inter',sans-serif;fill:#94a3b8">Risk Score</text>
+      <text x="50%" y="62%" text-anchor="middle" dominant-baseline="middle" style="font:700 26px 'Inter',sans-serif;fill:#0f172a;letter-spacing:-.02em">${r}</text>
+    </svg>`;
+}
+
+const CA_ICONS = {
+  type:        `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
+  hq:          `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
+  reg:         `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>`,
+  established: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+  countryReg:  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
+  countryCtl:  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/></svg>`,
+  countryDom:  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
+  website:     `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#14b8a6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/></svg>`,
+  building:    `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--brand-600,#2563eb)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M16 6h.01M8 10h.01M16 10h.01M8 14h.01M16 14h.01M12 6h.01M12 10h.01M12 14h.01"/></svg>`,
+};
+
+function competitorCard(c) {
+  const compOk = (c.compliance || 'Not Sanctioned') === 'Not Sanctioned';
+  const compPill = compOk
+    ? `<span style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:9999px;background:#dcfce7;color:#15803d;font-size:11.5px;font-weight:600">Not Sanctioned</span>`
+    : `<span style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:9999px;background:#fee2e2;color:#b91c1c;font-size:11.5px;font-weight:600">Sanctioned</span>`;
+  const row = (icon, label, value) => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid #f1f5f9">
+      <span style="display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:#64748b">${icon}<span>${label}</span></span>
+      <span style="font-size:12.5px;font-weight:600;color:#0f172a;text-align:right">${value}</span>
+    </div>`;
+  return `
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 1px 3px rgba(15,23,42,.05);overflow:hidden;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid #f1f5f9">
+      ${CA_ICONS.building}
+      <span style="flex:1;font-size:14px;font-weight:700;color:#0f172a;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name}</span>
+      <button onclick="window.__compRemove('${c.name.replace(/'/g,"\\'")}')" title="Remove" style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:0;background:transparent;color:#ef4444;cursor:pointer;font-family:inherit;font-size:18px;line-height:1;flex-shrink:0">×</button>
+    </div>
+    <div style="padding:18px;display:flex;flex-direction:column;align-items:center;gap:10px;border-bottom:1px solid #f1f5f9">
+      ${riskDonut(c.risk)}
+      <div style="display:flex;gap:14px;font-size:10.5px;color:#64748b;flex-wrap:wrap;justify-content:center">
+        <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:#16a34a"></span>Good [0 → 10]</span>
+        <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:#f59e0b"></span>Average [10+ → 25]</span>
+        <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:#dc2626"></span>Below Average [25+ → 100]</span>
+      </div>
+    </div>
+    <div style="padding:14px 18px;border-bottom:1px solid #f1f5f9">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0">
+        <span style="font-size:12.5px;color:#64748b">Total Assets</span>
+        <span style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:9999px;background:#f1f5f9;color:#0f172a;font-size:11.5px;font-weight:600">${c.fleet} assets</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0">
+        <span style="font-size:12.5px;color:#64748b">Total Asset Value</span>
+        <span style="font-size:13.5px;font-weight:700;color:#0f172a">${c.fleetVal}</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0">
+        <span style="font-size:12.5px;color:#64748b">Compliance</span>
+        ${compPill}
+      </div>
+    </div>
+    <div style="padding:6px 18px 14px">
+      ${row(CA_ICONS.type,        'Type',                 c.type)}
+      ${row(CA_ICONS.hq,          'Headquarters',         c.hq)}
+      ${row(CA_ICONS.reg,         'Registration',         c.code)}
+      ${row(CA_ICONS.established, 'Established',          c.established)}
+      ${row(CA_ICONS.countryReg,  'Country Registration', c.country)}
+      ${row(CA_ICONS.countryCtl,  'Country Control',      c.countryControl)}
+      ${row(CA_ICONS.countryDom,  'Country Domicile',     c.countryDomicile)}
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0">
+        <span style="display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:#64748b">${CA_ICONS.website}<span>Website</span></span>
+        <a href="https://${c.website}" target="_blank" rel="noopener" style="font-size:12.5px;font-weight:600;color:var(--brand-600,#2563eb);text-decoration:none">${c.website}</a>
+      </div>
+    </div>
+  </div>`;
+}
+
 function competitorTabContent() {
   const q = compQuery.toLowerCase();
   const matches = q
@@ -686,71 +773,54 @@ function competitorTabContent() {
     : [];
   const hasSelection = compSelected.length > 0;
   const showDropdown = compDropdownOpen && q && matches.length > 0;
-
-  const emptyState = `
-    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;background:#fff;">
-      <div style="color:#94a3b8;margin-bottom:14px;">
-        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      </div>
-      <h3 style="font-size:18px;font-weight:700;color:#0f172a;margin-bottom:6px;text-align:center;">No Companies Selected for Comparison</h3>
-      <p style="font-size:13.5px;color:#64748b;line-height:1.6;max-width:340px;text-align:center;">Use the search field below to find and add companies to compare.</p>
-    </div>`;
-
-  const selectedView = `
-    <div style="flex:1;overflow-y:auto;padding:18px 24px;background:#fff;" class="scroll-thin">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
-        <h3 style="font-size:15px;font-weight:700;color:#0f172a;">Selected Companies <span style="color:#94a3b8;font-weight:500;">(${compSelected.length})</span></h3>
-        <button onclick="window.__compClearAll()" style="font-size:12.5px;font-weight:600;color:#64748b;background:transparent;border:0;cursor:pointer;font-family:inherit;text-decoration:underline;">Clear all</button>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;">
-        ${compSelected.map(name => {
-          const c = COMPETITOR_COMPANIES.find(x => x.name === name);
-          if (!c) return '';
-          return `
-          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px;box-shadow:0 1px 2px rgba(15,23,42,.04);">
-            <div style="width:36px;height:36px;border-radius:8px;background:#eff6ff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${c.flag}</div>
-            <div style="flex:1;min-width:0;">
-              <div style="font-size:13.5px;font-weight:700;color:#0f172a;margin-bottom:2px;line-height:1.25;">${c.name}</div>
-              <div style="font-size:11.5px;color:#64748b;margin-bottom:6px;">${c.type} · ${c.country}</div>
-              <div style="display:flex;gap:10px;font-size:11.5px;color:#475569;">
-                <span><strong style="color:#0f172a;">${c.fleet}</strong> vessels</span>
-                <span style="color:#cbd5e1;">·</span>
-                <span><strong style="color:#2563eb;">${c.fleetVal}</strong></span>
-              </div>
-            </div>
-            <button onclick="window.__compRemove('${c.name.replace(/'/g,"\\'")}')" title="Remove" style="width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:0;background:transparent;color:#94a3b8;cursor:pointer;flex-shrink:0;font-family:inherit;font-size:18px;line-height:1;">×</button>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>`;
+  const n = compSelected.length;
+  const comparingText = n === 0 ? '' :
+    `<div style="text-align:center;font-size:12.5px;color:#64748b;margin-top:10px">Comparing ${n} compan${n === 1 ? 'y' : 'ies'}</div>`;
 
   return `
-  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;background:#fff;">
-    ${hasSelection ? selectedView : emptyState}
-
-    <!-- Search bar -->
-    <div style="padding:0 24px 24px;background:#fff;display:flex;justify-content:center;flex-shrink:0;">
-      <div style="position:relative;width:100%;max-width:520px;">
+  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;background:#f8fafc;">
+    <!-- Search bar (top) -->
+    <div style="padding:24px 24px 8px;background:#fff;border-bottom:1px solid #f1f5f9;display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
+      <div style="position:relative;width:100%;max-width:560px;">
         <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);display:flex;pointer-events:none;color:#94a3b8;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </span>
         <input id="comp-search" type="text" placeholder="Search by company name, type, or country..." value="${compQuery.replace(/"/g,'&quot;')}" autocomplete="off"
           style="width:100%;height:42px;padding:0 14px 0 40px;border:1px solid #e2e8f0;border-radius:9999px;font-size:13.5px;color:#334155;outline:none;background:#f8fafc;font-family:inherit;transition:border-color .15s,box-shadow .15s,background .15s;" />
-
         ${showDropdown ? `
-        <div id="comp-dropdown" style="position:absolute;left:0;right:0;bottom:calc(100% + 6px);max-height:280px;overflow-y:auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 10px 30px rgba(15,23,42,.15);z-index:50;padding:4px;" class="scroll-thin">
+        <div id="comp-dropdown" style="position:absolute;left:0;right:0;top:calc(100% + 6px);max-height:280px;overflow-y:auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 10px 30px rgba(15,23,42,.15);z-index:50;padding:4px;" class="scroll-thin">
           ${matches.map(c => `
           <button class="comp-dd-item" data-cname="${c.name.replace(/"/g,'&quot;')}" style="width:100%;display:flex;align-items:center;gap:10px;padding:9px 12px;background:transparent;border:0;border-radius:8px;cursor:pointer;font-family:inherit;text-align:left;transition:background .12s;">
-            <span style="width:28px;height:28px;border-radius:6px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">${c.flag}</span>
             <span style="flex:1;min-width:0;">
-              <span style="display:block;font-size:13px;font-weight:600;color:#0f172a;line-height:1.25;">${c.name}</span>
-              <span style="display:block;font-size:11.5px;color:#64748b;margin-top:1px;">${c.type} · ${c.country}</span>
+              <span style="display:block;font-size:13px;font-weight:700;color:#0f172a;line-height:1.25;">${c.name}</span>
+              <span style="display:block;font-size:11.5px;color:#64748b;margin-top:2px;">${c.type} · ${c.country}</span>
             </span>
-            <span style="font-size:11.5px;font-weight:600;color:#2563eb;flex-shrink:0;">${c.fleetVal}</span>
+            <span style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:9999px;background:#f1f5f9;color:#0f172a;font-size:11px;font-weight:600;flex-shrink:0">${c.fleet} assets</span>
           </button>`).join('')}
         </div>` : ''}
       </div>
+      ${comparingText}
     </div>
+
+    <!-- Cards or empty state -->
+    ${hasSelection ? `
+    <div style="flex:1;overflow-y:auto;padding:20px 24px;" class="scroll-thin">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill, 320px);gap:16px;justify-content:start;max-width:1376px;margin:0 auto;">
+        ${compSelected.map(name => {
+          const c = COMPETITOR_COMPANIES.find(x => x.name === name);
+          return c ? competitorCard(c) : '';
+        }).join('')}
+      </div>
+    </div>
+    ` : `
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;">
+      <div style="color:#94a3b8;margin-bottom:14px;">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </div>
+      <h3 style="font-size:18px;font-weight:700;color:#0f172a;margin-bottom:6px;text-align:center;">No Companies Selected for Comparison</h3>
+      <p style="font-size:13.5px;color:#64748b;line-height:1.6;max-width:340px;text-align:center;">Use the search field above to find and add companies to compare.</p>
+    </div>
+    `}
   </div>`;
 }
 
@@ -772,8 +842,15 @@ function wireCompetitorTab() {
       search.style.borderColor = '#e2e8f0';
       search.style.boxShadow = '';
       search.style.background = '#f8fafc';
-      // Defer hide so click on dropdown registers
-      setTimeout(() => { compDropdownOpen = false; rerenderCompTab(false); }, 150);
+      // Defer hide so click on dropdown registers — but skip the close if focus is still
+      // on the (re-rendered) search input or a dropdown item.
+      setTimeout(() => {
+        const ae = document.activeElement;
+        const stillInSearch = ae && (ae.id === 'comp-search' || (ae.closest && ae.closest('#comp-dropdown')));
+        if (stillInSearch) return;
+        compDropdownOpen = false;
+        rerenderCompTab(false);
+      }, 150);
     };
   }
   document.querySelectorAll('.comp-dd-item').forEach(b => {
@@ -847,7 +924,7 @@ window.render = function() {
               <option value="comp"    ${activeTab==='comp'   ?'selected':''}>Competitor Analysis</option>
             </select>
           </div>
-          <div id="reports-content">
+          <div id="reports-content" style="flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">
             ${tabContent()}
           </div>
         </div>

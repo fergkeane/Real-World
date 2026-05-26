@@ -40,22 +40,22 @@
   .ds-tab{position:relative;font:inherit;font-size:13px;font-weight:600;padding:7px 16px;background:transparent;border:0;border-radius:9999px;color:#64748b;cursor:pointer;transition:color 140ms ease;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
   .ds-tab:hover{color:#0f172a;}
   .ds-tab[aria-selected="true"]{color:#fff;}
-  .ds-tab-pill{position:absolute;top:4px;left:0;height:calc(100% - 8px);background:#2563eb;border-radius:9999px;box-shadow:0 1px 2px rgba(15,23,42,.12);z-index:0;transition:transform 320ms cubic-bezier(.34,1.2,.64,1),width 320ms cubic-bezier(.34,1.2,.64,1);pointer-events:none;}
+  .ds-tab-pill{position:absolute;top:4px;left:0;height:calc(100% - 8px);background:var(--brand-600,#2563eb);border-radius:9999px;box-shadow:0 1px 2px rgba(15,23,42,.12);z-index:0;transition:transform 320ms cubic-bezier(.34,1.2,.64,1),width 320ms cubic-bezier(.34,1.2,.64,1);pointer-events:none;}
   .ds-tab-pill.is-init{transition:none;}
   .ds-tab-label{position:relative;z-index:1;display:inline-flex;align-items:center;gap:6px;}
   /* Legacy pill tabs (kept for any leftover usage) */
   .ptabs{display:inline-flex;gap:4px;padding:4px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9999px;position:relative}
   .ptab{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:9999px;font-size:13px;font-weight:600;cursor:pointer;border:0;font-family:inherit;transition:background .15s,color .15s;white-space:nowrap}
-  .ptab.active{background:#2563eb;color:#fff}
+  .ptab.active{background:var(--brand-600,#2563eb);color:#fff}
   .ptab:not(.active){background:transparent;color:#64748b}
   .ptab:not(.active):hover{color:#0f172a}
   /* Segment tabs (equal width, no pill container) */
   .seg-tab{flex:1;padding:7px 4px;font-size:13px;font-weight:600;cursor:pointer;border:0;font-family:inherit;transition:background .15s,color .15s;border-radius:9999px;background:transparent;color:#64748b}
-  .seg-tab.active{background:#2563eb;color:#fff}
+  .seg-tab.active{background:var(--brand-600,#2563eb);color:#fff}
   .seg-tab:not(.active):hover{color:#334155}
   /* Stat pills */
   .spill-gray{display:inline-block;background:#f1f5f9;color:#334155;font-size:14px;font-weight:700;padding:4px 12px;border-radius:8px}
-  .spill-blue{display:inline-block;background:#eff6ff;color:#2563eb;font-size:14px;font-weight:700;padding:4px 12px;border-radius:8px}
+  .spill-blue{display:inline-block;background:var(--brand-50,#eff6ff);color:var(--brand-600,#2563eb);font-size:14px;font-weight:700;padding:4px 12px;border-radius:8px}
   .spill-red {display:inline-block;background:#fef2f2;color:#dc2626;font-size:14px;font-weight:700;padding:4px 12px;border-radius:8px}
   /* Totals table */
   .tot-row{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:13px}
@@ -71,11 +71,11 @@
   .map-btn:hover{background:#f1f5f9}
   /* Mobile responsive */
   .mrd-top-row{display:flex;gap:12px;margin-bottom:12px;min-height:0;}
-  .mrd-left-panel{width:220px;flex-shrink:0;}
+  .mrd-left-panel{width:260px;flex-shrink:0;}
   /* Card tab dropdown — used in place of pill tabs */
   .tab-dd{display:inline-block;min-width:240px;max-width:100%;padding:8px 36px 8px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:600;color:#0f172a;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;background-size:12px;font-family:inherit;cursor:pointer;appearance:none;-webkit-appearance:none;transition:border-color .15s,box-shadow .15s;}
   .tab-dd:hover{border-color:#cbd5e1;}
-  .tab-dd:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15);}
+  .tab-dd:focus{outline:none;border-color:var(--brand-600,#2563eb);box-shadow:0 0 0 3px rgba(37,99,235,.15);}
   .mobile-tab-select{display:none;width:100%;padding:7px 12px;border:1px solid #e2e8f0;border-radius:9999px;font-size:13px;font-weight:600;color:#334155;background:#f1f5f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;font-family:inherit;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;}
   @media(max-width:767px){
     .mrd-top-row{flex-direction:column;}
@@ -184,7 +184,7 @@ function initMap() {
   const regionAssets    = 1247;
   const regionPopupHTML = `
     <div style="font-family:'Inter',sans-serif;width:250px;border-radius:12px;overflow:hidden">
-      <div style="background:#2563eb;color:#fff;padding:11px 14px;display:flex;align-items:center;gap:8px">
+      <div style="background:var(--brand-600,#2563eb);color:#fff;padding:11px 14px;display:flex;align-items:center;gap:8px">
         <span style="width:11px;height:11px;border-radius:50%;background:${regionDotColor};flex-shrink:0;border:1.5px solid rgba(255,255,255,.5)"></span>
         <span style="font-size:14px;font-weight:700;flex:1">${regionName}</span>
       </div>
@@ -224,7 +224,7 @@ function initMap() {
     const portRiskColor = {Low:'#16a34a',Medium:'#f97316',High:'#dc2626',Critical:'#7c3aed'}[p.risk] || '#64748b';
     const portPopupHTML = `
       <div style="font-family:'Inter',sans-serif;width:250px;border-radius:12px;overflow:hidden">
-        <div style="background:#2563eb;color:#fff;padding:11px 14px;display:flex;align-items:center;gap:8px">
+        <div style="background:var(--brand-600,#2563eb);color:#fff;padding:11px 14px;display:flex;align-items:center;gap:8px">
           <span style="width:11px;height:11px;border-radius:50%;background:#fff;flex-shrink:0;border:1.5px solid rgba(255,255,255,.5);display:inline-flex;align-items:center;justify-content:center">
             <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
           </span>
@@ -330,7 +330,7 @@ function Content() {
             </tr></thead>
             <tbody>
               ${PORTFOLIOS.map(p => `<tr>
-                <td style="color:#2563eb;font-weight:500;cursor:pointer">${p.name}</td>
+                <td style="color:var(--brand-600,#2563eb);font-weight:500;cursor:pointer">${p.name}</td>
                 <td style="font-weight:600">${p.total}</td>
                 <td>${p.hull}</td><td>${p.cargo}</td><td>${p.liab}</td>
               </tr>`).join('')}
@@ -338,14 +338,21 @@ function Content() {
           </table>
         </div>
         <div style="padding:10px 14px;border-top:1px solid #f1f5f9;text-align:center;flex-shrink:0">
-          <button style="font-size:13px;color:#2563eb;font-weight:600;background:none;border:0;cursor:pointer">View All Portfolios</button>
+          <button style="font-size:13px;color:var(--brand-600,#2563eb);font-weight:600;background:none;border:0;cursor:pointer">View All Portfolios</button>
         </div>
       </div>
 
       <!-- RIGHT: Region Summary Statistics -->
       <div style="flex:2;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06);overflow:hidden;display:flex;flex-direction:column">
         <div style="padding:10px 12px;border-bottom:1px solid #f1f5f9;flex-shrink:0">
-          <select id="rtab-sel" class="tab-dd" aria-label="Section">
+          <div class="tabs-desktop-wrap">
+            <div class="ds-tabs" id="rtab-tabs">
+              <span class="ds-tab-pill is-init" data-tab-pill></span>
+              <button class="ds-tab" aria-selected="${rightTab==='stats'}"  data-rtab="stats"><span class="ds-tab-label">Region Summary Statistics</span></button>
+              <button class="ds-tab" aria-selected="${rightTab==='report'}" data-rtab="report"><span class="ds-tab-label">Create Region Report</span></button>
+            </div>
+          </div>
+          <select id="rtab-sel" class="mobile-tab-select" aria-label="Section">
             <option value="stats"  ${rightTab==='stats'  ? 'selected' : ''}>Region Summary Statistics</option>
             <option value="report" ${rightTab==='report' ? 'selected' : ''}>Create Region Report</option>
           </select>
@@ -436,8 +443,17 @@ function Content() {
     <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06);overflow:hidden;display:flex;flex-direction:column;min-height:420px">
       <!-- Tab selector -->
       <div style="padding:10px 14px;border-bottom:1px solid #f1f5f9;flex-shrink:0;">
-        <label for="map-tab-sel" style="display:block;font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">View</label>
-        <select class="tab-dd" id="map-tab-sel" aria-label="Select view">
+        <div class="tabs-desktop-wrap">
+          <div class="ds-tabs" id="map-view-tabs" style="display:inline-flex;flex-wrap:wrap;max-width:100%">
+            <span class="ds-tab-pill is-init" data-tab-pill></span>
+            <button class="ds-tab" aria-selected="${mapTab==='map'}"        data-mtab="map"><span class="ds-tab-label">Map</span></button>
+            <button class="ds-tab" aria-selected="${mapTab==='policies'}"   data-mtab="policies"><span class="ds-tab-label">Policies</span></button>
+            <button class="ds-tab" aria-selected="${mapTab==='notif'}"      data-mtab="notif"><span class="ds-tab-label">Notifications</span></button>
+            <button class="ds-tab" aria-selected="${mapTab==='history'}"    data-mtab="history"><span class="ds-tab-label">Region History</span></button>
+            <button class="ds-tab" aria-selected="${mapTab==='casualties'}" data-mtab="casualties"><span class="ds-tab-label">Region Casualties</span></button>
+          </div>
+        </div>
+        <select class="mobile-tab-select" id="map-tab-sel" aria-label="Select view">
           <option value="map" ${mapTab==='map'?'selected':''}>Map</option>
           <option value="policies" ${mapTab==='policies'?'selected':''}>Policies</option>
           <option value="notif" ${mapTab==='notif'?'selected':''}>Notifications</option>
@@ -477,11 +493,29 @@ function positionTabPills() {
       if (!pill || !active) return;
       const gRect = group.getBoundingClientRect();
       const aRect = active.getBoundingClientRect();
-      pill.style.width     = aRect.width + 'px';
-      pill.style.transform = `translateX(${aRect.left - gRect.left}px)`;
-    });
-    requestAnimationFrame(() => {
-      document.querySelectorAll('.ds-tab-pill.is-init').forEach(p => p.classList.remove('is-init'));
+      const targetW = aRect.width;
+      const targetX = aRect.left - gRect.left;
+      // Animate from previous tab to new one if we have a saved position for this group.
+      const key = group.id || group.dataset.tabGroup || '';
+      window._mrdPillCache = window._mrdPillCache || {};
+      const prev = key && window._mrdPillCache[key];
+      if (prev) {
+        pill.classList.add('is-init');
+        pill.style.width = prev.w + 'px';
+        pill.style.transform = `translateX(${prev.x}px)`;
+        requestAnimationFrame(() => {
+          pill.classList.remove('is-init');
+          requestAnimationFrame(() => {
+            pill.style.width = targetW + 'px';
+            pill.style.transform = `translateX(${targetX}px)`;
+          });
+        });
+      } else {
+        pill.style.width = targetW + 'px';
+        pill.style.transform = `translateX(${targetX}px)`;
+        requestAnimationFrame(() => pill.classList.remove('is-init'));
+      }
+      if (key) window._mrdPillCache[key] = { w: targetW, x: targetX };
     });
   });
 }
@@ -495,9 +529,11 @@ function rc() {
 }
 function wire() {
   document.querySelectorAll('[data-ltab]').forEach(b => b.addEventListener('click', () => { leftTab  = b.dataset.ltab;  rc(); }));
+  document.querySelectorAll('[data-rtab]').forEach(b => b.addEventListener('click', () => { rightTab = b.dataset.rtab; rc(); }));
   const rtabSel = document.getElementById('rtab-sel');
   if (rtabSel) rtabSel.onchange = () => { rightTab = rtabSel.value; rc(); };
   document.querySelectorAll('[data-stab]').forEach(b => b.addEventListener('click', () => { statSub  = b.dataset.stab;  rc(); }));
+  document.querySelectorAll('[data-mtab]').forEach(b => b.addEventListener('click', () => { mapTab = b.dataset.mtab; rc(); }));
   window.addEventListener('resize', positionTabPills, { passive: true });
   const mapTabSel = document.getElementById('map-tab-sel');
   if (mapTabSel) mapTabSel.onchange = () => { mapTab = mapTabSel.value; rc(); };

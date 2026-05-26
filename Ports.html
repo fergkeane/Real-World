@@ -45,7 +45,7 @@
   .port-popup .leaflet-popup-tip { background:#fff; }
   .port-popup .leaflet-popup-close-button { color:#fff !important; top:8px !important; right:10px !important; font-size:22px !important; font-weight:300 !important; width:24px !important; height:24px !important; opacity:.85; }
   .port-popup .leaflet-popup-close-button:hover { background:rgba(255,255,255,.2) !important; color:#fff !important; opacity:1; }
-  .pp-header { background:#2563eb; color:#fff; padding:12px 14px 10px; }
+  .pp-header { background:var(--brand-600,#2563eb); color:#fff; padding:12px 14px 10px; }
   .pp-title { font-size:14px; font-weight:700; }
   .pp-sub { font-size:11px; font-weight:500; opacity:.75; margin-left:5px; }
   .pp-body { background:#fff; }
@@ -61,7 +61,7 @@
   .ds-tab{position:relative;font:inherit;font-size:13px;font-weight:600;padding:7px 16px;background:transparent;border:0;border-radius:9999px;color:#64748b;cursor:pointer;transition:color 140ms ease;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
   .ds-tab:hover{color:#0f172a;}
   .ds-tab[aria-selected="true"]{color:#fff;}
-  .ds-tab-pill{position:absolute;top:4px;left:0;height:calc(100% - 8px);background:#2563eb;border-radius:9999px;box-shadow:0 1px 2px rgba(15,23,42,.12);z-index:0;transition:transform 320ms cubic-bezier(.34,1.2,.64,1),width 320ms cubic-bezier(.34,1.2,.64,1);pointer-events:none;}
+  .ds-tab-pill{position:absolute;top:4px;left:0;height:calc(100% - 8px);background:var(--brand-600,#2563eb);border-radius:9999px;box-shadow:0 1px 2px rgba(15,23,42,.12);z-index:0;transition:transform 320ms cubic-bezier(.34,1.2,.64,1),width 320ms cubic-bezier(.34,1.2,.64,1);pointer-events:none;}
   .ds-tab-pill.is-init{transition:none;}
   .ds-tab-label{position:relative;z-index:1;display:inline-flex;align-items:center;gap:6px;}
 
@@ -381,9 +381,26 @@ function positionTabPill() {
     if (!pill || !active) return;
     const gRect = group.getBoundingClientRect();
     const aRect = active.getBoundingClientRect();
-    pill.style.width     = aRect.width + 'px';
-    pill.style.transform = `translateX(${aRect.left - gRect.left}px)`;
-    requestAnimationFrame(() => pill.classList.remove('is-init'));
+    const targetW = aRect.width;
+    const targetX = aRect.left - gRect.left;
+    if (window._portsPrevPill) {
+      // Animate from previous tab's position to the new one via double-rAF.
+      pill.classList.add('is-init');
+      pill.style.width = window._portsPrevPill.w + 'px';
+      pill.style.transform = `translateX(${window._portsPrevPill.x}px)`;
+      requestAnimationFrame(() => {
+        pill.classList.remove('is-init');
+        requestAnimationFrame(() => {
+          pill.style.width = targetW + 'px';
+          pill.style.transform = `translateX(${targetX}px)`;
+        });
+      });
+    } else {
+      pill.style.width = targetW + 'px';
+      pill.style.transform = `translateX(${targetX}px)`;
+      requestAnimationFrame(() => pill.classList.remove('is-init'));
+    }
+    window._portsPrevPill = { w: targetW, x: targetX };
   });
 }
 

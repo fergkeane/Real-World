@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Aviation Region Details — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  .scroll-thin::-webkit-scrollbar{width:5px}.scroll-thin::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
+  #region-map{position:absolute;inset:0}
+  .leaflet-control-zoom,.leaflet-bar{border:1px solid #e2e8f0!important;box-shadow:0 1px 2px rgba(15,23,42,.08)!important;border-radius:8px!important;overflow:hidden}
+  .leaflet-bar a{background:#fff!important;color:#334155!important;line-height:30px!important}
+  .leaflet-bar a:hover{background:#f1f5f9!important}
+  /* Pill tabs */
+  .ds-tabs{position:relative;display:inline-flex;gap:4px;padding:4px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9999px}
+  .ds-tab{position:relative;font:inherit;font-size:13px;font-weight:600;padding:7px 16px;background:transparent;border:0;border-radius:9999px;color:#64748b;cursor:pointer;transition:color 140ms ease;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+  .ds-tab:hover{color:#0f172a}
+  .ds-tab[aria-selected="true"]{color:#fff}
+  .ds-tab-pill{position:absolute;top:4px;left:0;height:calc(100% - 8px);background:var(--brand-600,#2563eb);border-radius:9999px;box-shadow:0 1px 2px rgba(15,23,42,.12);z-index:0;transition:transform 320ms cubic-bezier(.34,1.2,.64,1),width 320ms cubic-bezier(.34,1.2,.64,1);pointer-events:none}
+  .ds-tab-pill.is-init{transition:none}
+  .ds-tab-label{position:relative;z-index:1;display:inline-flex;align-items:center;gap:6px}
+  /* Totals rows */
+  .tot-row{display:flex;align-items:center;padding:9px 0;border-bottom:1px solid #f1f5f9;font-size:13px}
+  .tot-row:last-child{border-bottom:0}
+  /* Portfolio table */
+  .pf-tbl{width:100%;border-collapse:collapse}
+  .pf-tbl th{padding:9px 10px;font-size:11.5px;font-weight:600;color:#64748b;text-align:left;border-bottom:1px solid #f1f5f9;white-space:nowrap}
+  .pf-tbl td{padding:9px 10px;font-size:13px;color:#334155;border-bottom:1px solid #f8fafc;vertical-align:middle;white-space:nowrap}
+  .pf-tbl tr:last-child td{border-bottom:0}
+  .pf-tbl tbody tr:hover td{background:#fafafa}
+  /* Airport row card */
+  .airport-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;margin-bottom:10px;transition:border-color .15s,box-shadow .15s;cursor:pointer}
+  .airport-card:hover{border-color:#cbd5e1;box-shadow:0 2px 8px rgba(15,23,42,.05)}
+  /* Stat pills */
+  .spill-blue{display:inline-block;background:var(--brand-50,#eff6ff);color:var(--brand-600,#2563eb);font-size:12.5px;font-weight:700;padding:3px 9px;border-radius:7px;font-variant-numeric:tabular-nums}
+  .spill-gray{display:inline-block;background:#f1f5f9;color:#334155;font-size:12.5px;font-weight:700;padding:3px 9px;border-radius:7px;font-variant-numeric:tabular-nums}
+  /* Coverage tabs */
+  .cov-tab{flex:1;padding:7px 8px;font-size:13px;font-weight:600;cursor:pointer;border:0;font-family:inherit;transition:background .15s,color .15s;border-radius:9999px;background:transparent;color:#64748b;white-space:nowrap}
+  .cov-tab.active{background:var(--brand-600,#2563eb);color:#fff}
+  .cov-tab:not(.active):hover{color:#334155}
+  /* Layout */
+  .ard-top-row{display:grid;grid-template-columns:260px minmax(0,1.4fr) minmax(0,1.2fr);gap:12px;margin-bottom:12px}
+  .ard-bottom-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:12px;height:460px}
+  .map-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;color:#334155;box-shadow:0 1px 2px rgba(15,23,42,.08);cursor:pointer}
+  .map-btn:hover{background:#f1f5f9}
+  /* Mobile */
+  .mobile-tab-select{display:none;width:100%;padding:7px 12px;border:1px solid #e2e8f0;border-radius:9999px;font-size:13px;font-weight:600;color:#334155;background:#f1f5f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;font-family:inherit;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none}
+  @media(max-width:1199px){.ard-top-row{grid-template-columns:1fr}.ard-bottom-row{grid-template-columns:1fr}}
+  @media(max-width:767px){.mobile-tab-select{display:block!important}.tabs-desktop-wrap{display:none!important}}
+  /* Region popup */
+  .region-popup .leaflet-popup-content-wrapper{padding:0;border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,.15)}
+  .region-popup .leaflet-popup-content{margin:0}
+  .region-popup .leaflet-popup-close-button{color:#fff !important;opacity:.85;font:700 20px/1 'Inter',sans-serif !important;width:26px;height:26px;padding:2px 0 0 0 !important;top:6px !important;right:6px !important;border-radius:6px;text-align:center;text-decoration:none !important;transition:opacity .12s,background .12s}
+  .region-popup .leaflet-popup-close-button:hover{opacity:1;background:rgba(255,255,255,.18)}
+  /* Coverage map title overlay */
+  .ard-map-title{position:absolute;left:12px;top:12px;z-index:400;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:6px 12px;box-shadow:0 1px 3px rgba(15,23,42,.08);display:flex;align-items:center;gap:8px}
+  .ard-map-legend{position:absolute;left:12px;bottom:16px;z-index:400;background:rgba(125,211,252,.92);border-radius:8px;padding:8px 14px;box-shadow:0 2px 6px rgba(15,23,42,.1)}
+</style>
+</head>
+<body class="bg-slate-100 text-slate-900">
+<div id="app" class="h-screen w-full flex overflow-hidden"></div>
+
+<script>
+window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "density":"compact","accent":"blue","sidebarExpanded":false,"showSparklines":true
+}/*EDITMODE-END*/;
+const regionName = sessionStorage.getItem('selectedAviationRegion') || 'East Asia Corridor';
+window.PAGE = { id:'regions', title:'Aviation Region', crumb: regionName };
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="shared/chrome.js?v=11"></script>
+<script>
+const SC = window.sharedChrome;
+
+/* ── State ─────────────────────────────────────────────────────────────── */
+let leftTab     = 'totals';       // 'totals' | 'details'
+let rightTab    = 'stats';        // 'stats' | 'report'
+let covTab      = 'CHW';          // 'CHW' | 'HULLW' | 'TLOHW'
+let bottomLTab  = 'airports';     // 'airports' | 'alerts'
+let expandedAirports = new Set();
+
+/* ── Data ──────────────────────────────────────────────────────────────── */
+const TOTALS_ROWS = [
+  { label:'All Risk', thr:'$700M', tot:'$5.0B' },
+  { label:'CHW',      thr:'$450M', tot:'$3.5B' },
+  { label:'HULLW',    thr:'$175M', tot:'$1.0B' },
+  { label:'TLOHW',    thr:'$75M',  tot:'$480M' },
+];
+const REGION_INFO = {
+  type:'Active Coverage',
+  created:'2023-08-14',
+  airports:12,
+  policies:284,
+  countries:'CN · JP · KR',
+};
+const PORTFOLIOS = [
+  { name:'Aviation Fleet A',     total:'$1.2B', chw:'$850M', hullw:'$250M', tlohw:'$100M' },
+  { name:'Emirates Portfolio',   total:'$800M', chw:'$800M', hullw:'$0',    tlohw:'$0'    },
+  { name:'European Carriers',    total:'$680M', chw:'$420M', hullw:'$180M', tlohw:'$80M'  },
+  { name:'Asia Pacific Routes',  total:'$562M', chw:'$310M', hullw:'$152M', tlohw:'$100M' },
+  { name:'North American Fleet', total:'$925M', chw:'$650M', hullw:'$200M', tlohw:'$75M'  },
+  { name:'Cargo Operations',     total:'$445M', chw:'$245M', hullw:'$125M', tlohw:'$75M'  },
+  { name:'Latin America Routes', total:'$338M', chw:'$180M', hullw:'$108M', tlohw:'$50M'  },
+];
+const STATS_BY_COV = {
+  CHW:   { avgExp:'$312.8M', hiExp:'$1.2B',   hiExpDate:'Dec 20th 2024', loExp:'$145.2M', loExpDate:'Dec 25th 2024',
+           avgA:18,          hiA:34,          hiADate:'Dec 20th 2024',   loA:6,            loADate:'Dec 25th 2024' },
+  HULLW: { avgExp:'$87.4M',  hiExp:'$320M',   hiExpDate:'Dec 18th 2024', loExp:'$42.1M',  loExpDate:'Dec 28th 2024',
+           avgA:12,          hiA:24,          hiADate:'Dec 18th 2024',   loA:4,            loADate:'Dec 28th 2024' },
+  TLOHW: { avgExp:'$38.2M',  hiExp:'$145M',   hiExpDate:'Dec 22nd 2024', loExp:'$18.5M',  loExpDate:'Dec 26th 2024',
+           avgA:7,           hiA:15,          hiADate:'Dec 22nd 2024',   loA:2,            loADate:'Dec 26th 2024' },
+};
+const AIRPORTS = [
+  { name:'Beijing Capital',    code:'PEK', coord:[40.08,116.60], aog:15, portfolios:4, hull:'$698.1M', chw:'$518.5M', hullw:'$227.4M', tlohw:'$136.4M' },
+  { name:'Shanghai Pudong',    code:'PVG', coord:[31.14,121.81], aog:20, portfolios:4, hull:'$925.3M', chw:'$464.7M', hullw:'$222.6M', tlohw:'$107.8M' },
+  { name:'Guangzhou Baiyun',   code:'CAN', coord:[23.39,113.30], aog:12, portfolios:3, hull:'$612.4M', chw:'$385.2M', hullw:'$176.8M', tlohw:'$82.5M'  },
+  { name:'Tokyo Haneda',       code:'HND', coord:[35.55,139.78], aog:18, portfolios:5, hull:'$842.7M', chw:'$502.9M', hullw:'$212.5M', tlohw:'$98.3M'  },
+  { name:'Tokyo Narita',       code:'NRT', coord:[35.77,140.39], aog:14, portfolios:3, hull:'$521.8M', chw:'$320.6M', hullw:'$148.4M', tlohw:'$72.1M'  },
+  { name:'Seoul Incheon',      code:'ICN', coord:[37.46,126.44], aog:16, portfolios:4, hull:'$715.2M', chw:'$428.5M', hullw:'$189.7M', tlohw:'$91.4M'  },
+  { name:'Hong Kong Intl',     code:'HKG', coord:[22.31,113.91], aog:11, portfolios:3, hull:'$485.6M', chw:'$298.1M', hullw:'$132.8M', tlohw:'$64.2M'  },
+  { name:'Taipei Taoyuan',     code:'TPE', coord:[25.07,121.23], aog:9,  portfolios:2, hull:'$352.4M', chw:'$215.8M', hullw:'$98.6M',  tlohw:'$45.7M'  },
+  { name:'Osaka Kansai',       code:'KIX', coord:[34.43,135.24], aog:8,  portfolios:2, hull:'$298.7M', chw:'$182.4M', hullw:'$84.2M',  tlohw:'$38.9M'  },
+  { name:'Busan Gimhae',       code:'PUS', coord:[35.18,128.94], aog:7,  portfolios:2, hull:'$245.8M', chw:'$152.6M', hullw:'$69.4M',  tlohw:'$31.5M'  },
+  { name:'Shenzhen Baoan',     code:'SZX', coord:[22.64,113.81], aog:10, portfolios:3, hull:'$412.9M', chw:'$254.7M', hullw:'$115.3M', tlohw:'$52.8M'  },
+  { name:'Chengdu Shuangliu',  code:'CTU', coord:[30.58,103.94], aog:6,  portfolios:2, hull:'$198.5M', chw:'$122.4M', hullw:'$55.8M',  tlohw:'$25.3M'  },
+];
+
+/* ── SVGs ──────────────────────────────────────────────────────────────── */
+const SORT_ICO   = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 4 18 9"/><polyline points="6 15 12 20 18 15"/></svg>`;
+const INFO_ICO   = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+const LINK_ICO   = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
+const CAL_ICO    = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
+const PLANE_ICO  = (color) => `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19.5 2.5 18 1 16 1 14.5 2.5L11 6 2.8 4.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 5.5 6.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>`;
+const BRIEF_ICO  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`;
+const CHEV_ICO   = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+const MAP_PIN    = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--brand-600,#2563eb)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
+const EXPAND_ICO = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>`;
+const LAYERS_ICO = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`;
+
+/* ── Map ───────────────────────────────────────────────────────────────── */
+let rMap = null, rTile = null;
+function initMap() {
+  const el = document.getElementById('region-map');
+  if (!el) return;
+  if (rMap) { rMap.remove(); rMap = null; rTile = null; }
+  rMap = L.map(el, { center:[32.0,118.0], zoom:4, zoomControl:false, scrollWheelZoom:true });
+  rTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { attribution:'', maxZoom:19 }).addTo(rMap);
+  L.control.zoom({ position:'topleft' }).addTo(rMap);
+
+  AIRPORTS.forEach(a => {
+    const icon = L.divIcon({
+      className:'',
+      html:`<div style="width:32px;height:32px;border-radius:50%;background:#fff;border:2px solid var(--brand-600,#2563eb);box-shadow:0 2px 6px rgba(37,99,235,.3);display:flex;align-items:center;justify-content:center">${PLANE_ICO('var(--brand-600,#2563eb)')}</div>`,
+      iconSize:[32,32], iconAnchor:[16,16],
+    });
+    const popupHTML = `
+      <div style="font-family:'Inter',sans-serif;width:240px;border-radius:12px;overflow:hidden">
+        <div style="background:var(--brand-600,#2563eb);color:#fff;padding:11px 14px"><span style="font-size:14px;font-weight:700">${a.name} (${a.code})</span></div>
+        <div style="background:#fff;padding:14px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:7px"><span style="color:#64748b;font-size:13px">Aircraft on Ground:</span><span style="font-weight:700;color:#0f172a;font-size:13px">${a.aog}</span></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:7px"><span style="color:#64748b;font-size:13px">Total Hull:</span><span style="font-weight:700;color:#0f172a;font-size:13px">${a.hull}</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:#64748b;font-size:13px">CHW:</span><span style="font-weight:700;color:#0f172a;font-size:13px">${a.chw}</span></div>
+        </div>
+      </div>`;
+    L.marker(a.coord,{icon})
+      .bindPopup(popupHTML, { maxWidth:260, minWidth:240, closeButton:true, className:'region-popup' })
+      .addTo(rMap);
+  });
+
+  setTimeout(() => {
+    const zin  = el.querySelector('.leaflet-control-zoom-in');
+    const zout = el.querySelector('.leaflet-control-zoom-out');
+    if (zin)  zin.innerHTML  = `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>`;
+    if (zout) zout.innerHTML = `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></span>`;
+  }, 100);
+  const fsBtn = document.getElementById('ard-fs');
+  if (fsBtn) fsBtn.addEventListener('click', () => { const w=document.getElementById('ard-map-wrap'); if(w&&w.requestFullscreen)w.requestFullscreen(); setTimeout(()=>rMap&&rMap.invalidateSize(),300); });
+}
+
+/* ── Render ────────────────────────────────────────────────────────────── */
+function airportRow(a) {
+  const open = expandedAirports.has(a.code);
+  return `
+  <div class="airport-card" data-airport="${a.code}">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:38px;height:38px;border-radius:50%;background:var(--brand-50,#eff6ff);display:flex;align-items:center;justify-content:center;flex-shrink:0">${PLANE_ICO('var(--brand-600,#2563eb)')}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:700;color:#0f172a">${a.name}</div>
+        <div style="font-size:11.5px;color:#64748b;font-weight:600;letter-spacing:.04em">${a.code}</div>
+      </div>
+      <button style="background:transparent;border:0;cursor:pointer;color:var(--brand-600,#2563eb);transform:${open?'rotate(180deg)':'rotate(0)'};transition:transform .15s">${CHEV_ICO}</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 16px;font-size:12px;color:#64748b;margin-top:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span>Aircraft on Ground:</span><span class="spill-gray">${PLANE_ICO('#334155')}&nbsp;${a.aog}</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span>Total Portfolios:</span><span class="spill-gray">${BRIEF_ICO}&nbsp;${a.portfolios}</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span>Total Hull:</span><span class="spill-blue">${a.hull}</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span>Total CHW:</span><span class="spill-blue">${a.chw}</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span>Total HULLW:</span><span class="spill-blue">${a.hullw}</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span>Total TLOHW:</span><span class="spill-blue">${a.tlohw}</span></div>
+    </div>
+  </div>`;
+}
+
+function Content() {
+  const s = STATS_BY_COV[covTab] || STATS_BY_COV.CHW;
+  return `
+  <div class="flex-1 min-h-0 overflow-y-auto scroll-thin" style="padding:12px 16px;background:#f1f5f9">
+
+    <!-- Top row: 3 cards -->
+    <div class="ard-top-row">
+
+      <!-- LEFT: Totals / Region Details -->
+      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06);display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:10px 12px;border-bottom:1px solid #f1f5f9">
+          <div class="ds-tabs" id="ltab-tabs" style="width:100%">
+            <span class="ds-tab-pill is-init" data-tab-pill></span>
+            <button class="ds-tab" style="flex:1;justify-content:center" aria-selected="${leftTab==='totals'}"  data-ltab="totals"><span class="ds-tab-label">Totals</span></button>
+            <button class="ds-tab" style="flex:1;justify-content:center" aria-selected="${leftTab==='details'}" data-ltab="details"><span class="ds-tab-label">Region Details</span></button>
+          </div>
+        </div>
+        <div style="padding:12px 16px">
+          ${leftTab === 'totals' ? `
+          <div style="display:flex;justify-content:flex-end;gap:24px;font-size:11.5px;font-weight:600;color:#94a3b8;margin-bottom:6px;padding-right:4px"><span>Above Threshold</span><span>Total</span></div>
+          ${TOTALS_ROWS.map(r => `
+          <div class="tot-row">
+            <span style="flex:1;font-size:13px;color:#334155">${r.label}${r.label!=='All Risk'?':':''}</span>
+            <span style="color:#f97316;font-weight:600;font-size:13px;min-width:64px;text-align:right">${r.thr}</span>
+            <span style="color:#0f172a;font-weight:600;font-size:13px;min-width:56px;text-align:right;margin-left:18px">${r.tot}</span>
+          </div>`).join('')}` : `
+          <div style="font-size:13px;color:#64748b;padding:6px 0;display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--brand-600,#2563eb);font-weight:500">Region Type:</span><span style="color:#0f172a;font-weight:600">${REGION_INFO.type}</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--brand-600,#2563eb);font-weight:500">Created at:</span><span style="color:#0f172a;font-weight:600">${REGION_INFO.created}</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--brand-600,#2563eb);font-weight:500">Airports:</span><span style="color:#0f172a;font-weight:600">${REGION_INFO.airports}</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--brand-600,#2563eb);font-weight:500">Active Policies:</span><span style="color:#0f172a;font-weight:600">${REGION_INFO.policies}</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--brand-600,#2563eb);font-weight:500">Countries:</span><span style="color:#0f172a;font-weight:600">${REGION_INFO.countries}</span></div>
+          </div>`}
+        </div>
+      </div>
+
+      <!-- MIDDLE: Region Exposure by Portfolio -->
+      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06);display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:12px 14px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:14px;font-weight:700;color:#0f172a">Region Exposure by Portfolio</span>
+          <span style="display:flex;align-items:center;gap:5px;font-size:12.5px;color:#64748b">${LINK_ICO} ${PORTFOLIOS.length}</span>
+        </div>
+        <div style="flex:1;overflow-y:auto" class="scroll-thin">
+          <table class="pf-tbl">
+            <thead><tr>
+              <th>Name</th>
+              <th>Total</th>
+              <th><span style="display:inline-flex;align-items:center;gap:4px">${INFO_ICO}CHW</span></th>
+              <th><span style="display:inline-flex;align-items:center;gap:4px">${INFO_ICO}HULLW</span></th>
+              <th><span style="display:inline-flex;align-items:center;gap:4px">${INFO_ICO}TLOHW</span></th>
+            </tr></thead>
+            <tbody>
+              ${PORTFOLIOS.map(p => `<tr>
+                <td style="color:var(--brand-600,#2563eb);font-weight:500;cursor:pointer">${p.name}</td>
+                <td style="font-weight:600">${p.total}</td>
+                <td>${p.chw}</td>
+                <td>${p.hullw}</td>
+                <td>${p.tlohw}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div style="padding:10px 14px;border-top:1px solid #f1f5f9;text-align:center">
+          <button style="font-size:13px;color:var(--brand-600,#2563eb);font-weight:600;background:none;border:1px solid var(--brand-600,#2563eb);border-radius:8px;padding:6px 14px;cursor:pointer">View All Portfolios</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: Region Summary Statistics -->
+      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06);display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:10px 12px;border-bottom:1px solid #f1f5f9">
+          <div class="tabs-desktop-wrap">
+            <div class="ds-tabs" id="rtab-tabs" style="width:100%">
+              <span class="ds-tab-pill is-init" data-tab-pill></span>
+              <button class="ds-tab" style="flex:1;justify-content:center" aria-selected="${rightTab==='stats'}"  data-rtab="stats"><span class="ds-tab-label">Region Summary Statistics</span></button>
+              <button class="ds-tab" style="flex:1;justify-content:center" aria-selected="${rightTab==='report'}" data-rtab="report"><span class="ds-tab-label">Create Region Report</span></button>
+            </div>
+          </div>
+          <select id="rtab-sel" class="mobile-tab-select" aria-label="Section">
+            <option value="stats"  ${rightTab==='stats'  ? 'selected' : ''}>Region Summary Statistics</option>
+            <option value="report" ${rightTab==='report' ? 'selected' : ''}>Create Region Report</option>
+          </select>
+        </div>
+        ${rightTab === 'stats' ? `
+        <div style="flex:1;overflow-y:auto;padding:12px 14px" class="scroll-thin">
+          <div style="font-size:11.5px;color:#64748b;margin-bottom:5px">Date Range:</div>
+          <div style="display:grid;grid-template-columns:1fr 14px 1fr;align-items:center;gap:8px;margin-bottom:14px">
+            <div style="position:relative">
+              <input type="text" value="Dec 1st 2024" readonly style="width:100%;height:30px;border:1px solid #e2e8f0;border-radius:7px;padding:0 26px 0 8px;font-size:12.5px;color:#334155;background:#f8fafc;outline:none;font-family:inherit" />
+              <span style="position:absolute;right:7px;top:50%;transform:translateY(-50%);display:flex">${CAL_ICO}</span>
+            </div>
+            <span style="font-size:12px;color:#94a3b8;text-align:center">to</span>
+            <div style="position:relative">
+              <input type="text" value="Dec 31st 2024" readonly style="width:100%;height:30px;border:1px solid #e2e8f0;border-radius:7px;padding:0 26px 0 8px;font-size:12.5px;color:#334155;background:#f8fafc;outline:none;font-family:inherit" />
+              <span style="position:absolute;right:7px;top:50%;transform:translateY(-50%);display:flex">${CAL_ICO}</span>
+            </div>
+          </div>
+          <!-- Coverage sub-tabs -->
+          <div style="display:flex;align-items:center;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9999px;padding:4px;gap:4px;margin-bottom:14px">
+            ${['CHW','HULLW','TLOHW'].map(t => `<button class="cov-tab ${t===covTab?'active':''}" data-cov="${t}">${t}</button>`).join('')}
+          </div>
+          <!-- Stats list -->
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:14px">
+              <div style="flex:1">
+                <div style="font-size:12.5px;font-weight:600;color:#0f172a">Average Daily Exposure Value:</div>
+              </div>
+              <span class="spill-blue">${s.avgExp}</span>
+              <div style="flex:1;display:flex;align-items:center;gap:5px;color:#64748b;font-size:12px">${INFO_ICO}Average Daily Asset Count:</div>
+              <span style="font-size:13px;font-weight:700;color:#0f172a;min-width:30px;text-align:right">${s.avgA}</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:14px">
+              <div style="flex:1">
+                <div style="font-size:12.5px;font-weight:600;color:#0f172a">Highest Daily Exposure Value:</div>
+                <div style="font-size:11px;color:#f97316;font-weight:600;margin-top:2px">${s.hiExpDate}</div>
+              </div>
+              <span class="spill-blue">${s.hiExp}</span>
+              <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:5px;color:#64748b;font-size:12px">${INFO_ICO}Highest Daily Asset Count:</div>
+                <div style="font-size:11px;color:#f97316;font-weight:600;margin-top:2px">${s.hiADate}</div>
+              </div>
+              <span style="font-size:13px;font-weight:700;color:#0f172a;min-width:30px;text-align:right">${s.hiA}</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:14px">
+              <div style="flex:1">
+                <div style="font-size:12.5px;font-weight:600;color:#0f172a">Lowest Daily Exposure Value:</div>
+                <div style="font-size:11px;color:#f97316;font-weight:600;margin-top:2px">${s.loExpDate}</div>
+              </div>
+              <span class="spill-blue">${s.loExp}</span>
+              <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:5px;color:#64748b;font-size:12px">${INFO_ICO}Lowest Daily Asset Count:</div>
+                <div style="font-size:11px;color:#f97316;font-weight:600;margin-top:2px">${s.loADate}</div>
+              </div>
+              <span style="font-size:13px;font-weight:700;color:#0f172a;min-width:30px;text-align:right">${s.loA}</span>
+            </div>
+          </div>
+        </div>` : `
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:24px"><div style="text-align:center;color:#94a3b8;font-size:13px">Report builder coming soon</div></div>`}
+      </div>
+    </div>
+
+    <!-- Bottom row: Airports list + Coverage map -->
+    <div class="ard-bottom-row">
+      <!-- Airports list -->
+      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06);display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:10px 12px;border-bottom:1px solid #f1f5f9">
+          <div class="ds-tabs" id="btab-tabs">
+            <span class="ds-tab-pill is-init" data-tab-pill></span>
+            <button class="ds-tab" aria-selected="${bottomLTab==='airports'}" data-btab="airports"><span class="ds-tab-label">Airports <span style="background:rgba(255,255,255,.25);padding:1px 7px;border-radius:9999px;font-size:11px;margin-left:2px">${AIRPORTS.length}</span></span></button>
+            <button class="ds-tab" aria-selected="${bottomLTab==='alerts'}"   data-btab="alerts"><span class="ds-tab-label">Alerts</span></button>
+          </div>
+        </div>
+        ${bottomLTab === 'airports' ? `
+        <div style="flex:1;overflow-y:auto;padding:12px 14px;background:#f8fafc" class="scroll-thin">
+          ${AIRPORTS.map(a => airportRow(a)).join('')}
+        </div>` : `
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:13px;padding:48px">No active alerts</div>`}
+      </div>
+
+      <!-- Coverage map -->
+      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06);display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:12px 14px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:6px">
+          ${MAP_PIN}
+          <span style="font-size:14px;font-weight:700;color:#0f172a">Aviation Coverage Map</span>
+        </div>
+        <div id="ard-map-wrap" style="position:relative;flex:1">
+          <div id="region-map"></div>
+          <button id="ard-fs" class="map-btn" style="position:absolute;top:12px;left:12px;z-index:400">${EXPAND_ICO}</button>
+          <div style="position:absolute;top:12px;right:12px;z-index:400"><button class="map-btn">${LAYERS_ICO}</button></div>
+          <div class="ard-map-legend">
+            <div style="font-size:13px;font-weight:700;color:#0f172a">Aviation Region</div>
+            <div style="font-size:11.5px;color:#475569;margin-top:2px">${AIRPORTS.length} Major Airports</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── Wire + render ─────────────────────────────────────────────────────── */
+let _main = null;
+function positionTabPills() {
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.ds-tabs').forEach(group => {
+      const pill   = group.querySelector('[data-tab-pill]');
+      const active = group.querySelector('.ds-tab[aria-selected="true"]');
+      if (!pill || !active) return;
+      const gRect = group.getBoundingClientRect();
+      const aRect = active.getBoundingClientRect();
+      const targetW = aRect.width;
+      const targetX = aRect.left - gRect.left;
+      const key = group.id || '';
+      window._ardPillCache = window._ardPillCache || {};
+      const prev = key && window._ardPillCache[key];
+      if (prev) {
+        pill.classList.add('is-init');
+        pill.style.width = prev.w + 'px';
+        pill.style.transform = `translateX(${prev.x}px)`;
+        requestAnimationFrame(() => {
+          pill.classList.remove('is-init');
+          requestAnimationFrame(() => {
+            pill.style.width = targetW + 'px';
+            pill.style.transform = `translateX(${targetX}px)`;
+          });
+        });
+      } else {
+        pill.style.width = targetW + 'px';
+        pill.style.transform = `translateX(${targetX}px)`;
+        requestAnimationFrame(() => pill.classList.remove('is-init'));
+      }
+      if (key) window._ardPillCache[key] = { w: targetW, x: targetX };
+    });
+  });
+}
+
+function rc() {
+  if (!_main) return;
+  _main.innerHTML = Content();
+  wire();
+  positionTabPills();
+  if (bottomLTab === 'airports') setTimeout(initMap, 50);
+}
+
+function wire() {
+  document.querySelectorAll('[data-ltab]').forEach(b => b.addEventListener('click', () => { leftTab  = b.dataset.ltab; rc(); }));
+  document.querySelectorAll('[data-rtab]').forEach(b => b.addEventListener('click', () => { rightTab = b.dataset.rtab; rc(); }));
+  document.querySelectorAll('[data-btab]').forEach(b => b.addEventListener('click', () => { bottomLTab = b.dataset.btab; rc(); }));
+  document.querySelectorAll('[data-cov]').forEach(b => b.addEventListener('click', () => { covTab = b.dataset.cov; rc(); }));
+  const rtabSel = document.getElementById('rtab-sel');
+  if (rtabSel) rtabSel.onchange = () => { rightTab = rtabSel.value; rc(); };
+  window.addEventListener('resize', positionTabPills, { passive: true });
+}
+
+window.render = function() {
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
+      ${SC.Topbar()}
+      <main id="ard-main" class="flex-1 min-h-0 overflow-hidden flex flex-col"></main>
+    </div>
+    ${SC.TweaksPanel()}
+  `;
+  SC.wireChrome();
+  _main = document.getElementById('ard-main');
+  rc();
+};
+
+window.render();
+</script>
+</body>
+</html>

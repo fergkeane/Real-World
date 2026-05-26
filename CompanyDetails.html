@@ -46,6 +46,7 @@
   .pgbtn:hover:not([disabled]){background:#f1f5f9}.pgbtn[disabled]{opacity:.4;cursor:not-allowed}
   /* Responsive top row */
   .top-row-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:stretch}
+  .top-row-grid > .card{max-height:480px}
   @media(max-width:1023px){.top-row-grid{grid-template-columns:1fr 1fr}}
   @media(max-width:639px){.top-row-grid{grid-template-columns:1fr}}
   /* Asset header bar wraps on mobile */
@@ -300,11 +301,11 @@ function CardRiskBreakdown() {
     { name:'Overall Compliance',     score:0,  impact:0    },
   ];
   return `
-  <div class="card flex flex-col">
+  <div class="card flex flex-col" style="min-height:0">
     <div style="padding:10px 14px;border-bottom:1px solid #f1f5f9">
       <span style="font-size:14px;font-weight:700;color:#0f172a">Risk Breakdown</span>
     </div>
-    <div style="padding:12px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;">
+    <div style="padding:12px;flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px;" class="scroll-thin">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
         <!-- Gauge -->
         <div style="background:#f8fafc;border-radius:12px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;">
