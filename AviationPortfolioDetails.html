@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Aviation Portfolio Details — Real World</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -12,6 +13,21 @@
   * { box-sizing:border-box; margin:0; padding:0; }
   html,body { height:100%; font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; }
   .tracking-micro{letter-spacing:.08em;font-family:'Exo','Inter',sans-serif;}
+  /* Map */
+  #avia-detail-map { position:absolute; inset:0; background:#0b1e2e; }
+  #avia-detail-map .leaflet-top.leaflet-left { top:56px; left:2px; }
+  #avia-detail-map .leaflet-top.leaflet-left .leaflet-bar { margin-left:10px !important; }
+  .leaflet-control-zoom, .leaflet-bar { border:1px solid #e2e8f0 !important; box-shadow:0 1px 2px rgba(15,23,42,.08) !important; border-radius:8px !important; overflow:hidden; }
+  .leaflet-bar a { background:#fff !important; color:#334155 !important; }
+  .leaflet-bar a:hover { background:#f1f5f9 !important; }
+  .map-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:#fff; border:1px solid #e2e8f0; border-radius:8px; color:#334155; box-shadow:0 1px 2px rgba(15,23,42,.08); cursor:pointer; }
+  .map-btn:hover { background:#f1f5f9; }
+  .airport-icon { width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:#06b6d4; border:2px solid #fff; border-radius:50%; box-shadow:0 2px 6px rgba(0,0,0,.25); }
+  .avia-popup .leaflet-popup-content-wrapper { padding:0; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(15,23,42,.25); }
+  .avia-popup .leaflet-popup-content { margin:0; width:320px !important; font-family:'Inter',sans-serif; }
+  .avia-popup .leaflet-popup-tip { background:#fff; }
+  .avia-popup .leaflet-popup-close-button { color:#fff !important; top:8px !important; right:10px !important; font-size:22px !important; font-weight:300 !important; width:24px !important; height:24px !important; line-height:22px !important; border-radius:6px !important; }
+  .avia-popup .leaflet-popup-close-button:hover { background:rgba(255,255,255,.2) !important; color:#fff !important; }
   .text-ink-900{color:#0f172a}.text-ink-700{color:#334155}.text-ink-600{color:#475569}.text-ink-500{color:#64748b}.text-ink-400{color:#94a3b8}
   .bg-ink-100{background:#f1f5f9}.bg-ink-50{background:#f8fafc}
   .border-ink-100{border-color:#f1f5f9}.border-ink-200{border-color:#e2e8f0}
@@ -70,9 +86,12 @@ window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 }/*EDITMODE-END*/;
 </script>
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="shared/chrome.js?v=11"></script>
+<script src="shared/aviation-map.js"></script>
 <script>
 const SC = window.sharedChrome;
+const Ico = (SC && SC.I) || {};
 
 /* ── Lucide icon helper (mirrors chrome.js pattern) ──────────────────────── */
 function lico(name, size = 16, color = 'currentColor', sw = 2) {
@@ -259,10 +278,6 @@ function PanelSummary() {
           </span>
         </button>
       </div>
-      <button class="ml-auto flex items-center gap-1 border border-ink-200 rounded-lg px-3 py-1.5 text-xs font-semibold text-ink-700 hover:bg-ink-50">
-        Group
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
     </div>
     <!-- Stat boxes -->
     <div class="px-3 pt-3 pb-3 border-b border-ink-100">
@@ -346,6 +361,30 @@ function PolicySection() {
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
     </div>
+    ${policyView === 'map' ? `
+    <!-- Map view -->
+    <div id="avia-map-container" class="relative" style="height:520px;background:#0b1e2e;">
+      <div id="avia-detail-map"></div>
+      <button id="map-fs-btn" class="map-btn absolute z-[400]" title="Toggle fullscreen" style="top:12px;left:12px;">${Ico.maximize || '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>'}</button>
+      <div class="absolute top-3 right-3 z-[400] flex flex-col gap-1 items-end">
+        <div class="relative">
+          <button id="map-layers-btn" class="map-btn" title="Layers"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></button>
+          <div id="map-layers-menu" class="hidden absolute top-0 right-[calc(100%+8px)] w-[160px] bg-white border border-ink-200 rounded-xl shadow-card overflow-hidden py-1">
+            ${[
+              { id:'satellite', label:'Satellite' },
+              { id:'street',    label:'Street View' },
+              { id:'dark',      label:'Dark Mode' },
+              { id:'light',     label:'Light Mode' },
+            ].map(o => `
+              <button data-map-type="${o.id}" class="map-type-opt w-full flex items-center justify-between px-3 py-2 text-sm text-ink-700 hover:bg-ink-50 transition-colors">
+                <span data-label>${o.label}</span>
+                <span class="text-brand-600 opacity-0" data-check><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+              </button>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+    ` : `
     <!-- Delete bar -->
     <div class="flex items-center gap-3 px-4 py-2 border-b border-ink-100 bg-ink-50/50">
       <button class="flex items-center gap-1.5 text-xs border border-ink-200 rounded-md px-3 py-1 text-ink-600 hover:bg-ink-100 font-medium">
@@ -419,10 +458,69 @@ function PolicySection() {
         <span class="ml-2 text-ink-400">Page ${policyPage} of ${totalPages}</span>
       </div>
     </div>
+    `}
   </div>`;
 }
 
 /* ── Render ── */
+function initAviationDetailMap() {
+  const el = document.getElementById('avia-detail-map');
+  if (!el) return;
+  if (map) { try { map.remove(); } catch(e){} map = null; tileLayer = null; }
+
+  map = L.map(el, { center:[30, 20], zoom:2, minZoom:2, maxZoom:6, zoomControl:true, scrollWheelZoom:true });
+  setMapType(currentMapType);
+
+  if (typeof AIRPORTS_LATLNG !== 'undefined') AIRPORTS_LATLNG.forEach(a => {
+    const icon = L.divIcon({
+      className: '',
+      html: `<div class="airport-icon"><svg viewBox="0 0 24 24" class="w-4 h-4 text-white" fill="currentColor"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg></div>`,
+      iconSize:[32,32], iconAnchor:[16,16],
+    });
+    L.marker([a.lat, a.lng], { icon })
+      .bindPopup(buildAirportPopupHTML(a), { className:'avia-popup', maxWidth:320, minWidth:300, closeButton:true, autoPanPadding:[30,30] })
+      .on('popupopen', () => { try { sessionStorage.setItem('selectedAirport', JSON.stringify(a)); } catch(e){} })
+      .addTo(map);
+  });
+
+  if (typeof PLANES !== 'undefined') PLANES.forEach(p => {
+    const planeSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>';
+    const icon = L.divIcon({
+      className: '',
+      html: '<div style="transform:rotate(' + p.rot + 'deg); color:#eab308; width:24px; height:24px; display:flex; align-items:center; justify-content:center; filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))">' + planeSvg + '</div>',
+      iconSize:[24,24], iconAnchor:[12,12],
+    });
+    L.marker([p.lat, p.lng], { icon })
+      .bindPopup(buildFlightPopupHTML(p), { className:'avia-popup', maxWidth:320, minWidth:300, closeButton:true, autoPanPadding:[30,30] })
+      .on('popupopen', () => { try { sessionStorage.setItem('selectedAircraft', JSON.stringify(p)); } catch(e){} })
+      .addTo(map);
+  });
+
+  const fsBtn = document.getElementById('map-fs-btn');
+  const container = document.getElementById('avia-map-container');
+  if (fsBtn && container) {
+    fsBtn.onclick = () => {
+      const isFs = container.classList.toggle('is-fullscreen-avia');
+      if (isFs) container.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#0b1e2e;';
+      else      container.style.cssText = 'height:520px;background:#0b1e2e;';
+      fsBtn.innerHTML = isFs ? Ico.minimize : Ico.maximize;
+      setTimeout(() => map.invalidateSize(), 200);
+    };
+  }
+
+  const layersBtn  = document.getElementById('map-layers-btn');
+  const layersMenu = document.getElementById('map-layers-menu');
+  if (layersBtn && layersMenu) {
+    layersBtn.onclick = (e) => { e.stopPropagation(); layersMenu.classList.toggle('hidden'); };
+    layersMenu.onclick = (e) => e.stopPropagation();
+    layersMenu.querySelectorAll('[data-map-type]').forEach(opt => {
+      opt.onclick = (e) => { e.stopPropagation(); setMapType(opt.dataset.mapType); layersMenu.classList.add('hidden'); };
+    });
+    document.addEventListener('click', () => layersMenu.classList.add('hidden'));
+  }
+  setTimeout(() => map.invalidateSize(), 60);
+}
+
 window.render = function() {
   document.getElementById('app').innerHTML = `
     ${SC.Sidebar()}
@@ -468,10 +566,17 @@ window.render = function() {
         group.querySelectorAll('.ds-tab').forEach(t => t.setAttribute('aria-selected', String(t===btn)));
         positionTabPills();
       }
+      // Re-render so the policy section reflects the new view (table vs map)
+      setTimeout(() => window.render(), 200);
     };
   });
   const pvwSel = document.getElementById('policy-view-mobile-sel');
   if (pvwSel) pvwSel.onchange = () => { policyView = pvwSel.value; window.render(); };
+
+  /* Init map when in map view */
+  if (policyView === 'map') {
+    setTimeout(initAviationDetailMap, 80);
+  }
 
   /* Pagination */
   document.querySelectorAll('[data-pp]').forEach(btn => {
