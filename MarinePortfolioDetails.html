@@ -25,7 +25,8 @@
 </script>
 <style>
   html,body { font-family:'Open Sans',system-ui,sans-serif; }
-  h1,h2,h3,h4,h5,h6,.font-display { font-family:'Exo','Open Sans',sans-serif; }
+  h1,h2,h3,h4,h5,h6,.font-display,.tracking-micro { font-family:'Exo','Open Sans',sans-serif; }
+  .tracking-micro { letter-spacing:.08em; }
   .scroll-thin::-webkit-scrollbar { width:5px; height:5px; }
   .scroll-thin::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:999px; }
   .pop-enter { animation:pop .16s cubic-bezier(.2,.8,.2,1); }
@@ -76,14 +77,24 @@
   /* Compliance circle */
   .compliance-circle { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,#22c55e,#16a34a); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 16px rgba(22,163,74,.3); }
   /* Mobile responsive */
+  .top-panels-grid { grid-template-columns:minmax(0,5fr) minmax(0,9fr) minmax(0,5fr) minmax(0,4fr); }
+  .psc-grid { grid-template-columns:repeat(4,1fr); }
   @media(max-width:767px){
-    .top-panels-grid { grid-template-columns:1fr; }
+    .top-panels-grid { grid-template-columns:minmax(0,1fr); }
     .psc-grid { grid-template-columns:1fr 1fr; }
     .analysis-tabs-scroll { overflow-x:auto; }
     .analysis-tabs-scroll .ds-tabs { display:flex; flex-wrap:nowrap; }
+    /* Mobile: stretch tabs that opt-in via .mobile-stretch */
+    .ds-tabs.mobile-stretch { display:flex; width:100%; }
+    .ds-tabs.mobile-stretch .ds-tab { flex:1 1 0; min-width:0; justify-content:center; padding-left:6px; padding-right:6px; }
+    .ds-tabs.mobile-stretch .ds-tab-label { justify-content:center; }
+    /* Mobile: replace analysis tabs with a dropdown */
+    .analysis-tabs-desktop { display:none !important; }
+    .analysis-tabs-mobile  { display:block !important; }
   }
-  .top-panels-grid { grid-template-columns:minmax(0,5fr) minmax(0,9fr) minmax(0,5fr) minmax(0,4fr); }
-  .psc-grid { grid-template-columns:repeat(4,1fr); }
+  /* Mobile dropdown for analysis tabs (hidden by default) */
+  .analysis-tabs-mobile { display:none; }
+  .analysis-tabs-mobile select { width:100%; border:1px solid #e2e8f0; border-radius:9999px; padding:8px 32px 8px 14px; font-size:13px; font-weight:600; color:#0f172a; background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center; appearance:none; cursor:pointer; }
 </style>
 </head>
 <body class="bg-ink-100 text-ink-900" data-density="compact">
@@ -165,9 +176,9 @@ function DonutSVG() {
 /* ── Top panels ── */
 function PanelPortfolioDetails() {
   return `
-  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col">
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col min-w-0 overflow-hidden">
     <div class="p-3 border-b border-ink-100">
-      <div class="ds-tabs" id="pf-tabs">
+      <div class="ds-tabs mobile-stretch" id="pf-tabs">
         <span class="ds-tab-pill is-init" data-tab-pill></span>
         <button class="ds-tab" aria-selected="true"><span class="ds-tab-label">Portfolio Details</span></button>
         <button class="ds-tab" aria-selected="false"><span class="ds-tab-label">Portfolio Groups</span></button>
@@ -189,10 +200,10 @@ function PanelPortfolioDetails() {
           <span class="font-semibold text-ink-800 truncate max-w-[150px]">${v}</span>
         </div>`).join('')}
     </div>
-    <div class="px-3 pb-3 pt-1">
-      <button class="w-full flex items-center justify-center gap-1.5 border border-ink-200 rounded-lg py-2 text-xs font-semibold text-ink-700 hover:bg-ink-50 transition-colors">
+    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 text-center h-9 flex items-center justify-center mt-auto">
+      <button class="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Download
+        <span>DOWNLOAD</span>
       </button>
     </div>
   </div>`;
@@ -200,9 +211,9 @@ function PanelPortfolioDetails() {
 
 function PanelPortfolioActivity() {
   return `
-  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col">
-    <div class="p-3 border-b border-ink-100 flex items-center justify-between gap-3">
-      <div class="ds-tabs" id="act-tabs">
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col min-w-0 overflow-hidden">
+    <div class="p-3 border-b border-ink-100 flex items-center justify-between gap-3 flex-wrap">
+      <div class="ds-tabs mobile-stretch" id="act-tabs">
         <span class="ds-tab-pill is-init" data-tab-pill></span>
         <button class="ds-tab" aria-selected="true"><span class="ds-tab-label">Portfolio Activity</span></button>
         <button class="ds-tab" aria-selected="false"><span class="ds-tab-label">Port Calls</span></button>
@@ -265,7 +276,7 @@ function PanelPortfolioActivity() {
 
 function PanelRiskBreakdown() {
   return `
-  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col">
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col min-w-0 overflow-hidden">
     <div class="px-4 pt-3 pb-2 border-b border-ink-100">
       <div class="text-sm font-bold text-ink-900">Risk Breakdown</div>
     </div>
@@ -277,15 +288,15 @@ function PanelRiskBreakdown() {
         <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0"></span><span class="text-ink-600">Below Average [25+ → 100]</span></div>
       </div>
     </div>
-    <div class="px-3 pb-3">
-      <button class="w-full border border-brand-600 text-brand-600 rounded-lg py-1.5 text-xs font-semibold hover:bg-brand-50 transition-colors">View Details</button>
+    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 text-center h-9 flex items-center justify-center mt-auto">
+      <button class="text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">VIEW DETAILS</button>
     </div>
   </div>`;
 }
 
 function PanelCompliance() {
   return `
-  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col">
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col min-w-0 overflow-hidden">
     <div class="px-4 pt-3 pb-2 border-b border-ink-100">
       <div class="text-sm font-bold text-ink-900">Overall Compliance</div>
     </div>
@@ -298,14 +309,158 @@ function PanelCompliance() {
         <div class="text-[11px] text-ink-400 text-center mt-0.5">Updated at: 2025-07-22</div>
       </div>
     </div>
-    <div class="px-3 pb-3">
-      <button class="w-full border border-brand-600 text-brand-600 rounded-lg py-1.5 text-xs font-semibold hover:bg-brand-50 transition-colors">View Policies</button>
+    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 text-center h-9 flex items-center justify-center mt-auto">
+      <button class="text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">VIEW POLICIES</button>
     </div>
   </div>`;
 }
 
 /* ── Analysis section ── */
 const ANALYSIS_TABS = ['PSC Analysis','Avg / Utilisation Report','Environmental Rating','Portfolio Casualties'];
+
+const ENV_RATING = {
+  grade: 'B',
+  operational: [
+    { label:'Avg. Required EEXI:', value:'5.53' },
+    { label:'Avg. Attained EEXI:', value:'5.81' },
+    { label:'Avg. Required CII:',  value:'7.42' },
+    { label:'Avg. Attained CII:',  value:'7.11' },
+  ],
+  operationalAspect: [
+    { label:'Major Superior', badge:'A', color:'#10b981' },
+    { label:'Minor Superior', badge:'B', color:'#84cc16', icon:true },
+    { label:'Moderate',       badge:'C', color:'#f59e0b' },
+    { label:'Minor Inferior', badge:'D', color:'#f97316' },
+    { label:'Inferior',       badge:'E', color:'#ef4444' },
+  ],
+  technical: [
+    { label:'Avg. Required EEXI:', value:'5.53', sub:'1,202.08 Hrs\nAverage time spent at sea', pct:'13%' },
+    { label:'Avg. Attained EEXI:', value:'5.81', sub:'3,660.09 CO₂\nAverage CO₂ emissions 2022 [in tonnes]' },
+    { label:'Avg. Required CII:',  value:'7.42' },
+    { label:'Avg. Attained CII:',  value:'7.11', sub:'6 days\nAverage Time in ECA', pct:'13%' },
+    { label:'Average Speed:',      value:'11.04 Kts' },
+  ],
+  compliance: [
+    { label:'Sox/Nox reduction measures',   value:'None Specified', pct:'75%' },
+    { label:'Ballast treatment compliance', value:'None Specified', pct:'75%' },
+    { label:'Recycling compliance',         value:'None Specified', pct:'75%' },
+    { label:'IHM Green Passport',           value:'75%' },
+    { label:'Open Loop (MG)',               value:'25%' },
+  ],
+};
+
+function EnvironmentalRatingContent() {
+  const gradeBox = `
+    <div class="flex items-center justify-center w-20 h-20 rounded-lg mb-3" style="background:#84cc16;">
+      <span class="text-4xl font-bold text-white">${ENV_RATING.grade}</span>
+    </div>`;
+
+  const aspectBadge = (item) => `
+    <div class="flex items-center justify-between py-1.5">
+      <span class="text-xs text-ink-700">${item.label}</span>
+      <div class="flex items-center gap-2">
+        ${item.icon ? `<svg class="w-3.5 h-3.5 text-ink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>` : ''}
+        <span class="px-2 py-0.5 rounded text-xs font-bold text-white" style="background:${item.color}">${item.badge}</span>
+      </div>
+    </div>`;
+
+  return `
+    <div class="p-1">
+      <div class="text-sm font-semibold text-ink-900 mb-4">Environmental Rating 2025Q4</div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+        <!-- Left: Operational -->
+        <div>
+          <div class="text-xs font-semibold text-ink-900 mb-3">Operational - CII (Carbon Intensity Fleet Index)</div>
+          ${gradeBox}
+          <div class="space-y-2">
+            ${ENV_RATING.operational.map(item => `
+              <div class="flex justify-between text-xs">
+                <span class="text-ink-700">${item.label}</span>
+                <span class="${item.label.includes('Attained') ? 'text-red-600 font-semibold' : 'text-ink-900 font-medium'}">${item.value}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <!-- Middle: Operational Aspect -->
+        <div>
+          <div class="text-xs font-semibold text-ink-900 mb-3">Operational Aspect</div>
+          <div class="space-y-1">
+            ${ENV_RATING.operationalAspect.map(aspectBadge).join('')}
+          </div>
+        </div>
+        <!-- Right: Technical Aspect -->
+        <div>
+          <div class="text-xs font-semibold text-ink-900 mb-3">Technical Aspect</div>
+          <div class="space-y-2">
+            ${ENV_RATING.technical.slice(0,5).map(item => `
+              <div class="flex justify-between items-start text-xs">
+                <div class="flex-1">
+                  <div class="flex items-center justify-between mb-0.5">
+                    <span class="text-ink-700">${item.label}</span>
+                    <span class="${item.label.includes('Attained') ? 'text-red-600 font-semibold' : 'text-ink-900 font-medium'}">${item.value}</span>
+                  </div>
+                  ${item.sub ? `<div class="text-[10px] text-ink-500 flex justify-between"><span>${item.sub.split('\n')[0]}</span>${item.pct ? `<span class="font-semibold text-ink-900">${item.pct}</span>` : ''}</div>` : ''}
+                  ${item.sub && item.sub.includes('\n') ? `<div class="text-[10px] text-ink-500 flex justify-between"><span>${item.sub.split('\n')[1]}</span>${item.pct2 ? `<span class="font-semibold text-ink-900">${item.pct2}</span>` : ''}</div>` : ''}
+                </div>
+              </div>
+            `).join('')}
+            <div class="pt-2 border-t border-ink-100 space-y-1.5">
+              ${ENV_RATING.compliance.map(item => `
+                <div class="flex justify-between text-xs">
+                  <span class="text-ink-700">${item.label}</span>
+                  <div class="flex items-center gap-2">
+                    <span class="text-ink-600">${item.value}</span>
+                    ${item.pct ? `<span class="font-semibold text-ink-900">${item.pct}</span>` : ''}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function UtilisationContent() {
+  const cards = [
+    { title:'Main Sailed',     accent:'#60a5fa', rows:[['2024','150 nm','125 nm'],['2023','200 nm','200 nm']] },
+    { title:'Ports Visited',   accent:'#3b82f6', rows:[['2024','4.1','3.2'],['2023','21 nm','21 nm']] },
+    { title:'Days in Port',    accent:'#2563eb', rows:[['2024','142.8','104.2'],['2023','24','30']] },
+    { title:'Days Travelling', accent:'#1d4ed8', rows:[['2024','153.4','202.9'],['2023','102.8','261.2']] },
+    { title:'Flop Idle',       accent:'#1e40af', rows:[['2024','139.6','133.0'],['2023','70.4','66.8']] },
+  ];
+  return `
+  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;padding:4px 2px;">
+    ${cards.map(c => `
+      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;box-shadow:0 1px 2px rgba(15,23,42,.04)">
+        <div style="background:${c.accent};color:#fff;text-align:center;padding:8px 10px;font-size:13px;font-weight:700">${c.title}</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+          <thead>
+            <tr style="background:#f1f5f9">
+              <th style="padding:7px 10px;text-align:center;font-size:11.5px;font-weight:600;color:var(--brand-600,#2563eb);border-bottom:1px solid #e2e8f0">Period</th>
+              <th style="padding:7px 10px;text-align:center;font-size:11.5px;font-weight:600;color:var(--brand-600,#2563eb);border-bottom:1px solid #e2e8f0">Company</th>
+              <th style="padding:7px 10px;text-align:center;font-size:11.5px;font-weight:600;color:var(--brand-600,#2563eb);border-bottom:1px solid #e2e8f0">Global</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${c.rows.map(r => `
+              <tr>
+                <td style="padding:9px 10px;text-align:center;color:#334155;border-bottom:1px solid #f1f5f9">${r[0]}</td>
+                <td style="padding:9px 10px;text-align:center;color:#0f172a;font-weight:600;font-variant-numeric:tabular-nums;border-bottom:1px solid #f1f5f9">${r[1]}</td>
+                <td style="padding:9px 10px;text-align:center;color:#0f172a;font-weight:600;font-variant-numeric:tabular-nums;border-bottom:1px solid #f1f5f9">${r[2]}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`).join('')}
+  </div>`;
+}
+
+function analysisContentFor(tab) {
+  if (tab === 'PSC Analysis')             return PSCContent();
+  if (tab === 'Avg / Utilisation Report') return UtilisationContent();
+  if (tab === 'Environmental Rating')     return EnvironmentalRatingContent();
+  return `<div class="py-8 text-center text-ink-400 text-sm">${tab} — coming soon</div>`;
+}
 
 function AnalysisTabBar() {
   const icons = {
@@ -315,13 +470,20 @@ function AnalysisTabBar() {
     'Portfolio Casualties': `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg>`,
   };
   return `
-  <div class="p-3 border-b border-ink-100 analysis-tabs-scroll" style="overflow-x:auto;">
-    <div class="ds-tabs" id="analysis-tabs" style="min-width:max-content;">
-      <span class="ds-tab-pill is-init" data-tab-pill></span>
-      ${ANALYSIS_TABS.map(t => `
-        <button class="ds-tab" aria-selected="${t===analysisTab}" data-atab="${t}">
-          <span class="ds-tab-label" style="display:inline-flex;align-items:center;gap:5px;">${icons[t]||''}${t}</span>
-        </button>`).join('')}
+  <div class="p-3 border-b border-ink-100">
+    <div class="analysis-tabs-desktop analysis-tabs-scroll" style="overflow-x:auto;">
+      <div class="ds-tabs" id="analysis-tabs" style="min-width:max-content;">
+        <span class="ds-tab-pill is-init" data-tab-pill></span>
+        ${ANALYSIS_TABS.map(t => `
+          <button class="ds-tab" aria-selected="${t===analysisTab}" data-atab="${t}">
+            <span class="ds-tab-label" style="display:inline-flex;align-items:center;gap:5px;">${icons[t]||''}${t}</span>
+          </button>`).join('')}
+      </div>
+    </div>
+    <div class="analysis-tabs-mobile">
+      <select id="analysis-tab-mobile-sel" aria-label="Analysis tab">
+        ${ANALYSIS_TABS.map(t => `<option value="${t}" ${t===analysisTab?'selected':''}>${t}</option>`).join('')}
+      </select>
     </div>
   </div>`;
 }
@@ -374,7 +536,7 @@ function PolicySection() {
   <div class="bg-white rounded-xl border border-ink-200 shadow-card overflow-hidden">
     <!-- Toolbar -->
     <div class="flex items-center gap-2 px-3 py-2.5 border-b border-ink-100 flex-wrap">
-      <div class="ds-tabs shrink-0" id="policy-view-tabs">
+      <div class="ds-tabs shrink-0 mobile-stretch" id="policy-view-tabs">
         <span class="ds-tab-pill is-init" data-tab-pill></span>
         <button class="ds-tab" aria-selected="${policyView==='details'}" data-pvw="details">
           <span class="ds-tab-label" style="display:inline-flex;align-items:center;gap:5px;">
@@ -512,7 +674,7 @@ window.render = function() {
     ${SC.Sidebar()}
     <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
       ${SC.Topbar()}
-      <main id="main-content" class="flex-1 overflow-y-auto scroll-thin bg-ink-100 px-4 lg:px-6 py-5">
+      <main id="main-content" class="flex-1 min-w-0 overflow-y-auto scroll-thin bg-ink-100 px-4 lg:px-6 py-5">
         <!-- Top 4 panels -->
         <div class="top-panels-grid" style="display:grid;gap:12px;margin-bottom:12px;align-items:stretch;">
           ${PanelPortfolioDetails()}
@@ -524,7 +686,7 @@ window.render = function() {
         <div class="bg-white rounded-xl border border-ink-200 shadow-card overflow-hidden mb-3">
           ${AnalysisTabBar()}
           <div class="p-3" id="analysis-content">
-            ${analysisTab === 'PSC Analysis' ? PSCContent() : `<div class="py-8 text-center text-ink-400 text-sm">${analysisTab} — coming soon</div>`}
+            ${analysisContentFor(analysisTab)}
           </div>
         </div>
         <!-- Policy list -->
@@ -547,10 +709,26 @@ window.render = function() {
         group.querySelectorAll('.ds-tab').forEach(t => t.setAttribute('aria-selected', String(t === btn)));
         positionTabPills();
       }
+      const sel = document.getElementById('analysis-tab-mobile-sel');
+      if (sel && sel.value !== analysisTab) sel.value = analysisTab;
       const ac = document.getElementById('analysis-content');
-      if (ac) ac.innerHTML = analysisTab === 'PSC Analysis' ? PSCContent() : `<div class="py-8 text-center text-ink-400 text-sm">${analysisTab} — coming soon</div>`;
+      if (ac) ac.innerHTML = analysisContentFor(analysisTab);
     };
   });
+
+  /* Analysis tab — mobile dropdown */
+  const aSel = document.getElementById('analysis-tab-mobile-sel');
+  if (aSel) {
+    aSel.onchange = () => {
+      analysisTab = aSel.value;
+      document.querySelectorAll('[data-atab]').forEach(t => {
+        t.setAttribute('aria-selected', String(t.dataset.atab === analysisTab));
+      });
+      positionTabPills();
+      const ac = document.getElementById('analysis-content');
+      if (ac) ac.innerHTML = analysisContentFor(analysisTab);
+    };
+  }
 
   /* Policy view switcher */
   document.querySelectorAll('[data-pvw]').forEach(btn => {

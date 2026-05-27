@@ -12,6 +12,7 @@
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  .tracking-micro{letter-spacing:.08em;font-family:'Exo','Inter',sans-serif;}
   .bg-ink-100{background:#f1f5f9}.bg-ink-50{background:#f8fafc}
   .border-ink-100{border-color:#f1f5f9}.border-ink-200{border-color:#e2e8f0}
   .scroll-thin::-webkit-scrollbar{width:5px;height:5px}
@@ -28,13 +29,29 @@
   .ds-tab-label{position:relative;z-index:1}
   /* Map */
   #asset-map{position:absolute;inset:0;background:#0b2a3a}
+  #asset-map .leaflet-top.leaflet-left{top:56px;left:2px;}
+  #asset-map .leaflet-top.leaflet-left .leaflet-bar{margin-left:10px !important;}
   .leaflet-control-zoom,.leaflet-bar{border:1px solid #e2e8f0 !important;box-shadow:0 1px 2px rgba(15,23,42,.08) !important;border-radius:8px !important;overflow:hidden}
   .leaflet-bar a{background:#fff !important;color:#334155 !important}
   .leaflet-bar a:hover{background:#f1f5f9 !important}
   .map-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;color:#334155;box-shadow:0 1px 2px rgba(15,23,42,.08);cursor:pointer}
   .map-btn:hover{background:#f1f5f9}
   .asset-marker-dot{width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,.4)}
+  @media (max-width: 767px) {
+    .top-row-grid { grid-template-columns: 1fr !important; }
+    .policy-header { flex-direction: column; align-items: stretch !important; gap: 10px; }
+    .policy-header-tools { flex-direction: column; align-items: stretch; gap: 8px; }
+    .policy-header-tools > div { width: 100%; }
+    .policy-header-tools .policy-search { width: 100% !important; }
+    .policy-header-tools > button { width: 100%; justify-content: space-between; }
+  }
+  #asset-map.no-labels .asset-label{display:none;}
   .asset-label{background:#1e293b;color:#fff;padding:2px 7px;border-radius:4px;font-size:10.5px;font-weight:600;white-space:nowrap;box-shadow:0 2px 4px rgba(0,0,0,.35);font-family:'Inter',sans-serif}
+  .asset-popup .leaflet-popup-content-wrapper { padding:0; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(15,23,42,.25); }
+  .asset-popup .leaflet-popup-content { margin:0; width:300px !important; font-family:'Inter',sans-serif; }
+  .asset-popup .leaflet-popup-tip { background:#fff; }
+  .asset-popup .leaflet-popup-close-button { color:#fff !important; top:8px !important; right:10px !important; font-size:22px !important; font-weight:300 !important; width:24px !important; height:24px !important; line-height:22px !important; border-radius:6px !important; }
+  .asset-popup .leaflet-popup-close-button:hover { background:rgba(255,255,255,.2) !important; color:#fff !important; }
   /* Policy table */
   .pol-table{width:100%;border-collapse:collapse;font-size:12px}
   .pol-table th{padding:9px 12px;text-align:left;font-size:11.5px;font-weight:600;color:#334155;border-bottom:1px solid #e2e8f0;white-space:nowrap;background:#fff;cursor:pointer}
@@ -77,17 +94,72 @@ const PF = (() => { try { const r = sessionStorage.getItem('selectedOffshorePF')
 
 /* ── Asset data ── */
 const ASSETS = [
-  { id:'Policy 1', name:'Perla Field Platform',    type:'Fixed Platform',          lat:11.52, lng:-70.08, color:'#a855f7', exposure:'$385.0M' },
-  { id:'Policy 2', name:'Cardón IV Platform',      type:'Fixed Platform',          lat:11.35, lng:-70.32, color:'#94a3b8', exposure:'$290.0M' },
-  { id:'Policy 3', name:'Corocoro Platform',       type:'Fixed Platform',          lat:10.28, lng:-70.68, color:'#a855f7', exposure:'$245.0M' },
-  { id:'Policy 4', name:'Dragon Field FPSO',       type:'Floating Storage (FSO)', lat:10.78, lng:-71.48, color:'#60a5fa', exposure:'$325.0M' },
-  { id:'Policy 5', name:'La Salina Platform',      type:'Fixed Platform',          lat:9.72,  lng:-70.98, color:'#a855f7', exposure:'$195.0M' },
-  { id:'Policy 6', name:'Loran-Manatee Platform',  type:'Fixed Platform',          lat:10.42, lng:-70.05, color:'#a855f7', exposure:'$215.0M' },
-  { id:'Policy 7', name:'Patao Platform',          type:'Fixed Platform',          lat:10.55, lng:-71.18, color:'#a855f7', exposure:'$185.0M' },
+  { id:'Policy 1', name:'Perla Field Platform',    type:'Fixed Platform',         lat:11.52, lng:-70.08, color:'#a855f7', exposure:'$385.0M',
+    fullName:'Perla Field Platform',    operator:'Eni / Repsol',  country:'Venezuela', coords:'11.52N / 70.08W', waterDepth:'60m',  status:'Operational',       production:'1,200 MMcf/d', commissioned:'2015', policyType:'Energy Package',   field:'Perla Field' },
+  { id:'Policy 2', name:'Cardón IV Platform',      type:'Fixed Platform',         lat:11.35, lng:-70.32, color:'#94a3b8', exposure:'$290.0M',
+    fullName:'Cardón IV Platform',      operator:'Eni',           country:'Venezuela', coords:'11.35N / 70.32W', waterDepth:'45m',  status:'Operational',       production:'850 MMcf/d',   commissioned:'2014', policyType:'Hull & Machinery', field:'Cardón IV Field' },
+  { id:'Policy 3', name:'Corocoro Platform',       type:'Fixed Platform',         lat:10.28, lng:-70.68, color:'#a855f7', exposure:'$245.0M',
+    fullName:'Corocoro Platform',       operator:'PDVSA / ConocoPhillips', country:'Venezuela', coords:'10.28N / 70.68W', waterDepth:'52m',  status:'Operational',       production:'95 kbpd',      commissioned:'2009', policyType:'Energy Package',   field:'Corocoro Field' },
+  { id:'Policy 4', name:'Dragon Field FPSO',       type:'Floating Storage (FSO)', lat:10.78, lng:-71.48, color:'#60a5fa', exposure:'$325.0M',
+    fullName:'Dragon Field FPSO',       operator:'Shell',         country:'Venezuela', coords:'10.78N / 71.48W', waterDepth:'138m', status:'Under Maintenance', production:'180 MMcf/d',   commissioned:'2018', policyType:'Cargo',            field:'Dragon Field' },
+  { id:'Policy 5', name:'La Salina Platform',      type:'Fixed Platform',         lat:9.72,  lng:-70.98, color:'#a855f7', exposure:'$195.0M',
+    fullName:'La Salina Platform',      operator:'PDVSA',         country:'Venezuela', coords:'9.72N / 70.98W',  waterDepth:'28m',  status:'Operational',       production:'42 kbpd',      commissioned:'1996', policyType:'Energy Package',   field:'Lake Maracaibo' },
+  { id:'Policy 6', name:'Loran-Manatee Platform',  type:'Fixed Platform',         lat:10.42, lng:-70.05, color:'#a855f7', exposure:'$215.0M',
+    fullName:'Loran-Manatee Platform',  operator:'Chevron',       country:'Venezuela', coords:'10.42N / 70.05W', waterDepth:'72m',  status:'Operational',       production:'420 MMcf/d',   commissioned:'2017', policyType:'Hull & Machinery', field:'Loran-Manatee Field' },
+  { id:'Policy 7', name:'Patao Platform',          type:'Fixed Platform',         lat:10.55, lng:-71.18, color:'#a855f7', exposure:'$185.0M',
+    fullName:'Patao Platform',          operator:'PDVSA / Repsol',country:'Venezuela', coords:'10.55N / 71.18W', waterDepth:'88m',  status:'Decommissioned',    production:'—',            commissioned:'1998', policyType:'Energy Package',   field:'Patao Field' },
 ];
 
 /* ── State ── */
 let pfTab = 'Portfolio Details';
+
+const ASSET_TYPES = [
+  { k:'Oil Rig',                     color:'#ef4444' },
+  { k:'Platform',                    color:'#06b6d4' },
+  { k:'Windfarm',                    color:'#10b981' },
+  { k:'Floating Storage (FSO)',      color:'#8b5cf6' },
+  { k:'Fixed Platform',              color:'#ec4899' },
+  { k:'Jack-Up Drilling Unit',       color:'#f59e0b' },
+  { k:'Mobile Drilling (MODU)',      color:'#3b82f6' },
+  { k:'Mobile Production (MOPU)',    color:'#ea580c' },
+  { k:'Single Point Mooring (SPM)',  color:'#0ea5e9' },
+  { k:'Subsea',                      color:'#14b8a6' },
+  { k:'Well',                        color:'#a855f7' },
+  { k:'Other',                       color:'#64748b' },
+];
+
+function mapAssetType(t) {
+  const m = {
+    'Fixed Platform':              'Fixed Platform',
+    'Subsea Installation':         'Subsea',
+    'FPSO':                        'Floating Storage (FSO)',
+    'Floating Storage (FSO)':      'Floating Storage (FSO)',
+    'Jack-Up Rig':                 'Jack-Up Drilling Unit',
+    'Semi-Submersible':            'Mobile Drilling (MODU)',
+    'TLP':                         'Platform',
+    'Platform':                    'Platform',
+    'Drillship':                   'Mobile Drilling (MODU)',
+    'Mobile Production (MOPU)':    'Mobile Production (MOPU)',
+    'Windfarm':                    'Windfarm',
+    'Oil Rig':                     'Oil Rig',
+    'SPM':                         'Single Point Mooring (SPM)',
+    'Well':                        'Well',
+  };
+  return m[t] || 'Other';
+}
+
+const MAP_TYPES = {
+  satellite: { url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', bg:'#0b1d2a' },
+  street:    { url:'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',                                              bg:'#dbeafe' },
+  dark:      { url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',                                  bg:'#0f172a' },
+  light:     { url:'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',                                 bg:'#f8fafc' },
+};
+
+const mapState = {
+  type: 'satellite',
+  filter: new Set(ASSET_TYPES.map(t => t.k)),
+  showLabels: true,
+};
 
 /* ── Pill positioning ── */
 function positionTabPills() {
@@ -117,7 +189,7 @@ function sortIcon() {
 /* ── Left panel ── */
 function PanelDetails() {
   return `
-  <div class="bg-white rounded-xl border border-ink-200 flex flex-col" style="box-shadow:0 1px 2px rgba(15,23,42,.07);">
+  <div class="bg-white rounded-xl border border-ink-200 overflow-hidden flex flex-col" style="box-shadow:0 1px 2px rgba(15,23,42,.07);">
     <!-- Tabs -->
     <div class="p-3 border-b border-ink-100">
       <div class="ds-tabs" style="display:flex;" id="pf-tabs">
@@ -131,9 +203,11 @@ function PanelDetails() {
       </div>
     </div>
     <!-- Exposure banner -->
-    <div class="mx-4 mt-3 mb-1 rounded-lg bg-blue-50 border border-blue-100 px-4 py-3 text-center">
-      <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:4px;">Our Aggregated Exposure</div>
-      <div style="font-size:26px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">${PF.exposure || '$148.5B'}</div>
+    <div style="display:flex;justify-content:center;padding:14px 16px 6px;">
+      <div style="background:#eff6ff;border:1px solid #dbeafe;border-radius:10px;padding:10px 32px;text-align:center;min-width:180px;">
+        <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:4px;">Our Aggregated Exposure</div>
+        <div style="font-size:20px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">${PF.exposure || '$148.5B'}</div>
+      </div>
     </div>
     <!-- Key-value rows -->
     <div class="px-4 py-2 flex-1">
@@ -148,15 +222,15 @@ function PanelDetails() {
           <span class="font-semibold text-ink-800">${v}</span>
         </div>`).join('')}
     </div>
-    <!-- Action buttons -->
-    <div class="px-4 pb-4 pt-2 flex gap-2 mt-auto">
-      <button class="flex-1 flex items-center justify-center gap-1.5 border border-ink-200 rounded-lg py-2 text-xs font-semibold text-ink-700 hover:bg-ink-50">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="5 12 12 5 19 12"/></svg>
-        + Add Policies
+    <!-- Action footer -->
+    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 flex items-center justify-between text-xs h-9 shrink-0 mt-auto">
+      <button class="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="5 12 12 5 19 12"/></svg>
+        <span>ADD POLICIES</span>
       </button>
-      <button class="flex-1 flex items-center justify-center gap-1.5 border border-ink-200 rounded-lg py-2 text-xs font-semibold text-ink-700 hover:bg-ink-50">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Download
+      <button class="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>DOWNLOAD</span>
       </button>
     </div>
   </div>`;
@@ -164,30 +238,63 @@ function PanelDetails() {
 
 /* ── Map panel ── */
 function PanelMap() {
-  const toolIco = (path) => `<button class="map-btn">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">${path}</svg>
-  </button>`;
   return `
   <div class="bg-white rounded-xl border border-ink-200 flex flex-col overflow-hidden" style="box-shadow:0 1px 2px rgba(15,23,42,.07);">
     <div class="px-4 py-2.5 border-b border-ink-100 flex items-center justify-between">
       <span class="text-sm font-bold text-ink-900">Asset Locations</span>
     </div>
-    <div class="relative flex-1" style="min-height:340px;">
-      <div id="asset-map"></div>
-      <!-- Zoom controls -->
-      <div class="absolute top-3 left-3 z-[400] flex flex-col gap-1">
-        <button id="map-fs-btn" class="map-btn" title="Fullscreen">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-        </button>
-        <button id="zoom-in" class="map-btn font-bold text-base">+</button>
-        <button id="zoom-out" class="map-btn font-bold text-base">−</button>
-      </div>
-      <!-- Right tools -->
-      <div class="absolute top-3 right-3 z-[400] flex flex-col gap-1">
-        ${toolIco('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>')}
-        ${toolIco('<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>')}
-        ${toolIco('<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>')}
-        ${toolIco('<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>')}
+    <div class="relative flex-1" id="asset-map-wrap" style="min-height:453px;">
+      <div id="asset-map" class="absolute inset-0"></div>
+      <button id="map-fs-btn" class="map-btn absolute z-[400]" title="Toggle fullscreen" style="top:12px;left:12px;">${Ico.maximize}</button>
+      <div class="absolute top-3 right-3 z-[400] flex flex-col gap-1 items-end">
+        <div class="relative">
+          <button id="map-layers-btn" class="map-btn" title="Layers">${Ico.layers}</button>
+          <div id="map-layers-menu" class="hidden absolute top-0 right-[calc(100%+8px)] w-[160px] bg-white border border-ink-200 rounded-xl shadow-card overflow-hidden py-1">
+            ${[
+              { id:'satellite', label:'Satellite' },
+              { id:'street',    label:'Street View' },
+              { id:'dark',      label:'Dark Mode' },
+              { id:'light',     label:'Light Mode' },
+            ].map(o => `
+              <button data-map-type="${o.id}" class="map-type-opt w-full flex items-center justify-between px-3 py-2 text-sm text-ink-700 hover:bg-ink-50 transition-colors">
+                <span data-label>${o.label}</span>
+                <span class="text-brand-600 opacity-0" data-check>${Ico.check}</span>
+              </button>`).join('')}
+          </div>
+        </div>
+        <div class="relative">
+          <button id="map-filters-btn" class="map-btn" title="Filter assets">${Ico.filter}</button>
+          <div id="map-filters-menu" class="hidden absolute top-0 right-[calc(100%+8px)] w-[260px] bg-white border border-ink-200 rounded-xl shadow-card overflow-hidden flex flex-col" style="max-height:420px">
+            <div class="px-3 py-2.5 border-b border-ink-200 flex items-center justify-between">
+              <div class="text-sm font-bold text-ink-800">Filter Assets</div>
+              <div class="flex items-center gap-1">
+                <button id="af-all"  class="h-6 px-2 rounded-md border border-ink-200 text-[11px] font-semibold text-ink-700 hover:bg-ink-50">All</button>
+                <button id="af-none" class="h-6 px-2 rounded-md border border-ink-200 text-[11px] font-semibold text-ink-700 hover:bg-ink-50">None</button>
+              </div>
+            </div>
+            <div class="px-3 py-2 bg-ink-50 border-b border-ink-200 text-[11px] font-semibold uppercase tracking-micro text-ink-600">Asset Type</div>
+            <div class="overflow-y-auto scroll-thin py-1" id="af-list">
+              ${ASSET_TYPES.map(t => `
+                <label class="af-row flex items-center gap-2.5 px-3 py-1.5 cursor-pointer hover:bg-ink-50" data-atype="${t.k.replace(/"/g,'&quot;')}">
+                  <input type="checkbox" class="af-cb h-4 w-4 rounded border-ink-300 accent-brand-600" checked />
+                  <span class="inline-flex w-3 h-3 rounded-full" style="background:${t.color};"></span>
+                  <span class="text-[13px] text-ink-700">${t.k}</span>
+                </label>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="relative">
+          <button id="map-labels-btn" class="map-btn" title="Asset labels">${Ico.tag}</button>
+          <div id="map-labels-menu" class="hidden absolute top-0 right-[calc(100%+8px)] w-[260px] bg-white border border-ink-200 rounded-xl shadow-card overflow-hidden p-3">
+            <div class="flex items-center justify-between gap-3">
+              <div class="text-sm font-bold text-ink-900">Show Labels</div>
+              <button id="labels-toggle" role="switch" aria-checked="true" class="relative inline-flex h-6 w-11 items-center rounded-full bg-ink-300 transition-colors">
+                <span class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform translate-x-0.5"></span>
+              </button>
+            </div>
+            <p class="mt-1.5 text-[12px] leading-snug text-ink-500">Display asset names directly on the map next to icons.</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>`;
@@ -199,12 +306,12 @@ function PolicyTable() {
   return `
   <div class="bg-white rounded-xl border border-ink-200" style="box-shadow:0 1px 2px rgba(15,23,42,.07);overflow:hidden;">
     <!-- Header bar -->
-    <div class="flex items-center justify-between px-4 py-3 border-b border-ink-100">
+    <div class="policy-header flex items-center justify-between px-4 py-3 border-b border-ink-100">
       <span class="text-sm font-bold text-ink-900">Policy Details</span>
-      <div class="flex items-center gap-2">
+      <div class="policy-header-tools flex items-center gap-2">
         <div class="relative">
           <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" placeholder="Search" class="pl-7 pr-3 py-1.5 text-xs border border-ink-200 rounded-lg focus:outline-none focus:border-blue-400 w-48" />
+          <input type="text" placeholder="Search" class="policy-search pl-7 pr-3 py-1.5 text-xs border border-ink-200 rounded-lg focus:outline-none focus:border-blue-400 w-48" />
         </div>
         <button class="flex items-center gap-1 text-xs border border-ink-200 rounded-lg px-3 py-1.5 text-ink-700 font-semibold hover:bg-ink-50">
           Edit Columns
@@ -230,11 +337,11 @@ function PolicyTable() {
           </tr>
         </thead>
         <tbody>
-          ${ASSETS.map(a => `
+          ${ASSETS.map((a, i) => `
             <tr>
               <td><input type="checkbox" class="h-3.5 w-3.5 rounded accent-blue-600" /></td>
               <td class="lnk">${a.id}</td>
-              <td class="lnk">${a.name}</td>
+              <td class="lnk" data-asset-idx="${i}">${a.name}</td>
               <td class="type-cell">${a.type}</td>
               <td class="muted">-</td>
               <td class="muted">-</td>
@@ -253,43 +360,192 @@ function PolicyTable() {
   </div>`;
 }
 
+/* ── Asset popup ── */
+function buildPopupHTML(m) {
+  const statusColor = m.status === 'Operational' ? '#10b981' :
+                      m.status === 'Under Maintenance' ? '#f59e0b' : '#94a3b8';
+  const row = (label, val, color) =>
+    `<div><div style="font-size:11px;color:#64748b;margin-bottom:2px;">${label}:</div><div style="font-size:13px;font-weight:600;color:${color||'#0f172a'};">${val ?? '—'}</div></div>`;
+  return `
+    <div style="background:var(--brand-600,#2563eb);padding:12px 36px 12px 16px;">
+      <div style="color:#fff;font-weight:700;font-size:13px;line-height:1.35;">${m.fullName || m.name}</div>
+      <div style="color:rgba(255,255,255,.75);font-size:11px;font-weight:500;margin-top:2px;">${m.type || ''}</div>
+    </div>
+    <div style="padding:14px 16px 6px;display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;">
+      ${row('Operator', m.operator)}
+      ${row('Country', m.country)}
+      ${row('Coordinates', m.coords)}
+      ${row('Water Depth', m.waterDepth)}
+      ${row('Status', m.status, statusColor)}
+      ${row('Production', m.production)}
+    </div>
+    <div style="padding:4px 16px 8px;display:flex;flex-direction:column;gap:8px;">
+      ${row('Commissioned', m.commissioned)}
+      ${row('Policy Type', m.policyType)}
+      ${row('Field', m.field)}
+    </div>
+    <div style="padding:4px 16px 14px;">
+      <button style="display:block;width:100%;background:#fff;color:var(--brand-600,#2563eb);border:1.5px solid var(--brand-600,#2563eb);border-radius:8px;padding:10px 12px;font-weight:700;font-size:12.5px;cursor:pointer;" onmouseover="this.style.background='var(--brand-50,#eff6ff)'" onmouseout="this.style.background='#fff'" onclick="window.location.href='AssetOffshoreDetails.html'">View Details</button>
+    </div>`;
+}
+
 /* ── Map init ── */
 let mapInstance = null;
+let tileLayer = null;
+let assetMarkers = [];
+
+function setMapType(type) {
+  if (!mapInstance) return;
+  if (tileLayer) mapInstance.removeLayer(tileLayer);
+  tileLayer = L.tileLayer(MAP_TYPES[type].url, { attribution:'', subdomains:'abcd', maxZoom:19 }).addTo(mapInstance);
+  document.getElementById('asset-map').style.background = MAP_TYPES[type].bg;
+  document.querySelectorAll('[data-map-type]').forEach(b => {
+    const isOn = b.dataset.mapType === type;
+    const c = b.querySelector('[data-check]');
+    if (c) c.style.opacity = isOn ? '1' : '0';
+  });
+  mapState.type = type;
+}
+
+function applyAssetFilter() {
+  if (!mapInstance) return;
+  assetMarkers.forEach(m => {
+    const show = mapState.filter.has(m._ftype);
+    if (show && !mapInstance.hasLayer(m)) m.addTo(mapInstance);
+    if (!show && mapInstance.hasLayer(m)) mapInstance.removeLayer(m);
+  });
+}
+
+function applyLabels() {
+  const mapEl = document.getElementById('asset-map');
+  if (mapEl) mapEl.classList.toggle('no-labels', !mapState.showLabels);
+}
+
 function initMap() {
   const el = document.getElementById('asset-map');
-  if (!el || mapInstance) return;
-  mapInstance = L.map(el, { center:[10.6, -70.5], zoom:7, zoomControl:false, attributionControl:false });
-  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom:19 }).addTo(mapInstance);
+  if (!el) return;
+  if (mapInstance) { mapInstance.remove(); mapInstance = null; tileLayer = null; assetMarkers = []; }
+  mapInstance = L.map(el, { center:[10.6, -70.5], zoom:7, zoomControl:true, attributionControl:false });
+  setMapType(mapState.type);
 
   ASSETS.forEach(a => {
+    const ft = mapAssetType(a.type);
+    const ftColor = (ASSET_TYPES.find(t => t.k === ft) || {}).color || a.color;
     const markerHtml = `
       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
-        <div class="asset-marker-dot" style="background:${a.color};width:12px;height:12px;"></div>
+        <div class="asset-marker-dot" style="background:${ftColor};width:12px;height:12px;"></div>
         <div class="asset-label">${a.name}</div>
       </div>`;
     const icon = L.divIcon({ html:markerHtml, className:'', iconSize:[120,36], iconAnchor:[60,6] });
-    L.marker([a.lat, a.lng], { icon }).addTo(mapInstance);
+    const marker = L.marker([a.lat, a.lng], { icon })
+      .bindPopup(buildPopupHTML(a), { className:'asset-popup', maxWidth:300, minWidth:300, closeButton:true, autoPanPadding:[30,30] })
+      .on('popupopen', () => { sessionStorage.setItem('selectedOffshoreAsset', JSON.stringify(a)); })
+      .addTo(mapInstance);
+    marker._ftype = ft;
+    assetMarkers.push(marker);
   });
-
-  /* Manual zoom buttons */
-  const zi = document.getElementById('zoom-in');
-  const zo = document.getElementById('zoom-out');
-  if (zi) zi.onclick = () => mapInstance.zoomIn();
-  if (zo) zo.onclick = () => mapInstance.zoomOut();
+  applyAssetFilter();
+  applyLabels();
 
   /* Fullscreen */
   const fsBtn = document.getElementById('map-fs-btn');
   if (fsBtn) fsBtn.onclick = () => {
-    const el2 = fsBtn.closest('.relative');
-    if (!el2) return;
-    const isFs = el2.classList.toggle('fixed-fullscreen');
+    const wrap = document.getElementById('asset-map-wrap');
+    if (!wrap) return;
+    const isFs = wrap.classList.toggle('fixed-fullscreen');
     if (isFs) {
-      el2.style.cssText = 'position:fixed;inset:0;z-index:9999;min-height:100vh;';
+      wrap.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#fff;';
+      fsBtn.innerHTML = Ico.minimize;
     } else {
-      el2.style.cssText = 'position:relative;flex:1;min-height:340px;';
+      wrap.style.cssText = 'position:relative;flex:1;min-height:453px;';
+      fsBtn.innerHTML = Ico.maximize;
     }
     setTimeout(() => mapInstance.invalidateSize(), 200);
   };
+
+  /* Layers menu */
+  const layersBtn  = document.getElementById('map-layers-btn');
+  const layersMenu = document.getElementById('map-layers-menu');
+  const filtersBtn = document.getElementById('map-filters-btn');
+  const filtersMenu= document.getElementById('map-filters-menu');
+  const labelsBtn  = document.getElementById('map-labels-btn');
+  const labelsMenu = document.getElementById('map-labels-menu');
+  const labelsSw   = document.getElementById('labels-toggle');
+
+  if (layersBtn && layersMenu) {
+    layersBtn.onclick = (e) => {
+      e.stopPropagation();
+      layersMenu.classList.toggle('hidden');
+      filtersMenu && filtersMenu.classList.add('hidden');
+      labelsMenu  && labelsMenu.classList.add('hidden');
+    };
+    layersMenu.onclick = (e) => e.stopPropagation();
+    layersMenu.querySelectorAll('[data-map-type]').forEach(opt => {
+      opt.onclick = (e) => { e.stopPropagation(); setMapType(opt.dataset.mapType); layersMenu.classList.add('hidden'); };
+    });
+  }
+
+  /* Filters menu */
+  function syncFilterUI() {
+    if (!filtersMenu) return;
+    filtersMenu.querySelectorAll('.af-row').forEach(row => {
+      const on = mapState.filter.has(row.dataset.atype);
+      const cb = row.querySelector('.af-cb');
+      if (cb) cb.checked = on;
+    });
+  }
+  if (filtersBtn && filtersMenu) {
+    filtersBtn.onclick = (e) => {
+      e.stopPropagation();
+      filtersMenu.classList.toggle('hidden');
+      layersMenu && layersMenu.classList.add('hidden');
+      labelsMenu && labelsMenu.classList.add('hidden');
+    };
+    filtersMenu.onclick = (e) => e.stopPropagation();
+    filtersMenu.querySelectorAll('.af-row').forEach(row => {
+      row.onclick = (e) => {
+        e.stopPropagation();
+        const t = row.dataset.atype;
+        if (mapState.filter.has(t)) mapState.filter.delete(t); else mapState.filter.add(t);
+        syncFilterUI(); applyAssetFilter();
+      };
+    });
+    const allBtn  = document.getElementById('af-all');
+    const noneBtn = document.getElementById('af-none');
+    if (allBtn)  allBtn.onclick  = (e) => { e.stopPropagation(); mapState.filter = new Set(ASSET_TYPES.map(t=>t.k)); syncFilterUI(); applyAssetFilter(); };
+    if (noneBtn) noneBtn.onclick = (e) => { e.stopPropagation(); mapState.filter = new Set();                       syncFilterUI(); applyAssetFilter(); };
+  }
+
+  /* Labels toggle */
+  function syncLabelsUI() {
+    if (!labelsSw) return;
+    const on = !!mapState.showLabels;
+    labelsSw.setAttribute('aria-checked', on ? 'true' : 'false');
+    labelsSw.style.backgroundColor = on ? 'var(--brand-600,#2563eb)' : '#cbd5e1';
+    const knob = labelsSw.querySelector('span');
+    if (knob) knob.style.transform = on ? 'translateX(22px)' : 'translateX(2px)';
+  }
+  syncLabelsUI();
+  if (labelsBtn && labelsMenu) {
+    labelsBtn.onclick = (e) => {
+      e.stopPropagation();
+      labelsMenu.classList.toggle('hidden');
+      layersMenu  && layersMenu.classList.add('hidden');
+      filtersMenu && filtersMenu.classList.add('hidden');
+    };
+    labelsMenu.onclick = (e) => e.stopPropagation();
+    if (labelsSw) labelsSw.onclick = (e) => {
+      e.stopPropagation();
+      mapState.showLabels = !mapState.showLabels;
+      syncLabelsUI(); applyLabels();
+    };
+  }
+
+  document.addEventListener('click', () => {
+    layersMenu  && layersMenu.classList.add('hidden');
+    filtersMenu && filtersMenu.classList.add('hidden');
+    labelsMenu  && labelsMenu.classList.add('hidden');
+  });
 }
 
 /* ── Render ── */
@@ -300,7 +556,7 @@ window.render = function() {
       ${SC.Topbar()}
       <main id="main-content" class="flex-1 overflow-y-auto scroll-thin bg-ink-100 px-4 lg:px-5 py-4">
         <!-- Top row: details + map -->
-        <div style="display:grid;grid-template-columns:minmax(0,5fr) minmax(0,14fr);gap:12px;margin-bottom:12px;align-items:stretch;">
+        <div class="top-row-grid" style="display:grid;grid-template-columns:minmax(0,5fr) minmax(0,14fr);gap:12px;margin-bottom:12px;align-items:stretch;">
           ${PanelDetails()}
           ${PanelMap()}
         </div>
@@ -330,6 +586,17 @@ window.render = function() {
 
   /* Init map after DOM settles */
   setTimeout(initMap, 80);
+
+  /* Asset name → details page */
+  document.querySelectorAll('[data-asset-idx]').forEach(td => {
+    td.addEventListener('click', () => {
+      const idx = parseInt(td.dataset.assetIdx);
+      const a = ASSETS[idx];
+      if (!a) return;
+      sessionStorage.setItem('selectedOffshoreAsset', JSON.stringify(a));
+      location.href = 'AssetOffshoreDetails.html';
+    });
+  });
 };
 
 window.render();

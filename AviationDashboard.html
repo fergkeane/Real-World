@@ -121,6 +121,9 @@ let state = {
   airportTab: 'Airport Exposure',
   notamTab: 'NOTAMs',
   viewMode: 'Map',
+  expandedGroups: new Set(),
+  alertFilter: 'All',
+  airportSearch: '',
 };
 
 /* ----------- DATA ----------- */
@@ -134,12 +137,80 @@ const PORTFOLIOS = [
   { name:'Martinair',          assets:267, exposure:'$31.4B' },
 ];
 
+const PORTFOLIO_GROUPS = [
+  { name:'AF-KLM Mainline',  assets:'596',  assetsActive:592, exposure:'$53.0B', portfolios:['Air France / KLM','KLM'] },
+  { name:'Regional / Hop',   assets:'254',  assetsActive:null, exposure:'$23.8B', portfolios:['Air France Hop','KLM Cityhopper'] },
+  { name:'Low Cost',         assets:'220',  assetsActive:null, exposure:'$31.0B', portfolios:['Transavia','Transavia France'] },
+  { name:'Cargo',            assets:'267',  assetsActive:null, exposure:'$31.4B', portfolios:['Martinair'] },
+  { name:'European Ops',     assets:'1,071',assetsActive:1064, exposure:'$95.7B', portfolios:['Air France / KLM','Air France Hop','KLM','KLM Cityhopper','Transavia France'] },
+];
+
+const ENGINES_SPARES = [
+  { name:'Rolls-Royce Trent 1000',    type:'Engine',     operator:'British Airways', loc:'LHR', locName:'London Heathrow',     chw:'$0', hullw:'$8.2M',  tlohw:'$12.5M' },
+  { name:'GE90-115B Engine',          type:'Engine',     operator:'Emirates',        loc:'DXB', locName:'Dubai International', chw:'$0', hullw:'$18.4M', tlohw:'$28.0M' },
+  { name:'CFM56-7B Turbofan',         type:'Engine',     operator:'Ryanair',         loc:'DUB', locName:'Dublin Airport',      chw:'$0', hullw:'$5.6M',  tlohw:'$8.5M'  },
+  { name:'Pratt & Whitney PW4000',    type:'Engine',     operator:'Virgin Atlantic', loc:'LGW', locName:'London Gatwick Airport', chw:'$0', hullw:'$10.0M', tlohw:'$15.2M' },
+  { name:'Landing Gear Assembly',     type:'Spare Part', operator:'British Airways', loc:'LHR', locName:'London Heathrow',     chw:'$0', hullw:'$1.8M',  tlohw:'$2.8M'  },
+  { name:'APU (Auxiliary Power Unit)',type:'Spare Part', operator:'Norwegian',       loc:'OSL', locName:'Oslo Airport',        chw:'$0', hullw:'$0.8M',  tlohw:'$1.2M'  },
+];
+
+const REGION_EXPOSURE = [
+  { name:'China',     chw:'$0', hullw:'$19.5B', tlohw:'$23.3B' },
+  { name:'Dubai',     chw:'$0', hullw:'$12.1B', tlohw:'$14.6B' },
+  { name:'Frankfurt', chw:'$0', hullw:'$14.3B', tlohw:'$17.2B' },
+];
+
 const AIRPORTS = [
   { code:'LHR', name:'London Heathrow',    flag:'gb', total:'$40.6B', chw:'0', hullw:'$18.5B', tlohw:'$22.1B' },
   { code:'JFK', name:'New York JFK',       flag:'us', total:'$33.4B', chw:'0', hullw:'$15.2B', tlohw:'$18.2B' },
   { code:'DXB', name:'Dubai International',flag:'ae', total:'$28.7B', chw:'0', hullw:'$13.0B', tlohw:'$15.7B' },
   { code:'SIN', name:'Singapore Changi',   flag:'sg', total:'$17.4B', chw:'0', hullw:'$7.9B',  tlohw:'$9.5B' },
   { code:'ORD', name:"Chicago O'Hare",     flag:'us', total:'$16.1B', chw:'0', hullw:'$7.3B',  tlohw:'$8.8B' },
+];
+
+const AIRPORT_LIST = [
+  { name:'Abu Dhabi International Airport',                 code:'AUH', country:'United Arab Emirates', cc:'ae' },
+  { name:'Adolfo Suarez Madrid-Barajas Airport',            code:'MAD', country:'Spain',                cc:'es' },
+  { name:'Athens Eleftherios Venizelos International Airport', code:'ATH', country:'Greece',            cc:'gr' },
+  { name:'Barcelona El Prat Airport',                       code:'BCN', country:'Spain',                cc:'es' },
+  { name:'Chhatrapati Shivaji Maharaj International Airport', code:'BOM', country:'India',              cc:'in' },
+  { name:"Chicago O'Hare International Airport",            code:'ORD', country:'United States',        cc:'us' },
+  { name:'Copenhagen Airport',                              code:'CPH', country:'Denmark',              cc:'dk' },
+  { name:'Dallas/Fort Worth International Airport',         code:'DFW', country:'United States',        cc:'us' },
+  { name:'Denver International Airport',                    code:'DEN', country:'United States',        cc:'us' },
+  { name:'Dubai International Airport',                     code:'DXB', country:'United Arab Emirates', cc:'ae' },
+  { name:'Frankfurt Airport',                               code:'FRA', country:'Germany',              cc:'de' },
+  { name:'Hartsfield-Jackson Atlanta International Airport', code:'ATL', country:'United States',       cc:'us' },
+  { name:'Hong Kong International Airport',                 code:'HKG', country:'Hong Kong',            cc:'hk' },
+  { name:'Istanbul Airport',                                code:'IST', country:'Türkiye',              cc:'tr' },
+  { name:'London Heathrow Airport',                         code:'LHR', country:'United Kingdom',       cc:'gb' },
+  { name:'Los Angeles International Airport',               code:'LAX', country:'United States',        cc:'us' },
+  { name:'Miami International Airport',                     code:'MIA', country:'United States',        cc:'us' },
+  { name:'New York JFK International Airport',              code:'JFK', country:'United States',        cc:'us' },
+  { name:'Paris Charles de Gaulle Airport',                 code:'CDG', country:'France',               cc:'fr' },
+  { name:'Singapore Changi Airport',                        code:'SIN', country:'Singapore',            cc:'sg' },
+  { name:'Sydney Kingsford Smith Airport',                  code:'SYD', country:'Australia',            cc:'au' },
+  { name:'Tokyo Haneda Airport',                            code:'HND', country:'Japan',                cc:'jp' },
+];
+
+const WEATHER_EVENTS = [
+  { name:'Hurricane Maria',  winds:'145 knots', region:'Caribbean Sea',   date:'2024-11-01', cat:'Category 5',    catTone:'rose'   },
+  { name:'Typhoon Haiyan',   winds:'125 knots', region:'Western Pacific', date:'2024-10-29', cat:'Category 4',    catTone:'orange' },
+  { name:'Storm Dennis',     winds:'85 knots',  region:'North Atlantic',  date:'2024-10-28', cat:'Severe Storm',  catTone:'amber'  },
+  { name:'Cyclone Amphan',   winds:'115 knots', region:'Bay of Bengal',   date:'2024-11-02', cat:'Category 4',    catTone:'orange' },
+  { name:'Winter Storm Uri', winds:'65 knots',  region:'Gulf of Mexico',  date:'2024-11-03', cat:'Winter Storm',  catTone:'yellow' },
+];
+
+const ALERTS = [
+  { title:'Aircraft Crash - Flight AA123',      date:'2025-07-02', location:'New York, USA',       type:'Crash',    severity:'Critical' },
+  { title:'Engine Failure - Flight BA456',      date:'2025-07-01', location:'London, UK',          type:'Accident', severity:'High'     },
+  { title:'Bird Strike - Flight EK789',         date:'2025-06-30', location:'Dubai, UAE',          type:'Incident', severity:'Medium'   },
+  { title:'Emergency Landing - Flight QF012',   date:'2025-06-29', location:'Sydney, Australia',   type:'Incident', severity:'Medium'   },
+  { title:'New 777X Variant Announced',         date:'2025-06-28', location:'Seattle, USA',        type:'News',     severity:'Low'      },
+  { title:'Hard Landing - Flight LH334',        date:'2025-06-27', location:'Frankfurt, Germany',  type:'Accident', severity:'High'     },
+  { title:'Q2 Safety Performance Report',       date:'2025-06-26', location:'Global',              type:'Report',   severity:'Low'      },
+  { title:'Runway Excursion - Flight UA889',    date:'2025-06-25', location:'Chicago, USA',        type:'Incident', severity:'Medium'   },
+  { title:'Cabin Decompression - Flight SQ221', date:'2025-06-24', location:'Singapore',           type:'Incident', severity:'High'     },
 ];
 
 const NOTAMS = [
@@ -234,6 +305,67 @@ function positionTabPills() {
 
 /* ----------- CARDS ----------- */
 function PortfolioCard() {
+  const folderIco = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
+  const sortIco = `<span style="font-size:10px;color:#94a3b8;vertical-align:middle;"> ↕</span>`;
+
+  if (state.portfolioTab === 'Portfolio Groups') {
+    const rows = PORTFOLIO_GROUPS.map((g, gi) => {
+      const isExpanded = state.expandedGroups.has(gi);
+      const chevron = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform .2s;transform:rotate(${isExpanded?'90':'0'}deg);flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>`;
+      const assetsLabel = g.assetsActive ? `${g.assets} (${g.assetsActive.toLocaleString()})` : g.assets;
+
+      return `
+        <div class="border-b border-ink-100 last:border-0">
+          <button data-avi-group-idx="${gi}" class="w-full text-left px-3 py-2 hover:bg-ink-50 flex items-center justify-between gap-2 text-xs" style="gap:8px">
+            <span class="inline-flex items-center gap-1.5 min-w-0 flex-1">
+              <span style="color:#94a3b8;flex-shrink:0">${chevron}</span>
+              ${folderIco}
+              <span class="text-brand-600 font-semibold truncate hover:underline">${g.name}</span>
+            </span>
+            <span class="flex items-center shrink-0" style="gap:20px">
+              <span class="tabular-nums text-ink-600 text-right" style="min-width:80px">${assetsLabel}</span>
+              <span class="tabular-nums font-semibold text-ink-900 text-right" style="min-width:60px">${g.exposure}</span>
+            </span>
+          </button>
+          ${isExpanded ? g.portfolios.map(pName => {
+            const pfIdx = PORTFOLIOS.findIndex(p => p.name === pName);
+            const pf    = pfIdx >= 0 ? PORTFOLIOS[pfIdx] : { name: pName, assets:'—', exposure:'—' };
+            return `
+          <button data-avi-pf-idx="${pfIdx}" class="w-full text-left pl-9 pr-3 py-1.5 hover:bg-ink-50 flex items-center justify-between gap-2 text-xs bg-ink-50/60">
+            <span class="text-brand-500 font-medium truncate">${pf.name}</span>
+            <span class="flex items-center shrink-0" style="gap:20px">
+              <span class="tabular-nums text-ink-500 text-right" style="min-width:80px">${pf.assets}</span>
+              <span class="tabular-nums font-semibold text-ink-700 text-right" style="min-width:60px">${pf.exposure}</span>
+            </span>
+          </button>`;
+          }).join('') : ''}
+        </div>`;
+    }).join('');
+
+    return `
+    <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
+      <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Portfolio','Portfolio Groups'], state.portfolioTab, 'data-portfolio-tab')}</div>
+      <div class="px-3 py-1.5 flex items-center justify-between text-[10px] font-bold tracking-micro uppercase text-ink-500 border-b border-ink-100">
+        <span>Name</span>
+        <span class="flex items-center shrink-0" style="gap:20px">
+          <span style="min-width:80px;text-align:right">Assets${sortIco}</span>
+          <span style="min-width:60px;text-align:right">Exposure${sortIco}</span>
+        </span>
+      </div>
+      <div class="flex-1 overflow-y-auto scroll-thin">
+        ${rows}
+      </div>
+      <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 flex items-center justify-between text-xs h-9">
+        <button class="inline-flex items-center gap-1 text-brand-600 font-semibold hover:text-brand-700 tracking-micro">
+          <span class="inline-flex items-center [&_svg]:h-3.5 [&_svg]:w-3.5">${Ico.plus}</span><span>Add Group</span>
+        </button>
+        <button class="inline-flex items-center gap-1 text-brand-600 font-semibold hover:text-brand-700 tracking-micro">
+          <span>All Groups</span><span class="inline-flex items-center [&_svg]:h-3.5 [&_svg]:w-3.5">${Ico.chev}</span>
+        </button>
+      </div>
+    </div>`;
+  }
+
   return `
   <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
     <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Portfolio','Portfolio Groups'], state.portfolioTab, 'data-portfolio-tab')}</div>
@@ -262,14 +394,102 @@ function PortfolioCard() {
 
 function AirportCard() {
   const infoIcon = `<svg viewBox="0 0 16 16" class="w-3.5 h-3.5 text-brand-600" fill="currentColor"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="5.5" r="0.8"/><path d="M8 7.5v5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
-  return `
-  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
+  const folderIco = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
+
+  const tabBar = `
     <div class="p-3 border-b border-ink-100 shrink-0">
       <div class="tabs-desktop-wrap">${tabs(['Airport Exposure','Region Exposure','Engines & Spares'], state.airportTab, 'data-airport-tab')}</div>
       <select class="mobile-tab-select" id="airport-tab-mobile-sel">
         ${['Airport Exposure','Region Exposure','Engines & Spares'].map(t=>`<option value="${t}" ${t===state.airportTab?'selected':''}>${t}</option>`).join('')}
       </select>
-    </div>
+    </div>`;
+
+  if (state.airportTab === 'Engines & Spares') {
+    return `
+    <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
+      ${tabBar}
+      <div class="airport-metrics" style="margin:10px 12px 0;background:#eff6ff;border:1px solid #dbeafe;border-radius:8px;overflow:hidden;display:flex;">
+        <div style="flex:1;padding:10px 8px;text-align:center;border-right:1px solid #dbeafe;">
+          <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:3px;">Total CHW</div>
+          <div style="font-size:22px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$0</div>
+        </div>
+        <div style="flex:1;padding:10px 8px;text-align:center;border-right:1px solid #dbeafe;">
+          <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:3px;">Total HULLW</div>
+          <div style="font-size:22px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$56.8M</div>
+        </div>
+        <div style="flex:1;padding:10px 8px;text-align:center;">
+          <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:3px;">Total TLOHW</div>
+          <div style="font-size:22px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$86.5M</div>
+        </div>
+      </div>
+      <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-50">
+        <div class="px-3 pt-3 pb-1 grid grid-cols-[1.4fr_0.8fr_1fr_1.4fr_auto_auto_auto] gap-3 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white items-center">
+          <span>Name</span>
+          <span>Type</span>
+          <span>Operator</span>
+          <span>Location</span>
+          <span class="inline-flex items-center gap-1 justify-end">${infoIcon} CHW</span>
+          <span class="inline-flex items-center gap-1 justify-end">${infoIcon} HULLW</span>
+          <span class="inline-flex items-center gap-1 justify-end">${infoIcon} TLOHW</span>
+        </div>
+        ${ENGINES_SPARES.map(e => `
+          <div class="px-3 py-2 hover:bg-ink-50 grid grid-cols-[1.4fr_0.8fr_1fr_1.4fr_auto_auto_auto] gap-3 text-xs items-center">
+            <span class="font-semibold text-brand-600 truncate hover:underline cursor-pointer">${e.name}</span>
+            <span class="text-ink-700 truncate">${e.type}</span>
+            <span class="text-ink-700 truncate">${e.operator}</span>
+            <span class="text-ink-700 truncate min-w-0"><span class="font-semibold text-brand-600">${e.loc}</span> - <span class="text-ink-600">${e.locName}</span></span>
+            <span class="tabular-nums text-right text-ink-700">${e.chw}</span>
+            <span class="tabular-nums text-right text-ink-700">${e.hullw}</span>
+            <span class="tabular-nums text-right text-ink-700">${e.tlohw}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+  }
+
+  if (state.airportTab === 'Region Exposure') {
+    return `
+    <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
+      ${tabBar}
+      <div class="airport-metrics" style="margin:10px 12px 0;background:#eff6ff;border:1px solid #dbeafe;border-radius:8px;overflow:hidden;display:flex;">
+        <div style="flex:1;padding:10px 8px;text-align:center;border-right:1px solid #dbeafe;">
+          <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:3px;">Total CHW</div>
+          <div style="font-size:22px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$0</div>
+        </div>
+        <div style="flex:1;padding:10px 8px;text-align:center;border-right:1px solid #dbeafe;">
+          <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:3px;">Total HULLW</div>
+          <div style="font-size:22px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$45.9B</div>
+        </div>
+        <div style="flex:1;padding:10px 8px;text-align:center;">
+          <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:3px;">Total TLOHW</div>
+          <div style="font-size:22px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$55.1B</div>
+        </div>
+      </div>
+      <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-50">
+        <div class="px-3 pt-3 pb-1 grid grid-cols-[1fr_auto_auto_auto] gap-4 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white items-center">
+          <span>Region</span>
+          <span class="inline-flex items-center gap-1 justify-end">${infoIcon} CHW</span>
+          <span class="inline-flex items-center gap-1 justify-end">${infoIcon} HULLW</span>
+          <span class="inline-flex items-center gap-1 justify-end">${infoIcon} TLOHW</span>
+        </div>
+        ${REGION_EXPOSURE.map(r => `
+          <div class="px-3 py-2 hover:bg-ink-50 grid grid-cols-[1fr_auto_auto_auto] gap-4 text-xs items-center">
+            <div class="flex items-center gap-2 min-w-0">
+              ${folderIco}
+              <span class="font-semibold text-brand-600 truncate hover:underline cursor-pointer">${r.name}</span>
+            </div>
+            <span class="tabular-nums text-right text-ink-700">${r.chw}</span>
+            <span class="tabular-nums text-right text-ink-700">${r.hullw}</span>
+            <span class="tabular-nums text-right text-ink-700">${r.tlohw}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+  }
+
+  return `
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
+    ${tabBar}
     <div class="airport-metrics" style="margin:10px 12px 0;background:#eff6ff;border:1px solid #dbeafe;border-radius:8px;overflow:hidden;display:flex;">
       <div style="flex:1;padding:10px 8px;text-align:center;border-right:1px solid #dbeafe;">
         <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:3px;">Total</div>
@@ -322,9 +542,99 @@ function NotamCard() {
     const color = isWarn ? '#f59e0b' : '#ef4444';
     return `<svg viewBox="0 0 24 24" class="w-4 h-4 shrink-0" fill="none" stroke="${color}" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
   };
+
+  const tabBar = `<div class="p-3 border-b border-ink-100 shrink-0">${tabs(['NOTAMs','Alerts','Weather'], state.notamTab, 'data-notam-tab')}</div>`;
+
+  if (state.notamTab === 'Weather') {
+    const catColor = { rose:'#dc2626', orange:'#ea580c', amber:'#d97706', yellow:'#ca8a04' };
+    const catBg    = { rose:'#fef2f2', orange:'#fff7ed', amber:'#fffbeb', yellow:'#fefce8' };
+    const windIco = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>`;
+
+    return `
+    <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
+      ${tabBar}
+      <div class="flex-1 overflow-y-auto scroll-thin flex flex-col min-h-0">
+        <div class="px-3 py-2 grid text-[11px] font-bold tracking-micro uppercase text-ink-500 border-b border-ink-100 shrink-0" style="grid-template-columns:1fr auto auto;gap:0 12px;">
+          <span>Event Name</span>
+          <span>Region</span>
+          <span>Category</span>
+        </div>
+        <div class="divide-y divide-ink-50">
+          ${WEATHER_EVENTS.map(e => `
+          <div class="px-3 py-2.5 grid items-center" style="grid-template-columns:1fr auto auto;gap:0 12px;">
+            <div>
+              <a href="NatCatEventDetails.html" class="text-brand-600 font-semibold text-xs hover:underline">${e.name}</a>
+              <div class="flex items-center gap-1 mt-0.5 text-[11px] text-ink-400">
+                ${windIco} ${e.winds}
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-xs text-ink-600 whitespace-nowrap">${e.region}</div>
+              <div class="text-[11px] text-ink-400 mt-0.5">${e.date}</div>
+            </div>
+            <div>
+              <span style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;background:${catBg[e.catTone]};color:${catColor[e.catTone]};white-space:nowrap;">${e.cat}</span>
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>
+      <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 text-center h-9 flex items-center justify-center shrink-0">
+        <button class="text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">ALL WEATHER RISKS</button>
+      </div>
+    </div>`;
+  }
+
+  if (state.notamTab === 'Alerts') {
+    const sev = {
+      Critical: { fill:'#ef4444', border:'#fecaca', bg:'#fef2f2', text:'#dc2626' },
+      High:     { fill:'#f97316', border:'#fed7aa', bg:'#fff7ed', text:'#ea580c' },
+      Medium:   { fill:'#eab308', border:'#fde68a', bg:'#fefce8', text:'#ca8a04' },
+      Low:      { fill:'#3b82f6', border:'#bfdbfe', bg:'#eff6ff', text:'#2563eb' },
+    };
+    const triangleIco = (color) => `<svg viewBox="0 0 24 24" class="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+
+    const filterOptions = ['All','Crash','Accident','Incident','News','Report'];
+    const filtered = state.alertFilter === 'All' ? ALERTS : ALERTS.filter(a => a.type === state.alertFilter);
+
+    return `
+    <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
+      ${tabBar}
+      <div class="px-3 pt-3 pb-2 shrink-0">
+        <div class="relative">
+          <select id="alert-filter-sel" class="w-full appearance-none border border-ink-200 rounded-lg bg-ink-50/60 px-3 py-2 pr-9 text-sm font-medium text-ink-800 focus:outline-none focus:border-brand-400 cursor-pointer">
+            ${filterOptions.map(o => `<option value="${o}" ${o===state.alertFilter?'selected':''}>${o}</option>`).join('')}
+          </select>
+          <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+      <div class="flex-1 overflow-y-auto scroll-thin px-3 pb-3 flex flex-col gap-2">
+        ${filtered.map(a => {
+          const s = sev[a.severity] || sev.Low;
+          return `
+          <div class="rounded-lg border border-ink-100 bg-white hover:bg-ink-50 px-3 py-2.5 text-xs">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-start gap-2 flex-1 min-w-0">
+                ${triangleIco(s.fill)}
+                <div class="min-w-0 flex-1">
+                  <div class="font-semibold text-ink-900 truncate">${a.title}</div>
+                  <div class="text-ink-500 text-[11px] mt-0.5 tabular-nums">${a.date} | ${a.location}</div>
+                  <div class="text-ink-500 text-[11px] mt-0.5">Type: <span class="text-ink-800 font-semibold">${a.type}</span></div>
+                </div>
+              </div>
+              <span class="shrink-0 px-2 py-0.5 rounded-md text-[10px] font-semibold border" style="color:${s.text};border-color:${s.border};background:${s.bg};">${a.severity}</span>
+            </div>
+          </div>`;
+        }).join('') || `<div class="text-center text-ink-400 text-xs py-6">No alerts of this type.</div>`}
+      </div>
+      <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 text-center h-9 flex items-center justify-center">
+        <button class="text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">VIEW ALL ALERTS</button>
+      </div>
+    </div>`;
+  }
+
   return `
   <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
-    <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['NOTAMs','Alerts','Weather'], state.notamTab, 'data-notam-tab')}</div>
+    ${tabBar}
     <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto] gap-3 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white">
       <span>Risk Area</span>
       <span>Status</span>
@@ -549,8 +859,8 @@ function Content() {
       ${AirportCard()}
       ${NotamCard()}
     </section>
-    <section class="bg-white rounded-xl border border-ink-200 shadow-card overflow-hidden" id="map-container" style="height:calc(100vh - 380px); min-height:400px;">
-      <div class="p-3 border-b border-ink-100 flex items-center justify-between">
+    <section class="bg-white rounded-xl border border-ink-200 shadow-card overflow-hidden flex flex-col" id="map-container" style="height:calc(100vh - 380px); min-height:400px;">
+      <div class="p-3 border-b border-ink-100 flex items-center justify-between gap-3 flex-wrap shrink-0">
         <div class="flex items-center gap-2">
           <div class="ds-tabs" data-tab-group="data-view">
             <span class="ds-tab-pill is-init" data-tab-pill></span>
@@ -558,30 +868,68 @@ function Content() {
             <button data-view="List" aria-selected="${state.viewMode==='List'}" class="ds-tab" style="font-size:12px;padding:6px 14px;"><span class="ds-tab-label">List</span></button>
           </div>
         </div>
+        ${state.viewMode === 'List' ? `
+        <div class="relative w-full sm:w-72">
+          <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/></svg>
+          <input id="airport-search" type="search" value="${state.airportSearch.replace(/"/g,'&quot;')}" placeholder="Search airports, code, country..." class="w-full pl-8 pr-3 py-1.5 text-xs border border-ink-200 rounded-lg focus:outline-none focus:border-brand-400" />
+        </div>` : ''}
       </div>
-      <div class="relative flex-1" style="height:calc(100% - 53px);">
-        <div id="avia-map" class="absolute inset-0"></div>
-        <button id="map-fullscreen" class="map-btn map-btn-fs absolute z-[400]" title="Toggle fullscreen" style="top:12px; left:12px;">${Ico.maximize}</button>
-        <div class="absolute top-3 right-3 z-[400] flex flex-col gap-1 items-end">
-          <div class="relative">
-            <button id="map-layers-btn" class="map-btn" title="Layers">${Ico.layers}</button>
-            <div id="map-layers-menu" class="hidden absolute top-0 right-[calc(100%+8px)] w-[160px] bg-white border border-ink-200 rounded-xl shadow-card overflow-hidden py-1">
-              ${[
-                { id:'satellite', label:'Satellite' },
-                { id:'street',    label:'Street View' },
-                { id:'dark',      label:'Dark Mode' },
-                { id:'light',     label:'Light Mode' },
-              ].map(o => `
-                <button data-map-type="${o.id}" class="map-type-opt w-full flex items-center justify-between px-3 py-2 text-sm text-ink-700 hover:bg-ink-50 transition-colors">
-                  <span data-label>${o.label}</span>
-                  <span class="text-brand-600 opacity-0" data-check>${Ico.check}</span>
-                </button>`).join('')}
-            </div>
+      ${state.viewMode === 'List' ? AirportListContent() : MapContent()}
+    </section>
+  </div>`;
+}
+
+function MapContent() {
+  return `
+    <div class="relative flex-1" style="min-height:0;">
+      <div id="avia-map" class="absolute inset-0"></div>
+      <button id="map-fullscreen" class="map-btn map-btn-fs absolute z-[400]" title="Toggle fullscreen" style="top:12px; left:12px;">${Ico.maximize}</button>
+      <div class="absolute top-3 right-3 z-[400] flex flex-col gap-1 items-end">
+        <div class="relative">
+          <button id="map-layers-btn" class="map-btn" title="Layers">${Ico.layers}</button>
+          <div id="map-layers-menu" class="hidden absolute top-0 right-[calc(100%+8px)] w-[160px] bg-white border border-ink-200 rounded-xl shadow-card overflow-hidden py-1">
+            ${[
+              { id:'satellite', label:'Satellite' },
+              { id:'street',    label:'Street View' },
+              { id:'dark',      label:'Dark Mode' },
+              { id:'light',     label:'Light Mode' },
+            ].map(o => `
+              <button data-map-type="${o.id}" class="map-type-opt w-full flex items-center justify-between px-3 py-2 text-sm text-ink-700 hover:bg-ink-50 transition-colors">
+                <span data-label>${o.label}</span>
+                <span class="text-brand-600 opacity-0" data-check>${Ico.check}</span>
+              </button>`).join('')}
           </div>
         </div>
       </div>
-    </section>
-  </div>`;
+    </div>`;
+}
+
+function AirportListContent() {
+  const q = state.airportSearch.trim().toLowerCase();
+  const rows = AIRPORT_LIST.filter(a =>
+    !q || a.name.toLowerCase().includes(q) || a.code.toLowerCase().includes(q) || a.country.toLowerCase().includes(q)
+  );
+
+  return `
+    <div class="flex-1 overflow-y-auto scroll-thin min-h-0">
+      <div class="px-4 py-2.5 grid grid-cols-[1fr_140px_260px] gap-6 text-[11px] font-bold tracking-micro uppercase text-ink-500 border-b border-ink-100 sticky top-0 bg-white items-center">
+        <span>Airport <span class="text-ink-300">↑↓</span></span>
+        <span>Code <span class="text-ink-300">↑↓</span></span>
+        <span>Country <span class="text-ink-300">↑↓</span></span>
+      </div>
+      <div class="divide-y divide-ink-50">
+        ${rows.map(a => `
+          <a href="AirportDetails.html" class="px-4 py-3 grid grid-cols-[1fr_140px_260px] gap-6 items-center text-sm hover:bg-ink-50 transition-colors">
+            <span class="text-brand-600 font-semibold hover:underline truncate">${a.name}</span>
+            <span class="text-ink-700 tracking-wide">${a.code}</span>
+            <span class="flex items-center gap-2 text-ink-700 min-w-0">
+              ${flag(a.cc)}
+              <span class="truncate">${a.country}</span>
+            </span>
+          </a>
+        `).join('') || `<div class="px-4 py-8 text-center text-sm text-ink-400">No airports match "${state.airportSearch}".</div>`}
+      </div>
+    </div>`;
 }
 
 /* ----------- RENDER + WIRING ----------- */
@@ -615,10 +963,31 @@ window.render = function render() {
   const airportTabSel = document.getElementById('airport-tab-mobile-sel');
   if (airportTabSel) airportTabSel.onchange = () => { state.airportTab = airportTabSel.value; render(); };
 
+  /* Alerts filter dropdown */
+  const alertSel = document.getElementById('alert-filter-sel');
+  if (alertSel) alertSel.onchange = () => { state.alertFilter = alertSel.value; render(); };
+
+  /* Airport list search */
+  const airportSearch = document.getElementById('airport-search');
+  if (airportSearch) {
+    let t;
+    airportSearch.addEventListener('input', () => {
+      clearTimeout(t);
+      const v = airportSearch.value;
+      t = setTimeout(() => {
+        state.airportSearch = v;
+        render();
+        const next = document.getElementById('airport-search');
+        if (next) { next.focus(); next.setSelectionRange(v.length, v.length); }
+      }, 150);
+    });
+  }
+
   /* Portfolio name → details page */
   document.querySelectorAll('[data-avi-pf-idx]').forEach(btn => {
     btn.addEventListener('click', () => {
       const idx = parseInt(btn.dataset.aviPfIdx);
+      if (isNaN(idx) || idx < 0) return;
       const p   = PORTFOLIOS[idx];
       sessionStorage.setItem('selectedAviationPortfolio', JSON.stringify({
         name: p.name, assets: p.assets, exposure: p.exposure,
@@ -626,9 +995,29 @@ window.render = function render() {
       location.href = 'AviationPortfolioDetails.html';
     });
   });
+
+  /* Portfolio Groups expand/collapse */
+  document.querySelectorAll('[data-avi-group-idx]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const gi = parseInt(btn.dataset.aviGroupIdx);
+      if (state.expandedGroups.has(gi)) state.expandedGroups.delete(gi);
+      else state.expandedGroups.add(gi);
+      render();
+    });
+  });
   requestAnimationFrame(positionTabPills);
   window.addEventListener('resize', positionTabPills, { passive: true });
-  document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => { state.viewMode = b.dataset.view; render(); });
+  document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => {
+    const v = b.dataset.view;
+    if (state.viewMode === v) return;
+    state.viewMode = v;
+    const group = b.closest('.ds-tabs');
+    if (group) {
+      group.querySelectorAll('.ds-tab').forEach(t => t.setAttribute('aria-selected', String(t === b)));
+      positionTabPills();
+      setTimeout(() => render(), 220);
+    } else { render(); }
+  });
   setTimeout(initMap, 50);
 };
 window.render();

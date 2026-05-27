@@ -75,6 +75,10 @@
   /* Action btns */
   .action-btn { width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; border-radius:6px; border:0; background:transparent; color:#94a3b8; cursor:pointer; }
   .action-btn:hover { background:#f1f5f9; color:#334155; }
+  .action-btn.is-edit { color:var(--brand-600,#2563eb); }
+  .action-btn.is-edit:hover { background:var(--brand-50,#eff6ff); color:var(--brand-700,#1d4ed8); }
+  .action-btn.is-delete { color:#dc2626; }
+  .action-btn.is-delete:hover { background:#fef2f2; color:#b91c1c; }
   /* Mobile responsive */
   .mobile-tab-select{display:none;width:100%;padding:8px 12px;border:1px solid #e2e8f0;border-radius:9999px;font-size:13px;font-weight:600;color:#334155;background:#f1f5f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;font-family:inherit;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;}
   @media(max-width:767px){
@@ -100,6 +104,10 @@ window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 </script>
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="shared/chrome.js?v=11"></script>
+<link rel="stylesheet" href="modals/modal-base.css" />
+<script src="modals/EditPortfolioModal.js"></script>
+<script src="modals/EditPortfolioGroupsModal.js"></script>
+<script src="modals/DeletePortfolioModal.js"></script>
 <script>
 const SC = window.sharedChrome;
 const Ico = SC.I;
@@ -145,6 +153,10 @@ const PORTFOLIOS = {
     { name:'Singapore CBD',                 desc:'Prime office space, Raffles Place and Marina Bay',        policies:98,    exposure:'$1.7B',   risk:4,   eemi:11.20, cii:7.50, status:'OK' },
   ],
 };
+
+function escapeAttr(s) {
+  return String(s ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
 
 function catIcon(name, size=15) {
   const d = window.lucide && window.lucide.icons && window.lucide.icons[name];
@@ -260,8 +272,8 @@ function Content() {
                   <td>${statusBadge(p.status)}</td>
                   <td>
                     <div class="flex items-center gap-1">
-                      <button class="action-btn" title="Edit">${EDIT_ICO}</button>
-                      <button class="action-btn" title="Delete">${DEL_ICO}</button>
+                      <button class="action-btn is-edit" title="Edit" data-pf-edit data-pf-name="${escapeAttr(p.name)}" data-pf-desc="${escapeAttr(p.desc)}" data-pf-cat-key="${catTab}">${EDIT_ICO}</button>
+                      <button class="action-btn is-delete" title="Delete" data-pf-delete data-pf-name="${escapeAttr(p.name)}">${DEL_ICO}</button>
                     </div>
                   </td>
                 </tr>`).join('')}
@@ -374,6 +386,42 @@ window.render = function() {
         id: cat.slice(0,3).toUpperCase() + String(PORTFOLIOS[cat].indexOf(p) + 1).padStart(4,'0'),
       }));
       location.href = dest.url;
+    });
+  });
+
+  /* Edit portfolio (or group) → open appropriate modal */
+  document.querySelectorAll('[data-pf-edit]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (subTab === 'Portfolio Groups') {
+        const allNames = (PORTFOLIOS[catTab] || []).map(p => p.name);
+        // Pre-select a few sample portfolios to mirror the screenshot's UX
+        const preSelected = allNames.slice(0, 3);
+        window.EditPortfolioGroupsModal && window.EditPortfolioGroupsModal.open({
+          title:      btn.dataset.pfName || '',
+          portfolios: allNames,
+          selected:   preSelected,
+          onSave: (data) => { console.log('Portfolio group saved:', data); },
+        });
+      } else {
+        window.EditPortfolioModal && window.EditPortfolioModal.open({
+          name:        btn.dataset.pfName || '',
+          description: btn.dataset.pfDesc || '',
+          type:        btn.dataset.pfCatKey || 'Marine',
+          onSave: (data) => { console.log('Portfolio saved:', data); },
+        });
+      }
+    });
+  });
+
+  /* Delete portfolio → open confirmation modal */
+  document.querySelectorAll('[data-pf-delete]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      window.DeletePortfolioModal && window.DeletePortfolioModal.open({
+        name: btn.dataset.pfName || '',
+        onDelete: () => { console.log('Portfolio deleted:', btn.dataset.pfName); },
+      });
     });
   });
 };

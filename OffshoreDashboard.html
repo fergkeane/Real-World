@@ -67,6 +67,7 @@
   .offshore-marker { display:flex; flex-direction:column; align-items:center; gap:2px; }
   .offshore-dot { width:10px; height:10px; border-radius:50%; border:2px solid #fff; box-shadow:0 2px 4px rgba(0,0,0,.3); }
   .offshore-label { background:#1e293b; color:#fff; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:600; white-space:nowrap; box-shadow:0 2px 4px rgba(0,0,0,.3); }
+  #offshore-map.no-labels .offshore-label { display:none; }
   #map-container.is-fullscreen { position:fixed; inset:0; z-index:9999; border-radius:0; border:0; }
   #map-container.is-fullscreen > div { height:100vh !important; }
   .asset-popup .leaflet-popup-content-wrapper { padding:0; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(15,23,42,.25); }
@@ -105,34 +106,113 @@ let state = {
   portfolioTab: 'Portfolio',
   regionsTab: 'Regions Aggregation',
   weatherTab: 'Weather',
+  expandedGroups: new Set([2]),
+  expandedRegions: new Set(),
+  assetFilter: null, // populated after ASSET_TYPES defined
+  showLabels: true,
 };
+
+const ASSET_TYPES = [
+  { k:'Oil Rig',                     color:'#ef4444' },
+  { k:'Platform',                    color:'#06b6d4' },
+  { k:'Windfarm',                    color:'#10b981' },
+  { k:'Floating Storage (FSO)',      color:'#8b5cf6' },
+  { k:'Fixed Platform',              color:'#ec4899' },
+  { k:'Jack-Up Drilling Unit',       color:'#f59e0b' },
+  { k:'Mobile Drilling (MODU)',      color:'#3b82f6' },
+  { k:'Mobile Production (MOPU)',    color:'#ea580c' },
+  { k:'Single Point Mooring (SPM)',  color:'#0ea5e9' },
+  { k:'Subsea',                      color:'#14b8a6' },
+  { k:'Well',                        color:'#a855f7' },
+  { k:'Other',                       color:'#64748b' },
+];
+state.assetFilter = new Set(ASSET_TYPES.map(t => t.k));
+
+// Map marker.assetType to one of the user-facing categories
+function mapAssetType(t) {
+  const m = {
+    'Fixed Platform':              'Fixed Platform',
+    'Subsea Installation':         'Subsea',
+    'FPSO':                        'Floating Storage (FSO)',
+    'Jack-Up Rig':                 'Jack-Up Drilling Unit',
+    'Semi-Submersible':            'Mobile Drilling (MODU)',
+    'TLP':                         'Platform',
+    'Drillship':                   'Mobile Drilling (MODU)',
+    'Mobile Production (MOPU)':    'Mobile Production (MOPU)',
+    'Wind Turbine':                'Windfarm',
+    'Windfarm':                    'Windfarm',
+    'SPM':                         'Single Point Mooring (SPM)',
+    'Well':                        'Well',
+    'Oil Rig':                     'Oil Rig',
+  };
+  return m[t] || 'Other';
+}
 
 /* ----------- DATA ----------- */
 const PORTFOLIOS = [
-  { name:'Venezuelan Offshore',  assets:12, exposure:'$1.85B' },
-  { name:'Gulf of Mexico Assets', assets:10, exposure:'$2.37B' },
-  { name:'Ekofisk',              assets:9,  exposure:'$540.0M' },
-  { name:'Chevron',              assets:8,  exposure:'$918.0M' },
-  { name:'Fosen Vind Power',     assets:7,  exposure:'$850.0M' },
-  { name:'Neptune Energy',       assets:8,  exposure:'$450.0M' },
-  { name:'Oseberg',              assets:6,  exposure:'$380.0M' },
+  { name:'1. Offshore Chevron',         policies:699,   exposure:'$48.5B'   },
+  { name:'1. Offshore Equinor',         policies:1686,  exposure:'$134.1B'  },
+  { name:'1. Offshore Harbour Energy',  policies:145,   exposure:'$7.1B'    },
+  { name:'1. Offshore Shell',           policies:2193,  exposure:'$90.3B'   },
+  { name:'2. Mobile Production',        policies:834,   exposure:'$986.3B'  },
+  { name:'2. Subsea Pipelines',         policies:412,   exposure:'$56.8B'   },
+  { name:'3. North Sea Platforms',      policies:1024,  exposure:'$112.4B'  },
+  { name:'3. Gulf of Mexico Assets',    policies:678,   exposure:'$78.2B'   },
+  { name:'4. West Africa FPSOs',        policies:289,   exposure:'$41.7B'   },
+  { name:'4. Brazil Pre-Salt',          policies:556,   exposure:'$92.6B'   },
 ];
 
-const REGIONS = [
-  { name:'North Sea',      above:'$234', ours:'$156.8B', icon:'🗂️' },
-  { name:'Gulf of Mexico', above:'$198', ours:'$234.5B', icon:'🗂️' },
-  { name:'West Africa',    above:'$167', ours:'$178.3B', icon:'🗂️' },
-  { name:'Brazil',         above:'$145', ours:'$198.7B', icon:'🗂️' },
-  { name:'Southeast Asia', above:'$123', ours:'$134.2B', icon:'🗂️' },
-  { name:'Australia',      above:'$98',  ours:'$123.6B', icon:'🗂️' },
+const PORTFOLIO_GROUPS = [
+  { name:'Offshore Fixed Assets',  policies:4811, exposure:'$285.4B', children: [] },
+  { name:'Offshore Mobile Assets', policies:3410, exposure:'$1.2T',   children: [] },
+  { name:'Windfarms',              policies:542,  exposure:'$23.4B',  children: [
+    { name:'3. Windfarms Eurus', policies:88,  exposure:'$5.4B'  },
+    { name:'Windfarms',          policies:454, exposure:'$18.0B' },
+  ]},
+];
+
+const REGIONS_MONITORED = [
+  { name:'Other',      count:7518, exposure:'$1.1T',   children:[
+    { name:'North Sea',     count:2845, exposure:'$420.0B' },
+    { name:'Gulf of Mexico',count:3210, exposure:'$520.5B' },
+    { name:'West Africa',   count:1463, exposure:'$159.5B' },
+  ] },
+  { name:'Oil Fields', count:3175, exposure:'$422.3B', children:[
+    { name:'Buzzard Field', count:412, exposure:'$48.2B' },
+    { name:'Ekofisk',       count:298, exposure:'$32.1B' },
+    { name:'Brent',         count:267, exposure:'$28.6B' },
+  ] },
+  { name:'Cold Stack', count:53,   exposure:'$9.2B',   children:[
+    { name:'Asgard B',      count:18, exposure:'$3.4B' },
+    { name:'Heimdal',       count:35, exposure:'$5.8B' },
+  ] },
+];
+
+const EXPOSURE_AGGREGATION = [
+  { name:'Marine Hull',       count:1719,  exposure:'$11.3B' },
+  { name:'Yacht',             count:3,     exposure:'$2.4M'  },
+  { name:'Property',          count:56,    exposure:'$3.4B'  },
+  { name:'Energy / Offshore', count:16698, exposure:'$2.3T'  },
+];
+const EXPOSURE_TOTAL = '$2.4T';
+
+const REGIONS_TOP = [
+  { name:'Real-Time Risk (Offshore)', count:2167, exposure:'$243.2B', children:[
+    { name:'Buzzard Isle & Elevator', count:412, exposure:'$48.2B' },
+    { name:'Auger TLP',               count:298, exposure:'$32.1B' },
+  ] },
+  { name:'Real-Time Risk (Marine)',   count:25,   exposure:'$1.3B',   children:[
+    { name:'MV Atlantic Trader', count:14, exposure:'$0.7B' },
+    { name:'MV Pacific Glory',   count:11, exposure:'$0.6B' },
+  ] },
 ];
 
 const WEATHER = [
-  { event:'Hurricane Delta',   region:'Gulf of Mexico',      date:'2024-11-01', knots:'155', category:'Category 5' },
-  { event:'North Sea Storm',   region:'North Sea',           date:'2024-10-29', knots:'95',  category:'Severe Storm' },
-  { event:'Typhoon Mawar',     region:'South China Sea',     date:'2024-10-28', knots:'125', category:'Category 4' },
-  { event:'Cyclone Freddy',    region:'Mozambique Channel',  date:'2024-11-02', knots:'85',  category:'Category 3' },
-  { event:'Winter Storm Titan',region:'Norwegian Sea',       date:'2024-11-03', knots:'105', category:'Winter Storm' },
+  { event:'Hurricane Delta',    date:'2024-11-01', knots:'155', category:'Category 5',   status:'Active' },
+  { event:'North Sea Storm',    date:'2024-10-29', knots:'95',  category:'Severe Storm', status:'Active' },
+  { event:'Typhoon Mawar',      date:'2024-10-28', knots:'125', category:'Category 4',   status:'Past'   },
+  { event:'Cyclone Freddy',     date:'2024-11-02', knots:'85',  category:'Category 3',   status:'Active' },
+  { event:'Winter Storm Titan', date:'2024-11-03', knots:'105', category:'Winter Storm', status:'Past'   },
 ];
 
 const MARKERS = [
@@ -216,56 +296,156 @@ function positionTabPills() {
 
 /* ----------- CARDS ----------- */
 function PortfolioCard() {
-  return `
-  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
-    <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Portfolio','Portfolio Groups'], state.portfolioTab, 'data-portfolio-tab')}</div>
-    <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-50">
-      <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto_auto] gap-6 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white">
-        <span>Name</span>
-        <span class="text-right">Assets ↑↓</span>
-        <span class="text-right">Exposure ↑↓</span>
+  const totalInterests = PORTFOLIOS.reduce((sum, p) => sum + (p.policies || 0), 0).toLocaleString();
+  const folderIco = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
+
+  const statsCard = `
+    <div style="padding:14px 16px 6px;display:flex;justify-content:center;" class="shrink-0">
+      <div style="background:#eff6ff;border:1px solid #dbeafe;border-radius:10px;padding:8px 28px;text-align:center;min-width:180px;">
+        <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:2px;">Total Interests</div>
+        <div style="font-size:18px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.01em;line-height:1.1;">${totalInterests}</div>
       </div>
-      ${PORTFOLIOS.map((p, i) => `
-        <button data-off-pf-idx="${i}" class="w-full text-left px-3 py-2 hover:bg-ink-50 flex items-center justify-between text-xs">
-          <span class="truncate text-brand-600 font-semibold hover:underline">${p.name}</span>
-          <span class="flex items-center gap-6 tabular-nums text-ink-600 shrink-0">
-            <span class="w-8 text-right">${p.assets}</span>
-            <span class="w-20 text-right font-semibold text-ink-900">${p.exposure}</span>
-          </span>
-        </button>
-      `).join('')}
-    </div>
-    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 flex items-center justify-between text-xs h-9">
+    </div>`;
+
+  const tabBar = `<div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Portfolio','Portfolio Groups'], state.portfolioTab, 'data-portfolio-tab')}</div>`;
+
+  const footer = `
+    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 flex items-center justify-between text-xs h-9 shrink-0">
       <button class="inline-flex items-center gap-1 text-brand-600 font-semibold hover:text-brand-700 tracking-micro">+ ADD PORTFOLIO</button>
       <button class="inline-flex items-center gap-1 text-brand-600 font-semibold hover:text-brand-700 tracking-micro">VIEW ALL PORTFOLIOS &amp; GROUPS</button>
+    </div>`;
+
+  if (state.portfolioTab === 'Portfolio Groups') {
+    const rows = PORTFOLIO_GROUPS.map((g, gi) => {
+      const isExpanded = state.expandedGroups.has(gi);
+      const chevron = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform .2s;transform:rotate(${isExpanded?'90':'0'}deg);flex-shrink:0;color:#94a3b8"><polyline points="9 18 15 12 9 6"/></svg>`;
+
+      return `
+        <div>
+          <button data-off-group-idx="${gi}" class="w-full text-left px-3 py-2 hover:bg-ink-50 grid grid-cols-[1fr_70px_90px] gap-4 items-center text-xs">
+            <span class="inline-flex items-center gap-2 min-w-0">
+              ${chevron}
+              ${folderIco}
+              <span class="text-brand-600 font-semibold truncate hover:underline">${g.name}</span>
+            </span>
+            <span class="tabular-nums text-ink-700 text-right">${g.policies.toLocaleString()}</span>
+            <span class="tabular-nums text-right font-semibold text-ink-900">${g.exposure}</span>
+          </button>
+          ${isExpanded ? g.children.map(c => `
+            <div class="px-3 py-2 grid grid-cols-[1fr_70px_90px] gap-4 items-center text-xs bg-ink-50/40 hover:bg-ink-50">
+              <span class="text-brand-500 font-medium truncate pl-9">${c.name}</span>
+              <span class="tabular-nums text-ink-600 text-right">${c.policies.toLocaleString()}</span>
+              <span class="tabular-nums text-right font-semibold text-ink-800">${c.exposure}</span>
+            </div>
+          `).join('') : ''}
+        </div>`;
+    }).join('');
+
+    return `
+    <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="height:420px;max-height:420px">
+      ${tabBar}
+      ${statsCard}
+      <div class="flex-1 overflow-y-auto scroll-thin mt-2">
+        <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_70px_90px] gap-4 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white items-center">
+          <span>Name <span class="text-ink-300">↑↓</span></span>
+          <span class="text-right">Policies <span class="text-ink-300">↑↓</span></span>
+          <span class="text-right">Our Exposure <span class="text-ink-300">↑↓</span></span>
+        </div>
+        <div class="divide-y divide-ink-50">
+          ${rows}
+        </div>
+      </div>
+      ${footer}
+    </div>`;
+  }
+
+  return `
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="height:420px;max-height:420px">
+    ${tabBar}
+    ${statsCard}
+    <div class="flex-1 overflow-y-auto scroll-thin mt-2">
+      <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_70px_90px] gap-4 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white items-center">
+        <span>Name <span class="text-ink-300">↑↓</span></span>
+        <span class="text-right">Policies <span class="text-ink-300">↑↓</span></span>
+        <span class="text-right">Our Exposure <span class="text-ink-300">↑↓</span></span>
+      </div>
+      <div class="divide-y divide-ink-50">
+        ${PORTFOLIOS.map((p, i) => `
+          <button data-off-pf-idx="${i}" class="w-full text-left px-3 py-2 hover:bg-ink-50 grid grid-cols-[1fr_70px_90px] gap-4 items-center text-xs">
+            <span class="truncate text-brand-600 font-semibold hover:underline">${p.name}</span>
+            <span class="tabular-nums text-ink-700 text-right">${p.policies.toLocaleString()}</span>
+            <span class="tabular-nums text-right font-semibold text-ink-900">${p.exposure}</span>
+          </button>
+        `).join('')}
+      </div>
     </div>
+    ${footer}
   </div>`;
 }
 
 function RegionsCard() {
-  const folderSvg = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
-  return `
-  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
-    <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Regions Aggregation','Exposure Aggregation'], state.regionsTab, 'data-regions-tab')}</div>
-    <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-50">
-      <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto_auto] gap-6 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white">
-        <span>Name</span>
-        <span class="text-right">Above Threshold ↑↓</span>
-        <span class="text-right">Our Exposure ↑↓</span>
-      </div>
-      <div class="px-3 pt-1 pb-2 text-[10px] font-bold uppercase text-ink-500">Monitored Regions:</div>
-      ${REGIONS.map(r => `
-        <button class="w-full text-left px-3 py-2 hover:bg-ink-50 grid grid-cols-[1fr_auto_auto] gap-6 text-xs items-center">
-          <span class="truncate text-brand-600 font-medium inline-flex items-center gap-2">
+  const folderSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
+
+  const renderGroup = (groupKey, group, gi) => {
+    const idKey = `${groupKey}-${gi}`;
+    const isExpanded = state.expandedRegions.has(idKey);
+    const chevron = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform .2s;transform:rotate(${isExpanded?'90':'0'}deg);flex-shrink:0;color:#94a3b8"><polyline points="9 18 15 12 9 6"/></svg>`;
+    return `
+      <div>
+        <button data-region-grp="${idKey}" class="w-full text-left px-3 py-2 hover:bg-ink-50 grid grid-cols-[1fr_auto] gap-3 items-center text-xs">
+          <span class="inline-flex items-center gap-2 min-w-0">
+            ${chevron}
             ${folderSvg}
-            <span>${r.name}</span>
+            <span class="text-brand-600 font-medium truncate hover:underline">${group.name} <span class="text-ink-500 font-normal">(${group.count.toLocaleString()})</span></span>
           </span>
-          <span class="tabular-nums text-orange-600 font-semibold">${r.above}</span>
-          <span class="tabular-nums text-right font-semibold text-ink-900">${r.ours}</span>
+          <span class="tabular-nums text-right font-semibold text-ink-900">${group.exposure}</span>
         </button>
-      `).join('')}
-      <div class="px-3 pt-2 pb-1 text-[10px] font-bold uppercase text-ink-500">Our Top Exposure Today</div>
+        ${isExpanded ? (group.children || []).map(c => `
+          <div class="px-3 py-1.5 grid grid-cols-[1fr_auto] gap-3 items-center text-xs bg-ink-50/40 hover:bg-ink-50">
+            <span class="text-brand-500 font-medium truncate pl-9">${c.name} <span class="text-ink-500 font-normal">(${c.count.toLocaleString()})</span></span>
+            <span class="tabular-nums text-right text-ink-700">${c.exposure}</span>
+          </div>
+        `).join('') : ''}
+      </div>`;
+  };
+
+  return `
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="height:420px;max-height:420px">
+    <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Regions Aggregation','Exposure Aggregation'], state.regionsTab, 'data-regions-tab')}</div>
+    ${state.regionsTab === 'Exposure Aggregation' ? `
+      <div style="padding:14px 16px 6px;display:flex;justify-content:center;" class="shrink-0">
+        <div style="background:#eff6ff;border:1px solid #dbeafe;border-radius:10px;padding:8px 28px;text-align:center;min-width:160px;">
+          <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:2px;">Total Exposure</div>
+          <div style="font-size:18px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.01em;line-height:1.1;">${EXPOSURE_TOTAL}</div>
+        </div>
+      </div>
+      <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-50">
+        ${EXPOSURE_AGGREGATION.map(e => `
+          <div class="px-4 py-3 hover:bg-ink-50 grid grid-cols-[1fr_auto] gap-3 items-center text-xs">
+            <span class="inline-flex items-center gap-2 min-w-0">
+              ${folderSvg}
+              <span class="text-brand-600 font-medium truncate">${e.name} <span class="text-ink-500 font-normal">(${e.count.toLocaleString()})</span></span>
+            </span>
+            <span class="tabular-nums text-right font-semibold text-ink-900">${e.exposure}</span>
+          </div>
+        `).join('')}
+      </div>
+    ` : `
+    <div class="flex-1 overflow-y-auto scroll-thin">
+      <div class="px-3 pt-2 pb-2 grid grid-cols-[1fr_auto] gap-3 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white border-b border-ink-100">
+        <span>Name</span>
+        <span class="text-right"><span style="color:#ea580c">Above Threshold</span> <span class="text-ink-400">/</span> Our Exposure</span>
+      </div>
+      <div class="px-3 pt-2 pb-1 text-[11px] font-bold text-ink-700">Monitored Regions:</div>
+      <div class="divide-y divide-ink-50">
+        ${REGIONS_MONITORED.map((g, i) => renderGroup('mon', g, i)).join('')}
+      </div>
+      <div class="px-3 pt-3 pb-1 text-[11px] font-bold text-ink-700">Our Top Exposure Today:</div>
+      <div class="divide-y divide-ink-50">
+        ${REGIONS_TOP.map((g, i) => renderGroup('top', g, i)).join('')}
+      </div>
     </div>
+    `}
     <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 text-center h-9 flex items-center justify-center">
       <button class="text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">ALL REGIONS</button>
     </div>
@@ -282,28 +462,35 @@ function WeatherCard() {
     return `<span class="px-2 py-0.5 rounded-md text-[10px] font-semibold ${bg}">${txt}</span>`;
   };
   return `
-  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
-    <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Weather','Alerts'], state.weatherTab, 'data-weather-tab')}</div>
-    <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto_auto] gap-3 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white">
+  <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="height:420px;max-height:420px">
+    <div class="px-4 py-3 border-b border-ink-100 shrink-0">
+      <div class="text-sm font-semibold text-ink-900">Weather</div>
+    </div>
+    <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto_auto] gap-3 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white items-center">
       <span>Event Name</span>
-      <span>Region</span>
       <span>Category</span>
+      <span>Status</span>
     </div>
     <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-50">
-      ${WEATHER.map(w => `
-        <div class="px-3 py-2 hover:bg-ink-50 text-xs border-t border-ink-100 first:border-0">
-          <div class="grid grid-cols-[1fr_auto] gap-3 mb-1">
-            <span class="font-semibold text-brand-600 truncate">${w.event}</span>
-            ${badge(w.category, w.category)}
+      ${WEATHER.map(w => {
+        const isActive = w.status === 'Active';
+        const statusStyle = isActive
+          ? 'background:#dcfce7;color:#16a34a;'
+          : 'background:#f1f5f9;color:#64748b;';
+        return `
+        <div class="px-3 py-2 hover:bg-ink-50 text-xs border-t border-ink-100 first:border-0 grid grid-cols-[1fr_auto_auto] gap-3 items-center">
+          <div class="min-w-0">
+            <div class="font-semibold text-brand-600 truncate">${w.event}</div>
+            <div class="flex items-center gap-1 text-ink-500 text-[11px] mt-0.5">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>
+              <span>${w.knots} knots</span>
+              <span class="text-ink-400">· ${w.date}</span>
+            </div>
           </div>
-          <div class="flex items-center gap-1 text-ink-500 text-[11px] mb-0.5">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"/></svg>
-            <span>${w.knots} knots</span>
-          </div>
-          <div class="text-ink-700">${w.region}</div>
-          <div class="text-ink-500 text-[11px] tabular-nums">${w.date}</div>
-        </div>
-      `).join('')}
+          ${badge(w.category, w.category)}
+          <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:6px;white-space:nowrap;${statusStyle}">${w.status}</span>
+        </div>`;
+      }).join('')}
     </div>
     <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 text-center h-9 flex items-center justify-center">
       <button class="text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">VIEW ALL</button>
@@ -345,6 +532,7 @@ function buildPopupHTML(m) {
 let map = null;
 let currentMapType = 'satellite';
 let tileLayer = null;
+let assetMarkers = [];
 
 const MAP_TYPES = {
   satellite: { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', bg: '#0b1e2e' },
@@ -389,6 +577,7 @@ function initMap() {
   });
   setMapType(currentMapType);
 
+  assetMarkers = [];
   MARKERS.forEach(m => {
     const html = m.name ? 
       `<div class="offshore-marker"><div class="offshore-dot" style="background:${m.color}"></div><div class="offshore-label">${m.name}</div></div>` :
@@ -399,11 +588,14 @@ function initMap() {
       iconSize: [120, 40],
       iconAnchor: [60, 20],
     });
-    L.marker([m.lat, m.lng], { icon })
+    const marker = L.marker([m.lat, m.lng], { icon })
       .bindPopup(buildPopupHTML(m), { className:'asset-popup', maxWidth:300, minWidth:300, closeButton:true, autoPanPadding:[30,30] })
       .on('popupopen', () => { sessionStorage.setItem('selectedOffshoreAsset', JSON.stringify(m)); })
       .addTo(map);
+    marker._ftype = mapAssetType(m.assetType);
+    assetMarkers.push(marker);
   });
+  applyAssetFilter();
 
   // Custom zoom controls
   const zin = document.querySelector('.leaflet-control-zoom-in');
@@ -431,13 +623,87 @@ function initMap() {
   const layersBtn = document.getElementById('map-layers-btn');
   const layersMenu = document.getElementById('map-layers-menu');
   if (layersBtn && layersMenu) {
-    layersBtn.onclick = (e) => { e.stopPropagation(); layersMenu.classList.toggle('hidden'); };
+    layersBtn.onclick = (e) => { e.stopPropagation(); layersMenu.classList.toggle('hidden'); filtersMenu && filtersMenu.classList.add('hidden'); };
     layersMenu.querySelectorAll('[data-map-type]').forEach(opt => {
       opt.onclick = (e) => { e.stopPropagation(); setMapType(opt.dataset.mapType); layersMenu.classList.add('hidden'); };
     });
     document.addEventListener('click', () => layersMenu.classList.add('hidden'));
   }
+
+  // Asset filter menu
+  const filtersBtn  = document.getElementById('map-filters-btn');
+  const filtersMenu = document.getElementById('map-filters-menu');
+  function syncFilterUI() {
+    if (!filtersMenu) return;
+    filtersMenu.querySelectorAll('.af-row').forEach(row => {
+      const on = state.assetFilter.has(row.dataset.atype);
+      const cb = row.querySelector('.af-cb');
+      if (cb) cb.checked = on;
+    });
+  }
+  if (filtersBtn && filtersMenu) {
+    filtersBtn.onclick = (e) => { e.stopPropagation(); filtersMenu.classList.toggle('hidden'); layersMenu && layersMenu.classList.add('hidden'); };
+    filtersMenu.onclick = (e) => e.stopPropagation();
+    filtersMenu.querySelectorAll('.af-row').forEach(row => {
+      row.onclick = (e) => {
+        e.stopPropagation();
+        const t = row.dataset.atype;
+        if (state.assetFilter.has(t)) state.assetFilter.delete(t); else state.assetFilter.add(t);
+        syncFilterUI(); applyAssetFilter();
+      };
+    });
+    const allBtn  = document.getElementById('af-all');
+    const noneBtn = document.getElementById('af-none');
+    if (allBtn)  allBtn.onclick  = (e) => { e.stopPropagation(); state.assetFilter = new Set(ASSET_TYPES.map(t=>t.k)); syncFilterUI(); applyAssetFilter(); };
+    if (noneBtn) noneBtn.onclick = (e) => { e.stopPropagation(); state.assetFilter = new Set();                       syncFilterUI(); applyAssetFilter(); };
+    document.addEventListener('click', () => filtersMenu.classList.add('hidden'));
+  }
+
+  // Labels toggle
+  const labelsBtn  = document.getElementById('map-labels-btn');
+  const labelsMenu = document.getElementById('map-labels-menu');
+  const labelsSw   = document.getElementById('labels-toggle');
+  function syncLabelsUI() {
+    if (!labelsSw) return;
+    const on = !!state.showLabels;
+    labelsSw.setAttribute('aria-checked', on ? 'true' : 'false');
+    labelsSw.style.backgroundColor = on ? 'var(--brand-600,#2563eb)' : '#cbd5e1';
+    const knob = labelsSw.querySelector('span');
+    if (knob) knob.style.transform = on ? 'translateX(22px)' : 'translateX(2px)';
+  }
+  function applyLabels() {
+    const mapEl = document.getElementById('offshore-map');
+    if (!mapEl) return;
+    mapEl.classList.toggle('no-labels', !state.showLabels);
+  }
+  syncLabelsUI();
+  applyLabels();
+  if (labelsBtn && labelsMenu) {
+    labelsBtn.onclick = (e) => {
+      e.stopPropagation();
+      labelsMenu.classList.toggle('hidden');
+      layersMenu  && layersMenu.classList.add('hidden');
+      filtersMenu && filtersMenu.classList.add('hidden');
+    };
+    labelsMenu.onclick = (e) => e.stopPropagation();
+    if (labelsSw) labelsSw.onclick = (e) => {
+      e.stopPropagation();
+      state.showLabels = !state.showLabels;
+      syncLabelsUI(); applyLabels();
+    };
+    document.addEventListener('click', () => labelsMenu.classList.add('hidden'));
+  }
+
   setMapType('satellite');
+}
+
+function applyAssetFilter() {
+  if (!map) return;
+  assetMarkers.forEach(m => {
+    const show = state.assetFilter.has(m._ftype);
+    if (show && !map.hasLayer(m)) m.addTo(map);
+    if (!show && map.hasLayer(m)) map.removeLayer(m);
+  });
 }
 
 /* ----------- CONTENT ----------- */
@@ -470,6 +736,39 @@ function Content() {
                   <span data-label>${o.label}</span>
                   <span class="text-brand-600 opacity-0" data-check>${Ico.check}</span>
                 </button>`).join('')}
+            </div>
+          </div>
+          <div class="relative">
+            <button id="map-filters-btn" class="map-btn" title="Filter assets">${Ico.filter}</button>
+            <div id="map-filters-menu" class="hidden absolute top-0 right-[calc(100%+8px)] w-[260px] bg-white border border-ink-200 rounded-xl shadow-card overflow-hidden flex flex-col" style="max-height:420px">
+              <div class="px-3 py-2.5 border-b border-ink-200 flex items-center justify-between">
+                <div class="text-sm font-bold text-ink-800">Filter Assets</div>
+                <div class="flex items-center gap-1">
+                  <button id="af-all"  class="h-6 px-2 rounded-md border border-ink-200 text-[11px] font-semibold text-ink-700 hover:bg-ink-50">All</button>
+                  <button id="af-none" class="h-6 px-2 rounded-md border border-ink-200 text-[11px] font-semibold text-ink-700 hover:bg-ink-50">None</button>
+                </div>
+              </div>
+              <div class="px-3 py-2 bg-ink-50 border-b border-ink-200 text-[11px] font-semibold uppercase tracking-micro text-ink-600">Asset Type</div>
+              <div class="overflow-y-auto scroll-thin py-1" id="af-list">
+                ${ASSET_TYPES.map(t => `
+                  <label class="af-row flex items-center gap-2.5 px-3 py-1.5 cursor-pointer hover:bg-ink-50" data-atype="${t.k.replace(/"/g,'&quot;')}">
+                    <input type="checkbox" class="af-cb h-4 w-4 rounded border-ink-300 accent-brand-600" checked />
+                    <span class="inline-flex w-3 h-3 rounded-full" style="background:${t.color};"></span>
+                    <span class="text-[13px] text-ink-700">${t.k}</span>
+                  </label>`).join('')}
+              </div>
+            </div>
+          </div>
+          <div class="relative">
+            <button id="map-labels-btn" class="map-btn" title="Asset labels">${Ico.tag}</button>
+            <div id="map-labels-menu" class="hidden absolute top-0 right-[calc(100%+8px)] w-[260px] bg-white border border-ink-200 rounded-xl shadow-card overflow-hidden p-3">
+              <div class="flex items-center justify-between gap-3">
+                <div class="text-sm font-bold text-ink-900">Show Labels</div>
+                <button id="labels-toggle" role="switch" aria-checked="true" class="relative inline-flex h-6 w-11 items-center rounded-full bg-ink-300 transition-colors">
+                  <span class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform translate-x-0.5"></span>
+                </button>
+              </div>
+              <p class="mt-1.5 text-[12px] leading-snug text-ink-500">Display asset names directly on the map next to icons.</p>
             </div>
           </div>
         </div>
@@ -514,9 +813,29 @@ window.render = function render() {
       const idx = parseInt(btn.dataset.offPfIdx);
       const p   = PORTFOLIOS[idx];
       sessionStorage.setItem('selectedOffshorePF', JSON.stringify({
-        name: p.name, assets: p.assets, exposure: p.exposure,
+        name: p.name, assets: p.policies, policies: p.policies, exposure: p.exposure,
       }));
       location.href = 'OffshorePortfolioDetails.html';
+    });
+  });
+
+  /* Portfolio Groups expand/collapse */
+  document.querySelectorAll('[data-off-group-idx]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const gi = parseInt(btn.dataset.offGroupIdx);
+      if (state.expandedGroups.has(gi)) state.expandedGroups.delete(gi);
+      else state.expandedGroups.add(gi);
+      render();
+    });
+  });
+
+  /* Regions group expand/collapse */
+  document.querySelectorAll('[data-region-grp]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.regionGrp;
+      if (state.expandedRegions.has(id)) state.expandedRegions.delete(id);
+      else state.expandedRegions.add(id);
+      render();
     });
   });
   requestAnimationFrame(positionTabPills);

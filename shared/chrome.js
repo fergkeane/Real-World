@@ -28,7 +28,7 @@ try {
 /* ------------------ ICONS (Lucide) ------------------ */
 const LUCIDE_NAMES = {
   menu:'Menu', grid:'LayoutGrid', shield:'ShieldCheck',
-  building:'Building', building2Nav:'Warehouse', news:'Newspaper',
+  building:'Building', building2Nav:'Warehouse', gem:'Gem', news:'Newspaper',
   plane:'Plane', bolt:'Zap', briefcase:'Briefcase', doc:'FileText',
   globe:'Globe', wave:'Waves', chart:'BarChart3', book:'BookOpen',
   anchor:'Anchor', cloud:'Cloud', ship:'Ship', building2:'Building2',
@@ -76,7 +76,7 @@ const NAV = [
   { id:'companies',  label:'Companies',       icon:'office',       href:'Companies.html' },
   { id:'regions',    label:'Regions',         icon:'globe',        href:'Regions.html' },
   { id:'events',     label:'Nat Cat Events',  icon:'wave',         href:'NatCatEvents.html', badge:true },
-  { id:'assets',     label:'Assets',          icon:'building2Nav', href:'AssetsSearch.html' },
+  { id:'assets',     label:'Assets',          icon:'gem',          href:'AssetsSearch.html' },
   { id:'ports',      label:'Ports',           icon:'anchor',       href:'Ports.html' },
   { id:'weather',    label:'Weather',         icon:'cloud',        href:'Weather.html' },
 ];
@@ -304,6 +304,8 @@ function applyTweaks() {
     .nav-item.is-nav-active,.nav-item.is-nav-active:hover{background:${c[600]}!important;color:#fff!important}
     .nav-item.is-nav-active .nav-ico{color:#fff!important}
     .ds-tab-pill{background:${c[600]}!important}
+    .asset-pill{background:${c[600]}!important}
+    .cat-pill{background:${c[600]}!important}
     .ds-page-btn.is-active{background:${c[600]}!important;border-color:${c[600]}!important}
     .topbar-brand-link{color:${c[600]};transition:color 120ms}
     .topbar-brand-link:hover{color:${c[700]}}

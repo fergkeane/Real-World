@@ -11,6 +11,7 @@
 <style>
   * { box-sizing:border-box; margin:0; padding:0; }
   html,body { height:100%; font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; }
+  .tracking-micro{letter-spacing:.08em;font-family:'Exo','Inter',sans-serif;}
   .text-ink-900{color:#0f172a}.text-ink-700{color:#334155}.text-ink-600{color:#475569}.text-ink-500{color:#64748b}.text-ink-400{color:#94a3b8}
   .bg-ink-100{background:#f1f5f9}.bg-ink-50{background:#f8fafc}
   .border-ink-100{border-color:#f1f5f9}.border-ink-200{border-color:#e2e8f0}
@@ -41,8 +42,8 @@
   /* Select */
   .sel{border:1px solid #e2e8f0;border-radius:6px;padding:4px 22px 4px 8px;font-size:12px;color:#334155;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 5px center;-webkit-appearance:none;font-family:inherit;cursor:pointer}
   /* Stat cards */
-  .stat-card{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 8px;border-right:1px solid #e2e8f0;text-align:center}
-  .stat-card:last-child{border-right:0}
+  .stat-card{flex:1;padding:12px 10px;text-align:center;border-right:1px solid #dbeafe;}
+  .stat-card:last-child{border-right:0;}
   /* Mobile responsive */
   .mobile-tab-select{display:none;width:100%;padding:7px 12px;border:1px solid #e2e8f0;border-radius:9999px;font-size:13px;font-weight:600;color:#334155;background:#f1f5f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;font-family:inherit;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;}
   @media(max-width:767px){
@@ -50,7 +51,9 @@
     .mobile-tab-select{display:block!important;}
     .tabs-desktop-wrap{display:none!important;}
     .stat-cards-row{flex-wrap:wrap;}
-    .stat-card{min-width:50%;border-right:0;border-bottom:1px solid #e2e8f0;}
+    .stat-card{min-width:50%;border-right:1px solid #dbeafe;border-bottom:1px solid #dbeafe;}
+    .stat-card:nth-child(2n){border-right:0;}
+    .stat-card:nth-last-child(-n+2){border-bottom:0;}
   }
 </style>
 </head>
@@ -165,7 +168,7 @@ function PanelDetails() {
     ['Number of Active Policies:',506],
   ];
   return `
-  <div class="bg-white rounded-xl border border-ink-200" style="box-shadow:0 1px 2px rgba(15,23,42,.06);display:flex;flex-direction:column;height:100%;">
+  <div class="bg-white rounded-xl border border-ink-200 overflow-hidden" style="box-shadow:0 1px 2px rgba(15,23,42,.06);display:flex;flex-direction:column;height:100%;">
     <div class="px-4 pt-4 pb-2 border-b border-ink-100 shrink-0">
       <div class="text-sm font-bold text-ink-900">Details</div>
     </div>
@@ -176,14 +179,14 @@ function PanelDetails() {
           <span class="${k==='Id'?'text-brand-600 font-semibold text-xs':'font-semibold text-ink-800 text-xs'}">${v}</span>
         </div>`).join('')}
     </div>
-    <div class="px-4 pb-4 pt-2 flex gap-2 shrink-0 mt-auto">
-      <button class="flex-1 flex items-center justify-center gap-1.5 border border-ink-200 rounded-lg py-2 text-xs font-semibold text-ink-700 hover:bg-ink-50">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="5 12 12 5 19 12"/></svg>
-        + Add Policy
+    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 flex items-center justify-between text-xs h-9 shrink-0 mt-auto">
+      <button class="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="5 12 12 5 19 12"/></svg>
+        <span>ADD POLICY</span>
       </button>
-      <button class="flex-1 flex items-center justify-center gap-1.5 border border-ink-200 rounded-lg py-2 text-xs font-semibold text-ink-700 hover:bg-ink-50">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Download
+      <button class="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>DOWNLOAD</span>
       </button>
     </div>
   </div>`;
@@ -262,26 +265,24 @@ function PanelSummary() {
       </button>
     </div>
     <!-- Stat boxes -->
-    <div class="flex border-b border-ink-100 stat-cards-row">
-      <div class="stat-card">
-        ${planeIco}
-        <div style="font-size:11px;font-weight:500;color:#64748b;margin-top:2px;">Total Aircraft</div>
-        <div style="font-size:22px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;margin-top:2px;">529</div>
-      </div>
-      <div class="stat-card">
-        ${dollarIco}
-        <div style="font-size:11px;font-weight:500;color:#64748b;margin-top:2px;">Avg. Cost Of Aircraft</div>
-        <div style="font-size:22px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;margin-top:2px;">$156.8M</div>
-      </div>
-      <div class="stat-card">
-        ${trendIco}
-        <div style="font-size:11px;font-weight:500;color:#64748b;margin-top:2px;">Highest Value Aircraft</div>
-        <div style="font-size:22px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;margin-top:2px;">$284.3M</div>
-      </div>
-      <div class="stat-card">
-        ${depIco}
-        <div style="font-size:11px;font-weight:500;color:#64748b;margin-top:2px;">Total Departures 2025</div>
-        <div style="font-size:22px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;margin-top:2px;">142,856</div>
+    <div class="px-3 pt-3 pb-3 border-b border-ink-100">
+      <div class="stat-cards-row" style="background:#eff6ff;border:1px solid #dbeafe;border-radius:8px;overflow:hidden;display:flex;">
+        <div class="stat-card">
+          <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:4px;">Total Aircraft</div>
+          <div style="font-size:22px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">529</div>
+        </div>
+        <div class="stat-card">
+          <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:4px;">Avg. Cost Of Aircraft</div>
+          <div style="font-size:22px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$156.8M</div>
+        </div>
+        <div class="stat-card">
+          <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:4px;">Highest Value Aircraft</div>
+          <div style="font-size:22px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">$284.3M</div>
+        </div>
+        <div class="stat-card">
+          <div style="font-size:11px;font-weight:500;color:#64748b;margin-bottom:4px;">Total Departures 2025</div>
+          <div style="font-size:22px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;">142,856</div>
+        </div>
       </div>
     </div>
     <!-- Fleet Breakdown -->

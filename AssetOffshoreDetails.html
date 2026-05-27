@@ -53,6 +53,13 @@
   .dt-row { display:grid; grid-template-columns:1fr 1fr 1fr; }
   .dt-row:not(:last-child) { border-bottom:1px solid #f1f5f9; }
   .dt-cell { padding:9px 14px; }
+  /* Mobile: stack cards in both top rows + collapse detail table to single column */
+  @media (max-width: 767px) {
+    .row1-cards, .row2-cards { grid-template-columns: 1fr !important; }
+    .dt-row { grid-template-columns: 1fr; }
+    .dt-row:not(:last-child) { border-bottom: 0; }
+    .dt-cell { border-bottom: 1px solid #f1f5f9; }
+  }
   .dt-cell:not(:last-child) { border-right:1px solid #f1f5f9; }
   .dt-label { font-size:11px; color:#64748b; margin-bottom:2px; }
   .dt-value { font-size:13px; font-weight:600; color:#0f172a; line-height:1.3; }
@@ -60,6 +67,11 @@
   #asset-detail-map { position:absolute; inset:0; background:#0b1e2e; }
   #asset-detail-map .leaflet-top.leaflet-left { top:48px; left:2px; }
   #asset-detail-map .leaflet-top.leaflet-left .leaflet-bar { margin-left:10px !important; }
+  .asset-popup .leaflet-popup-content-wrapper { padding:0; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(15,23,42,.25); }
+  .asset-popup .leaflet-popup-content { margin:0; width:300px !important; font-family:'Inter',sans-serif; }
+  .asset-popup .leaflet-popup-tip { background:#fff; }
+  .asset-popup .leaflet-popup-close-button { color:#fff !important; top:8px !important; right:10px !important; font-size:22px !important; font-weight:300 !important; width:24px !important; height:24px !important; line-height:22px !important; border-radius:6px !important; }
+  .asset-popup .leaflet-popup-close-button:hover { background:rgba(255,255,255,.2) !important; color:#fff !important; }
   .leaflet-control-zoom, .leaflet-bar { border:1px solid #e2e8f0 !important; box-shadow:0 1px 2px rgba(15,23,42,.08) !important; border-radius:8px !important; overflow:hidden; }
   .leaflet-bar a { background:#fff !important; color:#334155 !important; line-height:30px !important; }
   .leaflet-bar a:hover { background:#f1f5f9 !important; }
@@ -130,14 +142,27 @@ function parseCoords(str) {
 const GEO = parseCoords(ASSET.coords);
 
 /* ---- Detail table rows [col1, col2, col3] ---- */
+const COUNTRY_CC = {
+  'Brazil':'br','Venezuela':'ve','Norway':'no','United Kingdom':'gb','United States':'us','USA':'us','Mexico':'mx','Canada':'ca',
+  'Saudi Arabia':'sa','Qatar':'qa','United Arab Emirates':'ae','Nigeria':'ng','Angola':'ao','South Africa':'za','Egypt':'eg',
+  'Australia':'au','Indonesia':'id','Malaysia':'my','Singapore':'sg','China':'cn','Japan':'jp','India':'in','Russia':'ru',
+  'Netherlands':'nl','Germany':'de','France':'fr','Spain':'es','Italy':'it','Portugal':'pt','Greece':'gr','Türkiye':'tr','Turkey':'tr',
+  'Denmark':'dk','Sweden':'se','Finland':'fi','Iceland':'is','Argentina':'ar','Chile':'cl','Colombia':'co','Trinidad and Tobago':'tt',
+};
+function flagImg(country) {
+  const cc = COUNTRY_CC[country];
+  if (!cc) return '';
+  return `<img src="https://flagcdn.com/w20/${cc}.png" width="16" height="12" style="display:inline-block;border-radius:2px;vertical-align:middle;margin-right:6px;flex-shrink:0;" alt="${country}" />`;
+}
+
 const DETAIL_ROWS = [
   [['Asset Type',        ASSET.assetType],          ['Year Converted / Upgraded', 'N/A'],          ['Turbine Rating (Windfarm)',    'N/A']],
-  [['Asset Name',        ASSET.fullName],            ['Flag / Registration State',  'Norway'],       ['Turbine Unit Value',           'N/A']],
+  [['Asset Name',        ASSET.fullName],            ['Flag / Registration State',  `${flagImg('Norway')}Norway`],       ['Turbine Unit Value',           'N/A']],
   [['Unit ID / CVN / IMO','HSE-2016-NOR'],           ['Class Society',              'DNV GL'],       ['Balance of Plant Value',       'N/A']],
   [['Owner',             'North Sea Energy Holdings'],['Class Notation',            'E0 DYNPOS-AUTRO'],['Project Construction Value', '$1.2B']],
   [['Operator',          ASSET.operator],            ['Hull Material',              'Steel'],         ['Installed Capacity (MW)',      'N/A']],
   [['Location',          'North Sea'],               ['Production Capacity',        '85,000 Bbl/day'],['Insured Capacity (MW)',        'N/A']],
-  [['Country Jurisdiction', ASSET.country],          ['Storage Capacity',           '1.3M Bbl'],     ['Year Built',                  '2008']],
+  [['Country Jurisdiction', `${flagImg(ASSET.country)}${ASSET.country}`], ['Storage Capacity',           '1.3M Bbl'],     ['Year Built',                  '2008']],
   [['Water Depth',       ASSET.waterDepth],          ['Gross Tonnage',              '157,000 GT'],   ['Last Survey',                 'Jun 2023']],
   [['Field',             ASSET.field],               ['Length Overall',             '274m'],          ['Classification Expiry',       '2026-03-01']],
   [['Mooring Type',      'Turret'],                  ['Beam',                       '49m'],           ['IMO Number',                  '9374045']],
@@ -146,22 +171,80 @@ const DETAIL_ROWS = [
 
 /* ---- Ownership data ---- */
 const OWNERSHIP = [
-  { label:'Total E&P Norge AS',             pct:39.896, color:'#1e3a8a' },
-  { label:'ConocoPhillips Skandinavia AS',  pct:35.112, color:'#2563eb' },
-  { label:'Vår Energi AS',                  pct:12.388, color:'#60a5fa' },
-  { label:'Equinor Energy AS',              pct:7.604,  color:'#1d4ed8' },
-  { label:'Petero AS',                      pct:5.0,    color:'#93c5fd' },
+  { label:'Total E&P Norge AS',             pct:39.896, color:'var(--brand-800,#1e40af)' },
+  { label:'ConocoPhillips Skandinavia AS',  pct:35.112, color:'var(--brand-600,#2563eb)' },
+  { label:'Vår Energi AS',                  pct:12.388, color:'var(--brand-400,#60a5fa)' },
+  { label:'Equinor Energy AS',              pct:7.604,  color:'var(--brand-500,#3b82f6)' },
+  { label:'Petero AS',                      pct:5.0,    color:'var(--brand-300,#93c5fd)' },
 ];
 
-/* ---- Donut via conic-gradient ---- */
-function donutStyle() {
-  let cumulative = 0;
-  const stops = OWNERSHIP.map(o => {
-    const start = cumulative;
-    cumulative += o.pct;
-    return `${o.color} ${start.toFixed(3)}% ${cumulative.toFixed(3)}%`;
-  }).join(', ');
-  return `conic-gradient(${stops})`;
+/* ---- Donut as inline SVG (per-segment tooltips on hover) ---- */
+function donutSVG(size = 140) {
+  const r = 15.915;          // circumference ≈ 100
+  const sw = 6;              // stroke width
+  let offset = 0;
+  const segs = OWNERSHIP.map((o, i) => {
+    const seg = `
+      <circle data-donut-seg="${i}" data-label="${o.label.replace(/"/g,'&quot;')}" data-pct="${o.pct}"
+        cx="18" cy="18" r="${r}" fill="transparent"
+        stroke="${o.color}" stroke-width="${sw}"
+        stroke-dasharray="${o.pct.toFixed(3)} ${(100 - o.pct).toFixed(3)}"
+        stroke-dashoffset="${(-offset).toFixed(3)}"
+        style="cursor:pointer;transition:stroke-width 120ms;"
+      />`;
+    offset += o.pct;
+    return seg;
+  }).join('');
+  return `
+    <svg id="ownership-donut" viewBox="0 0 36 36" width="${size}" height="${size}" style="transform:rotate(-90deg);overflow:visible;">
+      ${segs}
+    </svg>`;
+}
+
+function wireDonutTooltips() {
+  const svg = document.getElementById('ownership-donut');
+  if (!svg) return;
+  let tip = document.getElementById('rw-donut-tip');
+  if (!tip) {
+    tip = document.createElement('div');
+    tip.id = 'rw-donut-tip';
+    tip.style.cssText = [
+      'position:fixed',
+      'pointer-events:none',
+      'background:#0f172a',
+      'color:#fff',
+      'font-family:Inter,sans-serif',
+      'font-size:13px',
+      'font-weight:600',
+      'padding:8px 14px',
+      'border-radius:8px',
+      'box-shadow:0 4px 14px rgba(15,23,42,.35)',
+      'white-space:nowrap',
+      'opacity:0',
+      'transform:translate(-50%,-100%)',
+      'transition:opacity 120ms',
+      'z-index:9999',
+    ].join(';');
+    tip.innerHTML = `<span data-tip-text></span><span aria-hidden="true" style="position:absolute;left:50%;top:100%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid #0f172a;"></span>`;
+    document.body.appendChild(tip);
+  }
+  const tipText = tip.querySelector('[data-tip-text]');
+
+  svg.querySelectorAll('[data-donut-seg]').forEach(seg => {
+    seg.addEventListener('mouseenter', () => {
+      seg.style.strokeWidth = '8';
+      tipText.textContent = `${seg.dataset.label} (${seg.dataset.pct}%)`;
+      tip.style.opacity = '1';
+    });
+    seg.addEventListener('mousemove', (e) => {
+      tip.style.left = e.clientX + 'px';
+      tip.style.top  = (e.clientY - 12) + 'px';
+    });
+    seg.addEventListener('mouseleave', () => {
+      seg.style.strokeWidth = '6';
+      tip.style.opacity = '0';
+    });
+  });
 }
 
 /* ---- Status colour ---- */
@@ -174,7 +257,7 @@ function Content() {
   <div class="flex-1 overflow-y-auto px-4 lg:px-6 py-4 space-y-3">
 
     <!-- Row 1: Policy Details | Details | Ownership -->
-    <div class="grid gap-3" style="grid-template-columns:minmax(0,1fr) minmax(0,2fr) minmax(0,1fr); align-items:stretch;">
+    <div class="grid gap-3 row1-cards" style="grid-template-columns:minmax(0,1fr) minmax(0,2fr) minmax(0,1fr); align-items:stretch;">
 
       <!-- Policy Details -->
       <div class="bg-white rounded-xl border border-ink-200 shadow-card">
@@ -227,10 +310,10 @@ function Content() {
                 </div>`).join('')}
             </div>`).join('')}
         </div>
-        <div class="px-4 py-2.5 border-t border-ink-100 shrink-0 flex justify-center">
-          <button class="text-[12px] font-semibold text-ink-600 flex items-center gap-1.5 hover:text-ink-900 transition-colors">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-            Add To Portfolio
+        <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 text-center h-9 flex items-center justify-center shrink-0">
+          <button class="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            <span>ADD TO PORTFOLIO</span>
           </button>
         </div>
       </div>
@@ -241,25 +324,22 @@ function Content() {
           <div class="text-sm font-semibold text-ink-900">Ownership Structure</div>
         </div>
         <div class="p-4 flex flex-col items-center gap-4">
-          <!-- Donut -->
-          <div style="position:relative;width:140px;height:140px;flex-shrink:0;">
-            <div style="width:100%;height:100%;border-radius:50%;background:${donutStyle()};"></div>
-            <div style="position:absolute;inset:27%;border-radius:50%;background:#fff;"></div>
-          </div>
-          <!-- Legend -->
-          <div class="w-full flex flex-col gap-1.5">
+          <!-- Donut (SVG with per-segment tooltips) -->
+          ${donutSVG(140)}
+          <!-- Inline centered legend -->
+          <div class="flex flex-wrap justify-center gap-x-3 gap-y-1.5 text-[11px] text-ink-700">
             ${OWNERSHIP.map(o => `
-              <div class="flex items-center gap-1.5 text-[11px] text-ink-700 min-w-0">
+              <span class="inline-flex items-center gap-1.5 whitespace-nowrap" title="${o.label} (${o.pct}%)">
                 <span style="width:8px;height:8px;border-radius:50%;background:${o.color};flex-shrink:0;"></span>
-                <span class="truncate">${o.label} (${o.pct}%)</span>
-              </div>`).join('')}
+                <span>${o.label} <span class="text-ink-500 tabular-nums">(${o.pct}%)</span></span>
+              </span>`).join('')}
           </div>
         </div>
       </div>
     </div>
 
     <!-- Row 2: Asset Location | Reference Images -->
-    <div class="grid gap-3" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:start;">
+    <div class="grid gap-3 row2-cards" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:start;">
 
       <!-- Asset Location -->
       <div class="bg-white rounded-xl border border-ink-200 shadow-card overflow-hidden flex flex-col" style="height:460px;">
@@ -268,12 +348,24 @@ function Content() {
         </div>
         <div class="relative flex-1">
           <div id="asset-detail-map"></div>
-          <button class="map-ctrl-btn absolute z-[400]" style="top:12px;left:12px;" title="Fullscreen">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-          </button>
-          <button class="map-ctrl-btn absolute z-[400]" style="top:12px;right:12px;" title="Layers">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
-          </button>
+          <button id="map-fs-btn" class="map-ctrl-btn absolute z-[400]" style="top:12px;left:12px;" title="Toggle fullscreen">${Ico.maximize}</button>
+          <div class="absolute top-3 right-3 z-[400] flex flex-col gap-1 items-end">
+            <div class="relative">
+              <button id="map-layers-btn" class="map-ctrl-btn" title="Layers">${Ico.layers}</button>
+              <div id="map-layers-menu" class="hidden absolute top-0 right-[calc(100%+8px)] w-[160px] bg-white border border-ink-200 rounded-xl shadow-card overflow-hidden py-1">
+                ${[
+                  { id:'satellite', label:'Satellite' },
+                  { id:'street',    label:'Street View' },
+                  { id:'dark',      label:'Dark Mode' },
+                  { id:'light',     label:'Light Mode' },
+                ].map(o => `
+                  <button data-map-type="${o.id}" class="map-type-opt w-full flex items-center justify-between px-3 py-2 text-sm text-ink-700 hover:bg-ink-50 transition-colors">
+                    <span data-label>${o.label}</span>
+                    <span class="text-brand-600 opacity-0" data-check>${Ico.check}</span>
+                  </button>`).join('')}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -305,6 +397,55 @@ function Content() {
 }
 
 /* ---- Map ---- */
+const MAP_TYPES = {
+  satellite: { url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', bg:'#0b1e2e' },
+  street:    { url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',                       bg:'#f8fafc' },
+  dark:      { url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',                                  bg:'#0b1e2e' },
+  light:     { url:'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',                                 bg:'#e0ebe9' },
+};
+let currentMapType = 'satellite';
+let mapTile = null;
+
+function setMapType(type) {
+  if (!detailMap || !MAP_TYPES[type]) return;
+  currentMapType = type;
+  if (mapTile) detailMap.removeLayer(mapTile);
+  mapTile = L.tileLayer(MAP_TYPES[type].url, { attribution:'', subdomains:'abcd', maxZoom:19 }).addTo(detailMap);
+  const mapEl = document.getElementById('asset-detail-map');
+  if (mapEl) mapEl.style.background = MAP_TYPES[type].bg;
+  document.querySelectorAll('[data-map-type]').forEach(b => {
+    const isOn = b.dataset.mapType === type;
+    const c = b.querySelector('[data-check]');
+    if (c) c.style.opacity = isOn ? '1' : '0';
+  });
+}
+
+function buildAssetPopupHTML(m) {
+  const statusColor = m.status === 'Operational' ? '#10b981' :
+                      m.status === 'Under Maintenance' ? '#f59e0b' : '#94a3b8';
+  const row = (label, val, color) =>
+    `<div><div style="font-size:11px;color:#64748b;margin-bottom:2px;">${label}:</div><div style="font-size:13px;font-weight:600;color:${color||'#0f172a'};">${val ?? '—'}</div></div>`;
+  const subtitle = m.assetType || m.type || '';
+  return `
+    <div style="background:var(--brand-600,#2563eb);padding:12px 36px 12px 16px;">
+      <div style="color:#fff;font-weight:700;font-size:13px;line-height:1.35;">${m.fullName || m.name || ''}</div>
+      <div style="color:rgba(255,255,255,.75);font-size:11px;font-weight:500;margin-top:2px;">${subtitle}</div>
+    </div>
+    <div style="padding:14px 16px 6px;display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;">
+      ${row('Operator', m.operator)}
+      ${row('Country', m.country)}
+      ${row('Coordinates', m.coords)}
+      ${row('Water Depth', m.waterDepth)}
+      ${row('Status', m.status, statusColor)}
+      ${row('Production', m.production)}
+    </div>
+    <div style="padding:4px 16px 14px;display:flex;flex-direction:column;gap:8px;">
+      ${row('Commissioned', m.commissioned)}
+      ${row('Policy Type', m.policyType)}
+      ${row('Field', m.field)}
+    </div>`;
+}
+
 let detailMap = null;
 function initDetailMap() {
   const el = document.getElementById('asset-detail-map');
@@ -318,21 +459,50 @@ function initDetailMap() {
     scrollWheelZoom: true,
   });
 
-  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    attribution:'', maxZoom:19,
-  }).addTo(detailMap);
+  setMapType(currentMapType);
 
   const icon = L.divIcon({
     className:'',
     html:`<div style="width:14px;height:14px;border-radius:50%;background:${ASSET.color||'#ea580c'};border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.45);"></div>`,
     iconSize:[14,14], iconAnchor:[7,7],
   });
-  L.marker([GEO.lat, GEO.lng], { icon }).addTo(detailMap);
+  L.marker([GEO.lat, GEO.lng], { icon })
+    .bindPopup(buildAssetPopupHTML(ASSET), { className:'asset-popup', maxWidth:300, minWidth:300, closeButton:true, autoPanPadding:[30,30] })
+    .addTo(detailMap);
 
   const zin  = el.querySelector('.leaflet-control-zoom-in');
   const zout = el.querySelector('.leaflet-control-zoom-out');
   if (zin)  zin.innerHTML  = `<span style="font-size:18px;line-height:30px;display:block;text-align:center;">+</span>`;
   if (zout) zout.innerHTML = `<span style="font-size:20px;line-height:30px;display:block;text-align:center;">&minus;</span>`;
+
+  /* Layers menu */
+  const layersBtn  = document.getElementById('map-layers-btn');
+  const layersMenu = document.getElementById('map-layers-menu');
+  if (layersBtn && layersMenu) {
+    layersBtn.onclick = (e) => { e.stopPropagation(); layersMenu.classList.toggle('hidden'); };
+    layersMenu.onclick = (e) => e.stopPropagation();
+    layersMenu.querySelectorAll('[data-map-type]').forEach(opt => {
+      opt.onclick = (e) => { e.stopPropagation(); setMapType(opt.dataset.mapType); layersMenu.classList.add('hidden'); };
+    });
+    document.addEventListener('click', () => layersMenu.classList.add('hidden'));
+  }
+
+  /* Fullscreen */
+  const fsBtn = document.getElementById('map-fs-btn');
+  if (fsBtn) fsBtn.onclick = () => {
+    const wrap = fsBtn.closest('.relative');
+    if (!wrap) return;
+    const isFs = wrap.classList.toggle('fixed-fullscreen');
+    if (isFs) {
+      wrap.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#fff;';
+      fsBtn.innerHTML = Ico.minimize;
+    } else {
+      wrap.style.cssText = '';
+      wrap.classList.add('flex-1');
+      fsBtn.innerHTML = Ico.maximize;
+    }
+    setTimeout(() => detailMap.invalidateSize(), 200);
+  };
 }
 
 /* ---- Render ---- */
@@ -347,6 +517,7 @@ window.render = function() {
   `;
   SC.wireChrome();
   setTimeout(initDetailMap, 50);
+  wireDonutTooltips();
 };
 window.render();
 </script>

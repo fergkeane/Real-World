@@ -22,11 +22,11 @@
   .scroll-thin::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
 
   /* --- Asset type tab bar --- */
-  .asset-tabs { position: relative; display: inline-flex; background: #fff; border: 1px solid #e2e8f0; border-radius: 999px; padding: 4px; gap: 2px; box-shadow: 0 1px 3px rgba(15,23,42,.08); }
-  .asset-tab  { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 6px; padding: 6px 18px; border-radius: 999px; border: 0; background: transparent; color: #64748b; font-size: 13px; font-weight: 600; cursor: pointer; transition: color 140ms; font-family: inherit; }
+  .asset-tabs { position: relative; display: inline-flex; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 9999px; padding: 4px; gap: 4px; }
+  .asset-tab  { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 7px; padding: 8px 20px; border-radius: 9999px; border: 0; background: transparent; color: #64748b; font-size: 13px; font-weight: 600; cursor: pointer; transition: color 140ms; font-family: inherit; }
   .asset-tab.active { background: transparent; color: #fff; }
-  .asset-tab:not(.active):hover { color: #334155; }
-  .asset-tab svg { width: 15px; height: 15px; }
+  .asset-tab:not(.active):hover { color: #0f172a; }
+  .asset-tab svg { width: 15px; height: 15px; flex-shrink: 0; }
   .asset-pill { position: absolute; top: 4px; left: 0; height: calc(100% - 8px); background: var(--brand-600, #2563eb); border-radius: 999px; box-shadow: 0 1px 2px rgba(15,23,42,.12); z-index: 0; transition: transform 320ms cubic-bezier(.34,1.2,.64,1), width 320ms cubic-bezier(.34,1.2,.64,1); }
   .asset-pill.is-init { transition: none; }
   /* Mobile tabs dropdown */
@@ -154,6 +154,15 @@ const PAGE_SIZE    = 10;
 let sortCol        = null;
 let sortDir        = 'asc';
 
+function lucideIco(name, size=15) {
+  const d = window.lucide && window.lucide.icons && window.lucide.icons[name];
+  if (!d) return '';
+  const [tag, attrs, ch] = d;
+  const a = Object.entries({...attrs, width:size, height:size, class:''}).map(([k,v]) => `${k}="${v}"`).join(' ');
+  const inner = (ch||[]).map(([t,ca]) => `<${t} ${Object.entries(ca).map(([k,v])=>`${k}="${v}"`).join(' ')}/>`).join('');
+  return `<${tag} ${a}>${inner}</${tag}>`;
+}
+
 function badgeHtml(type) {
   if (type === 'Container')       return `<span class="badge badge-container">${type}</span>`;
   if (type === 'Vehicle Carrier') return `<span class="badge badge-vehicle">${type}</span>`;
@@ -206,10 +215,10 @@ function renderTable() {
 
   const tabLabels = { marine:'Marine', property:'Property', aviation:'Aviation', offshore:'Offshore / Energy' };
   const tabIcons  = {
-    marine:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg>`,
-    property: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="16 2 12 6 8 2"/></svg>`,
-    aviation: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4s-2 1-3.5 2.5L8 7 .8 8.4c-.5.1-.7.6-.4 1l1.8 1.8c.2.2.5.3.8.3L8 11l-2.5 5.4c-.1.3 0 .7.3.9l1.1.7c.4.3.9.2 1.2-.1L10 16l1 4 2.5 1.5c.4.2.9.1 1.2-.3l.8-1c.2-.3.2-.7-.2-1z"/></svg>`,
-    offshore: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22h18"/><path d="M5 22V10l7-4 7 4v12"/><path d="M12 6V2"/><path d="M10 2h4"/><path d="M9 14h6"/><path d="M9 18h6"/></svg>`,
+    marine:   lucideIco('Ship'),
+    property: lucideIco('Building'),
+    aviation: lucideIco('Plane'),
+    offshore: lucideIco('Zap'),
   };
 
   const sectionIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg>`;
@@ -299,7 +308,7 @@ function renderTable() {
           <tbody>
             ${pageRows.map(r => `
               <tr>
-                <td class="name-cell">${r.name}</td>
+                <td class="name-cell"><a href="VesselDetails.html" style="color:var(--brand-600,#2563eb);text-decoration:none" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${r.name}</a></td>
                 <td>${badgeHtml(r.type)}</td>
                 <td>${flagHtml(r.flag, r.country)}</td>
                 <td style="color:#64748b;">${r.callsign}</td>
