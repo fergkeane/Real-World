@@ -212,16 +212,152 @@ function CardPropertyInfo() {
 }
 
 function CardWeatherRisk() {
-  return `
-  <div class="bg-white rounded-xl border border-ink-200 shadow-card overflow-hidden">
-    <div class="px-4 py-3 border-b border-ink-100 flex items-center gap-2">
-      ${icoCloud}
-      <span class="text-sm font-semibold text-ink-900">Weather Risk</span>
-    </div>
-    <div class="px-4 py-4 text-sm text-ink-500">
-      No weather risk to this property location at this time!
-    </div>
-  </div>`;
+  // Property-specific weather threat lookup. Each entry feeds the same
+  // shared card layout below — just hand it the alert object and it picks
+  // colours/copy from there. Add more properties by appending here.
+  const WEATHER_ALERTS = {
+    'Southeast Financial Ctr': {
+      kind:       'hurricane',
+      name:       'Hurricane Lyra',
+      status:     'WATCH',
+      statusBg:   '#fef3c7', statusBd:'#fde68a', statusTxt:'#b45309',
+      headline:   'Hurricane Watch in effect for Miami-Dade & Broward',
+      badgeBg:    '#fee2e2', badgeTxt:'#b91c1c',
+      badgeLabel: 'Cat 3 — Major',
+      symbol: `
+        <svg width="48" height="48" viewBox="0 0 64 64" fill="none" stroke="#dc2626" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="32" cy="32" r="4" fill="#dc2626" stroke="none"/>
+          <path d="M32 8c10 0 18 8 18 18 0 6-4 10-10 10-4 0-8-3-8-7"/>
+          <path d="M32 56c-10 0-18-8-18-18 0-6 4-10 10-10 4 0 8 3 8 7"/>
+        </svg>`,
+      stats: [
+        { lbl:'Sustained winds',   val:'115 mph',          sub:'Gusts 140 mph' },
+        { lbl:'Storm surge',       val:'6 – 9 ft',         sub:'Above mean high water' },
+        { lbl:'Distance',          val:'184 mi SSE',       sub:'From property' },
+        { lbl:'Closest approach',  val:'Jun 1, 02:00 UTC', sub:'in 3 days, 14 hrs' },
+      ],
+      narrative: 'NHC track guidance places the eye within 60 mi of downtown Miami at peak intensity. Storm surge advisory active for Biscayne Bay through Jun 2. Sustained tropical-storm-force winds expected ashore by Jun 1, 18:00 UTC.',
+      impacts: [
+        { tone:'red',   label:'Storm surge', detail:'High — coastal flooding likely on Bay-facing facade' },
+        { tone:'amber', label:'Wind',        detail:'Severe — facade-rated 150 mph design, within tolerance' },
+        { tone:'amber', label:'Power',       detail:'Extended outage probable — backup generators on test cycle' },
+        { tone:'blue',  label:'Access',      detail:'Brickell Ave closure expected Jun 1 02:00 \u2013 Jun 2 18:00' },
+      ],
+      advisory:  'NHC Advisory #18A',
+      updatedAt: 'May 28, 2026 · 11:00 UTC',
+    },
+    '1670 Broadway': {
+      kind:       'wildfire',
+      name:       'Pinewood Mesa Fire',
+      status:     'ADVISORY',
+      statusBg:   '#fef3c7', statusBd:'#fde68a', statusTxt:'#b45309',
+      headline:   'Air-quality & ember-cast advisory for Denver metro',
+      badgeBg:    '#ffedd5', badgeTxt:'#9a3412',
+      badgeLabel: '12,400 ac · 28% contained',
+      symbol: `
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+        </svg>`,
+      stats: [
+        { lbl:'Burn size',     val:'12,400 ac',  sub:'+1,850 ac since 06:00 UTC' },
+        { lbl:'Containment',   val:'28%',        sub:'Up from 22% yesterday' },
+        { lbl:'Distance',      val:'34 mi WSW',  sub:'From property' },
+        { lbl:'Surface wind',  val:'WSW · 18 mph', sub:'Gusts to 35 mph toward city' },
+      ],
+      narrative: 'InciWeb perimeter expanding east on a wind-driven front along the Front Range. Air-quality index forecast to reach 184 (Unhealthy) in downtown Denver on Jun 1. Ember cast unlikely at property distance, but soot intrusion possible through fresh-air intakes.',
+      impacts: [
+        { tone:'amber', label:'Air quality', detail:'AQI 184 expected — close outside-air dampers, switch HVAC to recirculation' },
+        { tone:'amber', label:'Smoke',       detail:'Visible haze and soot deposition on glazing likely Jun 1 \u2013 Jun 3' },
+        { tone:'blue',  label:'Power',       detail:'Xcel PSPS shutoff possible on Broadway feeder if gusts exceed 50 mph' },
+        { tone:'red',   label:'Insurance',   detail:'Carrier notification due within 48 hr of next containment update' },
+      ],
+      advisory:  'NIFC IRWIN #PNWX-2026-0084',
+      updatedAt: 'May 28, 2026 · 10:00 UTC',
+    },
+  };
+  const alert = WEATHER_ALERTS[PROP.name];
+
+  const cardShell = (body) => `
+    <div class="bg-white rounded-xl border border-ink-200 shadow-card overflow-hidden">
+      <div class="px-4 py-3 border-b border-ink-100 flex items-center gap-2">
+        ${icoCloud}
+        <span class="text-sm font-semibold text-ink-900">Risk Radar</span>
+      </div>
+      ${body}
+    </div>`;
+
+  if (!alert) {
+    return cardShell(`
+      <div class="px-4 py-4 text-sm text-ink-500">
+        No weather risk to this property location at this time!
+      </div>`);
+  }
+
+  const toneMap = {
+    red:   { bg:'#fee2e2', txt:'#b91c1c' },
+    amber: { bg:'#fef3c7', txt:'#b45309' },
+    blue:  { bg:'#dbeafe', txt:'#1d4ed8' },
+  };
+
+  const alertSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+
+  const stat = (lbl, val, sub) => `
+    <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+      <div style="font-size:10.5px;font-weight:600;color:#94a3b8;letter-spacing:.02em;text-transform:uppercase">${lbl}</div>
+      <div style="font-size:15px;font-weight:700;color:#0f172a;line-height:1.2;font-variant-numeric:tabular-nums">${val}</div>
+      ${sub ? `<div style="font-size:11px;color:#64748b">${sub}</div>` : ''}
+    </div>`;
+
+  const body = `
+    <div class="px-4 pt-3 pb-4">
+      <!-- Status banner -->
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:${alert.statusBg};border:1px solid ${alert.statusBd};color:${alert.statusTxt};margin-bottom:14px;">
+        <span style="color:${alert.statusTxt}">${alertSvg}</span>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1;min-width:0">
+          <span style="font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">${alert.status}</span>
+          <span style="color:${alert.statusTxt}99;font-size:11px">·</span>
+          <span style="font-size:11.5px;font-weight:600;color:#475569;line-height:1.3">${alert.headline}</span>
+        </div>
+      </div>
+
+      <!-- Event identity row -->
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+        <div style="flex-shrink:0">${alert.symbol}</div>
+        <div style="min-width:0;flex:1">
+          <div style="font-size:16px;font-weight:700;color:#0f172a;letter-spacing:-.01em;line-height:1.2">${alert.name}</div>
+          <div style="display:inline-flex;align-items:center;gap:6px;margin-top:4px">
+            <span style="display:inline-block;padding:2px 8px;border-radius:999px;background:${alert.badgeBg};color:${alert.badgeTxt};font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase">${alert.badgeLabel}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key stats -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;padding:14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:14px">
+        ${alert.stats.map(s => stat(s.lbl, s.val, s.sub)).join('')}
+      </div>
+
+      <!-- Forecast narrative -->
+      <div style="font-size:12px;color:#475569;line-height:1.55;margin-bottom:14px">
+        ${alert.narrative}
+      </div>
+
+      <!-- Impact list -->
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+        ${alert.impacts.map(i => `
+          <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#334155;line-height:1.4">
+            <span style="display:inline-block;padding:2px 7px;border-radius:4px;background:${toneMap[i.tone].bg};color:${toneMap[i.tone].txt};font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;flex-shrink:0;margin-top:1px">${i.label}</span>
+            <span style="min-width:0">${i.detail}</span>
+          </div>`).join('')}
+      </div>
+
+      <!-- Footer -->
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:10px;border-top:1px solid #f1f5f9;font-size:11px;color:#94a3b8">
+        <span>${alert.advisory}</span>
+        <span>${alert.updatedAt}</span>
+      </div>
+    </div>`;
+
+  return cardShell(body);
 }
 
 function CardMap() {

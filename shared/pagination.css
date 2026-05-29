@@ -1,0 +1,118 @@
+/* ──────────────────────────────────────────────────────────────────
+   Skytek pagination — implementation of the Design System spec.
+   Mobile-first: <640px stacks prev/next with 44×44 hit targets and
+   replaces the numbered strip with a "1 / 34" pill. Tablet collapses
+   to compact prev / pill / next. Desktop shows the full numbered list.
+   ────────────────────────────────────────────────────────────────── */
+
+/* Base wrapper used inside table cards (count left, controls right). */
+.ds-pagination-wrap {
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; padding:12px 16px;
+  border-top:1px solid #e2e8f0; background:#f8fafc;
+  font-size:13px; color:#64748b;
+  flex-wrap:wrap;
+}
+
+/* The actual pagination strip. */
+.ds-pagination,
+.ds-pagination--compact {
+  display:inline-flex; align-items:center; gap:4px;
+  flex-wrap:nowrap;
+}
+
+/* Individual buttons / numbers. */
+.ds-page-btn {
+  min-width:32px; height:32px;
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:0 8px; gap:4px;
+  background:#fff; color:#334155;
+  border:1px solid #e2e8f0; border-radius:6px;
+  font:inherit; font-size:13px; font-weight:500; line-height:1;
+  cursor:pointer; transition:background 120ms, border-color 120ms, color 120ms;
+}
+.ds-page-btn:hover:not(:disabled):not(.is-active) { background:#f1f5f9; color:#0f172a; }
+.ds-page-btn:disabled { opacity:.4; cursor:not-allowed; }
+.ds-page-btn.is-active {
+  background:var(--brand-600, #2563eb);
+  border-color:var(--brand-600, #2563eb);
+  color:#fff;
+}
+
+/* Ellipsis between page ranges. */
+.ds-page-ellipsis {
+  min-width:24px; height:32px;
+  display:inline-flex; align-items:center; justify-content:center;
+  color:#94a3b8; font-size:13px; user-select:none;
+}
+
+/* Compact label between prev/next. */
+.ds-pagination--compact .page-label,
+.ds-pagination .page-label {
+  font-size:13px; color:#64748b;
+  padding:0 10px; white-space:nowrap;
+}
+.ds-pagination .page-label strong,
+.ds-pagination--compact .page-label strong { color:#0f172a; font-weight:600; }
+
+/* "Rows per page" select used in the table-footer pattern. */
+.ds-page-perpage {
+  display:inline-flex; align-items:center; gap:6px;
+  font-size:13px; color:#64748b;
+}
+.ds-page-perpage select {
+  height:28px; padding:0 28px 0 8px;
+  border:1px solid #e2e8f0; border-radius:6px; background:#fff;
+  font:inherit; font-size:13px; color:#334155; cursor:pointer;
+  appearance:none; -webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 8px center;
+}
+
+/* ── Tablet: 640–1024px — compact, no numbered list ── */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .ds-pagination .ds-page-btn:not(.is-prev):not(.is-next):not(.ds-page-btn--keep),
+  .ds-pagination .ds-page-ellipsis { display:none; }
+  .ds-pagination .page-label { display:inline; }
+  .ds-page-btn { min-width:36px; height:36px; }
+  .ds-page-perpage { display:none; }
+}
+
+/* ── Mobile: <640px — stacked layout, 44×44 hit targets ── */
+@media (max-width: 639px) {
+  .ds-pagination-wrap {
+    flex-direction:column; align-items:stretch; gap:10px;
+    padding:12px;
+  }
+  /* Top row: count + jump link */
+  .ds-pagination-summary {
+    display:flex; align-items:center; justify-content:space-between;
+    font-size:12px; color:#64748b;
+  }
+  /* Hide numbered list + per-page; show prev / pill / next */
+  .ds-pagination {
+    display:flex; gap:8px; width:100%;
+  }
+  .ds-pagination .ds-page-btn:not(.is-prev):not(.is-next),
+  .ds-pagination .ds-page-ellipsis { display:none; }
+
+  .ds-pagination .ds-page-btn.is-prev,
+  .ds-pagination .ds-page-btn.is-next {
+    flex:1; min-width:0; height:44px; padding:0 12px;
+    justify-content:center; font-size:14px; font-weight:600;
+  }
+  .ds-pagination .ds-page-btn.is-next:not(:disabled) {
+    background:var(--brand-600, #2563eb);
+    border-color:var(--brand-600, #2563eb);
+    color:#fff;
+  }
+  /* Page-of-total pill between prev/next */
+  .ds-pagination .page-label {
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:86px; padding:0 14px; height:44px;
+    background:#fff; border:1px solid #e2e8f0; border-radius:6px;
+    font-size:13px; font-weight:600; font-variant-numeric:tabular-nums;
+    white-space:nowrap;
+  }
+  .ds-page-perpage { display:none; }
+}

@@ -34,6 +34,7 @@ window.NEWS_ARTICLES = [
     title:'Red Sea attacks push hull war premiums to multi-decade highs as insurers reprice transit risk',
     snippet:'Underwriters are quoting additional war-risk premiums on Bab el-Mandeb voyages at levels not seen since the Iran-Iraq tanker war, with several syndicates pulling capacity entirely.',
     url:'https://www.lloydslist.com/LL1149999/Marine-insurance-rates-soar-as-Red-Sea-risk-escalates',
+    image:'https://images.unsplash.com/photo-1605281317010-fe5ffe798166?w=1200&q=80&auto=format&fit=crop',
     hoursAgo:2, featured:true,
   },
   {
@@ -41,6 +42,7 @@ window.NEWS_ARTICLES = [
     title:'Florida property market sees first softening in five years as new capacity arrives at June renewals',
     snippet:'Reinsurers offered rate reductions of 5–15% on loss-free programmes, with some buyers achieving improved terms after years of double-digit hikes.',
     url:'https://www.reinsurancene.ws/florida-property-cat-renewals-2026/',
+    image:'https://images.unsplash.com/photo-1568454537842-d933259bb258?w=800&q=80&auto=format&fit=crop',
     hoursAgo:5,
   },
   {
@@ -48,6 +50,7 @@ window.NEWS_ARTICLES = [
     title:'Russia aircraft lessor settlements top $4bn as insurers continue case-by-case agreements',
     snippet:'AerCap and SMBC Aviation Capital have now recovered more than half of their stranded-fleet exposure through direct deals with Russian carriers and their reinsurers.',
     url:'https://www.flightglobal.com/airlines/russian-lessor-claims-2026-update/',
+    image:'https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=800&q=80&auto=format&fit=crop',
     hoursAgo:8,
   },
   {
@@ -55,6 +58,7 @@ window.NEWS_ARTICLES = [
     title:'Gulf of Mexico hurricane season forecast prompts early review of offshore energy aggregates',
     snippet:'NOAA\'s above-normal outlook has triggered portfolio rebalancing among offshore energy underwriters, with several books reducing maximum single-platform line size.',
     url:'https://www.oedigital.com/news/insurance-aggregates-2026-hurricane-season',
+    image:'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&q=80&auto=format&fit=crop',
     hoursAgo:11,
   },
   {
@@ -62,6 +66,7 @@ window.NEWS_ARTICLES = [
     title:'Houthi missile strike on bulker triggers $42m total-loss claim — largest of the conflict to date',
     snippet:'The 180,000-dwt vessel was abandoned by its crew after a successful strike near Hodeidah; H&M insurers are expected to declare a constructive total loss within 30 days.',
     url:'https://www.tradewindsnews.com/casualties/red-sea-total-loss-2026/',
+    image:'https://images.unsplash.com/photo-1494412519320-aa613dfb7738?w=800&q=80&auto=format&fit=crop',
     hoursAgo:14,
   },
   {
@@ -69,6 +74,7 @@ window.NEWS_ARTICLES = [
     title:'EU Sanctions Package 19: maritime insurers face new attestation requirements on G7 oil price cap',
     snippet:'Brussels has tightened the documentation regime requiring P&I clubs and hull underwriters to collect itinerary attestations for every Russia-origin cargo voyage.',
     url:'https://www.insurancejournal.com/news/international/2026/eu-sanctions-19-maritime/',
+    image:'https://images.unsplash.com/photo-1505664194779-8beaceb93744?w=800&q=80&auto=format&fit=crop',
     hoursAgo:18,
   },
   {
@@ -76,6 +82,7 @@ window.NEWS_ARTICLES = [
     title:'Wildfire model overhaul: RMS v25 lifts Western US AAL by 22% as smoke-damage coverage expands',
     snippet:'The new vendor model captures structure-level vegetation density and incorporates ember-cast simulations down to 100m resolution. Carriers are running parallel runs through Q3.',
     url:'https://www.propertycasualty360.com/2026/rms-v25-wildfire-model-release/',
+    image:'https://images.unsplash.com/photo-1574144611937-0df059b5ef3e?w=800&q=80&auto=format&fit=crop',
     hoursAgo:22,
   },
   {
@@ -83,6 +90,7 @@ window.NEWS_ARTICLES = [
     title:'Boeing 737 MAX 9 grounding aftermath: ground-risk insurers signal tighter quality-escape exclusions',
     snippet:'Aviation underwriters are revising product-liability wordings to limit recovery on losses tied to documented manufacturing defects rather than operator error.',
     url:'https://www.ainonline.com/aviation-news/business-aviation/2026/737-max9-insurance',
+    image:'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&q=80&auto=format&fit=crop',
     hoursAgo:28,
   },
   {
@@ -90,6 +98,7 @@ window.NEWS_ARTICLES = [
     title:'Floating production unit fire in Campos Basin highlights gaps in business-interruption deductibles',
     snippet:'A 30-day production outage on a Petrobras-leased FPSO has raised industry questions about waiting-period adequacy for ageing converted-VLCC hulls.',
     url:'https://www.upstreamonline.com/casualties/campos-basin-fpso-fire-2026/',
+    image:'https://images.unsplash.com/photo-1582491159607-7e8e7a2e5917?w=800&q=80&auto=format&fit=crop',
     hoursAgo:32,
   },
   {
@@ -97,6 +106,7 @@ window.NEWS_ARTICLES = [
     title:'P&I clubs report combined ratios above 110% for third year, signal further general increases',
     snippet:'The 13 IG clubs face mounting pressure from pool-claim volatility, with several mutuals expected to call for 7.5–12.5% general increases at February renewal.',
     url:'https://gcaptain.com/p-and-i-clubs-2026-general-increase/',
+    image:'https://images.unsplash.com/photo-1577416412292-747c6607f055?w=800&q=80&auto=format&fit=crop',
     hoursAgo:38,
   },
   {
@@ -104,6 +114,7 @@ window.NEWS_ARTICLES = [
     title:'Cat bond issuance crosses $20bn YTD as ILS investors absorb record peak-peril spreads',
     snippet:'Florida wind exposure dominates 2026 deal flow, with new triggers based on parametric storm-surge indices gaining traction among Caribbean cedents.',
     url:'https://www.artemis.bm/news/cat-bond-issuance-2026-ytd-record/',
+    image:'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&q=80&auto=format&fit=crop',
     hoursAgo:46,
   },
   {
@@ -111,6 +122,7 @@ window.NEWS_ARTICLES = [
     title:'War-risk hull rates for Israeli carriers stabilise as routings normalise across Eastern Mediterranean',
     snippet:'After 18 months of elevated AP, leading aviation war markets are quoting 15–25% reductions for compliant operators with clean loss records.',
     url:'https://www.flightglobal.com/airlines/israel-war-risk-aviation-insurance-2026/',
+    image:'https://images.unsplash.com/photo-1556388158-158ea5ccacbd?w=800&q=80&auto=format&fit=crop',
     hoursAgo:54,
   },
   {
@@ -118,6 +130,7 @@ window.NEWS_ARTICLES = [
     title:'IMO 2030 emissions levy: P&I cover for carbon-related liabilities still in formative stage',
     snippet:'The International Group is consulting members on how pool reinsurance will respond to claims arising under the forthcoming greenhouse-gas pricing mechanism.',
     url:'https://www.reuters.com/business/sustainable-business/imo-emissions-2026/',
+    image:'https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=800&q=80&auto=format&fit=crop',
     hoursAgo:62,
   },
   {
@@ -125,6 +138,7 @@ window.NEWS_ARTICLES = [
     title:'Subsea cable severance claims double year-on-year, prompting capacity review at Lloyd\'s',
     snippet:'Anchor-drag and trawl incidents account for 70% of reported losses; underwriters are introducing minimum chart-plotter requirements for vessels operating in cable corridors.',
     url:'https://www.oedigital.com/news/subsea-cable-claims-2026/',
+    image:'https://images.unsplash.com/photo-1559825481-12a05cc00344?w=800&q=80&auto=format&fit=crop',
     hoursAgo:70,
   },
   {
@@ -132,6 +146,7 @@ window.NEWS_ARTICLES = [
     title:'Dark-fleet tanker fire off Singapore raises pollution-liability questions as ownership remains opaque',
     snippet:'The 19-year-old Aframax, registered in São Tomé and flagged through three jurisdictions in 12 months, had no verifiable P&I cover at the time of the incident.',
     url:'https://splash247.com/dark-fleet-singapore-fire-2026/',
+    image:'https://images.unsplash.com/photo-1518707399486-f8e5e95a3ad5?w=800&q=80&auto=format&fit=crop',
     hoursAgo:80,
   },
   {
@@ -139,6 +154,7 @@ window.NEWS_ARTICLES = [
     title:'Convective storm losses on track for record year as US insurers report Q1 cat ratios above 18%',
     snippet:'A series of severe thunderstorm outbreaks across the Plains and Midwest has already produced $24bn in insured losses through April, eclipsing the prior YTD record.',
     url:'https://www.reinsurancene.ws/scs-losses-q1-2026/',
+    image:'https://images.unsplash.com/photo-1605727216801-e27ce1d0cc28?w=800&q=80&auto=format&fit=crop',
     hoursAgo:96,
   },
   {
@@ -146,6 +162,7 @@ window.NEWS_ARTICLES = [
     title:'Business-jet hull values stabilise as pre-owned inventory rises and insurers loosen pilot-warranty terms',
     snippet:'Owner-flown light jets are seeing renewed competition among aviation underwriters, with several markets dropping minimum-hour requirements on type-rated pilots.',
     url:'https://www.ainonline.com/aviation-news/business-aviation/2026/biz-jet-hull-2026/',
+    image:'https://images.unsplash.com/photo-1542296332-2e4473faf563?w=800&q=80&auto=format&fit=crop',
     hoursAgo:110,
   },
   {
@@ -153,6 +170,7 @@ window.NEWS_ARTICLES = [
     title:'OFAC tightens disclosure expectations on AIS-gap voyages, putting screening obligations on brokers',
     snippet:'New guidance issued this week clarifies that the prohibition on shipping services for sanctioned-origin cargo extends to placement brokers, not just direct insurers.',
     url:'https://www.lloydslist.com/LL1150214/OFAC-AIS-gaps-2026-broker-obligations',
+    image:'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?w=800&q=80&auto=format&fit=crop',
     hoursAgo:140,
   },
 ];

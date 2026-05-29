@@ -57,6 +57,8 @@ window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 </script>
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="shared/chrome.js?v=11"></script>
+<link rel="stylesheet" href="shared/pagination.css" />
+<script src="shared/pagination.js"></script>
 <script>
 const SC = window.sharedChrome;
 
@@ -122,12 +124,11 @@ const CHEV_R    = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
 /* ── Helpers ──────────────────────────────────────────────────────────────── */
 function pager(page, total, perPage, prevId, nextId, ...pageIds) {
   const totalPages = Math.max(1, Math.ceil(total / perPage));
-  return `
-  <div style="display:flex;align-items:center;gap:4px">
-    <button class="pgbtn" id="${prevId}" ${page<=1?'disabled':''}>${CHEV_L}</button>
-    ${Array.from({length:totalPages},(_, i)=>`<button class="pgbtn ${page===i+1?'pactive':''}" data-page-id="${pageIds[0]}" data-pnum="${i+1}">${i+1}</button>`).join('')}
-    <button class="pgbtn" id="${nextId}" ${page>=totalPages?'disabled':''}>${CHEV_R}</button>
-  </div>`;
+  return dsPagination({
+    page, totalPages, totalItems: total, perPage,
+    perPageOptions: [10, 25, 50],
+    label: 'items',
+  });
 }
 
 /* ── User table ───────────────────────────────────────────────────────────── */
@@ -159,8 +160,7 @@ function userSection() {
       </tr>`).join('')}
     </tbody>
   </table>
-  <div style="padding:10px 14px;border-top:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#64748b">
-    <span>Showing ${total>0?start+1:0} to ${end} of ${total} total users</span>
+  <div style="padding:0" id="admin-user-pagination">
     ${pager(ST.userPage, total, ST.userPerPage, 'u-prev','u-next','upg')}
   </div>` : `
   <table class="adm-tbl">
@@ -255,8 +255,7 @@ function orgSection() {
           }).join('')}
         </tbody>
       </table>
-      <div style="padding:10px 14px;border-top:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#64748b">
-        <span>Showing ${total>0?start+1:0} to ${end} of ${total} organisations</span>
+      <div id="admin-org-pagination">
         ${pager(ST.orgPage, total, 10, 'o-prev','o-next','opg')}
       </div>
     </div>
@@ -299,24 +298,18 @@ function wire() {
   }
 
   /* User pagination */
-  const uPrev = document.getElementById('u-prev');
-  const uNext = document.getElementById('u-next');
-  if (uPrev) uPrev.addEventListener('click', () => { if (ST.userPage>1) { ST.userPage--; rc(); } });
-  if (uNext) uNext.addEventListener('click', () => {
-    const total = ALL_USERS.filter(u => !ST.userSearch || u.name.toLowerCase().includes(ST.userSearch.toLowerCase()) || u.email.toLowerCase().includes(ST.userSearch.toLowerCase())).length;
-    if (ST.userPage < Math.ceil(total/ST.userPerPage)) { ST.userPage++; rc(); }
+  /* User pagination */
+  const userPag = document.getElementById('admin-user-pagination');
+  if (userPag) dsWirePagination(userPag.querySelector('.ds-pagination-wrap'), {
+    onPage:    (p) => { ST.userPage = p; rc(); },
+    onPerPage: (n) => { ST.userPerPage = n; ST.userPage = 1; rc(); },
   });
-  document.querySelectorAll('[data-page-id="upg"]').forEach(b => b.addEventListener('click', () => { ST.userPage = parseInt(b.dataset.pnum); rc(); }));
 
   /* Org pagination */
-  const oPrev = document.getElementById('o-prev');
-  const oNext = document.getElementById('o-next');
-  if (oPrev) oPrev.addEventListener('click', () => { if (ST.orgPage>1) { ST.orgPage--; rc(); } });
-  if (oNext) oNext.addEventListener('click', () => {
-    const total = ORGS.filter(o => !ST.orgSearch || o.name.toLowerCase().includes(ST.orgSearch.toLowerCase())).length;
-    if (ST.orgPage < Math.ceil(total/10)) { ST.orgPage++; rc(); }
+  const orgPag = document.getElementById('admin-org-pagination');
+  if (orgPag) dsWirePagination(orgPag.querySelector('.ds-pagination-wrap'), {
+    onPage:    (p) => { ST.orgPage = p; rc(); },
   });
-  document.querySelectorAll('[data-page-id="opg"]').forEach(b => b.addEventListener('click', () => { ST.orgPage = parseInt(b.dataset.pnum); rc(); }));
 }
 
 /* ── Main render ──────────────────────────────────────────────────────────── */

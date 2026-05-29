@@ -28,6 +28,32 @@
   /* Map btn */
   .map-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;color:#334155;box-shadow:0 1px 2px rgba(15,23,42,.08);cursor:pointer;transition:background .1s}
   .map-btn:hover{background:#f1f5f9}
+  .map-btn.is-active{background:#eff6ff;border-color:#bfdbfe;color:#2563eb}
+  /* Pre/post-event satellite imagery treatments */
+  /* Date stamp badge that sits on the imagery patch */
+  .imagery-stamp{
+    position:absolute;z-index:600;
+    background:rgba(15,23,42,.82);color:#fff;
+    font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+    padding:4px 9px;border-radius:6px;
+    backdrop-filter:blur(4px);display:flex;align-items:center;gap:6px;
+    cursor:pointer;transition:background .15s;
+    border:1px solid rgba(255,255,255,.12);
+  }
+  .imagery-stamp:hover{background:rgba(15,23,42,.94)}
+  .imagery-stamp .chev{opacity:.7;margin-left:2px}
+  .imagery-stamp .dot{width:6px;height:6px;border-radius:50%;background:#22c55e}
+  .imagery-stamp.is-pre  .dot{background:#94a3b8}
+  .imagery-stamp .sub{font-weight:500;color:#cbd5e1;text-transform:none;letter-spacing:0;margin-left:2px}
+  /* Filter menu radio rows */
+  .filter-opt{display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;background:#fff;border:0;cursor:pointer;text-align:left;font-family:inherit}
+  .filter-opt:hover{background:#f8fafc}
+  .filter-opt .radio{width:14px;height:14px;border-radius:50%;border:1.5px solid #cbd5e1;flex-shrink:0;position:relative;transition:border-color .15s}
+  .filter-opt.is-on .radio{border-color:#2563eb}
+  .filter-opt.is-on .radio::after{content:'';position:absolute;inset:2px;border-radius:50%;background:#2563eb}
+  .filter-opt .opt-title{font-size:13px;font-weight:600;color:#0f172a;line-height:1.2;display:block}
+  .filter-opt.is-on .opt-title{color:#1d4ed8}
+  .filter-opt .opt-sub{font-size:10.5px;color:#64748b;margin-top:2px;font-variant-numeric:tabular-nums;display:block}
   /* Global view btn */
   .global-view-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border:1.5px solid #2563eb;border-radius:8px;background:#fff;color:#2563eb;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s}
   .global-view-btn:hover{background:#eff6ff}
@@ -208,21 +234,27 @@ function MapPanel() {
 
       <!-- Right map controls -->
       <div style="position:absolute;top:12px;right:12px;z-index:800;display:flex;flex-direction:column;gap:6px;">
-        <button class="map-btn" id="dm-layers-btn" title="Map layers">${IC.layers}</button>
-        <button class="map-btn" title="Filter">${IC.filter}</button>
+        <button class="map-btn" id="dm-filter-btn" title="Imagery layer">${IC.filter}</button>
         <button class="map-btn" title="Labels">${IC.tag}</button>
+      </div>
+
+      <!-- Imagery (pre/post) filter menu -->
+      <div id="dm-filter-menu" style="display:none;position:absolute;top:12px;right:52px;z-index:900;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 8px 24px rgba(15,23,42,.12);overflow:hidden;min-width:220px;">
+        <div style="padding:9px 12px;border-bottom:1px solid #f1f5f9;font-size:10.5px;font-weight:700;color:#64748b;letter-spacing:.05em;text-transform:uppercase;">Satellite Imagery</div>
+        <button data-evlayer="pre"  class="filter-opt">
+          <span class="radio"></span>
+          <span style="min-width:0;flex:1"><span class="opt-title">Pre-Event Layer</span><span class="opt-sub" data-pre-date></span></span>
+        </button>
+        <button data-evlayer="post" class="filter-opt is-on">
+          <span class="radio"></span>
+          <span style="min-width:0;flex:1"><span class="opt-title">Post-Event Layer</span><span class="opt-sub" data-post-date></span></span>
+        </button>
+      </div>
       </div>
 
       <!-- Expand btn -->
       <button class="map-btn" id="dm-expand-btn" title="Fullscreen"
         style="position:absolute;top:12px;left:12px;z-index:800;">${IC.expand}</button>
-
-      <!-- Layers dropdown -->
-      <div id="dm-layers-menu" style="display:none;position:absolute;top:12px;right:52px;z-index:900;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 8px 24px rgba(15,23,42,.12);overflow:hidden;min-width:140px;">
-        ${[['satellite','Satellite'],['street','Street'],['light','Light'],['dark','Dark']].map(([t,l])=>`
-        <button data-mtype="${t}" style="display:block;width:100%;padding:8px 14px;font-size:13px;text-align:left;border:0;background:${t==='satellite'?'#f1f5f9':'#fff'};color:#334155;cursor:pointer;font-family:inherit;"
-          onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='${t==='satellite'?'#f1f5f9':'#fff'}">${l}</button>`).join('')}
-      </div>
 
       <!-- Bottom legend overlay -->
       <div style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);z-index:700;background:rgba(15,23,42,.82);border-radius:9999px;padding:7px 16px;display:flex;align-items:center;gap:14px;backdrop-filter:blur(4px);">
@@ -256,7 +288,7 @@ const TILE_URLS = {
   dark:      'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
 };
 let activeTile = null;
-let currentMapType = 'satellite';
+let currentMapType = 'street';
 
 function initDetailMap() {
   const el = document.getElementById('detail-map');
@@ -267,7 +299,87 @@ function initDetailMap() {
   detailMap = L.map(el, { center:[det.lat, det.lng], zoom, zoomControl:false, scrollWheelZoom:true });
   L.control.zoom({ position:'topleft' }).addTo(detailMap);
 
-  activeTile = L.tileLayer(TILE_URLS.satellite, { attribution:'&copy; Esri, Maxar, Earthstar Geographics', maxZoom:18 }).addTo(detailMap);
+  activeTile = L.tileLayer(TILE_URLS.street, { attribution:'© OpenStreetMap contributors', maxZoom:18 }).addTo(detailMap);
+
+  // Satellite "patch" overlay — keeps the wider region as street view but
+  // shows real imagery over the actual affected area. Sized to the event type.
+  const OVERLAY_SIZE_M = {
+    hurricane:  400000,    // tighter track corridor
+    cyclone:    400000,
+    earthquake:  90000,    // focused on epicentre
+    flood:       35000,    // close-in on inundation area
+    wildfire:    22000,    // tight on the burn perimeter
+  };
+  const overlaySizeM = OVERLAY_SIZE_M[ev.type] || 30000;
+  const overlayBounds = L.latLng(det.lat, det.lng).toBounds(overlaySizeM);
+
+  // Two satellite tile layers — same source, different visual treatment via
+  // CSS class so the user can compare pre- and post-event imagery. Only one
+  // is on the map at a time (controlled by the filter menu).
+  const tileOpts = () => ({
+    attribution: '© Esri, Maxar, Earthstar Geographics',
+    bounds: overlayBounds, maxZoom: 18, zIndex: 200,
+  });
+  const preTile  = L.tileLayer(TILE_URLS.satellite, tileOpts());
+  const postTile = L.tileLayer(TILE_URLS.satellite, tileOpts());
+  // Faint frame so the imagery patch reads as intentional, not a render glitch.
+  L.rectangle(overlayBounds, { color:'#ffffff', weight:1.25, fillOpacity:0, opacity:0.55, dashArray:'4 5' }).addTo(detailMap);
+
+  // Derive plausible capture dates from the event window.
+  // Pre-event: 6 mo before event start — "baseline before anything happened".
+  // Post-event: 3 wks AFTER event end (or +5 wks from start if no end date),
+  // matching the typical timeline for damage-assessment imagery passes.
+  const startDate = (() => { const d = new Date(ev.dateStart); return isNaN(d) ? new Date() : d; })();
+  const preDate   = new Date(startDate); preDate.setMonth(preDate.getMonth() - 6);
+  const postDate  = (() => {
+    const end = ev.dateEnd ? new Date(ev.dateEnd) : null;
+    if (end && !isNaN(end)) { const d = new Date(end); d.setDate(d.getDate() + 21); return d; }
+    const d2 = new Date(startDate); d2.setDate(d2.getDate() + 35); return d2;
+  })();
+  const fmtMY  = d => d.toLocaleDateString('en-US', { month:'short', year:'numeric' });
+  const fmtDay = d => d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  document.querySelectorAll('[data-pre-date]').forEach(elx  => elx.textContent = 'Captured ' + fmtMY(preDate));
+  document.querySelectorAll('[data-post-date]').forEach(elx => elx.textContent = 'Captured ' + fmtMY(postDate));
+
+  // Date stamp badge sitting on top of the imagery patch.
+  // Strip any badge left over from a previous initDetailMap call.
+  el.querySelectorAll('.imagery-stamp').forEach(s => s.remove());
+  const stamp = document.createElement('div');
+  stamp.className = 'imagery-stamp';
+  stamp.title = 'Switch imagery layer';
+  el.appendChild(stamp);
+  const positionStamp = () => {
+    const corner = detailMap.latLngToContainerPoint(overlayBounds.getNorthWest());
+    const r = el.getBoundingClientRect();
+    // Approximate badge size; pin it to the patch when visible, otherwise
+    // clamp to the map edge so it never escapes the container.
+    const W = 220, H = 26, PAD = 8;
+    const x = Math.max(PAD, Math.min(r.width  - W, corner.x + PAD));
+    const y = Math.max(PAD, Math.min(r.height - H, corner.y + PAD));
+    stamp.style.left = x + 'px';
+    stamp.style.top  = y + 'px';
+  };
+  detailMap.on('move zoom resize', positionStamp);
+
+  // Layer state — default to post-event.
+  let currentLayer = 'post';
+  function setEventLayer(which) {
+    currentLayer = which;
+    detailMap.removeLayer(preTile);
+    detailMap.removeLayer(postTile);
+    if (which === 'pre') {
+      preTile.addTo(detailMap);
+      stamp.classList.add('is-pre'); stamp.classList.remove('is-post');
+      stamp.innerHTML = `<span class="dot"></span>Pre-event imagery<span class="sub">· ${fmtDay(preDate)}</span><span class="chev">▾</span>`;
+    } else {
+      postTile.addTo(detailMap);
+      stamp.classList.add('is-post'); stamp.classList.remove('is-pre');
+      stamp.innerHTML = `<span class="dot"></span>Post-event imagery<span class="sub">· ${fmtDay(postDate)}</span><span class="chev">▾</span>`;
+    }
+    document.querySelectorAll('[data-evlayer]').forEach(b => b.classList.toggle('is-on', b.dataset.evlayer === which));
+  }
+  setEventLayer('post');
+  setTimeout(positionStamp, 0);
 
   // Push zoom control below expand btn
   setTimeout(() => {
@@ -317,22 +429,28 @@ function initDetailMap() {
     L.circle([det.lat, det.lng], { radius:25000, color:'#0ea5e9', fillColor:'#0ea5e9', fillOpacity:0.15, weight:2, dashArray:'6 5' }).addTo(detailMap);
   }
 
-  // Layer switcher
-  const layersMenu = document.getElementById('dm-layers-menu');
-  const layersBtn  = document.getElementById('dm-layers-btn');
-  if (layersBtn && layersMenu) {
-    layersBtn.onclick = (e) => { e.stopPropagation(); layersMenu.style.display = layersMenu.style.display === 'none' ? 'block' : 'none'; };
-    document.querySelectorAll('[data-mtype]').forEach(btn => {
-      btn.onclick = () => {
-        if (activeTile) detailMap.removeLayer(activeTile);
-        currentMapType = btn.dataset.mtype;
-        activeTile = L.tileLayer(TILE_URLS[currentMapType] || TILE_URLS.satellite, { attribution:'', maxZoom:18 }).addTo(detailMap);
-        activeTile.bringToBack();
-        layersMenu.style.display = 'none';
-        document.querySelectorAll('[data-mtype]').forEach(b => b.style.background = b.dataset.mtype === currentMapType ? '#f1f5f9' : '#fff');
-      };
+  // Layers selector removed — the map is fixed to street base + satellite patch.
+
+  // Imagery (pre/post) filter menu wiring
+  const filterMenu = document.getElementById('dm-filter-menu');
+  const filterBtn  = document.getElementById('dm-filter-btn');
+  if (filterBtn && filterMenu) {
+    const openMenu  = () => { filterMenu.style.display = 'block'; filterBtn.classList.add('is-active'); };
+    const closeMenu = () => { filterMenu.style.display = 'none';  filterBtn.classList.remove('is-active'); };
+    const toggleMenu = () => { (filterMenu.style.display === 'block') ? closeMenu() : openMenu(); };
+    filterBtn.onclick = (e) => { e.stopPropagation(); toggleMenu(); };
+    // Stamp on the imagery patch is also a discoverable entry point — clicking
+    // it opens the same menu so users who miss the funnel button still find it.
+    stamp.onclick = (e) => { e.stopPropagation(); toggleMenu(); };
+    document.querySelectorAll('[data-evlayer]').forEach(btn => {
+      btn.onclick = (e) => { e.stopPropagation(); setEventLayer(btn.dataset.evlayer); closeMenu(); };
     });
-    document.addEventListener('click', () => { layersMenu.style.display = 'none'; });
+    document.addEventListener('click', (e) => {
+      if (filterMenu.contains(e.target)) return;
+      if (e.target === filterBtn || filterBtn.contains(e.target)) return;
+      if (e.target === stamp || stamp.contains(e.target)) return;
+      closeMenu();
+    });
   }
 
   // Expand/fullscreen

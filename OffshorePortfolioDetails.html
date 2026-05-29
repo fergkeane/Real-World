@@ -186,22 +186,16 @@ function sortIcon() {
   </span>`;
 }
 
-/* ── Left panel ── */
-function PanelDetails() {
+/* ── Portfolio groups (mock data — groups containing this portfolio) ── */
+const PORTFOLIO_GROUPS = [
+  'Latin America Offshore Energy',
+  'OPEC Producer Exposure',
+  'Western Hemisphere Aggregate',
+];
+
+/* ── Left panel content (swaps based on active tab) ── */
+function PanelDetailsContent() {
   return `
-  <div class="bg-white rounded-xl border border-ink-200 overflow-hidden flex flex-col" style="box-shadow:0 1px 2px rgba(15,23,42,.07);">
-    <!-- Tabs -->
-    <div class="p-3 border-b border-ink-100">
-      <div class="ds-tabs" style="display:flex;" id="pf-tabs">
-        <span class="ds-tab-pill is-init" data-tab-pill></span>
-        <button class="ds-tab" style="flex:1;justify-content:center;" aria-selected="${pfTab==='Portfolio Details'}" data-pftab="Portfolio Details">
-          <span class="ds-tab-label">Portfolio Details</span>
-        </button>
-        <button class="ds-tab" style="flex:1;justify-content:center;" aria-selected="${pfTab==='Portfolio Groups'}" data-pftab="Portfolio Groups">
-          <span class="ds-tab-label">Portfolio Groups</span>
-        </button>
-      </div>
-    </div>
     <!-- Exposure banner -->
     <div style="display:flex;justify-content:center;padding:14px 16px 6px;">
       <div style="background:#eff6ff;border:1px solid #dbeafe;border-radius:10px;padding:10px 32px;text-align:center;min-width:180px;">
@@ -232,6 +226,59 @@ function PanelDetails() {
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         <span>DOWNLOAD</span>
       </button>
+    </div>`;
+}
+
+function PanelGroupsContent() {
+  return `
+    <div class="px-4 pt-4 pb-2">
+      <p class="text-xs leading-relaxed text-ink-500">
+        This shows groups containing the
+        <span class="font-semibold text-ink-800">${PF.name}</span> portfolio.
+      </p>
+    </div>
+    <div class="px-4 pb-3 flex-1">
+      <ul class="flex flex-col gap-2">
+        ${PORTFOLIO_GROUPS.map(g => `
+          <li>
+            <button type="button" class="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg border border-ink-200 bg-white hover:bg-ink-50 hover:border-ink-300 transition-colors text-left">
+              <span class="flex items-center gap-2.5 min-w-0">
+                <span class="inline-flex w-7 h-7 shrink-0 rounded-md bg-brand-50 text-brand-600 items-center justify-center">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h6l2 2h10v11H3z"/></svg>
+                </span>
+                <span class="text-[13px] font-semibold text-ink-800 truncate">${g}</span>
+              </span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </li>`).join('')}
+      </ul>
+    </div>
+    <!-- Action footer (parity with Details tab) -->
+    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 flex items-center justify-end text-xs h-9 shrink-0 mt-auto">
+      <button class="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="5 12 12 5 19 12"/></svg>
+        <span>ADD TO GROUP</span>
+      </button>
+    </div>`;
+}
+
+function PanelDetails() {
+  return `
+  <div class="bg-white rounded-xl border border-ink-200 overflow-hidden flex flex-col" style="box-shadow:0 1px 2px rgba(15,23,42,.07);">
+    <!-- Tabs -->
+    <div class="p-3 border-b border-ink-100">
+      <div class="ds-tabs" style="display:flex;" id="pf-tabs">
+        <span class="ds-tab-pill is-init" data-tab-pill></span>
+        <button class="ds-tab" style="flex:1;justify-content:center;" aria-selected="${pfTab==='Portfolio Details'}" data-pftab="Portfolio Details">
+          <span class="ds-tab-label">Portfolio Details</span>
+        </button>
+        <button class="ds-tab" style="flex:1;justify-content:center;" aria-selected="${pfTab==='Portfolio Groups'}" data-pftab="Portfolio Groups">
+          <span class="ds-tab-label">Portfolio Groups</span>
+        </button>
+      </div>
+    </div>
+    <div id="pf-tab-content" class="flex flex-col flex-1 min-h-0">
+      ${pfTab==='Portfolio Groups' ? PanelGroupsContent() : PanelDetailsContent()}
     </div>
   </div>`;
 }
@@ -580,6 +627,10 @@ window.render = function() {
       if (group) {
         group.querySelectorAll('.ds-tab').forEach(t => t.setAttribute('aria-selected', String(t===btn)));
         positionTabPills();
+      }
+      const host = document.getElementById('pf-tab-content');
+      if (host) {
+        host.innerHTML = pfTab==='Portfolio Groups' ? PanelGroupsContent() : PanelDetailsContent();
       }
     };
   });

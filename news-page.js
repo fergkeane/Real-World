@@ -64,8 +64,9 @@
     const src = sourceById(a.source);
     return `
       <a href="${a.url}" target="_blank" rel="noopener noreferrer" class="news-card cat-${a.cat} ${isFeatured ? 'featured' : ''}" data-cat="${a.cat}">
-        <div class="news-thumb">
+        <div class="news-thumb ${a.image ? 'has-photo' : ''}">
           ${PATTERN_BG}
+          ${a.image ? `<img class="news-photo" src="${a.image}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove();this.parentElement.classList.remove('has-photo')">` : ''}
           <div class="glyph">${CAT_GLYPH[a.cat] || ''}</div>
           <span class="news-cat">${catLabel(a.cat)}</span>
         </div>

@@ -74,6 +74,8 @@ window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 </script>
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="shared/chrome.js?v=11"></script>
+<link rel="stylesheet" href="shared/pagination.css" />
+<script src="shared/pagination.js"></script>
 <script>
 const SC = window.sharedChrome;
 
@@ -358,19 +360,14 @@ function renderPage() {
     </div>
 
     <!-- Pagination -->
-    <div class="shrink-0 px-5 py-3 border-t border-slate-100 flex items-center gap-2.5">
-      <span class="text-xs text-slate-500 shrink-0">Items per page:</span>
-      <div style="position:relative">
-        <select id="per-page" style="appearance:none;-webkit-appearance:none;height:28px;padding:0 20px 0 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;color:#334155;background:#fff;cursor:pointer;font-family:inherit;outline:none">
-          ${[10,20,50].map(n => `<option value="${n}"${ST.perPage === n ? ' selected' : ''}>${n}</option>`).join('')}
-        </select>
-        <span style="position:absolute;right:4px;top:50%;transform:translateY(-50%);pointer-events:none;color:#64748b;display:flex">${SVG.chevDown}</span>
-      </div>
-      <div style="flex:1"></div>
-      ${total > 0 ? `<span class="text-xs text-slate-500">${start + 1}-${Math.min(start + ST.perPage, total)} of ${total}</span>` : ''}
-      <button class="pgbtn" id="pg-prev"${ST.page <= 1 ? ' disabled' : ''}>${SVG.chevLeft}</button>
-      <button class="pgbtn" id="pg-next"${ST.page >= totalPages ? ' disabled' : ''}>${SVG.chevRight}</button>
-    </div>
+    ${dsPagination({
+      page: ST.page,
+      totalPages,
+      totalItems: total,
+      perPage: ST.perPage,
+      perPageOptions: [10, 20, 50],
+      label: 'organisations',
+    })}
   </div>
 
   ${renderModal()}`;
@@ -434,13 +431,10 @@ function wireOrgs() {
   const pp = document.getElementById('per-page');
   if (pp) pp.addEventListener('change', () => { ST.perPage = parseInt(pp.value); ST.page = 1; rc(); });
 
-  /* Pagination */
-  const prev = document.getElementById('pg-prev');
-  const next  = document.getElementById('pg-next');
-  if (prev) prev.addEventListener('click', () => { if (ST.page > 1) { ST.page--; rc(); } });
-  if (next) next.addEventListener('click', () => {
-    const tp = Math.max(1, Math.ceil(getFiltered().length / ST.perPage));
-    if (ST.page < tp) { ST.page++; rc(); }
+  /* Pagination (DS-compliant) */
+  dsWirePagination(document.querySelector('.ds-pagination-wrap'), {
+    onPage:    (p) => { ST.page = p; rc(); },
+    onPerPage: (n) => { ST.perPage = n; ST.page = 1; rc(); },
   });
 
   /* Open create modal */

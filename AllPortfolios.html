@@ -68,6 +68,14 @@
   .search-input input { border:0; outline:0; font:inherit; font-size:13px; color:#0f172a; background:transparent; width:160px; }
   .search-input input::placeholder { color:#94a3b8; }
 
+  /* Group rows */
+  .porto-table .group-toggle { width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; border:0; background:transparent; color:#94a3b8; cursor:pointer; border-radius:4px; padding:0; }
+  .porto-table .group-toggle:hover { background:#f1f5f9; color:#334155; }
+  .porto-table .group-row td { font-weight:600; }
+  .porto-table .group-child td { padding-top:9px; padding-bottom:9px; font-size:12.5px; border-bottom:2px solid #fff; }
+  .porto-table .group-child:last-child td { border-bottom:1px solid #f1f5f9; }
+  .porto-table .group-child:hover td { background:#dbeafe !important; }
+
   /* Pagination footer */
   .table-footer { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-top:1px solid #f1f5f9; font-size:12px; color:#64748b; }
   .per-page-select { border:1px solid #e2e8f0; border-radius:6px; padding:3px 24px 3px 8px; font:inherit; font-size:12px; color:#334155; background:#fff; cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 6px center; }
@@ -117,6 +125,7 @@ let catTab    = 'Marine';
 let subTab    = 'Portfolios';
 let searchVal = '';
 let perPage   = 10;
+const expandedGroups = new Set(); // all collapsed by default
 
 /* ---- Data ---- */
 const PORTFOLIOS = {
@@ -174,6 +183,9 @@ const CAT_ICONS = {
 };
 
 const PORTFOLIO_ICO = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;flex-shrink:0;"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>`;
+const FOLDER_CLOSED_ICO = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
+const FOLDER_OPEN_ICO   = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M6 14l1.45-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.55 6a2 2 0 0 1-1.94 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2v2"/></svg>`;
+const CHEVRON_RIGHT_ICO = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
 const TAB_PORTFOLIOS_ICO = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>`;
 const TAB_GROUPS_ICO     = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
 const EDIT_ICO      = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
@@ -192,10 +204,187 @@ function statusBadge(s) {
   return `<span class="badge ${cls}">${s}</span>`;
 }
 
+/* ---- Portfolio groups (each contains 2-3 child portfolios) ---- */
+const PORTFOLIO_GROUPS = {
+  Marine: [
+    { name:'FIRST', policies:201, exposure:'$760.7M', risk:15, eemi:3.27, cii:4.01, status:'OK',
+      children:[
+        { name:'Bulk Carrier Fleet A', policies:89, exposure:'$245.2M', risk:12, eemi:3.15, cii:3.89, status:'OK' },
+        { name:'Container Ships B',    policies:67, exposure:'$298.5M', risk:18, eemi:3.42, cii:4.21, status:'Warning' },
+        { name:'Tanker Collection',    policies:45, exposure:'$217.0M', risk:8,  eemi:3.11, cii:3.91, status:'OK' },
+      ]},
+    { name:'MarineFleet2', policies:5963, exposure:'$360.8B', risk:26, eemi:7.46, cii:5.62, status:'Sanctioned',
+      children:[
+        { name:'Black Sea Portfolios',   policies:1021, exposure:'$917.5M', risk:26, eemi:11.14, cii:6.35, status:'Warning' },
+        { name:'Dung Alon Shipping Ltd', policies:37,   exposure:'$517.7M', risk:100, eemi:4.03,  cii:5.17, status:'Sanctioned' },
+        { name:'Mediterranean Tanker Fleet', policies:845, exposure:'$8.9B', risk:18, eemi:7.25,  cii:5.84, status:'OK' },
+      ]},
+    { name:'Offshore Marine Group', policies:912, exposure:'$54.6B', risk:28, eemi:10.89, cii:7.45, status:'Warning',
+      children:[
+        { name:'North Sea Oil Support', policies:156, exposure:'$2.3B',  risk:8,  eemi:9.15, cii:6.78, status:'OK' },
+        { name:'Arctic LNG Carriers',   policies:34,  exposure:'$6.8B',  risk:22, eemi:4.67, cii:4.23, status:'Warning' },
+      ]},
+    { name:'Specialized Marine Vessels', policies:412, exposure:'$3.7B', risk:13, eemi:5.67, cii:4.32, status:'OK',
+      children:[
+        { name:'Pacific Cruise Lines',     policies:89,  exposure:'$4.2B',  risk:6,  eemi:12.34, cii:7.89, status:'OK' },
+        { name:'Car Carrier Fleet',        policies:698, exposure:'$24.4B', risk:4,  eemi:14.43, cii:7.75, status:'OK' },
+      ]},
+  ],
+  Offshore: [
+    { name:'Atlantic Offshore Alliance', policies:73, exposure:'$8.9B', risk:17, eemi:7.30, cii:5.10, status:'Warning',
+      children:[
+        { name:'North Sea Block 23',       policies:45, exposure:'$3.1B', risk:14, eemi:8.20, cii:5.90, status:'OK' },
+        { name:'Gulf of Mexico Deepwater', policies:28, exposure:'$5.8B', risk:31, eemi:6.40, cii:4.80, status:'Warning' },
+      ]},
+    { name:'High-Risk Region Pool', policies:31, exposure:'$3.1B', risk:48, eemi:5.50, cii:4.45, status:'Sanctioned',
+      children:[
+        { name:'West Africa Offshore',  policies:19, exposure:'$2.2B', risk:55, eemi:3.90, cii:3.70, status:'Sanctioned' },
+        { name:'Caspian Sea Platforms', policies:12, exposure:'$890M', risk:9,  eemi:7.10, cii:5.20, status:'OK' },
+      ]},
+    { name:'Nordic Stable Production', policies:67, exposure:'$7.4B', risk:3, eemi:11.50, cii:6.90, status:'OK',
+      children:[
+        { name:'Norwegian Shelf Assets', policies:67, exposure:'$7.4B', risk:3, eemi:11.50, cii:6.90, status:'OK' },
+      ]},
+  ],
+  Aviation: [
+    { name:'Commercial Passenger Group', policies:490, exposure:'$13.3B', risk:8, eemi:8.70, cii:5.80, status:'Warning',
+      children:[
+        { name:'Narrowbody Fleet A', policies:312, exposure:'$4.1B', risk:5,  eemi:9.80, cii:6.10, status:'OK' },
+        { name:'Widebody Long-Haul', policies:178, exposure:'$9.2B', risk:11, eemi:7.60, cii:5.50, status:'Warning' },
+      ]},
+    { name:'Regional & Cargo Pool', policies:151, exposure:'$3.0B', risk:11, eemi:7.55, cii:5.65, status:'Warning',
+      children:[
+        { name:'Regional Turboprop Fleet', policies:94, exposure:'$680M', risk:7,  eemi:8.90, cii:6.40, status:'OK' },
+        { name:'Cargo Aircraft Portfolio', policies:57, exposure:'$2.3B', risk:16, eemi:6.20, cii:4.90, status:'Warning' },
+      ]},
+  ],
+  Property: [
+    { name:'Global CBD Office', policies:488, exposure:'$5.4B', risk:7, eemi:10.45, cii:7.05, status:'OK',
+      children:[
+        { name:'Manhattan Commercial',      policies:156, exposure:'$2.8B', risk:8,  eemi:10.20, cii:7.10, status:'OK' },
+        { name:'London Financial District', policies:234, exposure:'$1.9B', risk:12, eemi:8.70,  cii:6.30, status:'Warning' },
+        { name:'Singapore CBD',             policies:98,  exposure:'$1.7B', risk:4,  eemi:11.20, cii:7.50, status:'OK' },
+      ]},
+    { name:'Asia-Pacific Mixed-Use', policies:212, exposure:'$4.4B', risk:13, eemi:8.45, cii:6.25, status:'Warning',
+      children:[
+        { name:'Tokyo Industrial Zone', policies:145, exposure:'$3.2B', risk:19, eemi:7.40, cii:5.80, status:'Warning' },
+        { name:'Dubai Business Bay',    policies:67,  exposure:'$1.2B', risk:6,  eemi:9.50, cii:6.70, status:'OK' },
+      ]},
+  ],
+};
+
+function PortfoliosTable(rows) {
+  return `
+    <table class="porto-table">
+      <thead>
+        <tr>
+          <th style="width:180px;">Name</th>
+          <th>Description</th>
+          <th style="width:90px;">Policies</th>
+          <th style="width:120px;">Our Exposure</th>
+          <th style="width:100px;">Risk Score</th>
+          <th style="width:80px;">EEMI</th>
+          <th style="width:70px;">CII</th>
+          <th style="width:160px;">Sanctions/Compliance</th>
+          <th style="width:80px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(p => `
+          <tr>
+            <td><span class="porto-name" data-pf-cat="${catTab}" data-pf-name="${encodeURIComponent(p.name)}">${PORTFOLIO_ICO} ${p.name}</span></td>
+            <td><span class="porto-desc">${p.desc}</span></td>
+            <td class="tabular-nums">${p.policies.toLocaleString()}</td>
+            <td class="tabular-nums font-semibold text-ink-900">${p.exposure}</td>
+            <td><span class="risk-score ${riskClass(p.risk)}">${p.risk}</span></td>
+            <td class="tabular-nums">${p.eemi}</td>
+            <td class="tabular-nums">${p.cii}</td>
+            <td>${statusBadge(p.status)}</td>
+            <td>
+              <div class="flex items-center gap-1">
+                <button class="action-btn is-edit" title="Edit" data-pf-edit data-pf-name="${escapeAttr(p.name)}" data-pf-desc="${escapeAttr(p.desc)}" data-pf-cat-key="${catTab}">${EDIT_ICO}</button>
+                <button class="action-btn is-delete" title="Delete" data-pf-delete data-pf-name="${escapeAttr(p.name)}">${DEL_ICO}</button>
+              </div>
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function GroupsTable(groups) {
+  const childRow = (c) => `
+    <tr class="group-child">
+      <td style="padding-left:44px;background:#eff6ff;">
+        <span class="porto-name" data-pf-child-cat="${catTab}" data-pf-child-name="${encodeURIComponent(c.name)}" data-pf-child-policies="${c.policies}" data-pf-child-exposure="${escapeAttr(c.exposure)}">${PORTFOLIO_ICO} ${c.name}</span>
+      </td>
+      <td class="tabular-nums" style="background:#eff6ff;">${c.policies.toLocaleString()}</td>
+      <td class="tabular-nums font-semibold text-ink-900" style="background:#eff6ff;">${c.exposure}</td>
+      <td style="background:#eff6ff;"><span class="risk-score ${riskClass(c.risk)}">${c.risk}</span></td>
+      <td class="tabular-nums" style="background:#eff6ff;">${c.eemi}</td>
+      <td class="tabular-nums" style="background:#eff6ff;">${c.cii}</td>
+      <td style="background:#eff6ff;">${statusBadge(c.status)}</td>
+      <td style="background:#eff6ff;">
+        <div class="flex items-center gap-1">
+          <button class="action-btn is-edit" title="Edit" data-pf-edit data-pf-name="${escapeAttr(c.name)}" data-pf-desc="" data-pf-cat-key="${catTab}">${EDIT_ICO}</button>
+          <button class="action-btn is-delete" title="Delete" data-pf-delete data-pf-name="${escapeAttr(c.name)}">${DEL_ICO}</button>
+        </div>
+      </td>
+    </tr>`;
+
+  return `
+    <table class="porto-table groups-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th style="width:90px;">Policies</th>
+          <th style="width:120px;">Our Exposure</th>
+          <th style="width:100px;">Risk Score</th>
+          <th style="width:80px;">EEMI</th>
+          <th style="width:70px;">CII</th>
+          <th style="width:160px;">Sanctions/Compliance</th>
+          <th style="width:80px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${groups.map(g => {
+          const isOpen = expandedGroups.has(g.name);
+          return `
+          <tr class="group-row">
+            <td>
+              <div class="flex items-center gap-1">
+                <button class="group-toggle" data-group-toggle="${escapeAttr(g.name)}" aria-expanded="${isOpen}" title="${isOpen ? 'Collapse' : 'Expand'}">
+                  <span class="chev" style="transform:rotate(${isOpen ? '90deg' : '0deg'});transition:transform .2s ease;">${CHEVRON_RIGHT_ICO}</span>
+                </button>
+                <span class="folder-ico" style="color:#2563eb;display:inline-flex;">${isOpen ? FOLDER_OPEN_ICO : FOLDER_CLOSED_ICO}</span>
+                <span class="porto-name" data-pf-cat="${catTab}" data-pf-name="${encodeURIComponent(g.name)}">${g.name}</span>
+              </div>
+            </td>
+            <td class="tabular-nums">${g.policies.toLocaleString()}</td>
+            <td class="tabular-nums font-semibold text-ink-900">${g.exposure}</td>
+            <td><span class="risk-score ${riskClass(g.risk)}">${g.risk}</span></td>
+            <td class="tabular-nums">${g.eemi}</td>
+            <td class="tabular-nums">${g.cii}</td>
+            <td>${statusBadge(g.status)}</td>
+            <td>
+              <div class="flex items-center gap-1">
+                <button class="action-btn is-edit" title="Edit" data-pf-edit data-pf-name="${escapeAttr(g.name)}" data-pf-desc="" data-pf-cat-key="${catTab}">${EDIT_ICO}</button>
+                <button class="action-btn is-delete" title="Delete" data-pf-delete data-pf-name="${escapeAttr(g.name)}">${DEL_ICO}</button>
+              </div>
+            </td>
+          </tr>
+          ${isOpen ? g.children.map(childRow).join('') : ''}
+        `;}).join('')}
+      </tbody>
+    </table>`;
+}
+
 function Content() {
-  const rows = (PORTFOLIOS[catTab] || []).filter(p =>
-    !searchVal || p.name.toLowerCase().includes(searchVal.toLowerCase()) || p.desc.toLowerCase().includes(searchVal.toLowerCase())
-  );
+  const isGroups = subTab === 'Portfolio Groups';
+  const rows = isGroups
+    ? (PORTFOLIO_GROUPS[catTab] || []).filter(g => !searchVal || g.name.toLowerCase().includes(searchVal.toLowerCase()))
+    : (PORTFOLIOS[catTab] || []).filter(p =>
+        !searchVal || p.name.toLowerCase().includes(searchVal.toLowerCase()) || p.desc.toLowerCase().includes(searchVal.toLowerCase())
+      );
 
   return `
   <div class="flex-1 flex flex-col overflow-hidden">
@@ -245,40 +434,7 @@ function Content() {
 
         <!-- Table -->
         <div class="flex-1 overflow-y-auto scroll-thin">
-          <table class="porto-table">
-            <thead>
-              <tr>
-                <th style="width:180px;">Name</th>
-                <th>Description</th>
-                <th style="width:90px;">Policies</th>
-                <th style="width:120px;">Our Exposure</th>
-                <th style="width:100px;">Risk Score</th>
-                <th style="width:80px;">EEMI</th>
-                <th style="width:70px;">CII</th>
-                <th style="width:160px;">Sanctions/Compliance</th>
-                <th style="width:80px;">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rows.map(p => `
-                <tr>
-                  <td><span class="porto-name" data-pf-cat="${catTab}" data-pf-name="${encodeURIComponent(p.name)}">${PORTFOLIO_ICO} ${p.name}</span></td>
-                  <td><span class="porto-desc">${p.desc}</span></td>
-                  <td class="tabular-nums">${p.policies.toLocaleString()}</td>
-                  <td class="tabular-nums font-semibold text-ink-900">${p.exposure}</td>
-                  <td><span class="risk-score ${riskClass(p.risk)}">${p.risk}</span></td>
-                  <td class="tabular-nums">${p.eemi}</td>
-                  <td class="tabular-nums">${p.cii}</td>
-                  <td>${statusBadge(p.status)}</td>
-                  <td>
-                    <div class="flex items-center gap-1">
-                      <button class="action-btn is-edit" title="Edit" data-pf-edit data-pf-name="${escapeAttr(p.name)}" data-pf-desc="${escapeAttr(p.desc)}" data-pf-cat-key="${catTab}">${EDIT_ICO}</button>
-                      <button class="action-btn is-delete" title="Delete" data-pf-delete data-pf-name="${escapeAttr(p.name)}">${DEL_ICO}</button>
-                    </div>
-                  </td>
-                </tr>`).join('')}
-            </tbody>
-          </table>
+          ${isGroups ? GroupsTable(rows) : PortfoliosTable(rows)}
         </div>
 
         <!-- Footer -->
@@ -366,11 +522,23 @@ window.render = function() {
   const pp = document.getElementById('per-page');
   if (pp) pp.addEventListener('change', e => { perPage = parseInt(e.target.value); render(); });
 
+  /* Group expand/collapse */
+  document.querySelectorAll('[data-group-toggle]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const name = btn.dataset.groupToggle;
+      if (expandedGroups.has(name)) expandedGroups.delete(name);
+      else expandedGroups.add(name);
+      render();
+    });
+  });
+
   /* Portfolio name → details page */
   const DEST = {
     Marine:   { key:'selectedPortfolio',          url:'MarinePortfolioDetails.html' },
     Offshore: { key:'selectedOffshorePF',          url:'OffshorePortfolioDetails.html' },
     Aviation: { key:'selectedAviationPortfolio',   url:'AviationPortfolioDetails.html' },
+    Property: { key:'selectedPropertyPortfolio',   url:'PropertyPortfolioDetails.html' },
   };
   document.querySelectorAll('[data-pf-cat]').forEach(el => {
     el.addEventListener('click', () => {
@@ -384,6 +552,24 @@ window.render = function() {
         name: p.name, policies: p.policies, assets: p.policies,
         exposure: p.exposure, activePolicies: p.policies,
         id: cat.slice(0,3).toUpperCase() + String(PORTFOLIOS[cat].indexOf(p) + 1).padStart(4,'0'),
+      }));
+      location.href = dest.url;
+    });
+  });
+
+  /* Child portfolio (inside a group) → details page. Uses inline data attrs
+     since child portfolios may not exist in the flat PORTFOLIOS array. */
+  document.querySelectorAll('[data-pf-child-cat]').forEach(el => {
+    el.addEventListener('click', () => {
+      const cat      = el.dataset.pfChildCat;
+      const name     = decodeURIComponent(el.dataset.pfChildName);
+      const policies = parseInt(el.dataset.pfChildPolicies, 10) || 0;
+      const exposure = el.dataset.pfChildExposure || '';
+      const dest = DEST[cat];
+      if (!dest) return;
+      sessionStorage.setItem(dest.key, JSON.stringify({
+        name, policies, assets: policies, activePolicies: policies, exposure,
+        id: cat.slice(0,3).toUpperCase() + '-' + name.replace(/[^A-Za-z0-9]/g,'').slice(0,8).toUpperCase(),
       }));
       location.href = dest.url;
     });

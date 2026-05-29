@@ -103,6 +103,8 @@ window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="shared/chrome.js?v=11"></script>
+<link rel="stylesheet" href="shared/pagination.css" />
+<script src="shared/pagination.js"></script>
 <script>
 const SC = window.sharedChrome;
 const Ico = SC.I;
@@ -440,14 +442,14 @@ function CardAircraftTable() {
         </tbody>
       </table>
     </div>
-    <div class="px-4 py-3 border-t border-ink-100 flex items-center justify-between text-xs text-ink-500 bg-ink-50 pager-strip">
-      <span>Showing ${start+1} to ${Math.min(start+PAGE_SIZE,total)} of ${total} results</span>
-      <div class="flex items-center gap-3">
-        <button id="pg-prev" class="text-xs font-semibold ${tablePage<=1?'text-ink-300 cursor-not-allowed':'text-ink-600 hover:text-ink-900'}">&lsaquo; Previous</button>
-        <span class="font-medium text-ink-700">Page ${tablePage} of ${totalPages}</span>
-        <button id="pg-next" class="text-xs font-semibold ${tablePage>=totalPages?'text-ink-300 cursor-not-allowed':'text-ink-600 hover:text-ink-900'}">Next &rsaquo;</button>
-      </div>
-    </div>
+    ${dsPagination({
+      page: tablePage,
+      totalPages,
+      totalItems: total,
+      perPage: PAGE_SIZE,
+      perPageOptions: [10, 25, 50],
+      label: 'aircraft',
+    })}
   </div>`;
 }
 
@@ -495,10 +497,10 @@ function wireInteractions() {
   });
   const atSel = document.getElementById('aircraft-table-tab-sel');
   if (atSel) atSel.onchange = () => { tableTab = atSel.value; tablePage = 1; render(); };
-  const prev = document.getElementById('pg-prev');
-  const next = document.getElementById('pg-next');
-  if (prev) prev.onclick = () => { if(tablePage>1){tablePage--;render();} };
-  if (next) next.onclick = () => { if(tablePage<Math.ceil(AIRCRAFT_TABLE.length/PAGE_SIZE)){tablePage++;render();} };
+  /* Pagination (DS-compliant) */
+  dsWirePagination(document.querySelector('.ds-pagination-wrap'), {
+    onPage: (p) => { tablePage = p; render(); },
+  });
   document.querySelectorAll('[data-seg]').forEach(b => b.onclick = () => {
     statsTab = b.getAttribute('data-seg');
     render();

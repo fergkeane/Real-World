@@ -72,6 +72,8 @@ window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 </script>
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="shared/chrome.js?v=11"></script>
+<link rel="stylesheet" href="shared/pagination.css" />
+<script src="shared/pagination.js"></script>
 <script>
 const SC = window.sharedChrome;
 
@@ -524,19 +526,14 @@ function CardAssets() {
         </tbody>
       </table>
     </div>
-    <div class="pg-row">
-      <span style="font-size:12px;color:#64748b;flex-shrink:0">Items per page:</span>
-      <div style="position:relative">
-        <select id="asset-per-page" style="appearance:none;-webkit-appearance:none;height:28px;padding:0 22px 0 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;color:#334155;background:#fff;cursor:pointer;font-family:inherit;outline:none">
-          ${[5,10,20].map(n=>`<option value="${n}" ${assetPerPage===n?'selected':''}>${n}</option>`).join('')}
-        </select>
-        <span style="position:absolute;right:4px;top:50%;transform:translateY(-50%);pointer-events:none;color:#64748b;display:flex">${IC.chevDown}</span>
-      </div>
-      <div style="flex:1"></div>
-      <button class="pgbtn" id="asset-prev" ${assetPage<=1?'disabled':''}>${IC.chevLeft}</button>
-      <span style="font-size:12px;font-weight:600;color:#334155;white-space:nowrap">Page ${assetPage} of ${totalPages}</span>
-      <button class="pgbtn" id="asset-next" ${assetPage>=totalPages?'disabled':''}>${IC.chevRight}</button>
-    </div>
+    ${dsPagination({
+      page: assetPage,
+      totalPages,
+      totalItems: total,
+      perPage: assetPerPage,
+      perPageOptions: [5, 10, 20],
+      label: 'assets',
+    })}
   </div>`;
 }
 
@@ -563,15 +560,11 @@ function wireInteractions() {
   }
   const filterSel = document.getElementById('asset-filter');
   if (filterSel) filterSel.onchange = () => { assetFilter = filterSel.value; assetPage = 1; rc(); };
-  const ppSel = document.getElementById('asset-per-page');
-  if (ppSel) ppSel.onchange = () => { assetPerPage = parseInt(ppSel.value); assetPage = 1; rc(); };
-  const prev = document.getElementById('asset-prev');
-  const next  = document.getElementById('asset-next');
-  if (prev) prev.onclick = () => { if (assetPage > 1) { assetPage--; rc(); } };
-  if (next) next.onclick = () => {
-    const tp = Math.max(1, Math.ceil(ALL_ASSETS.length / assetPerPage));
-    if (assetPage < tp) { assetPage++; rc(); }
-  };
+  /* Pagination (DS-compliant) */
+  dsWirePagination(document.querySelector('.ds-pagination-wrap'), {
+    onPage:    (p) => { assetPage = p; rc(); },
+    onPerPage: (n) => { assetPerPage = n; assetPage = 1; rc(); },
+  });
 }
 
 let _main = null;

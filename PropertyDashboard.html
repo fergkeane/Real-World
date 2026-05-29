@@ -64,10 +64,21 @@
   .leaflet-control-zoom a svg { width:16px; height:16px; }
   .map-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:#fff; border:1px solid #e2e8f0; border-radius:8px; color:#334155; box-shadow: 0 1px 2px rgb(15 23 42 / .08); }
   .map-btn:hover { background:#f1f5f9; }
-  .marker-icon { width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:2px solid #fff; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,.25); font-size:11px; font-weight:700; color:#fff; }
-  .marker-icon.is-blue { background:#2563eb; }
-  .marker-icon.is-orange { background:#ea580c; }
-  .marker-icon.is-pink { background:#ec4899; }
+  .marker-icon { position:relative; width:34px; height:34px; display:flex; align-items:center; justify-content:center; border:2px solid #fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.28); color:#fff; }
+  /* Risk pulse — small red dot on top-right corner of the marker for properties
+     flagged with an active weather/risk alert (see Southeast Financial Ctr). */
+  .marker-icon .marker-pulse{
+    position:absolute; top:-4px; right:-4px;
+    width:11px; height:11px; border-radius:50%;
+    background:#dc2626; border:2px solid #fff;
+    box-shadow:0 0 0 0 rgba(220,38,38,.7);
+    animation: marker-pulse 1.6s cubic-bezier(.66,0,0,1) infinite;
+  }
+  @keyframes marker-pulse{
+    0%   { box-shadow:0 0 0 0    rgba(220,38,38,.55); }
+    70%  { box-shadow:0 0 0 11px rgba(220,38,38,0);   }
+    100% { box-shadow:0 0 0 0    rgba(220,38,38,0);   }
+  }
   /* Property map popup */
   .prop-popup .leaflet-popup-content-wrapper { padding:0; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(15,23,42,.25); }
   .prop-popup .leaflet-popup-content { margin:0; width:280px !important; font-family:'Inter',sans-serif; }
@@ -113,7 +124,23 @@ let state = {
   regionTab: 'Regional Values $',
   weatherTab: 'Property Weather Risk',
   viewMode: 'Map',
+  propertyFilter: null, // initialised once PROPERTY_CATEGORIES is declared
 };
+
+/* Property categories — keys must match `cat` on each MAP_MARKERS row.
+   Mirrors VESSEL_TYPES on MarineDashboard so the filter menu reads the same. */
+const PROPERTY_CATEGORIES = [
+  { k:'Corporate & Office',       color:'#2563eb',
+    ico:`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M12 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg>` },
+  { k:'Industrial & Logistics',   color:'#ea580c',
+    ico:`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M17 18h1"/><path d="M12 18h1"/><path d="M7 18h1"/></svg>` },
+  { k:'Infrastructure & Energy',  color:'#16a34a',
+    ico:`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>` },
+  { k:'Retail & Hospitality',     color:'#ec4899',
+    ico:`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><line x1="2" y1="7" x2="22" y2="7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a3 3 0 0 0-3-3v0a3 3 0 0 0-3 3v4"/><path d="M2 7v3a2 2 0 0 0 2 2v0a2 2 0 0 0 2-2V7"/><path d="M6 7v3a2 2 0 0 0 2 2v0a2 2 0 0 0 2-2V7"/><path d="M10 7v3a2 2 0 0 0 2 2v0a2 2 0 0 0 2-2V7"/><path d="M14 7v3a2 2 0 0 0 2 2v0a2 2 0 0 0 2-2V7"/><path d="M18 7v3a2 2 0 0 0 2 2v0a2 2 0 0 0 2-2V7"/></svg>` },
+];
+const PROPERTY_CAT_BY_KEY = Object.fromEntries(PROPERTY_CATEGORIES.map(c => [c.k, c]));
+state.propertyFilter = new Set(PROPERTY_CATEGORIES.map(c => c.k));
 
 /* ----------- DATA ----------- */
 const PORTFOLIOS = window.__PROPERTY_PORTFOLIOS = [
@@ -146,25 +173,25 @@ const WEATHER_RISKS = [
 ];
 
 const MAP_MARKERS = [
-  { lat:40.758, lng:-73.985, type:'blue',   name:'Empire State Building',   cat:'Commercial',   location:'New York, USA',      value:'$2.1B', occupancy:'94%', size:'257,211 sq ft', risk:'Low',    riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-10-14' },
-  { lat:51.515, lng:-0.127,  type:'blue',   name:'22 Bishopsgate',          cat:'Commercial',   location:'London, UK',         value:'$1.4B', occupancy:'91%', size:'134,500 sq ft', risk:'Low',    riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-09-03' },
-  { lat:35.682, lng:139.759, type:'blue',   name:'Shinjuku Mitsui Building', cat:'Mixed Use',   location:'Tokyo, Japan',       value:'$980M', occupancy:'88%', size:'178,000 sq ft', risk:'Medium', riskColor:'#d97706', status:'Operational', statusColor:'#16a34a', inspection:'2024-11-01' },
-  { lat:25.204, lng:55.270,  type:'orange', name:'Burj Khalifa Offices',    cat:'Commercial',   location:'Dubai, UAE',         value:'$1.2B', occupancy:'76%', size:'210,000 sq ft', risk:'Low',    riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-08-22' },
-  { lat:1.290,  lng:103.851, type:'blue',   name:'Marina Bay Financial',    cat:'Commercial',   location:'Singapore',          value:'$1.7B', occupancy:'97%', size:'195,000 sq ft', risk:'Low',    riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-12-01' },
-  { lat:22.319, lng:114.169, type:'blue',   name:'IFC Two Hong Kong',       cat:'Commercial',   location:'Hong Kong',          value:'$2.3B', occupancy:'89%', size:'231,000 sq ft', risk:'Medium', riskColor:'#d97706', status:'Operational', statusColor:'#16a34a', inspection:'2024-07-18' },
-  { lat:50.110, lng:8.682,   type:'blue',   name:'TaunusTurm',              cat:'Commercial',   location:'Frankfurt, Germany', value:'$890M', occupancy:'92%', size:'96,000 sq ft',  risk:'Low',    riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-10-30' },
-  { lat:-33.865,lng:151.209, type:'blue',   name:'Barangaroo Tower',        cat:'Commercial',   location:'Sydney, Australia',  value:'$1.4B', occupancy:'85%', size:'143,000 sq ft', risk:'Low',    riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-09-15' },
-  { lat:37.387, lng:-122.057,type:'orange', name:'3 Infinite Loop',         cat:'Industrial',   location:'Silicon Valley, USA','value':'$3.1B', occupancy:'100%',size:'320,000 sq ft',risk:'Medium', riskColor:'#d97706', status:'Operational', statusColor:'#16a34a', inspection:'2024-11-20' },
-  { lat:48.892, lng:2.236,   type:'orange', name:'Tour First',              cat:'Commercial',   location:'Paris, France',      value:'$1.1B', occupancy:'83%', size:'108,000 sq ft', risk:'Low',    riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-06-10' },
-  { lat:34.052, lng:-118.243,type:'orange', name:'Wilshire Grand Center',   cat:'Mixed Use',    location:'Los Angeles, USA',   value:'$780M', occupancy:'79%', size:'173,000 sq ft', risk:'High',   riskColor:'#dc2626', status:'Under Review', statusColor:'#d97706', inspection:'2024-05-30' },
-  { lat:41.878, lng:-87.629, type:'blue',   name:'Willis Tower',            cat:'Commercial',   location:'Chicago, USA',       value:'$1.5B', occupancy:'88%', size:'418,000 sq ft', risk:'Low',    riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-10-05' },
-  { lat:30.267, lng:-97.743, type:'orange', name:'Frost Bank Tower',        cat:'Commercial',   location:'Austin, USA',        value:'$420M', occupancy:'71%', size:'56,000 sq ft',  risk:'Medium', riskColor:'#d97706', status:'Operational', statusColor:'#16a34a', inspection:'2024-08-14' },
-  { lat:29.760, lng:-95.369, type:'blue',   name:'JPMorgan Chase Tower',    cat:'Commercial',   location:'Houston, USA',       value:'$610M', occupancy:'82%', size:'128,000 sq ft', risk:'Medium', riskColor:'#d97706', status:'Operational', statusColor:'#16a34a', inspection:'2024-09-28' },
-  { lat:33.448, lng:-112.074,type:'blue',   name:'Chase Tower Phoenix',     cat:'Commercial',   location:'Phoenix, USA',       value:'$310M', occupancy:'76%', size:'47,000 sq ft',  risk:'Low',    riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-11-11' },
-  { lat:39.739, lng:-104.990,type:'blue',   name:'1670 Broadway',           cat:'Commercial',   location:'Denver, USA',        value:'$290M', occupancy:'80%', size:'38,000 sq ft',  risk:'Low',    riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-07-22' },
-  { lat:47.606, lng:-122.332,type:'blue',   name:'Columbia Center',         cat:'Commercial',   location:'Seattle, USA',       value:'$820M', occupancy:'91%', size:'154,000 sq ft', risk:'Medium', riskColor:'#d97706', status:'Operational', statusColor:'#16a34a', inspection:'2024-10-18' },
-  { lat:25.761, lng:-80.191, type:'blue',   name:'Southeast Financial Ctr', cat:'Commercial',   location:'Miami, USA',         value:'$510M', occupancy:'84%', size:'92,000 sq ft',  risk:'High',   riskColor:'#dc2626', status:'Under Review', statusColor:'#d97706', inspection:'2024-06-05' },
-  { lat:-33.918,lng:18.423,  type:'pink',   name:'Portside Towers',         cat:'Residential',  location:'Cape Town, S. Africa','value':'$340M', occupancy:'93%',size:'62,000 sq ft', risk:'Low',   riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-08-30' },
+  { lat:40.758, lng:-73.985, type:'blue',   name:'Empire State Building',   cat:'Corporate & Office',      location:'New York, USA',      value:'$2.1B', occupancy:'94%', size:'257,211 sq ft', risk:'Low',    riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-10-14' },
+  { lat:51.515, lng:-0.127,  type:'blue',   name:'22 Bishopsgate',          cat:'Corporate & Office',      location:'London, UK',         value:'$1.4B', occupancy:'91%', size:'134,500 sq ft', risk:'Low',    riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-09-03' },
+  { lat:35.682, lng:139.759, type:'blue',   name:'Shinjuku Mitsui Building', cat:'Corporate & Office',     location:'Tokyo, Japan',       value:'$980M', occupancy:'88%', size:'178,000 sq ft', risk:'Medium', riskColor:'#d97706', status:'Operational', statusColor:'#16a34a', inspection:'2024-11-01' },
+  { lat:25.204, lng:55.270,  type:'orange', name:'Burj Khalifa Offices',    cat:'Retail & Hospitality',    location:'Dubai, UAE',         value:'$1.2B', occupancy:'76%', size:'210,000 sq ft', risk:'Low',    riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-08-22' },
+  { lat:1.290,  lng:103.851, type:'blue',   name:'Marina Bay Financial',    cat:'Corporate & Office',      location:'Singapore',          value:'$1.7B', occupancy:'97%', size:'195,000 sq ft', risk:'Low',    riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-12-01' },
+  { lat:22.319, lng:114.169, type:'blue',   name:'IFC Two Hong Kong',       cat:'Corporate & Office',      location:'Hong Kong',          value:'$2.3B', occupancy:'89%', size:'231,000 sq ft', risk:'Medium', riskColor:'#d97706', status:'Operational', statusColor:'#16a34a', inspection:'2024-07-18' },
+  { lat:50.110, lng:8.682,   type:'blue',   name:'TaunusTurm',              cat:'Corporate & Office',      location:'Frankfurt, Germany', value:'$890M', occupancy:'92%', size:'96,000 sq ft',  risk:'Low',    riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-10-30' },
+  { lat:-33.865,lng:151.209, type:'blue',   name:'Barangaroo Tower',        cat:'Corporate & Office',      location:'Sydney, Australia',  value:'$1.4B', occupancy:'85%', size:'143,000 sq ft', risk:'Low',    riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-09-15' },
+  { lat:37.387, lng:-122.057,type:'orange', name:'3 Infinite Loop',         cat:'Industrial & Logistics',  location:'Silicon Valley, USA','value':'$3.1B', occupancy:'100%',size:'320,000 sq ft',risk:'Medium', riskColor:'#d97706', status:'Operational', statusColor:'#16a34a', inspection:'2024-11-20' },
+  { lat:48.892, lng:2.236,   type:'orange', name:'Tour First',              cat:'Corporate & Office',      location:'Paris, France',      value:'$1.1B', occupancy:'83%', size:'108,000 sq ft', risk:'Low',    riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-06-10' },
+  { lat:34.052, lng:-118.243,type:'orange', name:'Wilshire Grand Center',   cat:'Retail & Hospitality',    location:'Los Angeles, USA',   value:'$780M', occupancy:'79%', size:'173,000 sq ft', risk:'High',   riskColor:'#dc2626', status:'Under Review', statusColor:'#d97706', inspection:'2024-05-30' },
+  { lat:41.878, lng:-87.629, type:'blue',   name:'Willis Tower',            cat:'Corporate & Office',      location:'Chicago, USA',       value:'$1.5B', occupancy:'88%', size:'418,000 sq ft', risk:'Low',    riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-10-05' },
+  { lat:30.267, lng:-97.743, type:'orange', name:'Frost Bank Tower',        cat:'Corporate & Office',      location:'Austin, USA',        value:'$420M', occupancy:'71%', size:'56,000 sq ft',  risk:'Medium', riskColor:'#d97706', status:'Operational', statusColor:'#16a34a', inspection:'2024-08-14' },
+  { lat:29.760, lng:-95.369, type:'blue',   name:'JPMorgan Chase Tower',    cat:'Corporate & Office',      location:'Houston, USA',       value:'$610M', occupancy:'82%', size:'128,000 sq ft', risk:'Medium', riskColor:'#d97706', status:'Operational', statusColor:'#16a34a', inspection:'2024-09-28' },
+  { lat:33.448, lng:-112.074,type:'blue',   name:'Chase Tower Phoenix',     cat:'Infrastructure & Energy', location:'Phoenix, USA',       value:'$310M', occupancy:'76%', size:'47,000 sq ft',  risk:'Low',    riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-11-11' },
+  { lat:39.739, lng:-104.990,type:'blue',   name:'1670 Broadway',           cat:'Retail & Hospitality',    location:'Denver, USA',        value:'$290M', occupancy:'80%', size:'38,000 sq ft',  risk:'Low',    riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-07-22' },
+  { lat:47.606, lng:-122.332,type:'blue',   name:'Columbia Center',         cat:'Infrastructure & Energy', location:'Seattle, USA',       value:'$820M', occupancy:'91%', size:'154,000 sq ft', risk:'Medium', riskColor:'#d97706', status:'Operational', statusColor:'#16a34a', inspection:'2024-10-18' },
+  { lat:25.761, lng:-80.191, type:'blue',   name:'Southeast Financial Ctr', cat:'Industrial & Logistics',  location:'Miami, USA',         value:'$510M', occupancy:'84%', size:'92,000 sq ft',  risk:'High',   riskColor:'#dc2626', status:'Under Review', statusColor:'#d97706', inspection:'2024-06-05' },
+  { lat:-33.918,lng:18.423,  type:'pink',   name:'Portside Towers',         cat:'Retail & Hospitality',    location:'Cape Town, S. Africa','value':'$340M', occupancy:'93%',size:'62,000 sq ft', risk:'Low',   riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-08-30' },
 ];
 
 /* ----------- HELPERS ----------- */
@@ -368,18 +395,26 @@ function initMap() {
 
   const buildingIco = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>`;
   window.__propMarkers = MAP_MARKERS;
+  const propLeafletMarkers = []; // parallel array → used by the filter menu
+  // Properties with an active weather/risk alert show a pulsing red dot on
+  // their map marker. Add new entries here to flag additional properties.
+  const ALERT_PROPERTIES = new Set(['Southeast Financial Ctr', '1670 Broadway']);
   MAP_MARKERS.forEach((m, idx) => {
-    const colorClass = m.type === 'orange' ? 'is-orange' : m.type === 'pink' ? 'is-pink' : 'is-blue';
+    const cat = PROPERTY_CAT_BY_KEY[m.cat] || PROPERTY_CATEGORIES[0];
+    const pulse = ALERT_PROPERTIES.has(m.name) ? `<span class="marker-pulse" title="Active risk alert"></span>` : '';
     const icon = L.divIcon({
       className: '',
-      html: `<div class="marker-icon ${colorClass}">${buildingIco}</div>`,
-      iconSize: [32, 32],
-      iconAnchor: [16, 16],
+      html: `<div class="marker-icon" style="background:${cat.color}">${cat.ico}${pulse}</div>`,
+      iconSize: [34, 34],
+      iconAnchor: [17, 17],
     });
-    L.marker([m.lat, m.lng], { icon })
+    const marker = L.marker([m.lat, m.lng], { icon })
       .bindPopup(buildPropertyPopupHTML(m, idx), { className:'prop-popup', maxWidth:280, minWidth:280, closeButton:true, autoPanPadding:[30,30] })
       .addTo(map);
+    marker._propCat = m.cat;
+    propLeafletMarkers.push(marker);
   });
+  window.__propLeafletMarkers = propLeafletMarkers;
 
   // Custom zoom controls
   const zin = document.querySelector('.leaflet-control-zoom-in');
@@ -406,13 +441,53 @@ function initMap() {
   // Map type selector
   const layersBtn = document.getElementById('map-layers-btn');
   const layersMenu = document.getElementById('map-layers-menu');
+  const filtersBtn  = document.getElementById('map-filters-btn');
+  const filtersMenu = document.getElementById('map-filters-menu');
   if (layersBtn && layersMenu) {
-    layersBtn.onclick = (e) => { e.stopPropagation(); layersMenu.classList.toggle('hidden'); };
+    layersBtn.onclick = (e) => { e.stopPropagation(); layersMenu.classList.toggle('hidden'); filtersMenu && filtersMenu.classList.add('hidden'); };
     layersMenu.querySelectorAll('[data-map-type]').forEach(opt => {
       opt.onclick = (e) => { e.stopPropagation(); setMapType(opt.dataset.mapType); layersMenu.classList.add('hidden'); };
     });
-    document.addEventListener('click', () => layersMenu.classList.add('hidden'));
   }
+
+  // Property category filter
+  if (filtersBtn && filtersMenu) {
+    const applyPropertyFilter = () => {
+      propLeafletMarkers.forEach(m => {
+        const show = state.propertyFilter.has(m._propCat);
+        if (show && !map.hasLayer(m)) m.addTo(map);
+        if (!show && map.hasLayer(m)) map.removeLayer(m);
+      });
+    };
+    const syncFilterUI = () => {
+      filtersMenu.querySelectorAll('.pf-row').forEach(row => {
+        row.querySelector('.pf-cb').checked = state.propertyFilter.has(row.dataset.pcat);
+      });
+    };
+    filtersBtn.onclick = (e) => {
+      e.stopPropagation();
+      filtersMenu.classList.toggle('hidden');
+      layersMenu && layersMenu.classList.add('hidden');
+    };
+    filtersMenu.querySelectorAll('.pf-row').forEach(row => {
+      row.onclick = (e) => {
+        e.stopPropagation();
+        const c = row.dataset.pcat;
+        if (state.propertyFilter.has(c)) state.propertyFilter.delete(c); else state.propertyFilter.add(c);
+        syncFilterUI(); applyPropertyFilter();
+      };
+    });
+    const allBtn  = document.getElementById('pf-all');
+    const noneBtn = document.getElementById('pf-none');
+    if (allBtn)  allBtn.onclick  = (e) => { e.stopPropagation(); state.propertyFilter = new Set(PROPERTY_CATEGORIES.map(c=>c.k)); syncFilterUI(); applyPropertyFilter(); };
+    if (noneBtn) noneBtn.onclick = (e) => { e.stopPropagation(); state.propertyFilter = new Set();                                  syncFilterUI(); applyPropertyFilter(); };
+  }
+
+  // Close map popovers when clicking outside
+  document.addEventListener('click', (e) => {
+    if (layersMenu  && !layersMenu.contains(e.target)  && e.target !== layersBtn  && !(layersBtn  && layersBtn.contains(e.target)))  layersMenu.classList.add('hidden');
+    if (filtersMenu && !filtersMenu.contains(e.target) && e.target !== filtersBtn && !(filtersBtn && filtersBtn.contains(e.target))) filtersMenu.classList.add('hidden');
+  });
   setMapType('satellite');
 }
 
@@ -452,6 +527,29 @@ function Content() {
                   <span data-label>${o.label}</span>
                   <span class="text-brand-600 opacity-0" data-check>${Ico.check}</span>
                 </button>`).join('')}
+            </div>
+          </div>
+          <div class="relative">
+            <button id="map-filters-btn" class="map-btn" title="Filter properties">${Ico.filter}</button>
+            <div id="map-filters-menu" class="hidden absolute top-0 right-[calc(100%+8px)] w-[240px] bg-white border border-ink-200 rounded-xl shadow-card-hover overflow-hidden flex flex-col" style="max-height:420px;">
+              <div class="px-3 py-2.5 border-b border-ink-200 flex items-center justify-between">
+                <div class="text-sm font-bold text-ink-800">Filter Properties</div>
+                <div class="flex items-center gap-1">
+                  <button id="pf-all"  class="h-6 px-2 rounded-md border border-ink-200 text-[11px] font-semibold text-ink-700 hover:bg-ink-50">All</button>
+                  <button id="pf-none" class="h-6 px-2 rounded-md border border-ink-200 text-[11px] font-semibold text-ink-700 hover:bg-ink-50">None</button>
+                </div>
+              </div>
+              <div class="px-3 py-2 bg-ink-50 border-b border-ink-200 text-[11px] font-semibold uppercase tracking-micro text-ink-600">Property Type</div>
+              <div class="overflow-y-auto scroll-thin py-1">
+                ${PROPERTY_CATEGORIES.map(c => `
+                  <div class="pf-row flex items-center gap-2.5 px-3 py-1.5 cursor-pointer hover:bg-ink-50" data-pcat="${c.k}">
+                    <input type="checkbox" class="pf-cb h-4 w-4 rounded border-ink-300 accent-brand-600 pointer-events-none" checked />
+                    <span class="inline-flex items-center justify-center rounded-md" style="width:22px;height:22px;background:${c.color};color:#fff;flex-shrink:0">
+                      ${c.ico.replace('width="16" height="16"','width="13" height="13"')}
+                    </span>
+                    <span class="text-[13px] text-ink-700">${c.k}</span>
+                  </div>`).join('')}
+              </div>
             </div>
           </div>
         </div>

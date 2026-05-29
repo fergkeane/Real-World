@@ -22,6 +22,27 @@ try {
   (document.head || document.documentElement).appendChild(s);
 })();
 
+/* Contain Leaflet's internal stacking context so its panes (z-400) and
+   controls don't bleed above the sticky topbar (z-30) or the mobile
+   sidebar drawer (z-2000). isolation:isolate creates a new stacking
+   context that traps every descendant z-index inside the map card. */
+(function injectLeafletStackingFix() {
+  if (document.getElementById('rw-leaflet-stack')) return;
+  const s = document.createElement('style');
+  s.id = 'rw-leaflet-stack';
+  s.textContent = `
+    .leaflet-container{isolation:isolate;z-index:0}
+    /* Defensive: in case a parent of the map sets z-index, keep header above */
+    header.sticky{z-index:50}
+    #sidebar{z-index:60}
+    @media(max-width:768px){
+      #sidebar{z-index:2000}
+      #sidebar-backdrop{z-index:1999}
+    }
+  `;
+  (document.head || document.documentElement).appendChild(s);
+})();
+
 /* ------------------ SHARED CHROME (sidebar, topbar, tweaks, icons) ------------------ */
 /* Expects: window.PAGE = { id, title, crumb } set before this script loads */
 

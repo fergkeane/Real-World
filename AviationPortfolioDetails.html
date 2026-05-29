@@ -88,6 +88,8 @@ window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="shared/chrome.js?v=11"></script>
+<link rel="stylesheet" href="shared/pagination.css" />
+<script src="shared/pagination.js"></script>
 <script src="shared/aviation-map.js"></script>
 <script>
 const SC = window.sharedChrome;
@@ -115,14 +117,15 @@ const PF = (() => { try { const r = sessionStorage.getItem('selectedAviationPort
 let summaryTab  = 'Summary Statistics';
 let policyView  = 'details';
 let policyPage  = 1;
-const PER_PAGE  = 25;
-const TOTAL     = 520;
+let policyPerPage = 10;
+const TOTAL     = 20;
+const POLICY_LIMITS_TOTAL = 20;
 
 /* ── Generate policy rows ── */
 function genPolicies() {
   const refs   = ['Butler-03','Butler-04','Butler-05','Butler-06','Butler-07','Butler-08','Butler-09','Butler-10','Hughes-01','Hughes-02','Avery-01','Avery-02','Kent-03','Kent-05'];
   const rows = [];
-  for (let i = 0; i < PER_PAGE; i++) {
+  for (let i = 0; i < TOTAL; i++) {
     const id   = 157014758 + i;
     const tiv  = (27.5 + i * 1.4).toFixed(1);
     const hull = (25.0 + i * 1.2).toFixed(1);
@@ -147,6 +150,64 @@ function genPolicies() {
   return rows;
 }
 const POLICIES = genPolicies();
+
+/* ── List view: per-aircraft policy rows (matches reference screenshot) ── */
+const LIMIT_POLICIES = [
+  { hdr:'30186667', name:'Policy Limit',                          type:'EEL', value:'$300.0M', peril:'Aviation/War, Confiscation', covIds:'HULLW, TLOHW', cov:'Hull War (All Risk - War & Allied...', port:'Commercial Aviation' },
+  { hdr:'30186688', name:'Confiscation Annual Agg - Air Fra...',  type:'AOE', value:'$300.0M', peril:'Confiscation',                covIds:'HULLW, TLOHW', cov:'Hull War (All Risk - War & Allied...', port:'Commercial Aviation' },
+  { hdr:'30186689', name:'Confiscation Annual Agg - Transat...',  type:'AOE', value:'$100.0M', peril:'Confiscation',                covIds:'HULLW, TLOHW', cov:'Hull War (All Risk - War & Allied...', port:'Commercial Aviation' },
+  { hdr:'30186690', name:'Confiscation Annual Agg - HOP',         type:'AOE', value:'$50.0M',  peril:'Confiscation',                covIds:'HULLW, TLOHW', cov:'Hull War (All Risk - War & Allied...', port:'Commercial Aviation' },
+  { hdr:'30186691', name:'Confiscation Annual Agg - KLM C...',    type:'AOE', value:'$300.0M', peril:'Confiscation',                covIds:'HULLW, TLOHW', cov:'Hull War (All Risk - War & Allied...', port:'Commercial Aviation' },
+  { hdr:'30186692', name:'Confiscation Annual Agg - KLM C...',    type:'AOE', value:'$75.0M',  peril:'Confiscation',                covIds:'HULLW, TLOHW', cov:'Hull War (All Risk - War & Allied...', port:'Commercial Aviation' },
+  { hdr:'30186693', name:'Confiscation Annual Agg - Transat...',  type:'AOE', value:'$100.0M', peril:'Confiscation',                covIds:'HULLW, TLOHW', cov:'Hull War (All Risk - War & Allied...', port:'Commercial Aviation' },
+  { hdr:'30186694', name:'Confiscation Annual Agg - Martin...',   type:'AOE', value:'$2.0M',   peril:'Confiscation',                covIds:'HULLW, TLOHW', cov:'Hull War (All Risk - War & Allied...', port:'Commercial Aviation' },
+  { hdr:'30186695', name:'Annual Agg Limit - Martinair',          type:'AOE', value:'$57.0M',  peril:'Aviation/War',                covIds:'HULLW, TLOHW', cov:'Hull War (All Risk - War & Allied...', port:'Commercial Aviation' },
+];
+
+const LIST_POLICIES = [
+  { id:'157014758', asset:'Boeing 737-800',   seating:{first:0,  business:20, economy:150}, ref:'Butler-03', item:'Item 001', start:'01/01/2024', end:'31/12/2024', line:'100%', model:'B737-800',   airline:'Air France',    cc:'fr', reg:'F-GZHC', hex:'3946EF', year:2010, hull:'$27.5M', type:'Commercial Jet', lessor:'GECAS',          base:'Paris CDG' },
+  { id:'157014759', asset:'Airbus A320neo',   seating:{first:0,  business:16, economy:168}, ref:'Butler-07', item:'Item 002', start:'01/01/2024', end:'31/12/2024', line:'85%',  model:'A320-271N', airline:'Transavia',     cc:'nl', reg:'PH-HZN', hex:'484F75', year:2018, hull:'$41.4M', type:'Commercial Jet', lessor:'AerCap',         base:'Amsterdam AMS' },
+  { id:'157014760', asset:'Boeing 777-300ER', seating:{first:8,  business:48, economy:218}, ref:'Butler-03', item:'Item 003', start:'01/01/2024', end:'31/12/2024', line:'100%', model:'B777-328ER',airline:'Air France',    cc:'fr', reg:'F-GSQI', hex:'3951D7', year:2012, hull:'$58.3M', type:'Wide Body',      lessor:'BBAM',           base:'Paris CDG' },
+  { id:'157014761', asset:'Airbus A350-900',  seating:{first:12, business:34, economy:266}, ref:'Butler-04', item:'Item 004', start:'01/01/2024', end:'31/12/2024', line:'100%', model:'A350-941',  airline:'Air France',    cc:'fr', reg:'F-HTYA', hex:'39AA0B', year:2019, hull:'$59.2M', type:'Wide Body',      lessor:'N/A',            base:'Paris CDG' },
+  { id:'157014762', asset:'Boeing 787-9',     seating:{first:6,  business:30, economy:246}, ref:'Butler-05', item:'Item 005', start:'01/01/2024', end:'31/12/2024', line:'75%',  model:'B787-9',    airline:'KLM',           cc:'nl', reg:'PH-BHA', hex:'4842A0', year:2016, hull:'$62.8M', type:'Wide Body',      lessor:'BOC Aviation',   base:'Amsterdam AMS' },
+  { id:'157014763', asset:'Airbus A330-300',  seating:{first:6,  business:28, economy:250}, ref:'Butler-06', item:'Item 006', start:'01/01/2024', end:'31/12/2024', line:'100%', model:'A330-323',  airline:'Air France',    cc:'fr', reg:'F-GZCH', hex:'39A80B', year:2009, hull:'$48.5M', type:'Wide Body',      lessor:'SMBC Aviation',  base:'Paris CDG' },
+  { id:'157014764', asset:'Boeing 737 MAX 8', seating:{first:0,  business:12, economy:174}, ref:'Butler-08', item:'Item 007', start:'01/01/2024', end:'31/12/2024', line:'90%',  model:'B737-8',    airline:'Transavia',     cc:'nl', reg:'PH-HXA', hex:'484F9D', year:2021, hull:'$52.7M', type:'Commercial Jet', lessor:'Air Lease Corp', base:'Amsterdam AMS' },
+  { id:'157014765', asset:'Embraer E195-E2',  seating:{first:0,  business:0,  economy:132}, ref:'Butler-09', item:'Item 008', start:'01/01/2024', end:'31/12/2024', line:'100%', model:'E195-E2',   airline:'HOP!',          cc:'fr', reg:'F-HBLE', hex:'394C22', year:2020, hull:'$38.9M', type:'Regional Jet',   lessor:'N/A',            base:'Lyon LYS' },
+  { id:'157014766', asset:'Airbus A220-300',  seating:{first:0,  business:12, economy:135}, ref:'Butler-10', item:'Item 009', start:'01/01/2024', end:'31/12/2024', line:'80%',  model:'A220-371',  airline:'Air France',    cc:'fr', reg:'F-HZUA', hex:'39B1E8', year:2021, hull:'$45.3M', type:'Commercial Jet', lessor:'Jackson Square', base:'Paris ORY' },
+  { id:'157014767', asset:'Boeing 747-400F',  seating:{first:0,  business:0,  economy:0  }, ref:'Butler-10', item:'Item 010', start:'01/01/2024', end:'31/12/2024', line:'100%', model:'B747-4HAF', airline:'Martinair Cargo', cc:'nl', reg:'PH-MPQ', hex:'484234', year:2003, hull:'$55.0M', type:'Freighter',      lessor:'N/A',            base:'Amsterdam AMS' },
+];
+
+/* Pad both arrays to 20 rows for pagination demos. */
+(function () {
+  if (typeof LIST_POLICIES !== 'undefined') {
+    const base = LIST_POLICIES.slice();
+    let i = 0;
+    while (LIST_POLICIES.length < 20) {
+      const src = base[i % base.length];
+      const seq = LIST_POLICIES.length + 1;
+      LIST_POLICIES.push({
+        ...src,
+        id:  String(parseInt(src.id, 10) + 100 + LIST_POLICIES.length),
+        ref: src.ref,
+        item: 'Item 0' + (seq < 10 ? '0' + seq : seq),
+      });
+      i++;
+    }
+  }
+  if (typeof LIMIT_POLICIES !== 'undefined') {
+    const base = LIMIT_POLICIES.slice();
+    let i = 0;
+    while (LIMIT_POLICIES.length < 20) {
+      const src = base[i % base.length];
+      LIMIT_POLICIES.push({
+        ...src,
+        hdr: String(parseInt(src.hdr, 10) + 100 + LIMIT_POLICIES.length),
+      });
+      i++;
+    }
+  }
+})();
+
 
 /* ── Sort icon ── */
 function sortIcon() {
@@ -220,7 +281,7 @@ function PanelTotals() {
     ['Total loss only hull war exposure:',   '$91.4M'],
   ];
   return `
-  <div class="bg-white rounded-xl border border-ink-200" style="box-shadow:0 1px 2px rgba(15,23,42,.06);display:flex;flex-direction:column;height:100%;">
+  <div class="bg-white rounded-xl border border-ink-200 overflow-hidden" style="box-shadow:0 1px 2px rgba(15,23,42,.06);display:flex;flex-direction:column;height:100%;">
     <div class="px-4 pt-4 pb-2 border-b border-ink-100 shrink-0">
       <div class="text-sm font-bold text-ink-900">Totals</div>
     </div>
@@ -235,12 +296,7 @@ function PanelTotals() {
 }
 
 /* ── Panel: Summary Statistics ── */
-function PanelSummary() {
-  const planeIco   = lico('Plane',      22, '#2563eb', 1.5);
-  const dollarIco  = lico('DollarSign', 22, '#2563eb', 1.5);
-  const trendIco   = lico('TrendingUp', 22, '#2563eb', 1.5);
-  const depIco     = lico('Navigation', 22, '#2563eb', 1.5);
-
+function PanelSummaryContent() {
   const fleet = [
     { cc:'fr', name:'Air France',              count:224, pct:42.3 },
     { cc:'fr', name:'Air France Hop',           count:48,  pct:9.1  },
@@ -258,27 +314,7 @@ function PanelSummary() {
     { cc:'ke', name:'Kenya Airways',      pct:'7.62%' },
     { cc:'ma', name:'Royal Air Maroc',    pct:'1.23%' },
   ];
-
   return `
-  <div class="bg-white rounded-xl border border-ink-200" style="box-shadow:0 1px 2px rgba(15,23,42,.06);display:flex;flex-direction:column;height:100%;">
-    <!-- Tab bar -->
-    <div class="px-4 pt-3 pb-0 border-b border-ink-100 flex items-center gap-3">
-      <div class="ds-tabs" id="summary-tabs">
-        <span class="ds-tab-pill is-init" data-tab-pill></span>
-        <button class="ds-tab" aria-selected="${summaryTab==='Summary Statistics'}" data-stab="Summary Statistics">
-          <span class="ds-tab-label">
-            ${lico('Plane', 13)}
-            Summary Statistics
-          </span>
-        </button>
-        <button class="ds-tab" aria-selected="${summaryTab==='Destinations'}" data-stab="Destinations">
-          <span class="ds-tab-label">
-            ${lico('Map', 13)}
-            Destinations
-          </span>
-        </button>
-      </div>
-    </div>
     <!-- Stat boxes -->
     <div class="px-3 pt-3 pb-3 border-b border-ink-100">
       <div class="stat-cards-row" style="background:#eff6ff;border:1px solid #dbeafe;border-radius:8px;overflow:hidden;display:flex;">
@@ -302,8 +338,8 @@ function PanelSummary() {
     </div>
     <!-- Fleet Breakdown -->
     <div class="px-4 py-3 border-b border-ink-100">
-      <div class="text-xs font-semibold text-ink-700 mb-2">Fleet Breakdown:</div>
-      <div class="flex flex-wrap gap-x-4 gap-y-1.5">
+      <div class="text-xs font-semibold text-ink-700 mb-2 text-center">Fleet Breakdown:</div>
+      <div class="flex flex-wrap justify-center gap-x-4 gap-y-1.5">
         ${fleet.map(f => `
           <span class="flex items-center gap-1.5 text-xs text-ink-700">
             ${flag(f.cc)} <span class="font-medium">${f.name}:</span> <span class="tabular-nums">${f.count}</span> <span class="text-ink-400">(${f.pct}%)</span>
@@ -312,20 +348,81 @@ function PanelSummary() {
     </div>
     <!-- Minority Shareholdings -->
     <div class="px-4 py-3">
-      <div class="text-xs font-semibold text-ink-700 mb-2">Minority Shareholdings:</div>
-      <div class="flex flex-wrap gap-x-4 gap-y-1.5">
+      <div class="text-xs font-semibold text-ink-700 mb-2 text-center">Minority Shareholdings:</div>
+      <div class="flex flex-wrap justify-center gap-x-4 gap-y-1.5">
         ${minority.map(m => `
           <span class="flex items-center gap-1.5 text-xs text-ink-700">
             ${flag(m.cc)} <span class="font-medium">${m.name}:</span> <span class="tabular-nums text-ink-500">${m.pct}</span>
           </span>`).join('')}
       </div>
+    </div>`;
+}
+
+function PanelDestinationsContent() {
+  const dests = [
+    { cc:'fr', country:'France',               code:'CDG', name:'Charles De Gaulle',  no:'2,156' },
+    { cc:'nl', country:'Netherlands',          code:'AMS', name:'Amsterdam Schiphol', no:'1,856' },
+    { cc:'gb', country:'United Kingdom',       code:'LHR', name:'London Heathrow',    no:'1,534' },
+    { cc:'ae', country:'United Arab Emirates', code:'DXB', name:'Dubai International',no:'1,287' },
+    { cc:'sg', country:'Singapore',            code:'SIN', name:'Singapore Changi',   no:'982'   },
+  ];
+  return `
+    <div class="flex-1 min-h-0 overflow-y-auto scroll-thin">
+      <div class="px-4 pt-3 pb-2 text-xs text-ink-500">Top Destinations 2025</div>
+      <table class="w-full" style="border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding:8px 16px;font-size:12px;font-weight:600;color:#334155;border-bottom:1px solid #e2e8f0;border-top:1px solid #f1f5f9;">Country</th>
+            <th style="text-align:left;padding:8px 16px;font-size:12px;font-weight:600;color:#334155;border-bottom:1px solid #e2e8f0;border-top:1px solid #f1f5f9;">Airport</th>
+            <th style="text-align:right;padding:8px 16px;font-size:12px;font-weight:600;color:#334155;border-bottom:1px solid #e2e8f0;border-top:1px solid #f1f5f9;">No.</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${dests.map((d,i) => `
+            <tr>
+              <td style="padding:10px 16px;font-size:13px;color:#0f172a;border-bottom:${i===dests.length-1?'0':'1px solid #f1f5f9'};">
+                <span style="display:inline-flex;align-items:center;gap:8px;">${flag(d.cc, 20, 14)} ${d.country}</span>
+              </td>
+              <td style="padding:10px 16px;font-size:13px;color:#334155;border-bottom:${i===dests.length-1?'0':'1px solid #f1f5f9'};">
+                <span style="color:#2563eb;font-weight:600;">${d.code}</span> <span style="color:#64748b;">- ${d.name}</span>
+              </td>
+              <td style="padding:10px 16px;font-size:13px;color:#0f172a;text-align:right;font-variant-numeric:tabular-nums;border-bottom:${i===dests.length-1?'0':'1px solid #f1f5f9'};">${d.no}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function PanelSummary() {
+  const isDestinations = summaryTab === 'Destinations';
+
+  return `
+  <div class="bg-white rounded-xl border border-ink-200 overflow-hidden" style="box-shadow:0 1px 2px rgba(15,23,42,.06);display:flex;flex-direction:column;height:100%;">
+    <!-- Tab bar -->
+    <div class="px-4 pt-3 pb-3 border-b border-ink-100 flex items-center gap-3">
+      <div class="ds-tabs" id="summary-tabs">
+        <span class="ds-tab-pill is-init" data-tab-pill></span>
+        <button class="ds-tab" aria-selected="${summaryTab==='Summary Statistics'}" data-stab="Summary Statistics">
+          <span class="ds-tab-label">
+            ${lico('Plane', 13)}
+            Summary Statistics
+          </span>
+        </button>
+        <button class="ds-tab" aria-selected="${summaryTab==='Destinations'}" data-stab="Destinations">
+          <span class="ds-tab-label">
+            ${lico('Map', 13)}
+            Destinations
+          </span>
+        </button>
+      </div>
     </div>
+    ${isDestinations ? PanelDestinationsContent() : PanelSummaryContent()}
   </div>`;
 }
 
 /* ── Policy Section ── */
 function PolicySection() {
-  const totalPages = Math.ceil(TOTAL / PER_PAGE);
+  const totalPages = Math.ceil(TOTAL / policyPerPage);
 
   return `
   <div class="bg-white rounded-xl border border-ink-200" style="box-shadow:0 1px 2px rgba(15,23,42,.06);overflow:hidden;">
@@ -384,6 +481,112 @@ function PolicySection() {
         </div>
       </div>
     </div>
+    ` : policyView === 'limits' ? `
+    <!-- Policy Limits view -->
+    <div class="overflow-x-auto scroll-thin">
+      <table class="pol-table" style="min-width:1400px;">
+        <thead>
+          <tr>
+            <th class="sortable">Limit Header Id ${sortIcon()}</th>
+            <th class="sortable">Name ${sortIcon()}</th>
+            <th class="sortable">Limit Type Id ${sortIcon()}</th>
+            <th class="sortable">Limit Value ${sortIcon()}</th>
+            <th class="sortable">Peril Id ${sortIcon()}</th>
+            <th class="sortable">Aviation Coverage IDs ${sortIcon()}</th>
+            <th class="sortable">Aviation Coverage ${sortIcon()}</th>
+            <th class="sortable">AVPORTFOLIO ${sortIcon()}</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${LIMIT_POLICIES.slice((policyPage-1)*policyPerPage, policyPage*policyPerPage).map(l => `
+            <tr>
+              <td><a href="#" style="color:var(--brand-600,#2563eb);font-weight:600;text-decoration:none;">${l.hdr}</a></td>
+              <td>${l.name}</td>
+              <td>${l.type}</td>
+              <td class="tabular-nums">${l.value}</td>
+              <td>${l.peril}</td>
+              <td style="color:var(--brand-600,#2563eb);">${l.covIds}</td>
+              <td style="color:var(--brand-600,#2563eb);">${l.cov}</td>
+              <td style="color:var(--brand-600,#2563eb);">${l.port}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    ${dsPagination({
+      page: policyPage, totalPages: Math.ceil(LIMIT_POLICIES.length / policyPerPage),
+      totalItems: LIMIT_POLICIES.length, perPage: policyPerPage,
+      perPageOptions: [10, 25, 50],
+      label: 'limits',
+    })}
+    ` : policyView === 'list' ? `
+    <!-- List view: per-aircraft policy table -->
+    <div class="overflow-x-auto scroll-thin">
+      <table class="pol-table" style="min-width:2200px;">
+        <thead>
+          <tr>
+            <th style="width:36px;"><input type="checkbox" class="h-3.5 w-3.5 rounded accent-blue-600" /></th>
+            <th class="sortable">Skytek ID ${sortIcon()}</th>
+            <th class="sortable">Asset ${sortIcon()}</th>
+            <th class="sortable">Seating Plan ${sortIcon()}</th>
+            <th class="sortable">Policy Ref ${sortIcon()}</th>
+            <th class="sortable">Schedule Item ${sortIcon()}</th>
+            <th class="sortable">Coverage Period ${sortIcon()}</th>
+            <th class="sortable">Signed Line ${sortIcon()}</th>
+            <th class="sortable">Aircraft Model ${sortIcon()}</th>
+            <th class="sortable">Airline ${sortIcon()}</th>
+            <th class="sortable">Country Registration ${sortIcon()}</th>
+            <th class="sortable">Aircraft Registration ${sortIcon()}</th>
+            <th class="sortable">Hex Identifier ${sortIcon()}</th>
+            <th class="sortable">Year Built ${sortIcon()}</th>
+            <th class="sortable">Hull Insurance ${sortIcon()}</th>
+            <th class="sortable">Asset Type ${sortIcon()}</th>
+            <th class="sortable">Lessor ${sortIcon()}</th>
+            <th class="sortable">AV Base Operations ${sortIcon()}</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${LIST_POLICIES.slice((policyPage-1)*policyPerPage, policyPage*policyPerPage).map(p => {
+            const seatChip = (color, n, ico) => n ? `<span style="display:inline-flex;align-items:center;gap:3px;color:${color};font-size:12px;">${ico}<span style="color:#475569">${n}</span></span>` : '';
+            const armchair = lico('Armchair', 12);
+            const ico = { first: armchair, business: armchair, economy: armchair };
+            const flagImg = `<img src="https://flagcdn.com/w20/${p.cc}.png" width="16" height="12" style="display:inline-block;border-radius:2px;vertical-align:middle;margin-right:6px;" alt="${p.cc.toUpperCase()}" />`;
+            return `
+              <tr>
+                <td><input type="checkbox" class="h-3.5 w-3.5 rounded accent-blue-600" /></td>
+                <td><a href="#" style="color:var(--brand-600,#2563eb);font-weight:600;text-decoration:none;">Policy ${p.id}</a></td>
+                <td>${p.asset}</td>
+                <td>
+                  <div style="display:flex;align-items:center;gap:8px;white-space:nowrap;">
+                    ${seatChip('#a855f7', p.seating.first,    ico.first)}
+                    ${seatChip('#3b82f6', p.seating.business, ico.business)}
+                    ${seatChip('#64748b', p.seating.economy,  ico.economy)}
+                  </div>
+                </td>
+                <td>${p.ref}</td>
+                <td>${p.item}</td>
+                <td>${p.start} - ${p.end}</td>
+                <td>${p.line}</td>
+                <td>${p.model}</td>
+                <td><a href="#" style="color:var(--brand-600,#2563eb);text-decoration:none;">${p.airline}</a></td>
+                <td>${flagImg}<span>${p.cc === 'fr' ? 'France' : p.cc === 'nl' ? 'Netherlands' : p.cc.toUpperCase()}</span></td>
+                <td><a href="#" style="color:var(--brand-600,#2563eb);text-decoration:none;">${p.reg}</a></td>
+                <td style="font-family:monospace;font-size:12px;">${p.hex}</td>
+                <td>${p.year}</td>
+                <td>${p.hull}</td>
+                <td>${p.type}</td>
+                <td>${p.lessor}</td>
+                <td>${p.base}</td>
+              </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+    ${dsPagination({
+      page: policyPage, totalPages: Math.ceil(TOTAL / policyPerPage),
+      totalItems: TOTAL, perPage: policyPerPage,
+      perPageOptions: [10, 25, 50],
+      label: 'policies',
+    })}
     ` : `
     <!-- Delete bar -->
     <div class="flex items-center gap-3 px-4 py-2 border-b border-ink-100 bg-ink-50/50">
@@ -415,7 +618,7 @@ function PolicySection() {
           </tr>
         </thead>
         <tbody>
-          ${POLICIES.map(p => `
+          ${POLICIES.slice((policyPage-1)*policyPerPage, policyPage*policyPerPage).map(p => `
             <tr>
               <td><input type="checkbox" class="h-3.5 w-3.5 rounded accent-blue-600" /></td>
               <td class="id-cell">${p.id}</td>
@@ -436,28 +639,14 @@ function PolicySection() {
       </table>
     </div>
     <!-- Footer -->
-    <div class="flex items-center justify-between px-4 py-3 border-t border-ink-100 text-xs text-ink-500">
-      <div class="flex items-center gap-2">
-        <span>${TOTAL} results (${PER_PAGE} shown) | Items per page:</span>
-        <select class="sel" id="per-page-sel">
-          <option value="25" selected>25</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
-        </select>
-      </div>
-      <div class="flex items-center gap-1.5 text-ink-600">
-        <button id="pag-prev" class="flex items-center gap-1 px-2 py-1 rounded border border-ink-200 hover:bg-ink-50 disabled:opacity-40" ${policyPage<=1?'disabled':''}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> Previous
-        </button>
-        ${Array.from({length:Math.min(totalPages,5)},(_,i)=>`
-          <button data-pp="${i+1}" class="w-7 h-7 rounded border text-xs font-semibold ${policyPage===i+1?'bg-blue-600 text-white border-blue-600':'border-ink-200 hover:bg-ink-50'}">${i+1}</button>`).join('')}
-        ${totalPages > 5 ? `<span class="text-ink-400">…</span><button data-pp="${totalPages}" class="w-7 h-7 rounded border text-xs font-semibold border-ink-200 hover:bg-ink-50">${totalPages}</button>` : ''}
-        <button id="pag-next" class="flex items-center gap-1 px-2 py-1 rounded border border-ink-200 hover:bg-ink-50 disabled:opacity-40" ${policyPage>=totalPages?'disabled':''}>
-          Next <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-        <span class="ml-2 text-ink-400">Page ${policyPage} of ${totalPages}</span>
-      </div>
-    </div>
+    ${dsPagination({
+      page: policyPage,
+      totalPages,
+      totalItems: TOTAL,
+      perPage: policyPerPage,
+      perPageOptions: [10, 25, 50],
+      label: 'policies',
+    })}
     `}
   </div>`;
 }
@@ -554,6 +743,8 @@ window.render = function() {
         group.querySelectorAll('.ds-tab').forEach(t => t.setAttribute('aria-selected', String(t===btn)));
         positionTabPills();
       }
+      // Re-render so the panel body reflects the new tab (summary vs destinations)
+      setTimeout(() => window.render(), 200);
     };
   });
 
@@ -578,15 +769,11 @@ window.render = function() {
     setTimeout(initAviationDetailMap, 80);
   }
 
-  /* Pagination */
-  document.querySelectorAll('[data-pp]').forEach(btn => {
-    btn.onclick = () => { policyPage = parseInt(btn.dataset.pp); window.render(); };
+  /* Pagination (DS-compliant) */
+  dsWirePagination(document.querySelector('.ds-pagination-wrap'), {
+    onPage:    (p) => { policyPage = p; window.render(); },
+    onPerPage: (n) => { policyPerPage = n; policyPage = 1; window.render(); },
   });
-  const pp = document.getElementById('pag-prev');
-  const pn = document.getElementById('pag-next');
-  const tp = Math.ceil(TOTAL / PER_PAGE);
-  if (pp) pp.onclick = () => { if (policyPage > 1) { policyPage--; window.render(); } };
-  if (pn) pn.onclick = () => { if (policyPage < tp) { policyPage++; window.render(); } };
 };
 
 window.render();

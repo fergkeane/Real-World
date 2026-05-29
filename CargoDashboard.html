@@ -79,6 +79,8 @@ window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="shared/chrome.js?v=11"></script>
+<link rel="stylesheet" href="shared/pagination.css" />
+<script src="shared/pagination.js"></script>
 <script>
 const SC = window.sharedChrome;
 
@@ -407,19 +409,14 @@ function renderClashAlertsTable() {
 }
 
 function renderDeclarationsFooter() {
-  return `
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #e2e8f0;background:#f8fafc;font-size:12px;color:#64748b;">
-    <span>Showing 1–${VOYAGES.length} of ${VOYAGES.length} results</span>
-    <div style="display:flex;align-items:center;gap:6px;">
-      <button disabled style="display:inline-flex;align-items:center;gap:4px;height:30px;padding:0 10px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;color:#94a3b8;font-size:12px;font-weight:500;cursor:not-allowed;font-family:inherit;">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> Previous
-      </button>
-      <button style="min-width:30px;height:30px;padding:0 6px;border:1px solid var(--brand-600,#0284c7);border-radius:6px;background:var(--brand-600,#0284c7);color:#fff;font-size:12px;font-weight:600;cursor:default;font-family:inherit;">1</button>
-      <button disabled style="display:inline-flex;align-items:center;gap:4px;height:30px;padding:0 10px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;color:#94a3b8;font-size:12px;font-weight:500;cursor:not-allowed;font-family:inherit;">
-        Next <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-    </div>
-  </div>`;
+  return dsPagination({
+    page: 1,
+    totalPages: 1,
+    totalItems: VOYAGES.length,
+    perPage: VOYAGES.length || 1,
+    perPageOptions: [25, 50, 100],
+    label: 'declarations',
+  });
 }
 
 function renderTabSection() {
