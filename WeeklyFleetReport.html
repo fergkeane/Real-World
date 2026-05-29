@@ -1,0 +1,1045 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Weekly Fleet Monitoring Report — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<script>
+  tailwind.config = {
+    theme: { extend: {
+      fontFamily: { sans:['Inter','ui-sans-serif','system-ui','sans-serif'], display:['Exo','Inter','sans-serif'] },
+      colors: {
+        brand: {50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',800:'#1e40af',900:'#1e3a8a'},
+        ink:   {900:'#0f172a',800:'#1e293b',700:'#334155',600:'#475569',500:'#64748b',400:'#94a3b8',300:'#cbd5e1',200:'#e2e8f0',100:'#f1f5f9',50:'#f8fafc'},
+      },
+      boxShadow: {
+        'card':'0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06)',
+      },
+    }},
+  };
+</script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4,h5,h6,.font-display{font-family:'Exo','Inter',sans-serif;letter-spacing:-.005em}
+  .scroll-thin::-webkit-scrollbar{width:6px;height:6px}
+  .scroll-thin::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
+  .tracking-micro{letter-spacing:.04em}
+
+  /* Report container — A4-ish doc shell sitting on light grey app bg */
+  .report-shell{max-width:1180px;margin:0 auto;padding:18px 22px 60px;display:flex;flex-direction:column;gap:14px}
+  .report-card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 1px 3px rgba(15,23,42,.05);overflow:hidden}
+
+  /* Section headers (compact horizontal heading bar) */
+  .sec-head{padding:14px 22px;border-bottom:1px solid #f1f5f9;font-size:13px;font-weight:700;color:#0f172a;letter-spacing:.02em;text-transform:none}
+  .sec-body{padding:20px 22px}
+
+  /* Top meta bar */
+  .meta-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 22px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.05)}
+  .meta-item{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:#475569}
+  .meta-item .lbl{color:#94a3b8;font-weight:500}
+  .meta-item .val{color:#0f172a;font-weight:600;font-variant-numeric:tabular-nums}
+  .meta-actions{display:flex;align-items:center;gap:8px}
+  .meta-btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 14px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;font-size:12.5px;font-weight:600;color:#334155;cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s}
+  .meta-btn:hover{background:#f8fafc;border-color:#cbd5e1}
+  .meta-btn svg{color:#64748b}
+
+  /* Summary stat cards (light blue boxes) */
+  .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:8px}
+  .stat-card{background:var(--brand-50,#eff6ff);border:1px solid var(--brand-100,#dbeafe);border-radius:10px;padding:18px 14px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+  .stat-card .stat-icon{width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:var(--brand-600,#2563eb);margin-bottom:2px}
+  .stat-card .stat-num{font-family:'Exo','Inter',sans-serif;font-size:30px;font-weight:700;color:var(--brand-700,#1d4ed8);line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .stat-card .stat-label{font-size:11.5px;font-weight:500;color:#475569}
+  @media(max-width:760px){ .stat-grid{grid-template-columns:repeat(2,1fr)} }
+
+  /* Vessel list table */
+  .v-table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .v-table th{text-align:left;padding:10px 12px;font-size:11px;font-weight:700;color:#0f172a;letter-spacing:.04em;text-transform:uppercase;border-bottom:1px solid #e2e8f0;white-space:nowrap}
+  .v-table td{padding:11px 12px;border-bottom:1px solid #f1f5f9;color:#334155;vertical-align:middle}
+  .v-table tr:last-child td{border-bottom:0}
+  .v-table tr:hover td{background:#f8fafc}
+  .v-table td.vname a{color:var(--brand-600,#2563eb);font-weight:700;letter-spacing:.02em;text-decoration:none;font-size:12.5px}
+  .v-table td.vname a:hover{text-decoration:underline}
+  .v-table .imo{color:#475569;font-variant-numeric:tabular-nums}
+  .v-table .alerts-cell{color:#0f172a;font-weight:700;font-variant-numeric:tabular-nums}
+  .v-table tr.v-group td{background:#f1f5f9;color:#0f172a;font-weight:700;font-size:11.5px;letter-spacing:.02em;padding:9px 12px;border-bottom:1px solid #e2e8f0;border-top:1px solid #e2e8f0}
+  .v-table tr.v-group:first-child td{border-top:0}
+  .v-table .flag-cell{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:#334155}
+  .v-table .flag-img{width:22px;height:16px;object-fit:cover;border:1px solid #e2e8f0;border-radius:2px;flex-shrink:0;display:block}
+
+  /* Alert Type Summary table — header matches system table style */
+  .alert-table{width:100%;border-collapse:collapse;font-size:13px}
+  .alert-table thead th{text-align:left;padding:10px 16px;font-size:11px;font-weight:700;color:#0f172a;letter-spacing:.04em;text-transform:uppercase;border-bottom:1px solid #e2e8f0;white-space:nowrap}
+  .alert-table thead th:last-child{width:220px}
+  .alert-table tbody td{padding:12px 16px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+  .alert-table tbody tr:last-child td{border-bottom:0}
+  .alert-table tbody tr:hover td{background:#f8fafc}
+  .alert-table .at-name{display:inline-flex;align-items:center;gap:11px;color:var(--brand-600,#2563eb);font-weight:600;font-size:13px}
+  .alert-table .at-name svg{width:19px;height:19px;color:var(--brand-600,#2563eb);flex-shrink:0}
+  .alert-table .at-desc{margin-top:4px;padding-left:30px;font-size:11.5px;color:#64748b;line-height:1.5;max-width:560px}
+  /* Custom masked icon — inherits currentColor so it themes (blue in table, white on navy card) */
+  .icon-suspicious{display:inline-block;width:23px;height:23px;flex-shrink:0;background-color:currentColor;-webkit-mask:url('../images/icon-alert-suspicious-activity.svg') center/contain no-repeat;mask:url('../images/icon-alert-suspicious-activity.svg') center/contain no-repeat}
+  .icon-port-call{display:inline-block;width:23px;height:23px;flex-shrink:0;background-color:currentColor;-webkit-mask:url('../images/icon-alert-sanctioned-port-call.svg') center/contain no-repeat;mask:url('../images/icon-alert-sanctioned-port-call.svg') center/contain no-repeat}
+  .ra-table .notif .ni .icon-port-call{width:17px;height:17px}
+  .ra-table .notif .ni .icon-suspicious{width:17px;height:17px}
+  .icon-location-sts{display:inline-block;width:23px;height:23px;flex-shrink:0;background-color:currentColor;-webkit-mask:url('../images/icon-alert-location-sts.svg') center/contain no-repeat;mask:url('../images/icon-alert-location-sts.svg') center/contain no-repeat}
+  .ra-table .notif .ni .icon-location-sts{width:17px;height:17px}
+  .icon-vessel-sts{display:inline-block;width:23px;height:23px;flex-shrink:0;background-color:currentColor;-webkit-mask:url('../images/icon-alert-vessel-sts.svg') center/contain no-repeat;mask:url('../images/icon-alert-vessel-sts.svg') center/contain no-repeat}
+  .ra-table .notif .ni .icon-vessel-sts{width:17px;height:17px}
+  .icon-loitering{display:inline-block;width:23px;height:23px;flex-shrink:0;background-color:currentColor;-webkit-mask:url('../images/icon-alert-loitering.svg') center/contain no-repeat;mask:url('../images/icon-alert-loitering.svg') center/contain no-repeat}
+  .ra-table .notif .ni .icon-loitering{width:17px;height:17px}
+  .icon-identity{display:inline-block;width:23px;height:23px;flex-shrink:0;background-color:currentColor;-webkit-mask:url('../images/icon-alert-identity-tampering.svg') center/contain no-repeat;mask:url('../images/icon-alert-identity-tampering.svg') center/contain no-repeat}
+  .icon-flag-hopping{display:inline-block;width:23px;height:23px;flex-shrink:0;background-color:currentColor;-webkit-mask:url('../images/icon-alert-flag-hopping.svg') center/contain no-repeat;mask:url('../images/icon-alert-flag-hopping.svg') center/contain no-repeat}
+  .alert-table .at-count{color:var(--brand-700,#1d4ed8);font-weight:600;font-variant-numeric:tabular-nums}
+  .alert-table tr.at-flagged td:first-child{border-left:3px solid #dc2626}
+
+  /* Vessel details body */
+  .vd-head{display:flex;align-items:flex-start;gap:14px;padding:18px 22px 8px}
+  .vd-flag-block{display:flex;align-items:flex-start;gap:14px;flex:1;min-width:0}
+  .vd-flag{width:46px;height:32px;border:1px solid #e2e8f0;border-radius:3px;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;background:#f8fafc;flex-shrink:0}
+  .vd-flag img{width:100%;height:100%;object-fit:cover;display:block}
+  .vd-title{font-family:'Exo','Inter',sans-serif;font-size:18px;font-weight:700;color:var(--brand-600,#2563eb);letter-spacing:.01em;line-height:1.15}
+  .vd-sub{font-size:11.5px;color:#64748b;margin-top:3px;line-height:1.5}
+  .vd-sub .sep{margin:0 6px;color:#cbd5e1}
+
+  /* Risk gauge block (matches VesselDetails page) */
+  .vd-body{display:grid;grid-template-columns:260px 1fr;gap:22px;padding:8px 22px 18px;align-items:flex-start}
+  .risk-block{display:flex;flex-direction:column;align-items:stretch;gap:10px;padding-top:2px}
+  .risk-label{font-size:10px;font-weight:600;color:#94a3b8;letter-spacing:.08em;text-transform:uppercase;text-align:center}
+  .gauge-card{background:#f8fafc;border-radius:12px;padding:12px 8px 10px;display:flex;flex-direction:column;align-items:center}
+  .gauge-card svg.gauge-svg{width:100%;max-width:200px;height:auto;overflow:visible}
+  .gauge-pill{display:flex;align-items:center;gap:4px;margin-top:-14px;margin-bottom:2px}
+  .gauge-pill .pill-lbl{font-size:10px;font-weight:700;letter-spacing:.06em}
+  .risk-guide{display:flex;flex-direction:column;gap:6px}
+  .rg-card{border-radius:10px;padding:8px 9px;border:1px solid transparent}
+  .rg-card .rg-row{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+  .rg-card .rg-ico{width:24px;height:24px;border-radius:999px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .rg-card .rg-name{font-size:11px;font-weight:700;line-height:1.1}
+  .rg-card .rg-range{font-size:9.5px;color:#64748b;margin-top:1px}
+  .rg-card .rg-pct{margin-left:auto;font-size:12.5px;font-weight:800;color:#0f172a;flex-shrink:0;font-variant-numeric:tabular-nums}
+  .rg-card .rg-bar{height:4px;background:#e2e8f0;border-radius:999px;overflow:hidden}
+  .rg-card .rg-bar > span{display:block;height:100%;border-radius:999px}
+
+  /* Property grid */
+  .prop-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px 28px}
+  .prop{display:flex;flex-direction:column;gap:3px;min-width:0}
+  .prop .pk{font-size:10.5px;font-weight:500;color:#94a3b8;letter-spacing:.01em}
+  .prop .pv{font-size:12.5px;font-weight:600;color:#0f172a;line-height:1.4;word-break:break-word}
+  .prop .pv.flag-val{display:inline-flex;align-items:center;gap:8px}
+  .prop .pv.flag-val .flag-img{width:22px;height:16px;object-fit:cover;border:1px solid #e2e8f0;border-radius:2px;display:block;flex-shrink:0}
+  @media(max-width:780px){ .vd-body{grid-template-columns:1fr} .prop-grid{grid-template-columns:repeat(2,1fr)} }
+  @media(max-width:520px){ .prop-grid{grid-template-columns:1fr} }
+
+  /* Vessel Details spec table (right of risk gauge) */
+  .vd-spec{min-width:0}
+  .vd-spec-head{font-size:11px;font-weight:700;color:#0f172a;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px;padding-bottom:9px;border-bottom:1px solid #e2e8f0}
+  .spec-table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .spec-table th{text-align:left;font-weight:500;color:#94a3b8;font-size:10.5px;letter-spacing:.01em;padding:9px 12px 9px 0;vertical-align:top;white-space:nowrap;width:1%}
+  .spec-table td{padding:9px 28px 9px 0;color:#0f172a;font-weight:600;vertical-align:top;line-height:1.4;word-break:break-word}
+  .spec-table tr{border-bottom:1px solid #f1f5f9}
+  .spec-table tr:last-child{border-bottom:0}
+  .spec-table td.flagval span{display:inline-flex;align-items:center;gap:8px}
+  .spec-table td.flagval .flag-img{width:22px;height:16px;object-fit:cover;border:1px solid #e2e8f0;border-radius:2px;display:block;flex-shrink:0}
+
+  /* Recent activity sub-block */
+  .ra-wrap{border-top:1px solid #f1f5f9;padding:14px 22px 18px;background:#fcfdff}
+  .ra-title{font-size:12.5px;font-weight:700;color:#0f172a;margin-bottom:10px;letter-spacing:.01em}
+  .ra-table{width:100%;border-collapse:collapse;font-size:12px}
+  .ra-table th{text-align:left;padding:8px 10px;font-size:10.5px;font-weight:700;color:#0f172a;letter-spacing:.04em;text-transform:uppercase;border-bottom:1px solid #e2e8f0;white-space:nowrap}
+  .ra-table td{padding:9px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle;color:#334155}
+  .ra-table tr:last-child td{border-bottom:0}
+  .ra-table .notif{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:#334155;font-weight:500}
+  .ra-table .notif .ni{width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;background:#fef3c7;color:#d97706;flex-shrink:0}
+  .ra-table .notif .ni svg{width:14px;height:14px}
+  .ra-table .notif .ni.blue{background:var(--brand-100,#dbeafe);color:var(--brand-600,#2563eb)}
+  .ra-table .notif .ni.red{background:#fee2e2;color:#dc2626}
+  .ra-table .notif .ni.amber{background:#fef3c7;color:#d97706}
+  .ra-table .date{color:#475569;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:11.5px}
+  .ra-table .ra-note{margin-top:5px;display:flex;align-items:flex-start;gap:5px;font-size:11px;font-weight:500;color:#e07d18;line-height:1.45}
+  .ra-table .ra-note svg{width:13px;height:13px;flex-shrink:0;margin-top:1px}
+
+  /* Risk Indicator Descriptions (blue card) */
+  .rid-card{background:linear-gradient(180deg,var(--brand-800,#1e3a8a) 0%, var(--brand-700,#1e40af) 100%);border-radius:14px;padding:22px 26px;color:#fff;box-shadow:0 1px 3px rgba(15,23,42,.08)}
+  .rid-title{font-family:'Exo','Inter',sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--brand-200,#bfdbfe);margin-bottom:18px}
+  .rid-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px 28px}
+  .rid-item{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:6px 4px}
+  .rid-item .rid-icon{width:38px;height:38px;display:flex;align-items:center;justify-content:center;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:10px}
+  .rid-item .rid-name{font-family:'Exo','Inter',sans-serif;font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff;margin-top:2px}
+  .rid-item .rid-desc{font-size:11.5px;color:var(--brand-200,#bfdbfe);line-height:1.5;max-width:260px}
+  @media(max-width:760px){ .rid-grid{grid-template-columns:repeat(2,1fr)} }
+  @media(max-width:480px){ .rid-grid{grid-template-columns:1fr} }
+
+  /* Disclaimers */
+  .disc{padding:14px 22px;color:#64748b;font-size:11px;line-height:1.65}
+  .disc .disc-title{font-weight:700;color:#0f172a;font-size:11px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+  .disc p{margin-bottom:3px}
+  .disc strong{color:#334155;font-weight:600}
+
+  /* Floating vessel navigation — appears once first vessel card is reached */
+  .vessel-fnav{position:fixed;right:24px;bottom:28px;display:flex;flex-direction:column;gap:4px;background:#fff;border:1px solid #e2e8f0;border-radius:999px;padding:5px;box-shadow:0 10px 28px rgba(15,23,42,.16);z-index:40;opacity:0;transform:translateY(10px) scale(.96);pointer-events:none;transition:opacity .22s var(--ease-out,ease),transform .22s var(--ease-out,ease)}
+  .vessel-fnav.is-visible{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+  .vessel-fnav .fnav-btn{width:40px;height:40px;border-radius:999px;border:0;background:transparent;color:#475569;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s,color .15s}
+  .vessel-fnav .fnav-btn:hover{background:var(--brand-50,#eff6ff);color:var(--brand-600,#2563eb)}
+  .vessel-fnav .fnav-btn:disabled{opacity:.3;cursor:default}
+  .vessel-fnav .fnav-btn:disabled:hover{background:transparent;color:#475569}
+  .vessel-fnav .fnav-sep{height:1px;background:#f1f5f9;margin:1px 6px}
+  .vessel-fnav .fnav-list{color:var(--brand-600,#2563eb)}
+  .vessel-fnav .fnav-list:hover{background:var(--brand-600,#2563eb);color:#fff}
+  .vessel-fnav .fnav-btn svg{width:20px;height:20px}
+
+  /* ---- Mobile: stack table rows (label over value) ---- */
+  @media (max-width: 720px) {
+    .report-shell{padding:12px 12px 56px;gap:12px}
+    .sec-head{padding:12px 16px}
+    .sec-body{padding:16px}
+    .sec-body[style*="padding:0"]{padding:14px !important}
+    .rid-card{padding:18px 16px}
+
+    /* Meta bar: full-width action group, buttons stretch but stay inline */
+    .meta-actions{width:100%;display:flex;gap:8px}
+    .meta-actions .meta-btn{flex:1;justify-content:center}
+
+    .v-table, .alert-table, .ra-table,
+    .v-table tbody, .alert-table tbody, .ra-table tbody,
+    .v-table tr, .alert-table tr, .ra-table tr,
+    .v-table td, .alert-table td, .ra-table td { display:block; width:100%; }
+    .v-table thead, .alert-table thead, .ra-table thead { display:none; }
+
+    .v-table tr, .alert-table tr, .ra-table tr {
+      border:1px solid #e2e8f0; border-radius:10px; margin:0 0 10px; padding:8px 4px; background:#fff;
+    }
+    .v-table tr:last-child, .alert-table tr:last-child, .ra-table tr:last-child { margin-bottom:0; }
+    .v-table tr:hover td, .alert-table tbody tr:hover td, .ra-table tr:hover td { background:transparent; }
+
+    .v-table td, .alert-table td, .ra-table td {
+      border:0; padding:6px 14px;
+    }
+    .v-table td::before, .alert-table td::before, .ra-table td::before {
+      content: attr(data-label); display:block; margin-bottom:3px;
+      font-size:10px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:#94a3b8;
+    }
+    /* keep the red flag accent on stacked flagged rows */
+    .alert-table tr.at-flagged { border-left:3px solid #dc2626; }
+    .alert-table tr.at-flagged td:first-child { border-left:0; }
+    .alert-table .at-desc{padding-left:0}
+    /* Alert Type Summary keeps a 2-column row on mobile: type left, count right */
+    .alert-table tr{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+    .alert-table td{padding:10px 14px;width:auto}
+    .alert-table td:first-child{flex:1 1 auto;min-width:0}
+    .alert-table .at-name{flex-wrap:wrap}
+    .alert-table .at-desc{max-width:none}
+    .alert-table .at-count{flex:0 0 auto;text-align:right}
+    .alert-table td::before{display:none}
+
+    /* Vessels card: compact label-left / value-right rows on mobile */
+    .v-table tr{padding:2px 2px;margin-bottom:8px}
+    .v-table td{display:flex;align-items:center;justify-content:space-between;gap:14px;width:auto;padding:7px 14px;border-bottom:1px solid #f1f5f9}
+    .v-table td:last-child{border-bottom:0}
+    .v-table td::before{margin-bottom:0;flex:0 0 auto}
+    .v-table td .flag-cell{text-align:right}
+    .v-table td:last-child > span{justify-content:flex-end}
+    .v-table tr.v-group{border:0;background:transparent;margin:12px 0 2px;padding:0}
+    .v-table tr.v-group td{display:block;background:transparent;border:0;padding:2px;font-size:11.5px}
+    .v-table tr.v-group td::before{display:none}
+
+    /* Vessel Details spec table: stack label-over-value on mobile */
+    .spec-table, .spec-table tbody, .spec-table tr, .spec-table th, .spec-table td{display:block;width:auto}
+    .spec-table tr{border:0}
+    .spec-table th{padding:8px 0 1px;color:#94a3b8}
+    .spec-table td{padding:0 0 7px;border-bottom:1px solid #f1f5f9}
+    .spec-table tr:last-child td:last-child{border-bottom:0}
+  }
+  @media (max-width: 420px) {
+    .stat-grid{grid-template-columns:1fr}
+  }
+
+  /* Print rules — collapse app chrome so the page prints clean */
+  @media print {
+    @page { size: A4; margin: 14mm; }
+    body { background:#fff !important; }
+    #sidebar, header.sticky, .meta-actions, .no-print { display:none !important; }
+    main { padding:0 !important; background:#fff !important; }
+    .report-shell { max-width:none; padding:0; gap:10px; }
+    .report-card, .meta-bar { box-shadow:none; border-color:#e2e8f0; }
+    .rid-card { color:#fff !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .stat-card { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .report-card { break-inside:avoid; page-break-inside:avoid; }
+  }
+</style>
+</head>
+<body class="bg-ink-100 text-ink-900" data-density="comfortable">
+<div id="app" class="h-screen w-full flex overflow-hidden"></div>
+
+<script>
+  window.PAGE = { id:'reports', title:'Reports', crumb:'Weekly Fleet Monitoring Report' };
+  window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "density": "comfortable",
+    "accent": "sky",
+    "sidebarExpanded": false,
+    "showSparklines": true
+  }/*EDITMODE-END*/;
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="../shared/chrome.js?v=11"></script>
+
+<script>
+const SC = window.sharedChrome;
+
+/* ─────────────────────────── Icons ─────────────────────────── */
+const ICO = {
+  download: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+  print:    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>',
+  clock:    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  cal:      '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+  /* stat icons */
+  statShip: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 21c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2c1.3 0 1.9.5 2.5 1"/><path d="M19 15V6.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5V15"/><path d="M5 15V6.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V15"/><path d="M3 15h18"/></svg>',
+  statSearch: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+  statAlert: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  statClock: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  /* activity icons */
+  actTri:   '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  actAnchor:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg>',
+  actClock: '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  actLock:  '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+  actPin:   '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+  actFlag:  '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
+  actSend:  '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
+  /* risk indicator big icons */
+  riDark:    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
+  riLoiter:  '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg>',
+  riPort:    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+  riS2S:     '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2c1.3 0 1.9.5 2.5 1"/><path d="M5 14V8.5a.5.5 0 0 1 .5-.5H10"/><path d="M14 14V8.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5V14"/><path d="M3 14h18"/><path d="M10 5h4"/></svg>',
+  riID:      '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M5 18c.5-2 2-3 4-3s3.5 1 4 3"/><line x1="14" y1="9" x2="19" y2="9"/><line x1="14" y1="13" x2="19" y2="13"/></svg>',
+  riFlag:    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
+  riList:    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  riCo:      '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>',
+  riHop:     '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
+};
+
+/* Country → ISO 3166-1 alpha-2 (lowercased) for flagcdn.com URLs.
+   Pair the resulting image with a text label for accessibility. */
+const FLAG = {
+  US:'us', Liberia:'lr', Panama:'pa', Malta:'mt', China:'cn', Singapore:'sg', Japan:'jp',
+  MarshallIslands:'mh', Greece:'gr', Cyprus:'cy', Bahamas:'bs', HongKong:'hk', India:'in', SouthKorea:'kr', Norway:'no',
+};
+/* Build a flagcdn <img>. w sets the requested raster width bucket
+   (flagcdn supports w20, w40, w80, w160, w320, w640, w1280, w2560). */
+function flagImg(code, w = 40, alt = '') {
+  if (!code) return '';
+  const src = `https://flagcdn.com/w${w}/${code}.png`;
+  const srcset = `https://flagcdn.com/w${w*2}/${code}.png 2x`;
+  return `<img class="flag-img" src="${src}" srcset="${srcset}" alt="${alt} flag" loading="lazy" />`;
+}
+
+/* ─────────────────────────── Report data ───────────────────────────
+   Source-of-truth for this report. In a real build this would be loaded
+   from sessionStorage / API by report id; we ship the canonical Jan 8
+   report inline so the page renders standalone too. */
+/* If the user opened this from the Reports tab, the clicked row was stashed
+   in sessionStorage. We surface its date as the generation timestamp and
+   derive a 7-day reporting period ending the day before. */
+function loadSelectedReport() {
+  try { return JSON.parse(sessionStorage.getItem('selectedFleetReport') || 'null'); } catch { return null; }
+}
+function derivePeriod(dateStr) {
+  // dateStr looks like "Jan 8, 2025 14:23"
+  if (!dateStr) return { from:'Jan 1, 2025', to:'Jan 7, 2025' };
+  const d = new Date(dateStr);
+  if (isNaN(d)) return { from:'Jan 1, 2025', to:'Jan 7, 2025' };
+  const to = new Date(d); to.setDate(to.getDate() - 1);
+  const from = new Date(to); from.setDate(from.getDate() - 6);
+  const fmt = x => x.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  return { from: fmt(from), to: fmt(to) };
+}
+const SELECTED = loadSelectedReport();
+const SEL_PERIOD = derivePeriod(SELECTED && SELECTED.date);
+const REPORT_META = {
+  generatedOn: (SELECTED && SELECTED.date) || 'Jan 8, 2025 14:23',
+  periodFrom:  SEL_PERIOD.from,
+  periodTo:    SEL_PERIOD.to,
+  vesselsCount: '214',
+  vesselsReviewed: '010',
+  suspicious: 10,
+  riskIndicators: 3,
+  summary: 'Skytek has monitored eight (8) MMC vessels amidst the continuation of risk\u2019s footprint as compared with standard performance expectation limits / rules. None of them have been flagged as High risk (2+). Moderate (1+), two (2) have been flagged as Low Risk while the rest are of NORMAL RISK. Below is a listing of selected vessels marked as a grouping highlighted in regard to a policy for insurance purposes only.',
+};
+
+const VESSELS = [
+  { name:'CLEAN SANCTUARY', imo:'9632603', type:'Chemical/Products Tanker', flag:'Liberia', flagEmoji:FLAG.Liberia, hostEmoji:FLAG.US, relatedCountries:[{label:'Liberia', emoji:FLAG.Liberia}, {label:'Liberia', emoji:FLAG.Liberia}] },
+  { name:'ACONCAGUA BAY',   imo:'9123456', type:'Oil/Chemical Tanker',      flag:'Panama',  flagEmoji:FLAG.Panama,  hostEmoji:FLAG.Panama, relatedCountries:[{label:'China', emoji:FLAG.China}] },
+  { name:'SEA JEWEL',       imo:'8765432', type:'Container Ship',           flag:'Liberia', flagEmoji:FLAG.Liberia, hostEmoji:FLAG.US, relatedCountries:[{label:'Singapore', emoji:FLAG.Singapore}] },
+  { name:'SEA HORSE 1',     imo:'9876543', type:'Chemical Tanker',          flag:'Malta',   flagEmoji:FLAG.Malta,   hostEmoji:FLAG.Malta, relatedCountries:[{label:'Japan', emoji:FLAG.Japan}] },
+  { name:'PACIFIC DAWN',    imo:'9445120', type:'Bulk Carrier',             flag:'Marshall Islands', flagEmoji:FLAG.MarshallIslands, hostEmoji:FLAG.US,     relatedCountries:[{label:'Hong Kong', emoji:FLAG.HongKong}] },
+  { name:'NORDIC STAR',     imo:'9512388', type:'Crude Oil Tanker',         flag:'Greece',  flagEmoji:FLAG.Greece,  hostEmoji:FLAG.Greece, relatedCountries:[{label:'Norway', emoji:FLAG.Norway}] },
+  { name:'GOLDEN HORIZON',  imo:'9667341', type:'LNG Carrier',              flag:'Cyprus',  flagEmoji:FLAG.Cyprus,  hostEmoji:FLAG.Cyprus, relatedCountries:[{label:'South Korea', emoji:FLAG.SouthKorea}] },
+  { name:'SILVER WAVE',     imo:'9388215', type:'Oil/Chemical Tanker',      flag:'Bahamas', flagEmoji:FLAG.Bahamas, hostEmoji:FLAG.Bahamas, relatedCountries:[{label:'India', emoji:FLAG.India}] },
+  { name:'EASTERN PEARL',   imo:'9701882', type:'Container Ship',           flag:'Hong Kong', flagEmoji:FLAG.HongKong, hostEmoji:FLAG.China, relatedCountries:[{label:'China', emoji:FLAG.China}] },
+  { name:'ATLANTIC VOYAGER',imo:'9234567', type:'Crude Oil Tanker',         flag:'Panama',  flagEmoji:FLAG.Panama,  hostEmoji:FLAG.Panama, relatedCountries:[{label:'Singapore', emoji:FLAG.Singapore}] },
+];
+
+const DETAILS = {
+  'CLEAN SANCTUARY': {
+    flagEmoji: FLAG.US, built:'2009', type:'Chemical/Products Tanker', risk:16, riskTone:'good',
+    callSign:'ABFD7', exhaust:'Funnel Markers', shipBuilder:'Hyundai Mipo Dockyard Co Ltd', yearBuilt:'2009', manager:'Kauai Haven Incorporated / Seaside Maritime Corporation S.A.',
+    flag:{label:'Liberia', emoji:FLAG.Liberia}, classSoc:'Lloyd\u2019s Register', piClub:'Pennsylvania/Longam Gard', length:'183 m', width:'32 m',
+    grossTonnage:'27,135', dwt:'45,121', teu:'\u2014', lastSurvey:'2023-04-05 (UTC, Lome: Togo. Akpe)',
+    activity:[
+      { tone:'amber', label:'Sanctioned Port AIS Declared Destination', date:'2023-04-02 — 2023-04-01 (4:30 UTC)',  detail:'Vessel AIS destination indicates sanctioned port location' },
+      { tone:'blue',  label:'Sanctioned Port Call',                     date:'2023-04-02 — 2023-04-01 (4:30 UTC)',  detail:'Port call detected at sanctioned port location' },
+      { tone:'amber', label:'Loitering Activity',                       date:'2023-05-10 — 2023-04-01 (11:54 UTC)', detail:'Extended loitering detected in sanctioned waters' },
+      { tone:'red',   label:'Suspicious STS',                           date:'2023-05-15 — 2023-05-22 (09:20 UTC)', detail:'Ship-to-ship transfer with sanctioned vessel detected' },
+      { tone:'amber', label:'Sanctioned Location STS',                  date:'2023-05-20 — 2023-05-16 (14:45 UTC)', detail:'Ship-to-ship transfer detected in sanctioned location' },
+      { tone:'blue',  label:'Overall Compliance Status',                date:'2023-05-25 — 2023-05-22 (16:00 UTC)', detail:'Compliance status updated — Multiple risk indicators detected' },
+      { tone:'red',   label:'Suspicious Activity',                            date:'2023-06-01 — 2023-05-28 (08:30 UTC)', detail:'Suspicious activity detected — AIS transmission disabled for extended period' },
+    ],
+  },
+  'ACONCAGUA BAY': {
+    flagEmoji: FLAG.Panama, built:'2016', type:'Oil/Chemical Tanker', risk:22, riskTone:'good',
+    callSign:'WDAB', exhaust:'Funnel Markers', shipBuilder:'Hyundai Heavy Industries', yearBuilt:'2016', manager:'Pacific Maritime Group / Ocean Ventures Ltd',
+    flag:{label:'Panama', emoji:FLAG.Panama}, classSoc:'Lloyd\u2019s Register', piClub:'Standard Club', length:'183.0 m', width:'32.2 m',
+    grossTonnage:'29,850', dwt:'51,987', teu:'\u2014', lastSurvey:'2024-11-20 (UTC)',
+    activity:[
+      { tone:'amber', label:'Sanctioned Port AIS Declared Destination', date:'12/20/2024 — 12/25/2024',     detail:'Vessel AIS destination indicates sanctioned port location' },
+      { tone:'blue',  label:'Sanctioned Port Call',                     date:'12/26/2024',                  detail:'Port call detected at sanctioned port location' },
+      { tone:'amber', label:'Loitering Activity',                       date:'12/27/2024 14:30 UTC',        detail:'Extended loitering detected in sanctioned waters' },
+      { tone:'red',   label:'Suspicious STS',                           date:'01/02/2025 09:15 UTC',        detail:'Ship-to-ship transfer with sanctioned vessel detected' },
+      { tone:'amber', label:'Sanctioned Location STS',                  date:'01/03/2025 11:30 UTC',        detail:'Ship-to-ship transfer detected in sanctioned location' },
+      { tone:'blue',  label:'Overall Compliance Status',                date:'01/04/2025 16:45 UTC',        detail:'Compliance status updated — Multiple risk indicators detected' },
+      { tone:'red',   label:'Suspicious Activity',                            date:'01/06/2025 08:00 UTC',        detail:'Suspicious activity detected — AIS transmission disabled for extended period' },
+    ],
+  },
+  'SEA JEWEL': {
+    flagEmoji: FLAG.US, built:'2014', type:'Container Ship', risk:12, riskTone:'good',
+    callSign:'D5QM8', exhaust:'Funnel Markers', shipBuilder:'Samsung Heavy Industries', yearBuilt:'2014', manager:'Global Shipping Inc / Eastern Marine Ltd',
+    flag:{label:'Liberia', emoji:FLAG.Liberia}, classSoc:'American Bureau of Shipping', piClub:'Britannia P&I', length:'294.0 m', width:'32.3 m',
+    grossTonnage:'65,420', dwt:'78,550', teu:'6,500', lastSurvey:'2024-09-15 (UTC)',
+    activity:[
+      { tone:'amber', label:'Sanctioned Port AIS Declared Destination', date:'10/15/2024 — 10/18/2024', detail:'Vessel AIS destination indicates sanctioned port location' },
+      { tone:'blue',  label:'Sanctioned Port Call',                     date:'10/20/2024 14:00 UTC',    detail:'Port call detected at sanctioned port location' },
+      { tone:'amber', label:'Loitering Activity',                       date:'10/25/2024 09:30 UTC',    detail:'Extended loitering detected in sanctioned waters' },
+      { tone:'red',   label:'Suspicious STS',                           date:'11/02/2024 16:20 UTC',    detail:'Ship-to-ship transfer with sanctioned vessel detected' },
+      { tone:'amber', label:'Sanctioned Location STS',                  date:'11/10/2024 11:45 UTC',    detail:'Ship-to-ship transfer detected in sanctioned location' },
+      { tone:'blue',  label:'Overall Compliance Status',                date:'12/01/2024 08:00 UTC',    detail:'Compliance status updated — Multiple risk indicators detected' },
+      { tone:'red',   label:'Suspicious Activity',                            date:'01/05/2025 08:30 UTC',    detail:'Suspicious activity detected — AIS transmission disabled for extended period' },
+    ],
+  },
+  'SEA HORSE 1': {
+    flagEmoji: FLAG.Malta, built:'2018', type:'Chemical Tanker', risk:19, riskTone:'good',
+    callSign:'9HA3821', exhaust:'Funnel Markers', shipBuilder:'STX Offshore & Shipbuilding', yearBuilt:'2018', manager:'Mediterranean Shipping / Azure Marine Ltd',
+    flag:{label:'Malta', emoji:FLAG.Malta}, classSoc:'DNV GL', piClub:'Gard P&I', length:'169.5 m', width:'28.0 m',
+    grossTonnage:'24,780', dwt:'42,150', teu:'\u2014', lastSurvey:'2024-12-03 (UTC)',
+    activity:[
+      { tone:'amber', label:'Sanctioned Port AIS Declared Destination', date:'01/01/2025 08:00 UTC', detail:'Vessel AIS destination indicates sanctioned port location' },
+      { tone:'blue',  label:'Sanctioned Port Call',                     date:'01/02/2025 11:30 UTC', detail:'Port call detected at sanctioned port location' },
+      { tone:'amber', label:'Loitering Activity',                       date:'01/03/2025 10:15 UTC', detail:'Extended loitering detected in sanctioned waters' },
+      { tone:'red',   label:'Suspicious STS',                           date:'01/04/2025 14:20 UTC', detail:'Ship-to-ship transfer with sanctioned vessel detected' },
+      { tone:'amber', label:'Sanctioned Location STS',                  date:'01/06/2025 16:45 UTC', detail:'Ship-to-ship transfer detected in sanctioned location' },
+      { tone:'blue',  label:'Overall Compliance Status',                date:'01/07/2025 09:00 UTC', detail:'Compliance status updated — Multiple risk indicators detected' },
+      { tone:'red',   label:'Suspicious Activity',                            date:'01/08/2025 12:30 UTC', detail:'Suspicious activity detected — AIS transmission disabled for extended period' },
+    ],
+  },
+  'PACIFIC DAWN': {
+    flagEmoji: FLAG.MarshallIslands, built:'2011', type:'Bulk Carrier', risk:8, riskTone:'good',
+    callSign:'V7AB2', exhaust:'Funnel Markers', shipBuilder:'Tsuneishi Shipbuilding', yearBuilt:'2011', manager:'Pacific Bulk Carriers Ltd / Horizon Ship Management',
+    flag:{label:'Marshall Islands', emoji:FLAG.MarshallIslands}, classSoc:'Nippon Kaiji Kyokai', piClub:'UK P&I Club', length:'229.0 m', width:'32.3 m',
+    grossTonnage:'43,950', dwt:'81,600', teu:'\u2014', lastSurvey:'2024-08-12 (UTC)',
+    activity:[
+      { tone:'blue',  label:'Overall Compliance Status', date:'09/02/2024 10:00 UTC', detail:'Compliance status reviewed — no active risk indicators' },
+      { tone:'amber', label:'Loitering Activity',        date:'10/14/2024 07:45 UTC', detail:'Brief loitering detected outside designated anchorage' },
+      { tone:'blue',  label:'Sanctioned Port Call',      date:'11/03/2024 13:20 UTC', detail:'Port call screened — cleared, no sanctioned location' },
+    ],
+  },
+  'NORDIC STAR': {
+    flagEmoji: FLAG.Greece, built:'2013', type:'Crude Oil Tanker', risk:31, riskTone:'good',
+    callSign:'SVBK7', exhaust:'Funnel Markers', shipBuilder:'Hyundai Samho Heavy Industries', yearBuilt:'2013', manager:'Aegean Tanker Management S.A. / Hellenic Marine Ltd',
+    flag:{label:'Greece', emoji:FLAG.Greece}, classSoc:'Bureau Veritas', piClub:'Gard P&I', length:'274.0 m', width:'48.0 m',
+    grossTonnage:'81,200', dwt:'158,000', teu:'\u2014', lastSurvey:'2024-10-28 (UTC)',
+    activity:[
+      { tone:'red',   label:'Suspicious Activity',             date:'11/18/2024 02:10 UTC', detail:'AIS transmission disabled for 36 hours in high-risk corridor' },
+      { tone:'red',   label:'Suspicious STS',            date:'11/26/2024 19:40 UTC', detail:'Ship-to-ship transfer with unregistered vessel detected' },
+      { tone:'amber', label:'Sanctioned Location STS',   date:'12/01/2024 08:15 UTC', detail:'Transfer detected within a sanctioned maritime zone' },
+      { tone:'blue',  label:'Overall Compliance Status', date:'12/05/2024 16:30 UTC', detail:'Compliance status updated — multiple risk indicators detected' },
+    ],
+  },
+  'GOLDEN HORIZON': {
+    flagEmoji: FLAG.Cyprus, built:'2019', type:'LNG Carrier', risk:14, riskTone:'good',
+    callSign:'5BWX3', exhaust:'Funnel Markers', shipBuilder:'Daewoo Shipbuilding & Marine Engineering', yearBuilt:'2019', manager:'Mediterranean LNG Carriers / Cyprus Marine Co.',
+    flag:{label:'Cyprus', emoji:FLAG.Cyprus}, classSoc:'Lloyd\u2019s Register', piClub:'Standard Club', length:'295.0 m', width:'46.4 m',
+    grossTonnage:'113,600', dwt:'97,300', teu:'\u2014', lastSurvey:'2024-12-10 (UTC)',
+    activity:[
+      { tone:'amber', label:'Loitering Activity',        date:'12/20/2024 11:05 UTC', detail:'Extended loitering near offshore terminal' },
+      { tone:'blue',  label:'Sanctioned Port Call',      date:'12/28/2024 09:50 UTC', detail:'Port call screened at flagged terminal — under review' },
+      { tone:'blue',  label:'Overall Compliance Status', date:'01/02/2025 14:00 UTC', detail:'Compliance status updated — low-level indicators present' },
+    ],
+  },
+  'SILVER WAVE': {
+    flagEmoji: FLAG.Bahamas, built:'2015', type:'Oil/Chemical Tanker', risk:22, riskTone:'good',
+    callSign:'C6XK9', exhaust:'Funnel Markers', shipBuilder:'STX Offshore & Shipbuilding', yearBuilt:'2015', manager:'Atlantic Tanker Group / Nassau Ship Management',
+    flag:{label:'Bahamas', emoji:FLAG.Bahamas}, classSoc:'DNV', piClub:'Britannia P&I', length:'183.0 m', width:'32.2 m',
+    grossTonnage:'29,400', dwt:'49,990', teu:'\u2014', lastSurvey:'2024-09-30 (UTC)',
+    activity:[
+      { tone:'amber', label:'Sanctioned Port AIS Declared Destination', date:'10/12/2024 06:00 UTC', detail:'AIS destination indicates a flagged port location' },
+      { tone:'amber', label:'Loitering Activity',                       date:'10/22/2024 18:30 UTC', detail:'Extended loitering in monitored waters' },
+      { tone:'red',   label:'Suspicious STS',                           date:'11/05/2024 21:10 UTC', detail:'Ship-to-ship transfer with sanctioned vessel detected' },
+      { tone:'blue',  label:'Overall Compliance Status',                date:'11/12/2024 15:25 UTC', detail:'Compliance status updated — multiple risk indicators detected' },
+    ],
+  },
+  'EASTERN PEARL': {
+    flagEmoji: FLAG.HongKong, built:'2017', type:'Container Ship', risk:45, riskTone:'good',
+    callSign:'VRPE5', exhaust:'Funnel Markers', shipBuilder:'Jiangnan Shipyard', yearBuilt:'2017', manager:'Orient Container Lines / Pearl River Ship Management',
+    flag:{label:'Hong Kong', emoji:FLAG.HongKong}, classSoc:'China Classification Society', piClub:'The London P&I Club', length:'334.0 m', width:'45.8 m',
+    grossTonnage:'141,000', dwt:'165,000', teu:'13,800', lastSurvey:'2024-11-15 (UTC)',
+    activity:[
+      { tone:'red',   label:'Suspicious Activity',             date:'11/20/2024 03:40 UTC', detail:'AIS disabled for 52 hours transiting a sanctioned corridor' },
+      { tone:'red',   label:'Suspicious STS',            date:'11/28/2024 22:05 UTC', detail:'Ship-to-ship transfer with sanctioned vessel detected' },
+      { tone:'amber', label:'Sanctioned Port Call',      date:'12/04/2024 10:30 UTC', detail:'Port call detected at sanctioned port location' },
+      { tone:'amber', label:'Sanctioned Location STS',   date:'12/09/2024 13:55 UTC', detail:'Transfer detected within a sanctioned maritime zone' },
+      { tone:'blue',  label:'Overall Compliance Status', date:'12/14/2024 17:00 UTC', detail:'Compliance status updated — multiple high-severity indicators' },
+    ],
+  },
+  'ATLANTIC VOYAGER': {
+    flagEmoji: FLAG.Panama, built:'2012', type:'Crude Oil Tanker', risk:19, riskTone:'good',
+    callSign:'3EAV6', exhaust:'Funnel Markers', shipBuilder:'Sumitomo Heavy Industries', yearBuilt:'2012', manager:'Transoceanic Tankers Inc / Panama Marine Services',
+    flag:{label:'Panama', emoji:FLAG.Panama}, classSoc:'American Bureau of Shipping', piClub:'Skuld P&I', length:'250.0 m', width:'44.0 m',
+    grossTonnage:'62,800', dwt:'115,500', teu:'\u2014', lastSurvey:'2024-07-22 (UTC)',
+    activity:[
+      { tone:'amber', label:'Loitering Activity',        date:'08/15/2024 09:20 UTC', detail:'Extended loitering detected in monitored waters' },
+      { tone:'blue',  label:'Sanctioned Port Call',      date:'09/10/2024 12:00 UTC', detail:'Port call screened — flagged for review' },
+      { tone:'amber', label:'Sanctioned Location STS',   date:'10/01/2024 14:40 UTC', detail:'Transfer detected near a sanctioned maritime zone' },
+      { tone:'blue',  label:'Overall Compliance Status', date:'10/08/2024 16:10 UTC', detail:'Compliance status updated — moderate risk indicators present' },
+    ],
+  },
+};
+
+const RISK_INDICATORS = [
+  { icon:'<span class="icon-suspicious" style="width:26px;height:26px"></span>',   name:'SUSPICIOUS ACTIVITY', desc:'High probability of intentionally disabling AIS while still tracking to conceal one\u2019s area' },
+  { icon:'<span class="icon-loitering" style="width:26px;height:26px"></span>', name:'LOITERING',         desc:'Anchoring or drifting in suspicious areas' },
+  { icon:'<span class="icon-port-call" style="width:26px;height:26px"></span>',   name:'PORT CALLS',        desc:'Visits to ports in sanctioned countries' },
+  { icon:'<span class="icon-vessel-sts" style="width:26px;height:26px"></span>',    name:'SHIP TO SHIP',      desc:'High probability of engaging in sanctioned STS with a sanctioned vessel' },
+  { icon:'<span class="icon-identity" style="width:26px;height:26px"></span>',     name:'IDENTITY TAMPERING',desc:'High probability of manipulating digital identity (mmsi/imo) AIS' },
+  { icon:ICO.riFlag,   name:'SANCTIONED FLAG',   desc:'Vessel sailed a flag registry of a sanctioned country\u2019s' },
+  { icon:ICO.riList,   name:'SANCTIONS LIST',    desc:'A vessel added to one of the sanctions lists****' },
+  { icon:ICO.riCo,     name:'SANCTIONS COMPANY', desc:'Company appears on sanctions list' },
+  { icon:'<span class="icon-flag-hopping" style="width:26px;height:26px"></span>', name:'FLAG HOPPING',      desc:'Suspicious flag changes in the past year (Attempt)' },
+];
+
+/* ─────────────────────────── Risk donut ─────────────────────────── */
+function riskTier(score) {
+  if (score <= 10) return { label:'GOOD',         c:'#16a34a', glow:'#86efac' };
+  if (score <= 25) return { label:'AVERAGE RISK', c:'#f97316', glow:'#fed7aa' };
+  return                  { label:'HIGH RISK',    c:'#ef4444', glow:'#fca5a5' };
+}
+function RiskGauge(score) {
+  const risk = riskTier(score);
+  const CX = 100, CY = 108, R = 80, RO = 95, SW = 11;
+  const toRad = d => d * Math.PI / 180;
+  const pt    = (a, r) => [+(CX + r*Math.cos(toRad(a))).toFixed(2), +(CY + r*Math.sin(toRad(a))).toFixed(2)];
+  const [sox, soy] = pt(135, RO);
+  const [eox, eoy] = pt(45,  RO);
+  const GAUGE_MAX = 50, GAUGE_START = 135, GAUGE_SWEEP = 270;
+  const gAngle = s => GAUGE_START + (Math.min(s, GAUGE_MAX) / GAUGE_MAX) * GAUGE_SWEEP;
+  const arcD = (a1, a2, r) => {
+    const [x1,y1] = pt(a1, r), [x2,y2] = pt(a2, r);
+    const sw = ((a2 - a1) % 360 + 360) % 360;
+    return `M ${x1},${y1} A ${r},${r} 0 ${sw > 180 ? 1 : 0},1 ${x2},${y2}`;
+  };
+  const lerpHex = (c1, c2, t) => {
+    const h = s => parseInt(s, 16);
+    const f = (a, b) => Math.round(h(a) + (h(b) - h(a)) * t).toString(16).padStart(2, '0');
+    return '#' + f(c1.slice(1,3),c2.slice(1,3)) + f(c1.slice(3,5),c2.slice(3,5)) + f(c1.slice(5,7),c2.slice(5,7));
+  };
+  const gaugeColor = s => {
+    const stops = [[0,'#22c55e'],[10,'#eab308'],[25,'#f97316'],[50,'#ef4444']];
+    for (let i = 0; i < stops.length - 1; i++) {
+      if (s <= stops[i+1][0]) {
+        const t = (s - stops[i][0]) / (stops[i+1][0] - stops[i][0]);
+        return lerpHex(stops[i][1], stops[i+1][1], t);
+      }
+    }
+    return stops[stops.length-1][1];
+  };
+  const N = 54;
+  const segPaths = Array.from({length: N}, (_, i) => {
+    const a1 = gAngle(i * GAUGE_MAX / N);
+    const a2 = gAngle((i + 1) * GAUGE_MAX / N);
+    const mid = (i + 0.5) * GAUGE_MAX / N;
+    const filled = mid <= score;
+    return `<path d="${arcD(a1, a2, R)}" fill="none" stroke="${filled ? gaugeColor(mid) : '#e2e8f0'}" stroke-width="${SW}" stroke-linecap="butt"/>`;
+  }).join('');
+  const glowColor = score <= 10 ? '#86efac' : score <= 25 ? '#fcd34d' : '#fca5a5';
+  const fillTipA  = gAngle(Math.min(score, GAUGE_MAX));
+  const fillTipB  = gAngle(Math.max(0, Math.min(score, GAUGE_MAX) - GAUGE_MAX * 0.08));
+  const glowPath  = score > 0
+    ? `<path d="${arcD(fillTipB, fillTipA, R)}" fill="none" stroke="${glowColor}" stroke-width="${SW + 8}" stroke-linecap="round" opacity="0.3"/>`
+    : '';
+  const gid = 'rsGlow_' + Math.random().toString(36).slice(2, 9);
+  return `
+  <svg class="gauge-svg" viewBox="0 0 200 192" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <radialGradient id="${gid}" cx="50%" cy="55%" r="42%">
+        <stop offset="0%" stop-color="${risk.glow}" stop-opacity="0.55"/>
+        <stop offset="100%" stop-color="${risk.glow}" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="100" cy="108" rx="70" ry="60" fill="url(#${gid})"/>
+    <path d="M ${sox},${soy} A ${RO},${RO} 0 1,1 ${eox},${eoy}"
+      fill="none" stroke="#dde4ef" stroke-width="1.5" stroke-dasharray="3 8.2" stroke-linecap="round"/>
+    ${glowPath}
+    ${segPaths}
+    <text x="100" y="122" text-anchor="middle" font-size="52" font-weight="800" fill="#0f172a" font-family="Inter,sans-serif">${score}</text>
+  </svg>`;
+}
+function RiskGuide(score) {
+  const cards = [
+    { name:'Good',       range:'0 – 10',   pct:14, c:'#16a34a', bg:'#f0fdf4', bd:'#bbf7d0', icoBg:'#dcfce7',
+      ico:`<svg width="12" height="12" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>` },
+    { name:'Average',    range:'10 – 25',  pct:55, c:'#d97706', bg:'#fffbeb', bd:'#fde68a', icoBg:'#fef3c7',
+      ico:`<svg width="12" height="12" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16" stroke-width="3"/></svg>` },
+    { name:'Below Avg.', range:'25 – 100', pct:31, c:'#dc2626', bg:'#fff1f2', bd:'#fecdd3', icoBg:'#fee2e2',
+      ico:`<svg width="12" height="12" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>` },
+  ];
+  const activeIdx = score <= 10 ? 0 : score <= 25 ? 1 : 2;
+  return `
+  <div class="risk-guide">
+    ${cards.map((c, i) => `
+      <div class="rg-card" style="background:${c.bg};border-color:${c.bd};${i===activeIdx ? 'box-shadow:0 0 0 2px '+c.c+'33;' : ''}">
+        <div class="rg-row">
+          <div class="rg-ico" style="background:${c.icoBg}">${c.ico}</div>
+          <div style="min-width:0;flex:1">
+            <div class="rg-name" style="color:${c.c}">${c.name}</div>
+            <div class="rg-range">${c.range}</div>
+          </div>
+          <div class="rg-pct">${c.pct}%</div>
+        </div>
+        <div class="rg-bar"><span style="width:${c.pct}%;background:${c.c}"></span></div>
+      </div>`).join('')}
+  </div>`;
+}
+
+/* ─────────────────────────── Section components ─────────────────────────── */
+function MetaBar() {
+  return `
+  <div class="meta-bar">
+    <div class="flex items-center gap-6 flex-wrap">
+      <span class="meta-item">${ICO.clock}<span class="lbl">Generated on:</span><span class="val">${REPORT_META.generatedOn}</span></span>
+      <span class="meta-item">${ICO.cal}<span class="lbl">Period:</span><span class="val">${REPORT_META.periodFrom} – ${REPORT_META.periodTo}</span></span>
+    </div>
+    <div class="meta-actions no-print">
+      <button class="meta-btn" id="dl-btn" type="button">${ICO.download}<span>Download</span></button>
+      <button class="meta-btn" id="print-btn" type="button">${ICO.print}<span>Print</span></button>
+    </div>
+  </div>`;
+}
+
+function listPhrase(arr) {
+  if (arr.length <= 1) return arr[0] || '';
+  if (arr.length === 2) return arr[0] + ' and ' + arr[1];
+  return arr.slice(0, -1).join(', ') + ', and ' + arr[arr.length - 1];
+}
+
+function buildSummary() {
+  const alertCount  = ALERT_SUMMARY.reduce((s, a) => s + a.count, 0);
+  const vesselCount = parseInt(REPORT_META.vesselsCount, 10) || VESSELS.length;
+
+  const topAlertTypes = listPhrase([...ALERT_SUMMARY].sort((a, b) => b.count - a.count).slice(0, 3).map(a => a.label));
+
+  const risks = VESSELS.map(v => DETAILS[v.name] && DETAILS[v.name].risk).filter(x => x != null);
+  const avg = risks.reduce((s, r) => s + r, 0) / (risks.length || 1);
+  const riskLevel = { 'GOOD': 'low', 'AVERAGE RISK': 'moderate', 'HIGH RISK': 'elevated' }[riskTier(avg).label] || 'moderate';
+
+  const watch = VESSELS.filter(v => ((DETAILS[v.name] && DETAILS[v.name].risk) || 0) > 25).map(v => v.name);
+  const watchList = watch.length ? listPhrase(watch) : 'none';
+
+  const toneCount = { red: 0, amber: 0, blue: 0 };
+  VESSELS.forEach(v => ((DETAILS[v.name] && DETAILS[v.name].activity) || [])
+    .filter(a => a.label !== 'Sanctioned Port AIS Declared Destination')
+    .forEach(a => { toneCount[a.tone] = (toneCount[a.tone] || 0) + 1; }));
+  const domTone = Object.entries(toneCount).sort((a, b) => b[1] - a[1])[0][0];
+  const dominantSeverity = { red: 'high severity', amber: 'moderate severity', blue: 'informational' }[domTone] || 'moderate severity';
+
+  const b = (x) => `<strong style="color:#0f172a;font-weight:700">${x}</strong>`;
+  return {
+    p1: `This reporting period identified ${b(alertCount)} alerts across ${b(vesselCount)} vessels. The primary alert categories were ${b(topAlertTypes)}, with overall fleet risk assessed as ${b(riskLevel)}.`,
+    p2: `The following vessels require continued monitoring: ${b(watchList)}. Most alerts were classified as ${b(dominantSeverity)}, with no critical operational disruptions detected unless otherwise noted.`,
+  };
+}
+
+function SummaryCard() {
+  const s = buildSummary();
+  return `
+  <section class="report-card" id="summary-card">
+    <div class="sec-head">Summary</div>
+    <div class="sec-body">
+      <p class="text-[12.5px] text-ink-600 leading-[1.7] max-w-[920px]">${s.p1}</p>
+      <p class="text-[12.5px] text-ink-600 leading-[1.7] max-w-[920px]" style="margin-top:12px">${s.p2}</p>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <span class="stat-icon"><i data-lucide="ship" style="width:22px;height:22px"></i></span>
+          <span class="stat-num">${REPORT_META.vesselsCount}</span>
+          <span class="stat-label">Vessels Count</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon"><i data-lucide="triangle-alert" style="width:22px;height:22px"></i></span>
+          <span class="stat-num">${REPORT_META.suspicious}</span>
+          <span class="stat-label">Vessel With Alerts</span>
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+
+/* Alert Type Summary — fleet-wide alert counts by indicator type */
+const ALERT_SUMMARY = [
+  { label:'Sanctioned Port Call',                     icon:'anchor', iconClass:'icon-port-call', count:34,  flagged:true, desc:'Visits to ports in sanctioned countries' },
+  { label:'Sanctioned Location STS',                  icon:'ship', iconClass:'icon-location-sts', count:11,  flagged:true, desc:'High probability of engaging in sanctioned STS within a sanctioned location' },
+  { label:'Suspicious Activity',                      icon:'send', iconClass:'icon-suspicious',  count:193, desc:'High probability of intentionally disabling AIS while still tracking to conceal one\u2019s area' },
+  { label:'Suspicious STS',                           icon:'ship', iconClass:'icon-vessel-sts', count:39, desc:'High probability of engaging in sanctioned STS with a sanctioned vessel' },
+  { label:'Loitering Activity',                       icon:'circle-dashed', iconClass:'icon-loitering', count:25, desc:'Anchoring or drifting in suspicious areas' },
+];
+
+function AlertTypeSummaryCard() {
+  return `
+  <section class="report-card">
+    <div class="sec-head">Alert Type Summary</div>
+    <div class="sec-body" style="padding:0">
+      <table class="alert-table">
+        <thead>
+          <tr><th>Alert Type</th><th>&#8470; of Alerts</th></tr>
+        </thead>
+        <tbody>
+          ${ALERT_SUMMARY.map(a => `
+          <tr class="${a.flagged ? 'at-flagged' : ''}">
+            <td data-label="Alert Type"><span class="at-name">${a.iconClass ? `<span class="${a.iconClass}"></span>` : `<i data-lucide="${a.icon}"></i>`}${a.label}</span>${a.desc ? `<div class="at-desc">${a.desc}</div>` : ''}</td>
+            <td class="at-count" data-label="\u2116 of Alerts">${a.count}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function VesselRow(v) {
+  const det = DETAILS[v.name];
+  const alerts = det ? det.activity.filter(a => a.label !== 'Sanctioned Port AIS Declared Destination').length : 0;
+  const idx = VESSELS.indexOf(v);
+  return `
+          <tr>
+            <td class="vname" data-label="Name"><a href="#vessel-card-${idx}">${v.name}</a></td>
+            <td class="imo" data-label="IMO">${v.imo}</td>
+            <td data-label="Type">${v.type}</td>
+            <td data-label="Flag"><span class="flag-cell">${flagImg(v.flagEmoji, 40, v.flag)}${v.flag}</span></td>
+            <td class="alerts-cell" data-label="No. of Alerts">${alerts}</td>
+            <td data-label="Location(s)">
+              <span style="display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap">
+                ${v.relatedCountries.map(rc =>
+                  `<span class="flag-cell">${flagImg(rc.emoji, 40, rc.label)}${rc.label}</span>`
+                ).join('')}
+              </span>
+            </td>
+          </tr>`;
+}
+
+function VesselGroupRow(label) {
+  return `<tr class="v-group"><td colspan="6" data-label="">${label}</td></tr>`;
+}
+
+function VesselsTableCard() {
+  const flagged = VESSELS.slice(0, 3);
+  const others  = VESSELS.slice(3);
+  return `
+  <section class="report-card">
+    <div class="sec-head">Vessels (${VESSELS.length})</div>
+    <div class="sec-body" style="padding:0">
+      <table class="v-table">
+        <thead>
+          <tr>
+            <th>Name</th><th>IMO</th><th>Type</th><th>Flag</th><th>No. of Alerts</th><th>Location(s)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${VesselGroupRow('Vessels with Sanctioned Port Calls or Sanctioned Location STS')}
+          ${flagged.map(VesselRow).join('')}
+          ${VesselGroupRow('Vessels with other alerts')}
+          ${others.map(VesselRow).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function ActivityRow(a) {
+  const ic = a.tone === 'red' ? 'red' : a.tone === 'blue' ? 'blue' : 'amber';
+  const icon = a.tone === 'red'  ? ICO.actSend
+            : a.tone === 'blue' ? ICO.actAnchor
+            : ICO.actTri;
+  // pick more themed icons by label keywords
+  let chosen = icon;
+  const L = a.label.toLowerCase();
+  if      (L.includes('suspicious activity') || L.includes('dark')) chosen = '<span class="icon-suspicious"></span>';
+  else if (L.includes('port call'))  chosen = '<span class="icon-port-call"></span>';
+  else if (L.includes('loitering'))  chosen = '<span class="icon-loitering"></span>';
+  else if (L.includes('location'))   chosen = '<span class="icon-location-sts"></span>';
+  else if (L.includes('suspicious')) chosen = '<span class="icon-vessel-sts"></span>';
+  else if (L.includes('compliance')) chosen = ICO.actFlag;
+  else if (L.includes('declared'))   chosen = ICO.actTri;
+
+  // Contextual warning note: explicit a.note, otherwise auto-added to high-severity (red) rows
+  const NOTE_TRI = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+  const deriveNote = () => {
+    if (L.includes('sts'))                                 return 'Event occurred in a heavy GNSS jamming region (Persian Gulf)';
+    if (L.includes('suspicious') || L.includes('dark'))    return 'AIS transmission gap overlaps a known spoofing corridor';
+    return 'Counterparty vessel appears on the OFAC SDN list';
+  };
+  const noteText = a.note || (a.tone === 'red' ? deriveNote() : '');
+
+  return `
+  <tr>
+    <td data-label="Type"><span class="notif"><span class="ni ${ic}">${chosen}</span>${a.label}</span></td>
+    <td class="date" data-label="Date">${a.date}</td>
+    <td data-label="Details">${a.detail}${noteText ? `<div class="ra-note">${NOTE_TRI}<span>${noteText}</span></div>` : ''}</td>
+  </tr>`;
+}
+
+function VesselDetailsCard(v, idx) {
+  const d = DETAILS[v.name];
+  if (!d) return '';
+  return `
+  <section class="report-card vessel-detail-card" id="vessel-card-${idx}" data-vessel-name="${v.name}">
+    <div class="sec-head">Vessel Details</div>
+    <div class="vd-head">
+      <div class="vd-flag-block">
+        <span class="vd-flag">${flagImg(FLAG[d.flag.label] || d.flagEmoji, 80, d.flag.label)}</span>
+        <div style="min-width:0">
+          <div class="vd-title"><a href="../VesselDetails.html" style="color:inherit;text-decoration:none">${v.name}</a></div>
+          <div class="vd-sub">
+            IMO ${v.imo}
+            <br/>Built ${d.built}<span class="sep">|</span>${d.type}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="vd-body">
+      <div class="risk-block">
+        <span class="risk-label">Risk Score</span>
+        <div class="gauge-card">
+          ${RiskGauge(d.risk)}
+          <div class="gauge-pill">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="${riskTier(d.risk).c}" stroke-width="2.5" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.8" fill="${riskTier(d.risk).c}"/></svg>
+            <span class="pill-lbl" style="color:${riskTier(d.risk).c}">${riskTier(d.risk).label}</span>
+          </div>
+        </div>
+        ${RiskGuide(d.risk)}
+      </div>
+      <div class="vd-spec">
+        <div class="vd-spec-head">Vessel Details</div>
+        <table class="spec-table">
+          <tbody>
+            <tr>
+              <th>Call Sign</th><td>${d.callSign}</td>
+              <th>Flag</th><td class="flagval"><span>${flagImg(d.flag.emoji, 40, d.flag.label)}${d.flag.label}</span></td>
+            </tr>
+            <tr>
+              <th>Gross Tonnage</th><td>${d.grossTonnage}</td>
+              <th>DWT</th><td>${d.dwt}</td>
+            </tr>
+            <tr>
+              <th>Classification Society</th><td>${d.classSoc}</td>
+              <th>Ship Builder</th><td>${d.shipBuilder}</td>
+            </tr>
+            <tr>
+              <th>P&amp;I Club</th><td>${d.piClub}</td>
+              <th>Year Built</th><td>${d.yearBuilt}</td>
+            </tr>
+            <tr>
+              <th>Length</th><td>${d.length}</td>
+              <th>Width</th><td>${d.width}</td>
+            </tr>
+            <tr>
+              <th>Last PSC Inspection</th><td colspan="3">${d.lastSurvey}</td>
+            </tr>
+            <tr>
+              <th>Manager / Operator</th><td colspan="3">${d.manager}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="ra-wrap">
+      <div class="ra-title">Alerts(${d.activity.filter(a => a.label !== 'Sanctioned Port AIS Declared Destination').length})</div>
+      <table class="ra-table">
+        <thead>
+          <tr><th>Type</th><th>Date</th><th>Details</th></tr>
+        </thead>
+        <tbody>
+          ${d.activity.filter(a => a.label !== 'Sanctioned Port AIS Declared Destination').map(ActivityRow).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function RiskDescCard() {
+  return `
+  <section class="rid-card">
+    <div class="rid-title">Risk Indicator Descriptions</div>
+    <div class="rid-grid">
+      ${RISK_INDICATORS.map(r => `
+        <div class="rid-item">
+          <span class="rid-icon">${r.icon}</span>
+          <span class="rid-name">${r.name}</span>
+          <span class="rid-desc">${r.desc}</span>
+        </div>
+      `).join('')}
+    </div>
+  </section>`;
+}
+
+function FloatingNav() {
+  return `
+  <div id="vessel-fnav" class="vessel-fnav no-print" role="navigation" aria-label="Vessel navigation" aria-hidden="true">
+    <button class="fnav-btn" data-fnav="up" type="button" title="Previous vessel" aria-label="Previous vessel"><i data-lucide="chevron-up"></i></button>
+    <span class="fnav-sep"></span>
+    <button class="fnav-btn fnav-list" data-fnav="summary" type="button" title="Back to summary" aria-label="Back to summary"><i data-lucide="list"></i></button>
+    <span class="fnav-sep"></span>
+    <button class="fnav-btn" data-fnav="down" type="button" title="Next vessel" aria-label="Next vessel"><i data-lucide="chevron-down"></i></button>
+  </div>`;
+}
+
+function DisclaimerCard() {
+  return `
+  <section class="report-card disc">
+    <div class="disc-title">Disclaimers</div>
+    <p>* Sanctioned/dark areas are areas for the distributed analysis of the following countries: Iran, Syria, North Korea, Cuba, Venezuela and Crimea (Russia).</p>
+    <p>** Sanctioned countries are Iran, Syria, North Korea, Cuba, Venezuela and Crimea (Russia).</p>
+    <p>*** Vessel lists is U.S. OFAC, SDN List, EU list of targets, UN Security Council Confidential list of targets or vessels flying flag of a sanctioned country.</p>
+  </section>`;
+}
+
+/* ─────────────────────────── Render ─────────────────────────── */
+window.render = function () {
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
+      ${SC.Topbar()}
+      <main class="flex-1 overflow-y-auto scroll-thin" style="background:#f1f5f9">
+        <div class="report-shell">
+          ${MetaBar()}
+          ${SummaryCard()}
+          ${AlertTypeSummaryCard()}
+          ${VesselsTableCard()}
+          ${VESSELS.map(VesselDetailsCard).join('')}
+          ${RiskDescCard()}
+          ${DisclaimerCard()}
+        </div>
+      </main>
+    </div>
+    ${FloatingNav()}
+    ${SC.TweaksPanel()}
+  `;
+  SC.wireChrome();
+
+  // Render Lucide icons (summary stat metrics, etc.)
+  if (window.lucide && typeof window.lucide.createIcons === 'function') {
+    window.lucide.createIcons();
+  }
+
+  /* Floating vessel navigation: appears once the first vessel card scrolls
+     near the top. Up/Down step between vessel detail cards; the list icon
+     jumps back to the Summary card. */
+  (function setupVesselNav() {
+    const main = document.querySelector('main');
+    const fnav = document.getElementById('vessel-fnav');
+    if (!main || !fnav) return;
+    const cards = Array.from(document.querySelectorAll('.vessel-detail-card'));
+    const summary = document.getElementById('summary-card');
+    if (!cards.length) return;
+    const THRESHOLD = 140; // px below the scroll-viewport top that counts as "reached"
+
+    const scrollToEl = (el) => {
+      const top = main.scrollTop + (el.getBoundingClientRect().top - main.getBoundingClientRect().top) - 16;
+      main.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    };
+    const currentIndex = () => {
+      const mt = main.getBoundingClientRect().top;
+      let idx = -1;
+      cards.forEach((c, i) => { if (c.getBoundingClientRect().top - mt <= THRESHOLD) idx = i; });
+      return idx;
+    };
+
+    const upBtn   = fnav.querySelector('[data-fnav="up"]');
+    const downBtn = fnav.querySelector('[data-fnav="down"]');
+    const sumBtn  = fnav.querySelector('[data-fnav="summary"]');
+
+    if (upBtn)   upBtn.onclick   = () => { const i = currentIndex(); scrollToEl(cards[Math.max(0, i - 1)]); };
+    if (downBtn) downBtn.onclick = () => { const i = currentIndex(); if (i < cards.length - 1) scrollToEl(cards[i + 1]); };
+    if (sumBtn)  sumBtn.onclick  = () => { if (summary) scrollToEl(summary); };
+
+    const update = () => {
+      const mt = main.getBoundingClientRect().top;
+      const firstTop = cards[0].getBoundingClientRect().top - mt;
+      const visible = firstTop <= THRESHOLD;
+      fnav.classList.toggle('is-visible', visible);
+      fnav.setAttribute('aria-hidden', visible ? 'false' : 'true');
+      const i = currentIndex();
+      if (upBtn)   upBtn.disabled   = i <= 0;
+      if (downBtn) downBtn.disabled = i >= cards.length - 1;
+    };
+    main.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  /* Vessel-name links jump to that vessel's detail card within the scroll container */
+  (function setupVesselLinks() {
+    const main = document.querySelector('main');
+    if (!main) return;
+    document.querySelectorAll('.v-table a[href^="#vessel-card-"]').forEach(a => {
+      a.addEventListener('click', (e) => {
+        const el = document.getElementById(a.getAttribute('href').slice(1));
+        if (!el) return;
+        e.preventDefault();
+        const top = main.scrollTop + (el.getBoundingClientRect().top - main.getBoundingClientRect().top) - 16;
+        main.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+      });
+    });
+  })();
+
+  /* Chrome was authored for pages at the project root. We're one folder
+     down, so retarget every relative link/image in the shell to '../'.
+     Scope is the whole document because wireChrome() relocates the
+     notification + user popovers out of <header> into <body> to escape
+     the sticky stacking context. Run twice (now + next tick) in case
+     anything in the chrome lazily re-renders. */
+  const rebase = () => {
+    document.querySelectorAll('a[href]').forEach(a => {
+      const h = a.getAttribute('href');
+      if (!h || /^(?:[a-z]+:|\/\/|#|\?|\.\.\/)/i.test(h) || h.startsWith('/')) return;
+      a.setAttribute('href', '../' + h);
+    });
+    document.querySelectorAll('img[src]').forEach(img => {
+      const s = img.getAttribute('src');
+      if (!s || /^(?:[a-z]+:|\/\/|\.\.\/|data:)/i.test(s) || s.startsWith('/')) return;
+      img.setAttribute('src', '../' + s);
+    });
+  };
+  rebase();
+  setTimeout(rebase, 0);
+
+  // Print + download wiring
+  const printBtn = document.getElementById('print-btn');
+  if (printBtn) printBtn.addEventListener('click', () => window.print());
+  const dlBtn = document.getElementById('dl-btn');
+  if (dlBtn) dlBtn.addEventListener('click', () => window.print()); // demo: print-to-PDF
+
+  // Re-stamp page title with report period
+  document.title = `Weekly Fleet Monitoring Report (${REPORT_META.periodFrom} – ${REPORT_META.periodTo}) — Real World`;
+};
+
+window.render();
+</script>
+</body>
+</html>
