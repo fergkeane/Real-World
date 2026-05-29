@@ -51,7 +51,7 @@
   /* Summary stat cards (light blue boxes) */
   .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:8px}
   .stat-card{background:var(--brand-50,#eff6ff);border:1px solid var(--brand-100,#dbeafe);border-radius:10px;padding:18px 14px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
-  .stat-card .stat-icon{width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:var(--brand-600,#2563eb);margin-bottom:2px}
+  .stat-card .stat-icon{width:58px;height:58px;display:flex;align-items:center;justify-content:center;color:var(--brand-600,#2563eb);background:var(--brand-100,#dbeafe);border-radius:999px;margin-bottom:6px}
   .stat-card .stat-num{font-family:'Exo','Inter',sans-serif;font-size:30px;font-weight:700;color:var(--brand-700,#1d4ed8);line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
   .stat-card .stat-label{font-size:11.5px;font-weight:500;color:#475569}
   @media(max-width:760px){ .stat-grid{grid-template-columns:repeat(2,1fr)} }
@@ -78,8 +78,9 @@
   .alert-table tbody td{padding:12px 16px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
   .alert-table tbody tr:last-child td{border-bottom:0}
   .alert-table tbody tr:hover td{background:#f8fafc}
-  .alert-table .at-name{display:inline-flex;align-items:center;gap:11px;color:var(--brand-600,#2563eb);font-weight:600;font-size:13px}
-  .alert-table .at-name svg{width:19px;height:19px;color:var(--brand-600,#2563eb);flex-shrink:0}
+  .alert-table .at-name{display:inline-flex;align-items:center;gap:11px;color:#0f172a;font-weight:600;font-size:13px}
+  .alert-table .at-name svg{width:19px;height:19px;color:#475569;flex-shrink:0}
+  .alert-table .at-name [class^="icon-"]{color:#475569}
   .alert-table .at-desc{margin-top:4px;padding-left:30px;font-size:11.5px;color:#64748b;line-height:1.5;max-width:560px}
   /* Custom masked icon — inherits currentColor so it themes (blue in table, white on navy card) */
   .icon-suspicious{display:inline-block;width:23px;height:23px;flex-shrink:0;background-color:currentColor;-webkit-mask:url('../images/icon-alert-suspicious-activity.svg') center/contain no-repeat;mask:url('../images/icon-alert-suspicious-activity.svg') center/contain no-repeat}
@@ -94,8 +95,8 @@
   .ra-table .notif .ni .icon-loitering{width:17px;height:17px}
   .icon-identity{display:inline-block;width:23px;height:23px;flex-shrink:0;background-color:currentColor;-webkit-mask:url('../images/icon-alert-identity-tampering.svg') center/contain no-repeat;mask:url('../images/icon-alert-identity-tampering.svg') center/contain no-repeat}
   .icon-flag-hopping{display:inline-block;width:23px;height:23px;flex-shrink:0;background-color:currentColor;-webkit-mask:url('../images/icon-alert-flag-hopping.svg') center/contain no-repeat;mask:url('../images/icon-alert-flag-hopping.svg') center/contain no-repeat}
-  .alert-table .at-count{color:var(--brand-700,#1d4ed8);font-weight:600;font-variant-numeric:tabular-nums}
-  .alert-table tr.at-flagged td:first-child{border-left:3px solid #dc2626}
+  .alert-table .at-count{color:#0f172a;font-weight:600;font-variant-numeric:tabular-nums}
+  .alert-table tr.at-flagged td:first-child{border-left:3px solid var(--brand-600,#2563eb)}
 
   /* Vessel details body */
   .vd-head{display:flex;align-items:flex-start;gap:14px;padding:18px 22px 8px}
@@ -159,6 +160,10 @@
   .ra-table .notif .ni.red{background:#fee2e2;color:#dc2626}
   .ra-table .notif .ni.amber{background:#fef3c7;color:#d97706}
   .ra-table .date{color:#475569;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:11.5px}
+  .ra-table .loc-cell{color:#475569;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:11.5px}
+  .ra-table .dateloc-cell{font-variant-numeric:tabular-nums;white-space:nowrap;vertical-align:top}
+  .ra-table .dateloc-cell .dl-date{color:#475569;font-size:11.5px}
+  .ra-table .dateloc-cell .dl-loc{color:#94a3b8;font-size:11px;margin-top:3px}
   .ra-table .ra-note{margin-top:5px;display:flex;align-items:flex-start;gap:5px;font-size:11px;font-weight:500;color:#e07d18;line-height:1.45}
   .ra-table .ra-note svg{width:13px;height:13px;flex-shrink:0;margin-top:1px}
 
@@ -167,7 +172,7 @@
   .rid-title{font-family:'Exo','Inter',sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--brand-200,#bfdbfe);margin-bottom:18px}
   .rid-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px 28px}
   .rid-item{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:6px 4px}
-  .rid-item .rid-icon{width:38px;height:38px;display:flex;align-items:center;justify-content:center;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:10px}
+  .rid-item .rid-icon{width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:999px}
   .rid-item .rid-name{font-family:'Exo','Inter',sans-serif;font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff;margin-top:2px}
   .rid-item .rid-desc{font-size:11.5px;color:var(--brand-200,#bfdbfe);line-height:1.5;max-width:260px}
   @media(max-width:760px){ .rid-grid{grid-template-columns:repeat(2,1fr)} }
@@ -223,7 +228,7 @@
       font-size:10px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:#94a3b8;
     }
     /* keep the red flag accent on stacked flagged rows */
-    .alert-table tr.at-flagged { border-left:3px solid #dc2626; }
+    .alert-table tr.at-flagged { border-left:3px solid var(--brand-600,#2563eb); }
     .alert-table tr.at-flagged td:first-child { border-left:0; }
     .alert-table .at-desc{padding-left:0}
     /* Alert Type Summary keeps a 2-column row on mobile: type left, count right */
@@ -390,7 +395,7 @@ const DETAILS = {
     activity:[
       { tone:'amber', label:'Sanctioned Port AIS Declared Destination', date:'2023-04-02 — 2023-04-01 (4:30 UTC)',  detail:'Vessel AIS destination indicates sanctioned port location' },
       { tone:'blue',  label:'Sanctioned Port Call',                     date:'2023-04-02 — 2023-04-01 (4:30 UTC)',  detail:'Port call detected at sanctioned port location' },
-      { tone:'amber', label:'Loitering Activity',                       date:'2023-05-10 — 2023-04-01 (11:54 UTC)', detail:'Extended loitering detected in sanctioned waters' },
+      { tone:'amber', label:'Loitering Activity',                       date:'2023-05-10 11:54 — 2023-05-11 14:30 UTC (26h 36m)', detail:'Extended loitering detected in sanctioned waters' },
       { tone:'red',   label:'Suspicious STS',                           date:'2023-05-15 — 2023-05-22 (09:20 UTC)', detail:'Ship-to-ship transfer with sanctioned vessel detected' },
       { tone:'amber', label:'Sanctioned Location STS',                  date:'2023-05-20 — 2023-05-16 (14:45 UTC)', detail:'Ship-to-ship transfer detected in sanctioned location' },
       { tone:'blue',  label:'Overall Compliance Status',                date:'2023-05-25 — 2023-05-22 (16:00 UTC)', detail:'Compliance status updated — Multiple risk indicators detected' },
@@ -405,7 +410,7 @@ const DETAILS = {
     activity:[
       { tone:'amber', label:'Sanctioned Port AIS Declared Destination', date:'12/20/2024 — 12/25/2024',     detail:'Vessel AIS destination indicates sanctioned port location' },
       { tone:'blue',  label:'Sanctioned Port Call',                     date:'12/26/2024',                  detail:'Port call detected at sanctioned port location' },
-      { tone:'amber', label:'Loitering Activity',                       date:'12/27/2024 14:30 UTC',        detail:'Extended loitering detected in sanctioned waters' },
+      { tone:'amber', label:'Loitering Activity',                       date:'12/27/2024 14:30 — 12/28/2024 19:00 UTC (28h 30m)',        detail:'Extended loitering detected in sanctioned waters' },
       { tone:'red',   label:'Suspicious STS',                           date:'01/02/2025 09:15 UTC',        detail:'Ship-to-ship transfer with sanctioned vessel detected' },
       { tone:'amber', label:'Sanctioned Location STS',                  date:'01/03/2025 11:30 UTC',        detail:'Ship-to-ship transfer detected in sanctioned location' },
       { tone:'blue',  label:'Overall Compliance Status',                date:'01/04/2025 16:45 UTC',        detail:'Compliance status updated — Multiple risk indicators detected' },
@@ -420,7 +425,7 @@ const DETAILS = {
     activity:[
       { tone:'amber', label:'Sanctioned Port AIS Declared Destination', date:'10/15/2024 — 10/18/2024', detail:'Vessel AIS destination indicates sanctioned port location' },
       { tone:'blue',  label:'Sanctioned Port Call',                     date:'10/20/2024 14:00 UTC',    detail:'Port call detected at sanctioned port location' },
-      { tone:'amber', label:'Loitering Activity',                       date:'10/25/2024 09:30 UTC',    detail:'Extended loitering detected in sanctioned waters' },
+      { tone:'amber', label:'Loitering Activity',                       date:'10/25/2024 09:30 — 10/26/2024 16:45 UTC (31h 15m)',    detail:'Extended loitering detected in sanctioned waters' },
       { tone:'red',   label:'Suspicious STS',                           date:'11/02/2024 16:20 UTC',    detail:'Ship-to-ship transfer with sanctioned vessel detected' },
       { tone:'amber', label:'Sanctioned Location STS',                  date:'11/10/2024 11:45 UTC',    detail:'Ship-to-ship transfer detected in sanctioned location' },
       { tone:'blue',  label:'Overall Compliance Status',                date:'12/01/2024 08:00 UTC',    detail:'Compliance status updated — Multiple risk indicators detected' },
@@ -435,7 +440,7 @@ const DETAILS = {
     activity:[
       { tone:'amber', label:'Sanctioned Port AIS Declared Destination', date:'01/01/2025 08:00 UTC', detail:'Vessel AIS destination indicates sanctioned port location' },
       { tone:'blue',  label:'Sanctioned Port Call',                     date:'01/02/2025 11:30 UTC', detail:'Port call detected at sanctioned port location' },
-      { tone:'amber', label:'Loitering Activity',                       date:'01/03/2025 10:15 UTC', detail:'Extended loitering detected in sanctioned waters' },
+      { tone:'amber', label:'Loitering Activity',                       date:'01/03/2025 10:15 — 01/04/2025 13:50 UTC (27h 35m)', detail:'Extended loitering detected in sanctioned waters' },
       { tone:'red',   label:'Suspicious STS',                           date:'01/04/2025 14:20 UTC', detail:'Ship-to-ship transfer with sanctioned vessel detected' },
       { tone:'amber', label:'Sanctioned Location STS',                  date:'01/06/2025 16:45 UTC', detail:'Ship-to-ship transfer detected in sanctioned location' },
       { tone:'blue',  label:'Overall Compliance Status',                date:'01/07/2025 09:00 UTC', detail:'Compliance status updated — Multiple risk indicators detected' },
@@ -449,7 +454,7 @@ const DETAILS = {
     grossTonnage:'43,950', dwt:'81,600', teu:'\u2014', lastSurvey:'2024-08-12 (UTC)',
     activity:[
       { tone:'blue',  label:'Overall Compliance Status', date:'09/02/2024 10:00 UTC', detail:'Compliance status reviewed — no active risk indicators' },
-      { tone:'amber', label:'Loitering Activity',        date:'10/14/2024 07:45 UTC', detail:'Brief loitering detected outside designated anchorage' },
+      { tone:'amber', label:'Loitering Activity',        date:'10/14/2024 07:45 — 10/15/2024 09:30 UTC (25h 45m)', detail:'Extended loitering detected outside designated anchorage' },
       { tone:'blue',  label:'Sanctioned Port Call',      date:'11/03/2024 13:20 UTC', detail:'Port call screened — cleared, no sanctioned location' },
     ],
   },
@@ -471,7 +476,7 @@ const DETAILS = {
     flag:{label:'Cyprus', emoji:FLAG.Cyprus}, classSoc:'Lloyd\u2019s Register', piClub:'Standard Club', length:'295.0 m', width:'46.4 m',
     grossTonnage:'113,600', dwt:'97,300', teu:'\u2014', lastSurvey:'2024-12-10 (UTC)',
     activity:[
-      { tone:'amber', label:'Loitering Activity',        date:'12/20/2024 11:05 UTC', detail:'Extended loitering near offshore terminal' },
+      { tone:'amber', label:'Loitering Activity',        date:'12/20/2024 11:05 — 12/21/2024 15:40 UTC (28h 35m)', detail:'Extended loitering near offshore terminal' },
       { tone:'blue',  label:'Sanctioned Port Call',      date:'12/28/2024 09:50 UTC', detail:'Port call screened at flagged terminal — under review' },
       { tone:'blue',  label:'Overall Compliance Status', date:'01/02/2025 14:00 UTC', detail:'Compliance status updated — low-level indicators present' },
     ],
@@ -483,7 +488,7 @@ const DETAILS = {
     grossTonnage:'29,400', dwt:'49,990', teu:'\u2014', lastSurvey:'2024-09-30 (UTC)',
     activity:[
       { tone:'amber', label:'Sanctioned Port AIS Declared Destination', date:'10/12/2024 06:00 UTC', detail:'AIS destination indicates a flagged port location' },
-      { tone:'amber', label:'Loitering Activity',                       date:'10/22/2024 18:30 UTC', detail:'Extended loitering in monitored waters' },
+      { tone:'amber', label:'Loitering Activity',                       date:'10/22/2024 18:30 — 10/24/2024 02:10 UTC (31h 40m)', detail:'Extended loitering in monitored waters' },
       { tone:'red',   label:'Suspicious STS',                           date:'11/05/2024 21:10 UTC', detail:'Ship-to-ship transfer with sanctioned vessel detected' },
       { tone:'blue',  label:'Overall Compliance Status',                date:'11/12/2024 15:25 UTC', detail:'Compliance status updated — multiple risk indicators detected' },
     ],
@@ -507,7 +512,7 @@ const DETAILS = {
     flag:{label:'Panama', emoji:FLAG.Panama}, classSoc:'American Bureau of Shipping', piClub:'Skuld P&I', length:'250.0 m', width:'44.0 m',
     grossTonnage:'62,800', dwt:'115,500', teu:'\u2014', lastSurvey:'2024-07-22 (UTC)',
     activity:[
-      { tone:'amber', label:'Loitering Activity',        date:'08/15/2024 09:20 UTC', detail:'Extended loitering detected in monitored waters' },
+      { tone:'amber', label:'Loitering Activity',        date:'08/15/2024 09:20 — 08/16/2024 12:05 UTC (26h 45m)', detail:'Extended loitering detected in monitored waters' },
       { tone:'blue',  label:'Sanctioned Port Call',      date:'09/10/2024 12:00 UTC', detail:'Port call screened — flagged for review' },
       { tone:'amber', label:'Sanctioned Location STS',   date:'10/01/2024 14:40 UTC', detail:'Transfer detected near a sanctioned maritime zone' },
       { tone:'blue',  label:'Overall Compliance Status', date:'10/08/2024 16:10 UTC', detail:'Compliance status updated — moderate risk indicators present' },
@@ -651,8 +656,12 @@ function buildSummary() {
   const avg = risks.reduce((s, r) => s + r, 0) / (risks.length || 1);
   const riskLevel = { 'GOOD': 'low', 'AVERAGE RISK': 'moderate', 'HIGH RISK': 'elevated' }[riskTier(avg).label] || 'moderate';
 
-  const watch = VESSELS.filter(v => ((DETAILS[v.name] && DETAILS[v.name].risk) || 0) > 25).map(v => v.name);
-  const watchList = watch.length ? listPhrase(watch) : 'none';
+  const vLink = 'color:var(--brand-600,#2563eb);font-weight:700;text-decoration:none';
+  const watch = VESSELS.map((v, i) => ({ name: v.name, idx: i, risk: (DETAILS[v.name] && DETAILS[v.name].risk) || 0 }))
+    .filter(o => o.risk > 25);
+  const watchList = watch.length
+    ? listPhrase(watch.map(o => `<a href="#vessel-card-${o.idx}" style="${vLink}">${o.name}</a>`))
+    : 'none';
 
   const toneCount = { red: 0, amber: 0, blue: 0 };
   VESSELS.forEach(v => ((DETAILS[v.name] && DETAILS[v.name].activity) || [])
@@ -664,7 +673,7 @@ function buildSummary() {
   const b = (x) => `<strong style="color:#0f172a;font-weight:700">${x}</strong>`;
   return {
     p1: `This reporting period identified ${b(alertCount)} alerts across ${b(vesselCount)} vessels. The primary alert categories were ${b(topAlertTypes)}, with overall fleet risk assessed as ${b(riskLevel)}.`,
-    p2: `The following vessels require continued monitoring: ${b(watchList)}. Most alerts were classified as ${b(dominantSeverity)}, with no critical operational disruptions detected unless otherwise noted.`,
+    p2: `The following vessels require continued monitoring: ${watch.length ? watchList : b('none')}. Most alerts were classified as ${b(dominantSeverity)}, with no critical operational disruptions detected unless otherwise noted.`,
   };
 }
 
@@ -678,12 +687,12 @@ function SummaryCard() {
       <p class="text-[12.5px] text-ink-600 leading-[1.7] max-w-[920px]" style="margin-top:12px">${s.p2}</p>
       <div class="stat-grid">
         <div class="stat-card">
-          <span class="stat-icon"><i data-lucide="ship" style="width:22px;height:22px"></i></span>
+          <span class="stat-icon"><i data-lucide="ship" style="width:30px;height:30px"></i></span>
           <span class="stat-num">${REPORT_META.vesselsCount}</span>
           <span class="stat-label">Vessels Count</span>
         </div>
         <div class="stat-card">
-          <span class="stat-icon"><i data-lucide="triangle-alert" style="width:22px;height:22px"></i></span>
+          <span class="stat-icon"><i data-lucide="triangle-alert" style="width:30px;height:30px"></i></span>
           <span class="stat-num">${REPORT_META.suspicious}</span>
           <span class="stat-label">Vessel With Alerts</span>
         </div>
@@ -694,11 +703,11 @@ function SummaryCard() {
 
 /* Alert Type Summary — fleet-wide alert counts by indicator type */
 const ALERT_SUMMARY = [
-  { label:'Sanctioned Port Call',                     icon:'anchor', iconClass:'icon-port-call', count:34,  flagged:true, desc:'Visits to ports in sanctioned countries' },
-  { label:'Sanctioned Location STS',                  icon:'ship', iconClass:'icon-location-sts', count:11,  flagged:true, desc:'High probability of engaging in sanctioned STS within a sanctioned location' },
-  { label:'Suspicious Activity',                      icon:'send', iconClass:'icon-suspicious',  count:193, desc:'High probability of intentionally disabling AIS while still tracking to conceal one\u2019s area' },
-  { label:'Suspicious STS',                           icon:'ship', iconClass:'icon-vessel-sts', count:39, desc:'High probability of engaging in sanctioned STS with a sanctioned vessel' },
-  { label:'Loitering Activity',                       icon:'circle-dashed', iconClass:'icon-loitering', count:25, desc:'Anchoring or drifting in suspicious areas' },
+  { label:'Sanctioned Port Call',                     icon:'anchor', iconClass:'icon-port-call', count:34,  vessels:3, flagged:true, desc:'Visits to ports in sanctioned countries' },
+  { label:'Sanctioned Location STS',                  icon:'ship', iconClass:'icon-location-sts', count:11,  vessels:3, flagged:true, desc:'High probability of engaging in sanctioned STS within a sanctioned location' },
+  { label:'Suspicious Activity',                      icon:'send', iconClass:'icon-suspicious',  count:193, vessels:46, desc:'High probability of intentionally disabling AIS while still tracking to conceal one\u2019s area' },
+  { label:'Suspicious STS',                           icon:'ship', iconClass:'icon-vessel-sts', count:39, vessels:21, desc:'High probability of engaging in sanctioned STS with a sanctioned vessel' },
+  { label:'Loitering Activity',                       icon:'circle-dashed', iconClass:'icon-loitering', count:25, vessels:14, desc:'Anchoring or drifting in suspicious areas' },
 ];
 
 function AlertTypeSummaryCard() {
@@ -708,13 +717,14 @@ function AlertTypeSummaryCard() {
     <div class="sec-body" style="padding:0">
       <table class="alert-table">
         <thead>
-          <tr><th>Alert Type</th><th>&#8470; of Alerts</th></tr>
+          <tr><th>Alert Type</th><th>&#8470; of Alerts</th><th>&#8470; of Vessels</th></tr>
         </thead>
         <tbody>
           ${ALERT_SUMMARY.map(a => `
           <tr class="${a.flagged ? 'at-flagged' : ''}">
             <td data-label="Alert Type"><span class="at-name">${a.iconClass ? `<span class="${a.iconClass}"></span>` : `<i data-lucide="${a.icon}"></i>`}${a.label}</span>${a.desc ? `<div class="at-desc">${a.desc}</div>` : ''}</td>
-            <td class="at-count" data-label="\u2116 of Alerts">${a.count}</td>
+            <td class="at-count" data-label="Alerts">${a.count}</td>
+            <td class="at-count" data-label="Vessels">${a.vessels}</td>
           </tr>`).join('')}
         </tbody>
       </table>
@@ -750,10 +760,7 @@ function VesselGroupRow(label) {
 function VesselsTableCard() {
   const flagged = VESSELS.slice(0, 3);
   const others  = VESSELS.slice(3);
-  return `
-  <section class="report-card">
-    <div class="sec-head">Vessels (${VESSELS.length})</div>
-    <div class="sec-body" style="padding:0">
+  const table = (rows) => `
       <table class="v-table">
         <thead>
           <tr>
@@ -761,14 +768,38 @@ function VesselsTableCard() {
           </tr>
         </thead>
         <tbody>
-          ${VesselGroupRow('Vessels with Sanctioned Port Calls or Sanctioned Location STS')}
-          ${flagged.map(VesselRow).join('')}
-          ${VesselGroupRow('Vessels with other alerts')}
-          ${others.map(VesselRow).join('')}
+          ${rows.map(VesselRow).join('')}
         </tbody>
-      </table>
+      </table>`;
+  return `
+  <section class="report-card">
+    <div class="sec-head" style="display:flex;align-items:center;gap:9px"><span style="width:9px;height:9px;border-radius:999px;background:#dc2626;flex-shrink:0"></span>Vessels with Sanctioned Port Calls or Sanctioned Location STS (${flagged.length})</div>
+    <div class="sec-body" style="padding:0">
+      ${table(flagged)}
+    </div>
+  </section>
+  <section class="report-card">
+    <div class="sec-head">Vessels with Other Alerts (${others.length})</div>
+    <div class="sec-body" style="padding:0">
+      ${table(others)}
     </div>
   </section>`;
+}
+
+function deriveAlertLocation(a) {
+  const L = a.label.toLowerCase();
+  if (L.includes('compliance')) return '';
+  let h = 0;
+  const s = a.label + '|' + a.date;
+  for (let i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) >>> 0; }
+  if (L.includes('port call')) {
+    const ports = ['Bandar Abbas, IR', 'Kharg Island, IR', 'Tartus, SY', 'Nampo, KP', 'Bandar-e Mahshahr, IR', 'Banias, SY', 'Jose Terminal, VE'];
+    return ports[h % ports.length];
+  }
+  // Lat/Long for loitering, suspicious STS, suspicious activity, sanctioned location STS (Persian Gulf / Hormuz band)
+  const lat = 24 + (h % 600) / 100;          // 24.000 – 30.000 N
+  const lng = 50 + ((h >>> 3) % 900) / 100;  // 50.000 – 59.000 E
+  return `${lat.toFixed(3)}°N, ${lng.toFixed(3)}°E`;
 }
 
 function ActivityRow(a) {
@@ -795,11 +826,12 @@ function ActivityRow(a) {
     return 'Counterparty vessel appears on the OFAC SDN list';
   };
   const noteText = a.note || (a.tone === 'red' ? deriveNote() : '');
+  const loc = deriveAlertLocation(a);
 
   return `
   <tr>
     <td data-label="Type"><span class="notif"><span class="ni ${ic}">${chosen}</span>${a.label}</span></td>
-    <td class="date" data-label="Date">${a.date}</td>
+    <td class="dateloc-cell" data-label="Date / Location"><div class="dl-date">${a.date}</div>${loc ? `<div class="dl-loc">${loc}</div>` : ''}</td>
     <td data-label="Details">${a.detail}${noteText ? `<div class="ra-note">${NOTE_TRI}<span>${noteText}</span></div>` : ''}</td>
   </tr>`;
 }
@@ -872,7 +904,7 @@ function VesselDetailsCard(v, idx) {
       <div class="ra-title">Alerts(${d.activity.filter(a => a.label !== 'Sanctioned Port AIS Declared Destination').length})</div>
       <table class="ra-table">
         <thead>
-          <tr><th>Type</th><th>Date</th><th>Details</th></tr>
+          <tr><th>Type</th><th>Date / Location</th><th>Details</th></tr>
         </thead>
         <tbody>
           ${d.activity.filter(a => a.label !== 'Sanctioned Port AIS Declared Destination').map(ActivityRow).join('')}
