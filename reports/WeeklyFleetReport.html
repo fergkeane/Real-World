@@ -231,14 +231,17 @@
     .alert-table tr.at-flagged { border-left:3px solid var(--brand-600,#2563eb); }
     .alert-table tr.at-flagged td:first-child { border-left:0; }
     .alert-table .at-desc{padding-left:0}
-    /* Alert Type Summary keeps a 2-column row on mobile: type left, count right */
-    .alert-table tr{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-    .alert-table td{padding:10px 14px;width:auto}
-    .alert-table td:first-child{flex:1 1 auto;min-width:0}
+    /* Alert Type Summary: stacked rows on mobile — type on top, each count its own label-left/value-right row */
+    .alert-table tr{display:block}
+    .alert-table td{padding:8px 14px;width:100%}
+    .alert-table td:first-child{padding-top:12px}
     .alert-table .at-name{flex-wrap:wrap}
     .alert-table .at-desc{max-width:none}
-    .alert-table .at-count{flex:0 0 auto;text-align:right}
+    .alert-table td.at-count{display:flex;align-items:center;justify-content:space-between;gap:14px;border-top:1px solid #f5f7fa}
+    .alert-table .at-count{text-align:right;font-size:14px}
     .alert-table td::before{display:none}
+    .alert-table td.at-count::before{display:block;margin:0;content:attr(data-label);
+      font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#94a3b8;text-align:left}
 
     /* Vessels card: compact label-left / value-right rows on mobile */
     .v-table tr{padding:2px 2px;margin-bottom:8px}
@@ -723,8 +726,8 @@ function AlertTypeSummaryCard() {
           ${ALERT_SUMMARY.map(a => `
           <tr class="${a.flagged ? 'at-flagged' : ''}">
             <td data-label="Alert Type"><span class="at-name">${a.iconClass ? `<span class="${a.iconClass}"></span>` : `<i data-lucide="${a.icon}"></i>`}${a.label}</span>${a.desc ? `<div class="at-desc">${a.desc}</div>` : ''}</td>
-            <td class="at-count" data-label="Alerts">${a.count}</td>
-            <td class="at-count" data-label="Vessels">${a.vessels}</td>
+            <td class="at-count" data-label="№ of Alerts">${a.count}</td>
+            <td class="at-count" data-label="№ of Vessels">${a.vessels}</td>
           </tr>`).join('')}
         </tbody>
       </table>
@@ -758,8 +761,9 @@ function VesselGroupRow(label) {
 }
 
 function VesselsTableCard() {
-  const flagged = VESSELS.slice(0, 3);
-  const others  = VESSELS.slice(3);
+  const portCalls   = VESSELS.slice(0, 4);
+  const locationSts = VESSELS.slice(4, 6);
+  const others      = VESSELS.slice(6);
   const table = (rows) => `
       <table class="v-table">
         <thead>
@@ -771,11 +775,18 @@ function VesselsTableCard() {
           ${rows.map(VesselRow).join('')}
         </tbody>
       </table>`;
+  const dot = `<span style="width:9px;height:9px;border-radius:999px;background:#dc2626;flex-shrink:0"></span>`;
   return `
   <section class="report-card">
-    <div class="sec-head" style="display:flex;align-items:center;gap:9px"><span style="width:9px;height:9px;border-radius:999px;background:#dc2626;flex-shrink:0"></span>Vessels with Sanctioned Port Calls or Sanctioned Location STS (${flagged.length})</div>
+    <div class="sec-head" style="display:flex;align-items:center;gap:9px">${dot}Vessels with Sanctioned Port Calls (${portCalls.length})</div>
     <div class="sec-body" style="padding:0">
-      ${table(flagged)}
+      ${table(portCalls)}
+    </div>
+  </section>
+  <section class="report-card">
+    <div class="sec-head" style="display:flex;align-items:center;gap:9px">${dot}Vessels with Sanctioned Location STS (${locationSts.length})</div>
+    <div class="sec-body" style="padding:0">
+      ${table(locationSts)}
     </div>
   </section>
   <section class="report-card">

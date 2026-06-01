@@ -83,6 +83,47 @@
   .gen-btn{width:100%;height:46px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--brand-600,#2563eb),var(--brand-500,#3b82f6));color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;transition:opacity .15s}
   .gen-btn:hover{opacity:.92}
   .gen-btn:disabled{opacity:.6;cursor:not-allowed}
+
+  /* Weekly Fleet Reports table → stacked cards on mobile */
+  @media (max-width: 640px){
+    .fleet-table{min-width:0 !important;display:block;}
+    .fleet-table thead{display:none;}
+    .fleet-table tbody{display:block;}
+    .fleet-table tr.fleet-row{
+      display:block;
+      border:1px solid #e2e8f0 !important;
+      border-radius:12px;
+      padding:6px 0;
+      margin:12px 16px;
+      background:#fff;
+      box-shadow:var(--shadow-xs,0 1px 2px rgba(15,23,42,.04));
+    }
+    .fleet-table td.fleet-cell{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:9px 16px !important;
+      text-align:right !important;
+      white-space:normal !important;
+      border-bottom:1px solid #f5f7fa;
+    }
+    .fleet-table tr.fleet-row td.fleet-cell:last-child{border-bottom:0;}
+    .fleet-table td.fleet-cell::before{
+      content:attr(data-label);
+      flex:0 0 auto;
+      font-size:11px;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+      color:#94a3b8;
+      text-align:left;
+    }
+    .fleet-table td.fleet-actions-cell{justify-content:flex-end;flex-wrap:wrap;}
+    .fleet-table td.fleet-actions-cell::before{display:none;}
+    .fleet-table td.fleet-actions-cell > div{display:flex !important;width:100%;gap:8px;}
+    .fleet-table td.fleet-actions-cell .fleet-act-btn{flex:1 1 0;justify-content:center;}
+  }
 </style>
 </head>
 <body class="bg-slate-100 text-slate-900">
@@ -593,7 +634,7 @@ function fleetTabContent() {
     </div>
 
     <div style="flex:1;overflow:auto;" class="scroll-thin">
-      <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:840px;">
+      <table class="fleet-table" style="width:100%;border-collapse:collapse;font-size:13px;min-width:840px;">
         <thead>
           <tr style="border-bottom:1px solid #e2e8f0;">
             <th style="text-align:left;padding:12px 20px;font-size:12.5px;font-weight:700;color:#0f172a;white-space:nowrap;">Report Title</th>
@@ -606,15 +647,15 @@ function fleetTabContent() {
           ${pageRows.length === 0
             ? `<tr><td colspan="4" style="padding:48px;text-align:center;color:#94a3b8;font-size:13.5px;">No reports match your search.</td></tr>`
             : pageRows.map(r => `
-            <tr style="border-bottom:1px solid #f1f5f9;">
-              <td style="padding:14px 20px;">
+            <tr class="fleet-row" style="border-bottom:1px solid #f1f5f9;">
+              <td class="fleet-cell" data-label="Report Title" style="padding:14px 20px;">
                 <span style="display:inline-flex;align-items:center;gap:8px;font-weight:600;color:var(--brand-600,#2563eb);cursor:pointer;">
                   ${FLEET_ICONS.doc}<span class="hover:underline">${r.title}</span>
                 </span>
               </td>
-              <td style="padding:14px 16px;color:#475569;white-space:nowrap;">${r.date}</td>
-              <td style="padding:14px 16px;">${vesselsCell(r.vessels)}</td>
-              <td style="padding:14px 20px;text-align:right;white-space:nowrap;">
+              <td class="fleet-cell" data-label="Date &amp; Time" style="padding:14px 16px;color:#475569;white-space:nowrap;">${r.date}</td>
+              <td class="fleet-cell" data-label="Vessels Included" style="padding:14px 16px;">${vesselsCell(r.vessels)}</td>
+              <td class="fleet-cell fleet-actions-cell" data-label="Actions" style="padding:14px 20px;text-align:right;white-space:nowrap;">
                 <div style="display:inline-flex;align-items:center;gap:6px;" data-report-idx="${start + pageRows.indexOf(r)}">
                   ${rowBtn(FLEET_ICONS.eye, 'View', 'view')}
                   ${rowBtn(FLEET_ICONS.dl, 'Download', 'download')}
