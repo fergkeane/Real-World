@@ -115,15 +115,12 @@
   .gauge-card svg.gauge-svg{width:100%;max-width:200px;height:auto;overflow:visible}
   .gauge-pill{display:flex;align-items:center;gap:4px;margin-top:-14px;margin-bottom:2px}
   .gauge-pill .pill-lbl{font-size:10px;font-weight:700;letter-spacing:.06em}
-  .risk-guide{display:flex;flex-direction:column;gap:6px}
-  .rg-card{border-radius:10px;padding:8px 9px;border:1px solid transparent}
-  .rg-card .rg-row{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+  .risk-guide{display:flex;flex-wrap:wrap;gap:8px}
+  .rg-card{border-radius:10px;padding:8px 11px;border:1px solid transparent;flex:1 1 0;min-width:0}
+  .rg-card .rg-row{display:flex;align-items:center;gap:7px}
   .rg-card .rg-ico{width:24px;height:24px;border-radius:999px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
   .rg-card .rg-name{font-size:11px;font-weight:700;line-height:1.1}
   .rg-card .rg-range{font-size:9.5px;color:#64748b;margin-top:1px}
-  .rg-card .rg-pct{margin-left:auto;font-size:12.5px;font-weight:800;color:#0f172a;flex-shrink:0;font-variant-numeric:tabular-nums}
-  .rg-card .rg-bar{height:4px;background:#e2e8f0;border-radius:999px;overflow:hidden}
-  .rg-card .rg-bar > span{display:block;height:100%;border-radius:999px}
 
   /* Property grid */
   .prop-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px 28px}
@@ -242,6 +239,11 @@
     .alert-table td::before{display:none}
     .alert-table td.at-count::before{display:block;margin:0;content:attr(data-label);
       font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#94a3b8;text-align:left}
+
+    /* Risk Score legend: stack icon on top of each item on mobile */
+    .rg-card .rg-row{flex-direction:column;align-items:center;text-align:center;gap:5px}
+    .rg-card .rg-row > div{flex:0 0 auto !important}
+    .rg-range{margin-top:1px}
 
     /* Vessels card: compact label-left / value-right rows on mobile */
     .v-table tr{padding:2px 2px;margin-bottom:8px}
@@ -462,7 +464,7 @@ const DETAILS = {
     ],
   },
   'NORDIC STAR': {
-    flagEmoji: FLAG.Greece, built:'2013', type:'Crude Oil Tanker', risk:31, riskTone:'good',
+    flagEmoji: FLAG.Greece, built:'2013', type:'Crude Oil Tanker', risk:68, riskTone:'below',
     callSign:'SVBK7', exhaust:'Funnel Markers', shipBuilder:'Hyundai Samho Heavy Industries', yearBuilt:'2013', manager:'Aegean Tanker Management S.A. / Hellenic Marine Ltd',
     flag:{label:'Greece', emoji:FLAG.Greece}, classSoc:'Bureau Veritas', piClub:'Gard P&I', length:'274.0 m', width:'48.0 m',
     grossTonnage:'81,200', dwt:'158,000', teu:'\u2014', lastSurvey:'2024-10-28 (UTC)',
@@ -497,7 +499,7 @@ const DETAILS = {
     ],
   },
   'EASTERN PEARL': {
-    flagEmoji: FLAG.HongKong, built:'2017', type:'Container Ship', risk:45, riskTone:'good',
+    flagEmoji: FLAG.HongKong, built:'2017', type:'Container Ship', risk:57, riskTone:'below',
     callSign:'VRPE5', exhaust:'Funnel Markers', shipBuilder:'Jiangnan Shipyard', yearBuilt:'2017', manager:'Orient Container Lines / Pearl River Ship Management',
     flag:{label:'Hong Kong', emoji:FLAG.HongKong}, classSoc:'China Classification Society', piClub:'The London P&I Club', length:'334.0 m', width:'45.8 m',
     grossTonnage:'141,000', dwt:'165,000', teu:'13,800', lastSurvey:'2024-11-15 (UTC)',
@@ -537,9 +539,9 @@ const RISK_INDICATORS = [
 
 /* ─────────────────────────── Risk donut ─────────────────────────── */
 function riskTier(score) {
-  if (score <= 10) return { label:'GOOD',         c:'#16a34a', glow:'#86efac' };
-  if (score <= 25) return { label:'AVERAGE RISK', c:'#f97316', glow:'#fed7aa' };
-  return                  { label:'HIGH RISK',    c:'#ef4444', glow:'#fca5a5' };
+  if (score <= 25) return { label:'GOOD',          c:'#16a34a', glow:'#86efac' };
+  if (score <= 50) return { label:'AVERAGE RISK',  c:'#f97316', glow:'#fed7aa' };
+  return                  { label:'BELOW AVERAGE', c:'#ef4444', glow:'#fca5a5' };
 }
 function RiskGauge(score) {
   const risk = riskTier(score);
@@ -548,37 +550,25 @@ function RiskGauge(score) {
   const pt    = (a, r) => [+(CX + r*Math.cos(toRad(a))).toFixed(2), +(CY + r*Math.sin(toRad(a))).toFixed(2)];
   const [sox, soy] = pt(135, RO);
   const [eox, eoy] = pt(45,  RO);
-  const GAUGE_MAX = 50, GAUGE_START = 135, GAUGE_SWEEP = 270;
+  const GAUGE_MAX = 100, GAUGE_START = 135, GAUGE_SWEEP = 270;
   const gAngle = s => GAUGE_START + (Math.min(s, GAUGE_MAX) / GAUGE_MAX) * GAUGE_SWEEP;
   const arcD = (a1, a2, r) => {
     const [x1,y1] = pt(a1, r), [x2,y2] = pt(a2, r);
     const sw = ((a2 - a1) % 360 + 360) % 360;
     return `M ${x1},${y1} A ${r},${r} 0 ${sw > 180 ? 1 : 0},1 ${x2},${y2}`;
   };
-  const lerpHex = (c1, c2, t) => {
-    const h = s => parseInt(s, 16);
-    const f = (a, b) => Math.round(h(a) + (h(b) - h(a)) * t).toString(16).padStart(2, '0');
-    return '#' + f(c1.slice(1,3),c2.slice(1,3)) + f(c1.slice(3,5),c2.slice(3,5)) + f(c1.slice(5,7),c2.slice(5,7));
-  };
-  const gaugeColor = s => {
-    const stops = [[0,'#22c55e'],[10,'#eab308'],[25,'#f97316'],[50,'#ef4444']];
-    for (let i = 0; i < stops.length - 1; i++) {
-      if (s <= stops[i+1][0]) {
-        const t = (s - stops[i][0]) / (stops[i+1][0] - stops[i][0]);
-        return lerpHex(stops[i][1], stops[i+1][1], t);
-      }
-    }
-    return stops[stops.length-1][1];
-  };
-  const N = 54;
+  const gaugeColor = s => (s <= 25 ? '#22c55e' : s <= 50 ? '#f97316' : '#ef4444');
+  const N = 26;
+  const SEG_GAP = 0.9; // degrees of white separation between segments
+  const whiteCasing = `<path d="${arcD(gAngle(0), gAngle(GAUGE_MAX), R)}" fill="none" stroke="#ffffff" stroke-width="${SW}" stroke-linecap="butt"/>`;
   const segPaths = Array.from({length: N}, (_, i) => {
-    const a1 = gAngle(i * GAUGE_MAX / N);
-    const a2 = gAngle((i + 1) * GAUGE_MAX / N);
+    const a1 = gAngle(i * GAUGE_MAX / N) + SEG_GAP;
+    const a2 = gAngle((i + 1) * GAUGE_MAX / N) - SEG_GAP;
     const mid = (i + 0.5) * GAUGE_MAX / N;
     const filled = mid <= score;
     return `<path d="${arcD(a1, a2, R)}" fill="none" stroke="${filled ? gaugeColor(mid) : '#e2e8f0'}" stroke-width="${SW}" stroke-linecap="butt"/>`;
   }).join('');
-  const glowColor = score <= 10 ? '#86efac' : score <= 25 ? '#fcd34d' : '#fca5a5';
+  const glowColor = score <= 25 ? '#86efac' : score <= 50 ? '#fcd34d' : '#fca5a5';
   const fillTipA  = gAngle(Math.min(score, GAUGE_MAX));
   const fillTipB  = gAngle(Math.max(0, Math.min(score, GAUGE_MAX) - GAUGE_MAX * 0.08));
   const glowPath  = score > 0
@@ -597,20 +587,21 @@ function RiskGauge(score) {
     <path d="M ${sox},${soy} A ${RO},${RO} 0 1,1 ${eox},${eoy}"
       fill="none" stroke="#dde4ef" stroke-width="1.5" stroke-dasharray="3 8.2" stroke-linecap="round"/>
     ${glowPath}
+    ${whiteCasing}
     ${segPaths}
     <text x="100" y="122" text-anchor="middle" font-size="52" font-weight="800" fill="#0f172a" font-family="Inter,sans-serif">${score}</text>
   </svg>`;
 }
 function RiskGuide(score) {
   const cards = [
-    { name:'Good',       range:'0 – 10',   pct:14, c:'#16a34a', bg:'#f0fdf4', bd:'#bbf7d0', icoBg:'#dcfce7',
+    { name:'Good',       range:'0 – 25',   c:'#16a34a', bg:'#f0fdf4', bd:'#bbf7d0', icoBg:'#dcfce7',
       ico:`<svg width="12" height="12" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>` },
-    { name:'Average',    range:'10 – 25',  pct:55, c:'#d97706', bg:'#fffbeb', bd:'#fde68a', icoBg:'#fef3c7',
+    { name:'Average',    range:'25+ – 50',  c:'#d97706', bg:'#fffbeb', bd:'#fde68a', icoBg:'#fef3c7',
       ico:`<svg width="12" height="12" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16" stroke-width="3"/></svg>` },
-    { name:'Below Avg.', range:'25 – 100', pct:31, c:'#dc2626', bg:'#fff1f2', bd:'#fecdd3', icoBg:'#fee2e2',
+    { name:'Below Avg.', range:'50+ – 100', c:'#dc2626', bg:'#fff1f2', bd:'#fecdd3', icoBg:'#fee2e2',
       ico:`<svg width="12" height="12" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>` },
   ];
-  const activeIdx = score <= 10 ? 0 : score <= 25 ? 1 : 2;
+  const activeIdx = score <= 25 ? 0 : score <= 50 ? 1 : 2;
   return `
   <div class="risk-guide">
     ${cards.map((c, i) => `
@@ -621,9 +612,7 @@ function RiskGuide(score) {
             <div class="rg-name" style="color:${c.c}">${c.name}</div>
             <div class="rg-range">${c.range}</div>
           </div>
-          <div class="rg-pct">${c.pct}%</div>
         </div>
-        <div class="rg-bar"><span style="width:${c.pct}%;background:${c.c}"></span></div>
       </div>`).join('')}
   </div>`;
 }
@@ -657,7 +646,7 @@ function buildSummary() {
 
   const risks = VESSELS.map(v => DETAILS[v.name] && DETAILS[v.name].risk).filter(x => x != null);
   const avg = risks.reduce((s, r) => s + r, 0) / (risks.length || 1);
-  const riskLevel = { 'GOOD': 'low', 'AVERAGE RISK': 'moderate', 'HIGH RISK': 'elevated' }[riskTier(avg).label] || 'moderate';
+  const riskLevel = { 'GOOD': 'low', 'AVERAGE RISK': 'moderate', 'BELOW AVERAGE': 'elevated' }[riskTier(avg).label] || 'moderate';
 
   const vLink = 'color:var(--brand-600,#2563eb);font-weight:700;text-decoration:none';
   const watch = VESSELS.map((v, i) => ({ name: v.name, idx: i, risk: (DETAILS[v.name] && DETAILS[v.name].risk) || 0 }))
