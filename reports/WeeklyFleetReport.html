@@ -288,9 +288,9 @@
 <script>
   window.PAGE = { id:'reports', title:'Reports', crumb:'Weekly Fleet Monitoring Report' };
   window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-    "density": "comfortable",
-    "accent": "sky",
-    "sidebarExpanded": false,
+    "density": "compact",
+    "accent": "blue",
+    "sidebarExpanded": true,
     "showSparklines": true
   }/*EDITMODE-END*/;
 </script>
@@ -831,8 +831,8 @@ function ActivityRow(a) {
 
   return `
   <tr>
-    <td data-label="Type"><span class="notif"><span class="ni ${ic}">${chosen}</span>${a.label}</span></td>
     <td class="dateloc-cell" data-label="Date / Location"><div class="dl-date">${a.date}</div>${loc ? `<div class="dl-loc">${loc}</div>` : ''}</td>
+    <td data-label="Type"><span class="notif"><span class="ni ${ic}">${chosen}</span>${a.label}</span></td>
     <td data-label="Details">${a.detail}${noteText ? `<div class="ra-note">${NOTE_TRI}<span>${noteText}</span></div>` : ''}</td>
   </tr>`;
 }
@@ -905,7 +905,7 @@ function VesselDetailsCard(v, idx) {
       <div class="ra-title">Alerts(${d.activity.filter(a => a.label !== 'Sanctioned Port AIS Declared Destination').length})</div>
       <table class="ra-table">
         <thead>
-          <tr><th>Type</th><th>Date / Location</th><th>Details</th></tr>
+          <tr><th>Date / Location</th><th>Type</th><th>Details</th></tr>
         </thead>
         <tbody>
           ${d.activity.filter(a => a.label !== 'Sanctioned Port AIS Declared Destination').map(ActivityRow).join('')}
