@@ -108,7 +108,7 @@
   .vd-sub .sep{margin:0 6px;color:#cbd5e1}
 
   /* Risk gauge block (matches VesselDetails page) */
-  .vd-body{display:grid;grid-template-columns:260px 1fr;gap:22px;padding:8px 22px 18px;align-items:flex-start}
+  .vd-body{display:grid;grid-template-columns:300px 1fr;gap:22px;padding:8px 22px 18px;align-items:flex-start}
   .risk-block{display:flex;flex-direction:column;align-items:stretch;gap:10px;padding-top:2px}
   .risk-label{font-size:10px;font-weight:600;color:#94a3b8;letter-spacing:.08em;text-transform:uppercase;text-align:center}
   .gauge-card{background:#f8fafc;border-radius:12px;padding:12px 8px 10px;display:flex;flex-direction:column;align-items:center}
@@ -117,7 +117,8 @@
   .gauge-pill .pill-lbl{font-size:10px;font-weight:700;letter-spacing:.06em}
   .risk-guide{display:flex;flex-wrap:wrap;gap:8px}
   .rg-card{border-radius:10px;padding:8px 11px;border:1px solid transparent;flex:1 1 0;min-width:0}
-  .rg-card .rg-row{display:flex;align-items:center;gap:7px}
+  .rg-card .rg-row{display:flex;flex-direction:column;align-items:center;text-align:center;gap:5px}
+  .rg-card .rg-row > div{flex:0 0 auto;min-width:0}
   .rg-card .rg-ico{width:24px;height:24px;border-radius:999px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
   .rg-card .rg-name{font-size:11px;font-weight:700;line-height:1.1}
   .rg-card .rg-range{font-size:9.5px;color:#64748b;margin-top:1px}
