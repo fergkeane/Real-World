@@ -48,6 +48,13 @@
   .porto-table td { padding:11px 14px; font-size:13px; color:#334155; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
   .porto-table tr:last-child td { border-bottom:0; }
   .porto-table tr:hover td { background:#f8fafc; }
+  /* Sticky first column (Name) */
+  .porto-table th:first-child,
+  .porto-table td:first-child { position:sticky; left:0; z-index:2; background:#fff; box-shadow:1px 0 0 #e2e8f0; }
+  .porto-table thead th:first-child { z-index:3; }
+  .porto-table tbody tr:hover td:first-child { background:#f8fafc; }
+  .porto-table .group-child td:first-child { background:#eff6ff; }
+  .porto-table .group-child:hover td:first-child { background:#dbeafe !important; }
   .porto-name { color:#2563eb; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; }
   .porto-name svg { width:14px; height:14px; flex-shrink:0; }
   .porto-name:hover { color:#1d4ed8; }
@@ -433,7 +440,7 @@ function Content() {
         </div>
 
         <!-- Table -->
-        <div class="flex-1 overflow-y-auto scroll-thin">
+        <div class="flex-1 overflow-auto scroll-thin">
           ${isGroups ? GroupsTable(rows) : PortfoliosTable(rows)}
         </div>
 

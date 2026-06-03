@@ -51,6 +51,39 @@
   .filter-input:focus{border-color:#7dd3fc;box-shadow:0 0 0 2px rgba(14,165,233,.1)}
   /* Card */
   .card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+  /* ── Cargo map controls (ported from Marine Dashboard) ───────────────── */
+  .cargo-map-wrap{position:relative;}
+  .cargo-map-wrap .leaflet-control-zoom,.cargo-map-wrap .leaflet-bar{border:1px solid #e2e8f0 !important;box-shadow:0 1px 2px rgb(15 23 42 / .08) !important;border-radius:8px !important;overflow:hidden;}
+  .cargo-map-wrap .leaflet-bar a{background:#fff !important;color:#334155 !important;}
+  .cargo-map-wrap .leaflet-bar a:hover{background:#f1f5f9 !important;}
+  .cargo-map-wrap .leaflet-control-zoom a{display:flex !important;align-items:center;justify-content:center;padding:0 !important;}
+  .cargo-map-wrap .leaflet-control-zoom a svg{width:16px;height:16px;}
+  .cargo-map-wrap .leaflet-top.leaflet-left{top:56px;left:2px;}
+  .cargo-map-wrap .leaflet-top.leaflet-left .leaflet-bar{margin-left:10px !important;}
+  .map-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;color:#334155;box-shadow:0 1px 2px rgb(15 23 42 / .08);cursor:pointer;transition:background .15s;}
+  .map-btn:hover{background:#f1f5f9;}
+  .map-btn svg{width:16px;height:16px;}
+  .map-btn-fs{width:32px;height:32px;border-radius:8px !important;}
+  .cargo-map-wrap.is-fullscreen{position:fixed;inset:0;z-index:9999;height:100vh !important;width:100vw !important;border-radius:0;border:0;}
+  .map-type-opt{width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;font-size:13px;color:#334155;background:#fff;border:0;cursor:pointer;transition:background .15s;}
+  .map-type-opt:hover{background:#f1f5f9;}
+  .map-type-menu{position:absolute;top:0;right:calc(100% + 8px);width:160px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 8px 24px rgba(15,23,42,.16);overflow:hidden;padding:4px 0;}
+  /* ── Port popup (matches Ports page) ─────────────────────────────────── */
+  .port-popup .leaflet-popup-content-wrapper{padding:0;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(15,23,42,.25);}
+  .port-popup .leaflet-popup-content{margin:0;width:280px !important;font-family:'Inter',sans-serif;}
+  .port-popup .leaflet-popup-tip{background:#fff;}
+  .port-popup .leaflet-popup-close-button{color:#fff !important;top:8px !important;right:10px !important;font-size:22px !important;font-weight:300 !important;width:24px !important;height:24px !important;opacity:.85;}
+  .port-popup .leaflet-popup-close-button:hover{background:rgba(255,255,255,.2) !important;color:#fff !important;opacity:1;}
+  .pp-header{color:#fff;padding:12px 14px 10px;}
+  .pp-title{font-size:14px;font-weight:700;}
+  .pp-sub{font-size:11px;font-weight:500;opacity:.8;margin-left:5px;}
+  .pp-body{background:#fff;}
+  .pp-row{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid #f1f5f9;font-size:13px;}
+  .pp-row:last-child{border-bottom:0;}
+  .pp-k{color:#64748b;font-weight:500;}
+  .pp-v{font-weight:700;color:#0f172a;}
+  .pp-cta{display:block;width:calc(100% - 28px);margin:4px 14px 14px;background:#fff;border-radius:8px;padding:9px 12px;font-weight:700;font-size:12.5px;cursor:pointer;text-align:center;transition:background .15s;border-width:1.5px;border-style:solid;}
+  .pp-cta:hover{background:#f8fafc;}
   /* Mobile responsive */
   .mobile-tab-select{display:none;width:100%;padding:7px 12px;border:1px solid #e2e8f0;border-radius:9999px;font-size:13px;font-weight:600;color:#334155;background:#f1f5f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;font-family:inherit;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;}
   @media(max-width:767px){
@@ -341,17 +374,17 @@ function renderDeclarationsTable() {
           const expanded = st.expanded.has(i);
           return `
           <tr class="${expanded ? 'is-expanded' : ''}" data-row="${i}" style="cursor:pointer;">
-            <td style="color:#94a3b8;text-align:center;padding:10px 6px;">
+            <td style="color:var(--brand-600,#2563eb);text-align:center;padding:10px 6px;">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="transform:${expanded ? 'rotate(90deg)' : 'rotate(0deg)'};transition:transform 150ms;display:inline-block;"><path d="M9 18l6-6-6-6"/></svg>
             </td>
             <td>${statusBadge(v)}</td>
-            <td style="font-weight:600;color:#0f172a;">${v.name}</td>
+            <td style="font-weight:600;"><a href="VesselDetails.html" target="_blank" rel="noopener" style="color:var(--brand-600,#2563eb);text-decoration:none;" onclick="event.stopPropagation();" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${v.name}</a></td>
             <td style="color:#475569;font-variant-numeric:tabular-nums;">${v.imo}</td>
             <td style="font-variant-numeric:tabular-nums;">${v.estLoad}</td>
             <td style="color:${v.actLoad ? '#d97706' : '#94a3b8'};font-variant-numeric:tabular-nums;font-weight:${v.actLoad ? '600' : '400'};">${v.actLoad || '—'}</td>
-            <td>${v.loadPort}</td>
+            <td><a href="PortDetails.html" target="_blank" rel="noopener" style="color:var(--brand-600,#2563eb);text-decoration:none;" onclick="event.stopPropagation(); sessionStorage.setItem('selectedPort', JSON.stringify({name:'${v.loadPort.split(',')[0].trim().replace(/'/g,"\\'")}'}));" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${v.loadPort}</a></td>
             <td style="color:#64748b;">${v.dischDate || '—'}</td>
-            <td>${v.dischPort}</td>
+            <td><a href="PortDetails.html" target="_blank" rel="noopener" style="color:var(--brand-600,#2563eb);text-decoration:none;" onclick="event.stopPropagation(); sessionStorage.setItem('selectedPort', JSON.stringify({name:'${v.dischPort.split(',')[0].trim().replace(/'/g,"\\'")}'}));" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${v.dischPort}</a></td>
             <td style="color:${v.actDisch ? '#0369a1' : '#94a3b8'};font-variant-numeric:tabular-nums;font-weight:${v.actDisch ? '600' : '400'};">${v.actDisch || '—'}</td>
             <td>${v.breachRegion ? `<span style="color:#dc2626;font-size:11px;font-weight:600;">${v.breachRegion}</span>` : '<span style="color:#94a3b8;">—</span>'}</td>
             <td style="text-align:center;">${v.days > 0 ? `<span style="background:#fee2e2;color:#b91c1c;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;">${v.days}</span>` : '<span style="color:#94a3b8;">—</span>'}</td>
@@ -359,14 +392,32 @@ function renderDeclarationsTable() {
           ${expanded ? `
           <tr class="expanded-detail">
             <td colspan="12" style="padding:0;border-bottom:2px solid #bae6fd;">
-              <!-- Status summary bar -->
-              <div style="display:flex;align-items:center;gap:10px;padding:11px 16px;border-left:4px solid ${v.status==='Completed'?'#16a34a':v.status==='Started'?'#0284c7':'#d97706'};background:${v.status==='Completed'?'#f0fdf4':v.status==='Started'?'#f0f9ff':'#fffbeb'};">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${v.status==='Completed'?'#16a34a':v.status==='Started'?'#0284c7':'#d97706'}" stroke-width="2.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                ${statusBadge(v)}
-                <span style="font-size:12px;color:#475569;margin-left:4px;">Departed load port ${v.actLoad||v.estLoad}; ${v.actDisch?`arrived at discharge port ${v.actDisch.split(' ')[0]}.`:v.status==='Started'?'en route to discharge port.':'awaiting departure.'}</span>
-              </div>
+              <div class="cargo-detail-sticky" id="cargo-detail-${i}" style="position:sticky;left:0;">
               <!-- Leaflet map -->
-              <div id="cargo-map-${i}" style="height:400px;width:100%;"></div>
+              <div class="cargo-map-wrap" id="cargo-map-wrap-${i}" style="height:400px;width:100%;">
+                <div id="cargo-map-${i}" style="height:100%;width:100%;"></div>
+                <!-- fullscreen button (top-left, above zoom control) -->
+                <button class="map-btn map-btn-fs" data-map-fs="${i}" title="Toggle fullscreen" style="position:absolute;top:12px;left:12px;z-index:400;">${SC.I.maximize}</button>
+                <!-- map type selector (top-right) -->
+                <div style="position:absolute;top:12px;right:12px;z-index:400;">
+                  <div style="position:relative;">
+                    <button class="map-btn" data-map-layers="${i}" title="Map type">${SC.I.layers}</button>
+                    <div class="map-type-menu hidden" data-map-menu="${i}">
+                      ${[
+                        { id:'satellite', label:'Satellite' },
+                        { id:'street',    label:'Street View' },
+                        { id:'dark',      label:'Dark Mode' },
+                        { id:'light',     label:'Light Mode' },
+                      ].map(o => `
+                        <button class="map-type-opt" data-map-type="${o.id}">
+                          <span data-label>${o.label}</span>
+                          <span style="color:var(--brand-600,#2563eb);opacity:0;" data-check>${SC.I.check}</span>
+                        </button>`).join('')}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              </div>
             </td>
           </tr>` : ''}`;  
         }).join('')}
@@ -440,7 +491,6 @@ function renderTabSection() {
     <div style="padding:10px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;gap:12px;">
       <div style="display:flex;align-items:center;gap:10px;">
         <input id="vessel-filter" type="text" value="${st.filter}" placeholder="Filter by vessel name or IMO…" class="filter-input" />
-        <span style="font-size:12px;color:#64748b;">${rows.length} declaration${rows.length !== 1 ? 's' : ''}</span>
       </div>
       <span style="font-size:11px;color:#94a3b8;white-space:nowrap;">Click a row to drill into the AIS analysis · click any header to sort</span>
     </div>` : ''}
@@ -469,6 +519,26 @@ window.render = function() {
   wireContent();
 };
 
+function cargoPortPopupHTML(rawName, role, coords, color) {
+  const parts = rawName.split(',');
+  const name = parts[0].trim();
+  const sub = parts.length > 1 ? parts.slice(1).join(',').trim() : role;
+  const payload = JSON.stringify({ name, lat: coords[0], lng: coords[1] }).replace(/"/g, '&quot;');
+  return `
+  <div>
+    <div class="pp-header" style="background:${color};">
+      <span class="pp-title">${name}</span>
+      <span class="pp-sub">· ${sub}</span>
+    </div>
+    <div class="pp-body">
+      <div class="pp-row"><span class="pp-k">Role:</span><span class="pp-v">${role}</span></div>
+      <div class="pp-row"><span class="pp-k">Latitude:</span><span class="pp-v">${coords[0].toFixed(4)}°</span></div>
+      <div class="pp-row"><span class="pp-k">Longitude:</span><span class="pp-v">${coords[1].toFixed(4)}°</span></div>
+    </div>
+    <button class="pp-cta" style="color:${color};border-color:${color};" onclick="sessionStorage.setItem('selectedPort', '${payload}'); window.location.href='PortDetails.html'">View Details</button>
+  </div>`;
+}
+
 function initMaps() {
   const rows = filteredVoyages();
   st.expanded.forEach(i => {
@@ -476,13 +546,37 @@ function initMaps() {
     if (!mapEl || mapEl._leaflet_id) return;
     const v = rows[i];
     if (!v) return;
+    // Pin the detail content to the visible scroll-container width so map controls
+    // never land in the horizontally-overflowed (off-screen) region of the wide table.
+    const sticky = document.getElementById(`cargo-detail-${i}`);
+    const scroller = mapEl.closest('.scroll-thin');
+    const sizeSticky = () => { if (sticky && scroller) sticky.style.width = scroller.clientWidth + 'px'; };
+    sizeSticky();
+    window.addEventListener('resize', sizeSticky);
     const waypoints = getRoute(v.loadPort, v.dischPort);
     const loadCoords = waypoints[0];
     const dischCoords = waypoints[waypoints.length - 1];
     const map = L.map(mapEl, { zoomControl: true, attributionControl: false });
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      maxZoom: 18,
-    }).addTo(map);
+    const TILES = {
+      satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      street:    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      dark:      'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+      light:     'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    };
+    let currentType = 'satellite';
+    let currentTileLayer = L.tileLayer(TILES.satellite, { maxZoom: 19 }).addTo(map);
+    const setMapType = (type) => {
+      if (!TILES[type] || type === currentType) return;
+      if (currentTileLayer) map.removeLayer(currentTileLayer);
+      currentTileLayer = L.tileLayer(TILES[type], { maxZoom: 19 }).addTo(map);
+      currentType = type;
+      const menu = document.querySelector(`[data-map-menu="${i}"]`);
+      if (menu) menu.querySelectorAll('[data-map-type]').forEach(b => {
+        const on = b.dataset.mapType === type;
+        b.querySelector('[data-label]').style.fontWeight = on ? '700' : '400';
+        b.querySelector('[data-check]').style.opacity = on ? '1' : '0';
+      });
+    };
     // Breach region
     if (v.breach && v.breachRegion && BREACH_POLYGONS[v.breachRegion]) {
       L.polygon(BREACH_POLYGONS[v.breachRegion], {
@@ -490,8 +584,9 @@ function initMaps() {
         fillColor:'#fca5a5', fillOpacity:0.1, interactive:false,
       }).addTo(map);
     }
-    // Route line
-    L.polyline(waypoints, { color:'#1e3a5f', weight:3, opacity:0.9 }).addTo(map);
+    // Route line — white casing under bright line for legibility on satellite
+    L.polyline(waypoints, { color:'#ffffff', weight:5.5, opacity:0.85 }).addTo(map);
+    L.polyline(waypoints, { color:'#38bdf8', weight:3, opacity:1 }).addTo(map);
     // Arrow markers at midpoints
     for (let j = 0; j < waypoints.length - 1; j++) {
       const p1 = waypoints[j], p2 = waypoints[j+1];
@@ -499,7 +594,7 @@ function initMaps() {
       const angle = Math.atan2(p2[1]-p1[1], p2[0]-p1[0]) * 180 / Math.PI - 90;
       L.marker(mid, {
         icon: L.divIcon({
-          html: `<div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:11px solid #1e3a5f;transform:rotate(${angle}deg);transform-origin:50% 50%;"></div>`,
+          html: `<div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:11px solid #38bdf8;filter:drop-shadow(0 0 1.5px rgba(0,0,0,.6));transform:rotate(${angle}deg);transform-origin:50% 50%;"></div>`,
           iconSize:[10,11], iconAnchor:[5,5.5], className:'',
         }),
         interactive: false,
@@ -511,13 +606,55 @@ function initMaps() {
       iconSize:[28,28], iconAnchor:[14,14], className:'',
     });
     L.marker(loadCoords,  { icon: makeIcon('L','#0284c7') }).addTo(map)
-      .bindPopup(`<strong>${v.loadPort}</strong><br>Load Port`);
+      .bindPopup(cargoPortPopupHTML(v.loadPort, 'Load Port', loadCoords, '#0284c7'),
+        { className:'port-popup', maxWidth:280, minWidth:280, closeButton:true, autoPanPadding:[30,30] });
     L.marker(dischCoords, { icon: makeIcon('D','#16a34a') }).addTo(map)
-      .bindPopup(`<strong>${v.dischPort}</strong><br>Discharge Port`);
+      .bindPopup(cargoPortPopupHTML(v.dischPort, 'Discharge Port', dischCoords, '#16a34a'),
+        { className:'port-popup', maxWidth:280, minWidth:280, closeButton:true, autoPanPadding:[30,30] });
     // Fit bounds
     const bounds = L.latLngBounds(waypoints);
     if (v.breach && v.breachRegion && BREACH_POLYGONS[v.breachRegion]) bounds.extend(BREACH_POLYGONS[v.breachRegion]);
     map.fitBounds(bounds, { padding:[40,60] });
+
+    // Swap Leaflet's default +/− glyphs for Lucide icons
+    const zin = mapEl.querySelector('.leaflet-control-zoom-in');
+    const zout = mapEl.querySelector('.leaflet-control-zoom-out');
+    if (zin)  zin.innerHTML  = SC.I.plus;
+    if (zout) zout.innerHTML = SC.I.minus;
+
+    // Fullscreen toggle
+    const wrap = document.getElementById(`cargo-map-wrap-${i}`);
+    const fsBtn = wrap && wrap.querySelector(`[data-map-fs="${i}"]`);
+    if (fsBtn && wrap) {
+      fsBtn.onclick = () => {
+        const isFs = wrap.classList.toggle('is-fullscreen');
+        fsBtn.innerHTML = isFs ? SC.I.minimize : SC.I.maximize;
+        fsBtn.title = isFs ? 'Exit fullscreen' : 'Toggle fullscreen';
+        document.body.style.overflow = isFs ? 'hidden' : '';
+        setTimeout(() => map.invalidateSize(), 260);
+      };
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && wrap.classList.contains('is-fullscreen')) fsBtn.onclick();
+      });
+    }
+
+    // Map type selector menu
+    const layersBtn = wrap && wrap.querySelector(`[data-map-layers="${i}"]`);
+    const menu = wrap && wrap.querySelector(`[data-map-menu="${i}"]`);
+    if (layersBtn && menu) {
+      layersBtn.onclick = (e) => { e.stopPropagation(); menu.classList.toggle('hidden'); };
+      menu.querySelectorAll('[data-map-type]').forEach(opt => {
+        opt.onclick = (e) => { e.stopPropagation(); setMapType(opt.dataset.mapType); menu.classList.add('hidden'); };
+      });
+      document.addEventListener('click', () => menu.classList.add('hidden'));
+    }
+    // Prime active state (Satellite)
+    const menuEl = document.querySelector(`[data-map-menu="${i}"]`);
+    if (menuEl) menuEl.querySelectorAll('[data-map-type]').forEach(b => {
+      const on = b.dataset.mapType === 'satellite';
+      b.querySelector('[data-label]').style.fontWeight = on ? '700' : '400';
+      b.querySelector('[data-check]').style.opacity = on ? '1' : '0';
+    });
   });
 }
 
