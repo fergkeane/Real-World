@@ -44,8 +44,60 @@
   .badge-sky{background:#e0f2fe;color:#0369a1}
   .badge-amber{background:#fef3c7;color:#b45309}
   .badge-red{background:#fee2e2;color:#b91c1c}
-  /* Portfolio stat cards */
-  .stat-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px 20px;flex:1;min-width:0}
+  /* Portfolio stat cards — Skytek DS "Individual stat cards" pattern */
+  .stat-card{background:var(--bg-surface,#fff);border:1px solid var(--border-subtle,#ECEEF2);border-radius:var(--radius-lg,8px);display:flex;flex-direction:column;min-width:0}
+  .stat-card .ds-card-head{padding:11px 16px;border-bottom:1px solid var(--border-subtle,#ECEEF2);display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:42px}
+  .stat-card .ds-card-title{font-family:'Exo',var(--font-display,sans-serif);font-size:13px;font-weight:600;line-height:1.25;margin:0;color:var(--text-primary,#0f172a)}
+  .stat-card .ds-card-body{padding:16px;display:flex;flex-direction:column;gap:7px}
+  .stat-card .ds-metric-value{font-family:'Exo',var(--font-display,sans-serif);font-size:32px;font-weight:700;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--brand-600,#0284c7)}
+  .stat-card .ds-metric-value--neutral{color:var(--text-primary,#0f172a)}
+  .stat-card .ds-metric-value--success{color:var(--success-700,#15803D)}
+  .stat-card .ds-metric-value--warning{color:var(--warning-500,#D97706)}
+  .stat-card .ds-metric-value--danger{color:var(--danger-600,#dc2626)}
+  .stat-card .stat-desc{font-size:12px;line-height:16px;color:var(--text-secondary,#4B5563)}
+  .row-del-btn:hover{background:#fef2f2 !important;border-color:#fca5a5 !important;color:#dc2626 !important;}
+  .row-arch-btn:hover{background:#eff6ff !important;border-color:#bfdbfe !important;color:var(--brand-600,#0284c7) !important;}
+  /* ── Date range fields ───────────────────────────────────────────────── */
+  .date-field{display:inline-flex;align-items:center;justify-content:space-between;gap:14px;min-width:180px;height:36px;padding:0 12px;background:#fff;border:1px solid var(--border-default,#E5E7EB);border-radius:8px;font-family:inherit;font-size:13px;font-weight:500;color:#0f172a;cursor:pointer;transition:border-color .15s,box-shadow .15s;}
+  .date-field:hover{border-color:var(--brand-400,#8ec5fd);}
+  .date-field:focus-visible{outline:0;border-color:var(--brand-600,#2d7ffb);box-shadow:0 0 0 3px rgba(45,127,251,.18);}
+  /* ── Date range picker popup ─────────────────────────────────────────── */
+  .dp-pop{position:fixed;z-index:var(--z-overlay,1000);display:flex;background:#fff;border:1px solid var(--border-default,#E5E7EB);border-radius:12px;box-shadow:var(--card-shadow-modal,0 32px 64px -16px rgba(15,23,42,.3));overflow:hidden;font-size:13px;}
+  .dp-presets{display:flex;flex-direction:column;background:#f8fafc;border-right:1px solid #eef2f6;padding:10px;gap:2px;min-width:148px;}
+  .dp-preset{text-align:center;padding:9px 12px;border:0;background:transparent;border-radius:8px;font-family:inherit;font-size:12.5px;font-weight:500;color:#334155;cursor:pointer;white-space:nowrap;transition:background .12s;}
+  .dp-preset:hover{background:#eef2f6;}
+  .dp-preset.is-active{background:#fff;border:1px solid var(--border-default,#E5E7EB);font-weight:600;color:#0f172a;}
+  .dp-main{display:flex;flex-direction:column;}
+  .dp-cals{position:relative;display:flex;gap:26px;padding:16px 20px 6px;}
+  .dp-nav{position:absolute;top:14px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;border:0;background:transparent;border-radius:6px;color:#64748b;cursor:pointer;transition:background .12s,color .12s;}
+  .dp-nav:hover{background:#f1f5f9;color:#0f172a;}
+  .dp-prev{left:14px;}
+  .dp-next{right:14px;}
+  .dp-cal{width:224px;}
+  .dp-cal-title{text-align:center;font-size:14px;font-weight:600;color:#0f172a;margin-bottom:12px;}
+  .dp-dow{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px;}
+  .dp-dow span{text-align:center;font-size:11px;font-weight:600;color:#94a3b8;padding:4px 0;}
+  .dp-days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px 0;}
+  .dp-empty{height:32px;}
+  .dp-day{height:32px;border:0;background:transparent;font-family:inherit;font-size:12.5px;color:#334155;cursor:pointer;border-radius:0;transition:background .1s;}
+  .dp-day:hover{background:#e0f2fe;border-radius:6px;}
+  .dp-day.dp-in{background:#dbeafe;border-radius:0;color:#1e3a5f;}
+  .dp-day.dp-end{background:var(--brand-600,#2d7ffb);color:#fff;border-radius:999px;font-weight:600;}
+  .dp-footer{display:flex;justify-content:flex-end;gap:10px;padding:12px 20px;border-top:1px solid #eef2f6;}
+  .dp-btn{height:34px;padding:0 18px;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:background .12s,border-color .12s;}
+  .dp-cancel{background:#fff;border:1px solid var(--border-default,#E5E7EB);color:#334155;}
+  .dp-cancel:hover{background:#f8fafc;}
+  .dp-apply{background:var(--brand-600,#2d7ffb);border:1px solid var(--brand-600,#2d7ffb);color:#fff;}
+  .dp-apply:hover{background:var(--brand-500,#51a2fc);}
+  @media (max-width:720px){ .dp-cals{flex-direction:column;gap:18px;} .dp-pop{flex-direction:column;} .dp-presets{flex-direction:row;flex-wrap:wrap;border-right:0;border-bottom:1px solid #eef2f6;} }
+  @media (max-width:640px){
+    .cargo-actions-row{flex-direction:column;align-items:stretch;}
+    .cargo-actions-row > div{width:100%;}
+    .date-fields-row{flex-direction:column;align-items:stretch;}
+    .date-fields-row .date-field{width:100%;min-width:0;}
+    .cargo-actions-row > button{width:100%;justify-content:center;}
+    .portfolio-sum-head{flex-direction:column;align-items:flex-start !important;gap:3px;text-align:left;}
+  }
   /* Filter input */
   .filter-input{height:32px;border:1px solid #e2e8f0;border-radius:8px;padding:0 10px;font-size:12px;color:#334155;background:#fff;font-family:inherit;outline:none;width:220px;transition:border-color .15s}
   .filter-input:focus{border-color:#7dd3fc;box-shadow:0 0 0 2px rgba(14,165,233,.1)}
@@ -68,6 +120,78 @@
   .map-type-opt{width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;font-size:13px;color:#334155;background:#fff;border:0;cursor:pointer;transition:background .15s;}
   .map-type-opt:hover{background:#f1f5f9;}
   .map-type-menu{position:absolute;top:0;right:calc(100% + 8px);width:160px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 8px 24px rgba(15,23,42,.16);overflow:hidden;padding:4px 0;}
+  /* ── Upload progress bar (animated stripes) ──────────────────────────── */
+  .up-track{height:14px;border-radius:999px;background:#e2e8f0;overflow:hidden;box-shadow:inset 0 1px 2px rgba(15,23,42,.12);}
+  .up-fill{height:100%;width:1%;border-radius:999px;background-color:var(--brand-600,#0284c7);
+    background-image:linear-gradient(45deg,rgba(255,255,255,.28) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.28) 50%,rgba(255,255,255,.28) 75%,transparent 75%,transparent);
+    background-size:18px 18px;animation:up-stripes 0.7s linear infinite;transition:width .12s linear;}
+  @keyframes up-stripes{0%{background-position:0 0;}100%{background-position:18px 0;}}
+  @media (prefers-reduced-motion: reduce){ .up-fill{animation:none;} }
+  /* % bubble that rides the leading edge of the fill */
+  .up-progress{position:relative;padding-top:32px;}
+  .up-pct-bubble{position:absolute;top:0;left:0;transform:translateX(-50%);
+    display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:999px;
+    background:var(--brand-600,#0284c7);color:#fff;font-size:12px;font-weight:800;
+    font-variant-numeric:tabular-nums;line-height:1;white-space:nowrap;
+    box-shadow:0 2px 6px rgba(2,132,199,.35);transition:left .12s linear;}
+  .up-pct-bubble::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);
+    border:5px solid transparent;border-top-color:var(--brand-600,#0284c7);}
+  /* ── Toast / Snackbar — Skytek Design System component ───────────────── */
+  :root{
+    --z-toast:1200;
+    --white:#FFFFFF;--border-default:#E5E7EB;
+    --slate-100:#F3F4F6;--slate-200:#E5E7EB;--slate-300:#D1D5DB;--slate-400:#9CA3AF;
+    --info-500:#2563EB;--info-700:#1D4ED8;
+    --success-500:#16A34A;--success-700:#15803D;
+    --warning-500:#D97706;--warning-700:#B45309;
+    --danger-500:#DC2626;--danger-700:#B91C1C;
+    --text-primary:#0f172a;--text-secondary:#4B5563;--text-muted:#6B7280;
+    --radius-lg:8px;
+    --card-shadow-raised:0 20px 32px -8px rgb(15 23 42 / 0.20), 0 10px 16px -6px rgb(15 23 42 / 0.12);
+    --shadow-focus:0 0 0 3px rgba(46,134,192,0.32);
+    --motion-fast:140ms;--motion-base:200ms;
+    --ease-out:cubic-bezier(0.16,1,0.3,1);--ease-in-out:cubic-bezier(0.4,0,0.2,1);
+    --toast-width:380px;--toast-gap:12px;--toast-radius:var(--radius-lg);
+    --toast-shadow:var(--card-shadow-raised);--toast-accent:4px;--toast-inset:20px;
+    --toast-pad-x:14px;--toast-pad-y:12px;
+    --toast-motion:var(--motion-base);--toast-ease:var(--ease-out);
+  }
+  .ds-toast-region{position:fixed;top:var(--toast-inset);left:50%;transform:translateX(-50%);z-index:var(--z-toast);display:flex;flex-direction:column;align-items:center;gap:var(--toast-gap);width:var(--toast-width);max-width:calc(100vw - 32px);pointer-events:none;}
+  .ds-toast{position:relative;pointer-events:auto;display:grid;grid-template-columns:auto 1fr auto;align-items:start;column-gap:10px;padding:var(--toast-pad-y) var(--toast-pad-x);padding-left:calc(var(--toast-pad-x) + var(--toast-accent));background:var(--white);border:1px solid var(--border-default);border-left:var(--toast-accent) solid var(--slate-400);border-radius:var(--toast-radius);box-shadow:var(--toast-shadow);overflow:hidden;}
+  .ds-toast-icon{width:18px;height:18px;margin-top:1px;color:var(--text-muted);flex-shrink:0;}
+  .ds-toast-body{min-width:0;font-size:13px;line-height:1.45;}
+  .ds-toast-title{font-weight:600;color:var(--text-primary);}
+  .ds-toast-desc{font-size:12px;color:var(--text-secondary);margin-top:1px;}
+  .ds-toast-actions{display:flex;align-items:center;gap:4px;margin-top:8px;}
+  .ds-toast-side{display:flex;align-items:center;gap:2px;}
+  .ds-toast-dismiss{display:inline-grid;place-content:center;width:24px;height:24px;flex-shrink:0;border:0;background:transparent;border-radius:6px;color:var(--text-muted);cursor:pointer;font-family:inherit;transition:background var(--motion-fast),color var(--motion-fast);}
+  .ds-toast-dismiss:hover{background:var(--slate-100);color:var(--text-primary);}
+  .ds-toast-dismiss:focus-visible{outline:0;box-shadow:var(--shadow-focus);}
+  /* Tone — left bar + icon color only; surface stays neutral white for legibility */
+  .ds-toast--info{border-left-color:var(--info-500);}
+  .ds-toast--info .ds-toast-icon{color:var(--info-700);}
+  .ds-toast--success{border-left-color:var(--success-500);}
+  .ds-toast--success .ds-toast-icon{color:var(--success-700);}
+  .ds-toast--warning{border-left-color:var(--warning-500);}
+  .ds-toast--warning .ds-toast-icon{color:var(--warning-700);}
+  .ds-toast--danger{border-left-color:var(--danger-500);}
+  .ds-toast--danger .ds-toast-icon{color:var(--danger-700);}
+  /* Timer bar — depletes as the auto-dismiss countdown runs */
+  .ds-toast-timer{position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--slate-300);transform-origin:left center;animation:ds-toast-deplete linear forwards;}
+  .ds-toast--info .ds-toast-timer{background:var(--info-500);}
+  .ds-toast--success .ds-toast-timer{background:var(--success-500);}
+  .ds-toast--warning .ds-toast-timer{background:var(--warning-500);}
+  .ds-toast--danger .ds-toast-timer{background:var(--danger-500);}
+  .ds-toast.is-paused .ds-toast-timer{animation-play-state:paused;}
+  @keyframes ds-toast-deplete{from{transform:scaleX(1);}to{transform:scaleX(0);}}
+  @keyframes ds-toast-in{from{opacity:0;transform:translateY(-16px) scale(0.98);}to{opacity:1;transform:translateY(0) scale(1);}}
+  @keyframes ds-toast-out{from{opacity:1;transform:translateY(0) scale(1);}to{opacity:0;transform:translateY(-16px) scale(0.96);}}
+  .ds-toast.is-entering{animation:ds-toast-in var(--toast-motion) var(--toast-ease);}
+  .ds-toast.is-leaving{animation:ds-toast-out var(--motion-fast) var(--ease-in-out) forwards;}
+  @media (prefers-reduced-motion: reduce){
+    .ds-toast.is-entering,.ds-toast.is-leaving{animation:none;}
+    .ds-toast-timer{animation:none;}
+  }
   /* ── Port popup (matches Ports page) ─────────────────────────────────── */
   .port-popup .leaflet-popup-content-wrapper{padding:0;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(15,23,42,.25);}
   .port-popup .leaflet-popup-content{margin:0;width:280px !important;font-family:'Inter',sans-serif;}
@@ -93,18 +217,25 @@
     .cargo-workbook-btns{flex-wrap:wrap;}
     .cargo-info-bar{flex-direction:column!important;align-items:flex-start!important;}
     .cargo-summary-grid{grid-template-columns:1fr 1fr!important;}
-    .cargo-tab-bar{flex-direction:column!important;align-items:flex-start!important;gap:8px!important;}
+    .cargo-tab-bar{flex-direction:column!important;align-items:stretch!important;gap:8px!important;}
+    .cargo-tab-bar .ds-tabs{display:flex!important;width:100%!important;}
+    .cargo-tab-bar .ds-tab{flex:1 1 0!important;justify-content:center!important;}
+    .cargo-tab-bar .filter-input{width:100%!important;margin-left:0!important;}
+    .cargo-detail-layout{flex-direction:column!important;align-items:stretch!important;}
+    .cargo-detail-layout .cargo-map-wrap{order:-1!important;}
+    .cargo-hint-text{white-space:normal!important;text-align:center;}
+    .cargo-hint-row{justify-content:center!important;}
   }
 </style>
 </head>
 <body class="bg-ink-100 text-ink-900">
-<div id="app" class="h-screen w-full flex overflow-hidden"></div>
+<div id="app" class="min-h-screen w-full flex"></div>
 
 <script>
-window.PAGE = { id:'cargo', title:'Cargo', crumb:'Voyage Analysis' };
+window.PAGE = { id:'cargo', title:'Cargo', crumb:'Cargo Voyage Analysis' };
 window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-  "density": "comfortable",
-  "accent": "blue",
+  "density": "compact",
+  "accent": "sky",
   "sidebarExpanded": false,
   "showSparklines": true
 }/*EDITMODE-END*/;
@@ -121,10 +252,14 @@ const SC = window.sharedChrome;
 const VOYAGES = [
   { status:'Completed', breach:true,  name:'Karachi',       imo:'9903413', estLoad:'2026-03-30', actLoad:'2026-03-30 04:17', loadPort:'Fujairah',   dischDate:'—',          dischPort:'Karachi, Pakistan',      actDisch:'2026-04-01 18:04', breachRegion:'Gulf of Oman',     days:2 },
   { status:'Completed', breach:true,  name:'Lahore',        imo:'9913511', estLoad:'2026-04-06', actLoad:'2026-04-06 03:08', loadPort:'Fujairah',   dischDate:'—',          dischPort:'Karachi, Pakistan',      actDisch:'2026-04-07 19:44', breachRegion:'Gulf of Oman',     days:2 },
-  { status:'Completed', breach:true,  name:'DEIRA GHAIR',   imo:'9834521', estLoad:'2026-04-06', actLoad:'2026-04-06 11:45', loadPort:'Fujairah',   dischDate:'—',          dischPort:'Mumbai, India',          actDisch:'2026-04-09 08:22', breachRegion:'Gulf of Oman',     days:3 },
+  { status:'Completed', breach:false, name:'DEIRA GHAIR',   imo:'9834521', estLoad:'2026-04-06', actLoad:'2026-04-06 11:45', loadPort:'Fujairah',   dischDate:'—',          dischPort:'Mumbai, India',          actDisch:'2026-04-09 08:22', breachRegion:'',                 days:0 },
   { status:'Completed', breach:true,  name:'VESTA',         imo:'9745632', estLoad:'2026-04-06', actLoad:'2026-04-06 14:30', loadPort:'Dubai',      dischDate:'—',          dischPort:'Colombo, Sri Lanka',     actDisch:'2026-04-11 21:15', breachRegion:'Strait of Hormuz', days:1 },
   { status:'Completed', breach:true,  name:'Mumbai Star',   imo:'9656743', estLoad:'2026-03-25', actLoad:'2026-03-25 09:12', loadPort:'Abu Dhabi',  dischDate:'—',          dischPort:'Mumbai, India',          actDisch:'2026-03-28 16:44', breachRegion:'Gulf of Oman',     days:2 },
   { status:'Completed', breach:true,  name:'Gulf Trader',   imo:'9567854', estLoad:'2026-03-20', actLoad:'2026-03-20 07:33', loadPort:'Fujairah',   dischDate:'—',          dischPort:'Karachi, Pakistan',      actDisch:'2026-03-22 14:55', breachRegion:'Gulf of Oman',     days:1 },
+  { status:'Started',   breach:false, name:'Arabian Pearl',  imo:'9778214', estLoad:'2026-04-10', actLoad:'2026-04-10 06:50', loadPort:'Muscat',     dischDate:'2026-04-13', dischPort:'Mumbai, India',          actDisch:'—',                breachRegion:'',                 days:0 },
+  { status:'Started',   breach:true,  name:'Makran Express', imo:'9689032', estLoad:'2026-04-09', actLoad:'2026-04-09 18:22', loadPort:'Dubai',      dischDate:'2026-04-14', dischPort:'Colombo, Sri Lanka',     actDisch:'—',                breachRegion:'Strait of Hormuz', days:1 },
+  { status:'Pending',   breach:false, name:'Dhofar Star',    imo:'9812447', estLoad:'2026-04-12', actLoad:'—',                loadPort:'Abu Dhabi',  dischDate:'2026-04-17', dischPort:'Chittagong, Bangladesh', actDisch:'—',                breachRegion:'',                 days:0 },
+  { status:'Completed', breach:false, name:'Salalah Bay',    imo:'9734905', estLoad:'2026-03-28', actLoad:'2026-03-28 10:05', loadPort:'Muscat',     dischDate:'—',          dischPort:'Karachi, Pakistan',      actDisch:'2026-03-31 09:48', breachRegion:'',                 days:0 },
 ];
 
 const CLASH_ALERTS = [
@@ -178,8 +313,17 @@ let st = {
   sortCol: null,
   sortDir: 1,
   expanded: new Set(),
+  selected: new Set(),    // checked declaration rows, keyed by IMO
   uploadMode: false,
   uploadedFile: null,
+  uploadedSize: null,
+  workbooks: [],          // uploaded declaration files: [{ name, size, metrics }]
+  peakExposure: '$15.0M', // Highest Single-Day Exposure shown in Portfolio summary
+  uploading: false,
+  analysed: false,
+  dateFrom: (function(){ const d=new Date(); d.setHours(0,0,0,0); const f=new Date(d); f.setDate(f.getDate()-29); return f; })(),
+  dateTo:   (function(){ const d=new Date(); d.setHours(0,0,0,0); return d; })(),
+  datePreset: 'd30',
 };
 
 /* ── HELPERS ─────────────────────────────────────────────────────────────── */
@@ -226,24 +370,86 @@ function positionTabPill() {
   requestAnimationFrame(() => requestAnimationFrame(() => pill.classList.remove('is-init')));
 }
 
+/* Read the pill's current spot relative to its group (before a re-render). */
+function readTabPillRect() {
+  const group = document.querySelector('.ds-tabs');
+  const pill = group && group.querySelector('.ds-tab-pill');
+  if (!group || !pill) return null;
+  const gRect = group.getBoundingClientRect();
+  const r = pill.getBoundingClientRect();
+  return { x: r.left - gRect.left, w: r.width };
+}
+
+/* Animate the (freshly re-rendered) pill from a captured start spot to the active tab. */
+function slideTabPillFrom(from) {
+  const group = document.querySelector('.ds-tabs');
+  if (!group || !from) return;
+  const pill = group.querySelector('.ds-tab-pill');
+  const active = group.querySelector('.ds-tab[aria-selected="true"]');
+  if (!pill || !active) return;
+  const gRect = group.getBoundingClientRect();
+  const aRect = active.getBoundingClientRect();
+  pill.classList.remove('is-init');
+  pill.style.transition = 'none';
+  pill.style.width = from.w + 'px';
+  pill.style.transform = `translateX(${from.x}px)`;
+  void pill.offsetWidth;        // commit start state with no transition
+  pill.style.transition = '';   // re-enable CSS transition…
+  void pill.offsetWidth;        // …commit that as a separate recalc
+  pill.style.width = aRect.width + 'px';
+  pill.style.transform = `translateX(${aRect.left - gRect.left}px)`;
+}
+
 /* ── RENDER SECTIONS ─────────────────────────────────────────────────────── */
 function renderHeader() {
+  const boxIcon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`;
+  // Files shown in the analysed workbook card — fall back to the sample if none uploaded yet
+  const wbs = st.workbooks.length ? st.workbooks : [{ name:'cargo-voyages-sample.xlsx', size:'22 KB', metrics:{ completed:5, started:1, pending:0, breaches:4, exposure:'$15.0M' } }];
+  const metricCell = (val, label, color, first) => `
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:2px 12px;flex:1;min-width:62px;${first ? '' : 'border-left:1px solid #e6ebf1;'}">
+      <span style="font-size:15px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;color:${color};">${val}</span>
+      <span style="font-size:9.5px;font-weight:600;line-height:1.2;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em;text-align:center;">${label}</span>
+    </div>`;
+  const metricsStrip = (wb, i) => {
+    const m = wb.metrics || { completed:0, started:0, pending:0, breaches:0, exposure:'$0' };
+    return `
+    <div data-wb-metrics="${i}" style="display:flex;align-items:center;flex:1;min-width:0;justify-content:space-around;flex-wrap:wrap;gap:4px 0;">
+      ${metricCell(m.completed, 'Completed', '#15803d', true)}
+      ${metricCell(m.started, 'Started', '#0369a1')}
+      ${metricCell(m.pending, 'Pending', '#b45309')}
+      ${metricCell(m.breaches, 'Breaches', '#dc2626')}
+      ${metricCell(m.exposure, 'Highest Single-Day', '#d97706')}
+    </div>`;
+  };
   return `
-  <div style="margin-bottom:20px;">
-    <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin-bottom:4px;">Cargo Voyage Analysis</h1>
-    <p style="font-size:13px;color:#64748b;">Upload an underwriting declarations workbook — every vessel is screened against AIS for voyage progress and breach of the stated region.</p>
-  </div>
-
   <!-- Declarations workbook card -->
   ${st.uploadMode ? `
   <div class="card" style="margin-bottom:10px;padding:0;overflow:hidden;">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e2e8f0;">
       <div style="font-size:13px;font-weight:700;color:#0f172a;">Upload declarations workbook</div>
-      <button id="cancel-upload" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;color:#64748b;cursor:pointer;font-family:inherit;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button id="download-template" style="display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border:1px solid var(--brand-600,#0284c7);border-radius:6px;background:#fff;color:var(--brand-600,#0284c7);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download template
+        </button>
+      </div>
     </div>
-    ${st.uploadedFile ? `
+    ${st.uploading ? `
+    <div style="padding:24px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div style="width:40px;height:40px;background:#e0f2fe;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:700;color:#0f172a;">${st.uploadedFile || 'declarations.xlsx'}</div>
+          <div style="font-size:12px;color:#64748b;margin-top:1px;">Uploading &amp; analysing voyages…</div>
+        </div>
+      </div>
+      <div class="up-progress">
+        <div id="up-pct" class="up-pct-bubble">1%</div>
+        <div class="up-track"><div id="up-fill" class="up-fill"></div></div>
+      </div>
+    </div>` : st.uploadedFile ? `
     <div style="padding:20px 24px;display:flex;align-items:center;gap:14px;">
       <div style="width:40px;height:40px;background:#dcfce7;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -262,6 +468,7 @@ function renderHeader() {
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       </div>
       <div style="text-align:center;">
+        <p style="font-size:13px;color:#64748b;max-width:460px;margin:0 auto 8px;">Upload an underwriting declarations workbook — every vessel is screened against AIS for voyage progress and breach of the stated region.</p>
         <div style="font-size:14px;font-weight:600;color:#0f172a;margin-bottom:3px;">Drag &amp; drop your .xlsx file here</div>
         <div style="font-size:12px;color:#64748b;">or</div>
       </div>
@@ -273,36 +480,69 @@ function renderHeader() {
       <div style="font-size:11px;color:#94a3b8;">Supports .xlsx files only</div>
     </div>`}
   </div>` : `
-  <div class="card cargo-workbook-card" style="display:flex;align-items:center;gap:14px;padding:14px 18px;margin-bottom:10px;">
-    <div style="width:40px;height:40px;background:#e0f2fe;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+  <div class="card cargo-workbook-card" style="display:flex;flex-direction:column;gap:12px;padding:14px 18px;margin-bottom:10px;align-items:stretch;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+      <div style="font-size:13px;font-weight:700;color:#0f172a;">Declarations workbook${wbs.length > 1 ? 's' : ''} <span style="color:#94a3b8;font-weight:600;">(${wbs.length})</span></div>
+      <div class="cargo-workbook-btns" style="display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;">
+        <button id="upload-another-btn" style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;background:#fff;border:1px solid #e2e8f0;color:#334155;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Upload Another
+        </button>
+      </div>
     </div>
-    <div style="flex:1;min-width:0;">
-      <div style="font-size:13px;font-weight:700;color:#0f172a;">Declarations workbook</div>
-      <div style="font-size:12px;color:#64748b;margin-top:1px;">cargo-voyages-sample.xlsx · 22 KB</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      ${wbs.map((wb, i) => `
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid #eef2f6;border-radius:8px;background:#f8fafc;flex-wrap:wrap;">
+        <div style="width:34px;height:34px;background:#e0f2fe;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${boxIcon}</div>
+        <div style="width:160px;flex-shrink:0;min-width:0;">
+          <div style="font-size:13px;font-weight:600;color:#0f172a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${wb.name}</div>
+          <div style="font-size:12px;color:#64748b;margin-top:1px;">${wb.size || '—'}</div>
+        </div>
+        ${metricsStrip(wb, i)}
+        <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#16a34a;white-space:nowrap;flex-shrink:0;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Analysed
+        </span>
+        <button data-wb-reanalyse="${i}" title="Re-analyse" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid #e2e8f0;border-radius:7px;background:#fff;color:#94a3b8;cursor:pointer;flex-shrink:0;transition:background .15s,color .15s,border-color .15s;" onmouseover="this.style.background='#eff6ff';this.style.borderColor='#bfdbfe';this.style.color='var(--brand-600,#0284c7)';" onmouseout="this.style.background='#fff';this.style.borderColor='#e2e8f0';this.style.color='#94a3b8';">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        </button>
+        <button data-wb-remove="${i}" title="Remove workbook" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid #e2e8f0;border-radius:7px;background:#fff;color:#94a3b8;cursor:pointer;flex-shrink:0;transition:background .15s,color .15s,border-color .15s;" onmouseover="this.style.background='#fef2f2';this.style.borderColor='#fca5a5';this.style.color='#dc2626';" onmouseout="this.style.background='#fff';this.style.borderColor='#e2e8f0';this.style.color='#94a3b8';">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>`).join('')}
     </div>
-    <div class="cargo-workbook-btns" style="display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;">
-      <button id="upload-another-btn" style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;background:#fff;border:1px solid #e2e8f0;color:#334155;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        Upload Another
+    <div class="cargo-info-bar" style="display:flex;align-items:center;gap:10px;padding-top:12px;border-top:1px solid #f1f5f9;flex-wrap:wrap;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <p style="font-size:13px;color:#334155;flex:1;">Showing <strong>${VOYAGES.length}</strong> voyages from ${wbs.length > 1 ? `<strong>${wbs.length}</strong> uploaded workbooks` : 'the latest upload'} — every row is also saved server-side. Upload another xlsx to merge in more rows before saving to declarations.</p>
+    </div>
+    <div class="cargo-wb-footer" style="display:flex;align-items:center;justify-content:flex-end;gap:10px;padding-top:12px;border-top:1px solid #f1f5f9;">
+      <button id="wb-cancel" style="height:36px;padding:0 18px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;color:#334155;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">Cancel</button>
+      <button id="wb-save" style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 18px;background:var(--brand-600,#0284c7);color:#fff;border:0;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save To Declarations
       </button>
-      <button style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 16px;background:var(--brand-600,#0284c7);color:#fff;border:0;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        Re-analyse
-      </button>
     </div>
-  </div>`}
+  </div>`}`;
+}
 
-  <!-- Info bar -->
-  <div class="card cargo-info-bar" style="display:flex;align-items:center;gap:10px;padding:11px 16px;margin-bottom:10px;flex-wrap:wrap;">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-    <p style="font-size:13px;color:#334155;flex:1;">Showing <strong>6</strong> voyages from the latest upload — every row is also saved server-side. Upload another xlsx to merge in more rows, or clear the current list below.</p>
-    <button style="white-space:nowrap;height:30px;padding:0 12px;border:1px solid #fca5a5;border-radius:7px;background:#fff;color:#dc2626;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Clear current list</button>
-  </div>
-
-  <!-- Export to Excel -->
-  <div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
-    <button style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 16px;background:var(--brand-600,#0284c7);color:#fff;border:0;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">
+function renderActionsRow() {
+  return `
+  <!-- Date range + Export to Excel -->
+  <div class="cargo-actions-row" style="display:flex;align-items:flex-end;justify-content:flex-end;gap:16px;margin-top:12px;margin-bottom:20px;flex-wrap:wrap;">
+    <div>
+      <div style="font-size:12px;font-weight:600;color:#334155;margin-bottom:5px;">Date Range:</div>
+      <div class="date-fields-row" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <button id="date-from-field" class="date-field" type="button">
+          <span id="date-from-label">${fmtRangeDate(st.dateFrom)}</span>
+          ${calIconSvg}
+        </button>
+        <button id="date-to-field" class="date-field" type="button">
+          <span id="date-to-label">${fmtRangeDate(st.dateTo)}</span>
+          ${calIconSvg}
+        </button>
+      </div>
+    </div>
+    <button style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px;background:var(--brand-600,#0284c7);color:#fff;border:0;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Export to Excel
     </button>
@@ -315,34 +555,45 @@ function renderPortfolioSummary() {
   const pending   = VOYAGES.filter(v => v.status === 'Pending').length;
   const breaches  = VOYAGES.filter(v => v.breach).length;
 
-  const card = (label, value, color, desc) => `
-    <div class="stat-card" style="border-top:3px solid ${color};">
-      <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#64748b;margin-bottom:8px;">${label}</div>
-      <div style="font-size:32px;font-weight:800;color:${color};line-height:1;margin-bottom:6px;">${value}</div>
-      <div style="font-size:12px;color:#64748b;">${desc}</div>
+  const card = (label, value, mod, desc, icon) => `
+    <div class="stat-card">
+      <div class="ds-card-head"><h3 class="ds-card-title">${label}</h3>${icon ? `<span style="display:inline-flex;color:var(--text-muted,#94a3b8);flex-shrink:0;">${icon}</span>` : ''}</div>
+      <div class="ds-card-body">
+        <span class="ds-metric-value ${mod}">${value}</span>
+        <div class="stat-desc">${desc}</div>
+      </div>
     </div>`;
 
   return `
-  <div style="margin-bottom:12px;">
-    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;">
-      <div style="font-size:12px;font-weight:700;color:#0f172a;letter-spacing:.06em;display:flex;align-items:center;gap:5px;">
-        <span style="color:#f59e0b;">★</span> PORTFOLIO SUMMARY
-      </div>
-      <div style="font-size:11px;color:#94a3b8;">${VOYAGES.length} declarations · $50M threshold for "high value"</div>
+  <div class="card" style="margin-bottom:12px;overflow:hidden;">
+    <div class="portfolio-sum-head" style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:12px 16px;border-bottom:1px solid #e2e8f0;">
+      <div style="font-family:'Exo',sans-serif;font-size:13px;font-weight:700;color:#0f172a;letter-spacing:.01em;">Portfolio summary</div>
+      <div style="font-size:11px;color:var(--text-muted,#6B7280);"><span style="font-weight:700;color:#0f172a;">Total:</span> <span style="background:#fef3c7;color:#92400e;font-weight:600;padding:2px 7px;border-radius:4px;">${VOYAGES.length} declarations · $50M threshold for "high value"</span></div>
     </div>
-    <div class="cargo-summary-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px;">
-      ${card('Completed', completed, '#16a34a', 'voyages reached discharge port')}
-      ${card('Started',   started,   'var(--brand-600,#0284c7)', 'left load port, en route')}
-      ${card('Pending',   pending,   '#d97706', 'no load departure detected')}
-      ${card('Breaches',  breaches,  '#dc2626', 'vessels transited stated region')}
-    </div>
-    <!-- Exposure Alert -->
-    <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:14px 18px;">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#9a3412;margin-bottom:6px;">Highest Single-Day Exposure</div>
-      <div style="font-size:16px;font-weight:800;color:#0f172a;">
-        <span style="color:#ea580c;">$15.0M</span> at Fujairah on 2026-04-06
+    <div class="cargo-summary-grid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:16px;">
+      ${card('Completed', completed, 'ds-metric-value--success', 'voyages reached discharge port', `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/></svg>`)}
+      ${card('Started',   started,   '', 'left load port, en route', `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z"/></svg>`)}
+      ${card('Pending',   pending,   'ds-metric-value--warning', 'no load departure detected', `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 14v2.2l1.6 1"/><path d="M16 4h2a2 2 0 0 1 2 2v.832"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4.062"/><rect x="8" y="2" width="8" height="4" rx="1"/><circle cx="16" cy="16" r="6"/></svg>`)}
+      ${card('Breaches',  breaches,  'ds-metric-value--danger', 'vessels transited stated region', `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>`)}
+      <div class="stat-card">
+        <div class="ds-card-head"><h3 class="ds-card-title">Highest Single-Day Exposure</h3><span style="display:inline-flex;color:var(--text-muted,#94a3b8);flex-shrink:0;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span></div>
+        <div class="ds-card-body">
+          <span class="ds-metric-value ds-metric-value--warning">${st.peakExposure}</span>
+          <div class="stat-desc" style="display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;">
+            <span style="display:inline-flex;align-items:center;gap:4px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg>
+              Fujairah
+            </span>
+            <span style="color:#cbd5e1;">·</span>
+            <span>2026-04-06</span>
+            <span style="color:#cbd5e1;">·</span>
+            <span style="display:inline-flex;align-items:center;gap:4px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 21c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M19.38 20A11.6 11.6 0 0 0 21 14l-9-4-9 4c0 2.9.94 5.34 2.81 7.76"/><path d="M19 13V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6"/><path d="M12 10v4"/><path d="M12 2v3"/></svg>
+              3 vessels
+            </span>
+          </div>
+        </div>
       </div>
-      <div style="font-size:12px;color:#64748b;margin-top:4px;">3 vessels: Lahore, DEIRA GHAIR, VESTA</div>
     </div>
   </div>`;
 }
@@ -351,11 +602,20 @@ function renderDeclarationsTable() {
   const rows = filteredVoyages();
   const th = (label, col) => `<th data-sort="${col}" style="cursor:pointer;">${label}${sortArrow(col)}</th>`;
   return `
+  <div class="cargo-bulk-bar" style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid #e2e8f0;">
+    <input type="checkbox" id="select-all" title="Select all" style="width:15px;height:15px;accent-color:var(--brand-600,#0284c7);cursor:pointer;margin:0;flex-shrink:0;" />
+    <select id="bulk-action" class="bulk-select" style="height:32px;border:1px solid #e2e8f0;border-radius:8px;padding:0 32px 0 12px;font-size:12px;font-weight:600;color:#334155;background:#fff url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E&quot;) no-repeat right 10px center;font-family:inherit;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;">
+      <option value="">Bulk Action</option>
+      <option value="archive">Archive</option>
+      <option value="delete">Delete</option>
+    </select>
+    <span id="bulk-count" style="font-size:12px;color:#64748b;"></span>
+  </div>
   <div style="overflow-x:auto;" class="scroll-thin">
     <table class="voy-table" style="min-width:1100px;">
       <thead>
         <tr>
-          <th style="width:28px;cursor:default;"></th>
+          <th style="width:52px;cursor:default;"></th>
           ${th('Status', 'status')}
           ${th('Vessel Name', 'name')}
           ${th('Vessel IMO', 'imo')}
@@ -367,6 +627,7 @@ function renderDeclarationsTable() {
           ${th('Actual Discharge Date', 'actDisch')}
           ${th('Breach', 'breachRegion')}
           <th style="cursor:default;">Days</th>
+          <th style="cursor:default;text-align:center;">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -374,8 +635,11 @@ function renderDeclarationsTable() {
           const expanded = st.expanded.has(i);
           return `
           <tr class="${expanded ? 'is-expanded' : ''}" data-row="${i}" style="cursor:pointer;">
-            <td style="color:var(--brand-600,#2563eb);text-align:center;padding:10px 6px;">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="transform:${expanded ? 'rotate(90deg)' : 'rotate(0deg)'};transition:transform 150ms;display:inline-block;"><path d="M9 18l6-6-6-6"/></svg>
+            <td style="text-align:left;padding:10px 6px 10px 16px;">
+              <span style="display:inline-flex;align-items:center;gap:8px;">
+                <input type="checkbox" class="row-check" data-sel="${v.imo}" ${st.selected.has(v.imo) ? 'checked' : ''} onclick="event.stopPropagation();" style="width:15px;height:15px;accent-color:var(--brand-600,#0284c7);cursor:pointer;margin:0;flex-shrink:0;" />
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--brand-600,#2563eb)" stroke-width="2.5" stroke-linecap="round" style="transform:${expanded ? 'rotate(90deg)' : 'rotate(0deg)'};transition:transform 150ms;display:inline-block;flex-shrink:0;"><path d="M9 18l6-6-6-6"/></svg>
+              </span>
             </td>
             <td>${statusBadge(v)}</td>
             <td style="font-weight:600;"><a href="VesselDetails.html" target="_blank" rel="noopener" style="color:var(--brand-600,#2563eb);text-decoration:none;" onclick="event.stopPropagation();" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${v.name}</a></td>
@@ -388,31 +652,48 @@ function renderDeclarationsTable() {
             <td style="color:${v.actDisch ? '#0369a1' : '#94a3b8'};font-variant-numeric:tabular-nums;font-weight:${v.actDisch ? '600' : '400'};">${v.actDisch || '—'}</td>
             <td>${v.breachRegion ? `<span style="color:#dc2626;font-size:11px;font-weight:600;">${v.breachRegion}</span>` : '<span style="color:#94a3b8;">—</span>'}</td>
             <td style="text-align:center;">${v.days > 0 ? `<span style="background:#fee2e2;color:#b91c1c;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;">${v.days}</span>` : '<span style="color:#94a3b8;">—</span>'}</td>
+            <td style="text-align:center;">
+              <div style="display:inline-flex;align-items:center;justify-content:center;gap:6px;">
+                <button class="row-arch-btn" data-arch-row="${i}" title="Archive declaration" onclick="event.stopPropagation();" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border:1px solid #e2e8f0;border-radius:7px;background:#fff;color:#94a3b8;cursor:pointer;transition:background .15s,color .15s,border-color .15s;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V8"/><path d="M10 12h4"/></svg>
+                </button>
+                <button class="row-del-btn" data-del-row="${i}" title="Delete declaration" onclick="event.stopPropagation();" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border:1px solid #e2e8f0;border-radius:7px;background:#fff;color:#94a3b8;cursor:pointer;transition:background .15s,color .15s,border-color .15s;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                </button>
+              </div>
+            </td>
           </tr>
           ${expanded ? `
           <tr class="expanded-detail">
-            <td colspan="12" style="padding:0;border-bottom:2px solid #bae6fd;">
+            <td colspan="13" style="padding:0;border-bottom:2px solid #bae6fd;">
               <div class="cargo-detail-sticky" id="cargo-detail-${i}" style="position:sticky;left:0;">
-              <!-- Leaflet map -->
-              <div class="cargo-map-wrap" id="cargo-map-wrap-${i}" style="height:400px;width:100%;">
-                <div id="cargo-map-${i}" style="height:100%;width:100%;"></div>
-                <!-- fullscreen button (top-left, above zoom control) -->
-                <button class="map-btn map-btn-fs" data-map-fs="${i}" title="Toggle fullscreen" style="position:absolute;top:12px;left:12px;z-index:400;">${SC.I.maximize}</button>
-                <!-- map type selector (top-right) -->
-                <div style="position:absolute;top:12px;right:12px;z-index:400;">
-                  <div style="position:relative;">
-                    <button class="map-btn" data-map-layers="${i}" title="Map type">${SC.I.layers}</button>
-                    <div class="map-type-menu hidden" data-map-menu="${i}">
-                      ${[
-                        { id:'satellite', label:'Satellite' },
-                        { id:'street',    label:'Street View' },
-                        { id:'dark',      label:'Dark Mode' },
-                        { id:'light',     label:'Light Mode' },
-                      ].map(o => `
-                        <button class="map-type-opt" data-map-type="${o.id}">
-                          <span data-label>${o.label}</span>
-                          <span style="color:var(--brand-600,#2563eb);opacity:0;" data-check>${SC.I.check}</span>
-                        </button>`).join('')}
+              <div class="cargo-detail-layout" style="display:flex;gap:12px;padding:12px;align-items:stretch;">
+                <!-- Details card (2/3) -->
+                <div class="card cargo-details-card" style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;">
+                  <div style="padding:12px 16px;border-bottom:1px solid #e2e8f0;font-size:13px;font-weight:700;color:#0f172a;">Details</div>
+                  <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:24px;color:#94a3b8;font-size:13px;">Content TBD</div>
+                </div>
+                <!-- Leaflet map (1/3) -->
+                <div class="cargo-map-wrap" id="cargo-map-wrap-${i}" style="flex:2;min-width:0;height:400px;border-radius:12px;overflow:hidden;">
+                  <div id="cargo-map-${i}" style="height:100%;width:100%;"></div>
+                  <!-- fullscreen button (top-left, above zoom control) -->
+                  <button class="map-btn map-btn-fs" data-map-fs="${i}" title="Toggle fullscreen" style="position:absolute;top:12px;left:12px;z-index:400;">${SC.I.maximize}</button>
+                  <!-- map type selector (top-right) -->
+                  <div style="position:absolute;top:12px;right:12px;z-index:400;">
+                    <div style="position:relative;">
+                      <button class="map-btn" data-map-layers="${i}" title="Map type">${SC.I.layers}</button>
+                      <div class="map-type-menu hidden" data-map-menu="${i}">
+                        ${[
+                          { id:'satellite', label:'Satellite' },
+                          { id:'street',    label:'Street View' },
+                          { id:'dark',      label:'Dark Mode' },
+                          { id:'light',     label:'Light Mode' },
+                        ].map(o => `
+                          <button class="map-type-opt" data-map-type="${o.id}">
+                            <span data-label>${o.label}</span>
+                            <span style="color:var(--brand-600,#2563eb);opacity:0;" data-check>${SC.I.check}</span>
+                          </button>`).join('')}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -475,7 +756,7 @@ function renderTabSection() {
   return `
   <div class="card" style="overflow:hidden;">
     <!-- Tab bar -->
-    <div style="padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <div class="cargo-tab-bar" style="padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
       <div class="ds-tabs">
         <span class="ds-tab-pill is-init" data-tab-pill></span>
         <button data-tab="declarations" aria-selected="${st.tab==='declarations'}" class="ds-tab">
@@ -484,18 +765,32 @@ function renderTabSection() {
         <button data-tab="clashAlerts" aria-selected="${st.tab==='clashAlerts'}" class="ds-tab">
           <span class="ds-tab-label">Clash Alerts <span style="font-size:11px;font-weight:700;margin-left:2px;opacity:.75;">(${CLASH_ALERTS.length})</span></span>
         </button>
+        <button data-tab="archive" aria-selected="${st.tab==='archive'}" class="ds-tab">
+          <span class="ds-tab-label">Archive <span style="font-size:11px;font-weight:700;margin-left:2px;opacity:.75;">(0)</span></span>
+        </button>
       </div>
+      ${st.tab === 'declarations' ? `
+      <input id="vessel-filter" type="text" value="${st.filter}" placeholder="Filter by vessel name or IMO…" class="filter-input" style="margin-left:auto;" />` : ''}
     </div>
-    <!-- Filter row (only for declarations) -->
+    <!-- Hint row (only for declarations) -->
     ${st.tab === 'declarations' ? `
-    <div style="padding:10px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;gap:12px;">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <input id="vessel-filter" type="text" value="${st.filter}" placeholder="Filter by vessel name or IMO…" class="filter-input" />
-      </div>
-      <span style="font-size:11px;color:#94a3b8;white-space:nowrap;">Click a row to drill into the AIS analysis · click any header to sort</span>
+    <div class="cargo-hint-row" style="padding:10px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:flex-end;">
+      <span class="cargo-hint-text" style="font-size:11px;color:#94a3b8;white-space:nowrap;">Click a row to drill into the AIS analysis · click any header to sort</span>
     </div>` : ''}
     <!-- Table -->
-    ${st.tab === 'declarations' ? renderDeclarationsTable() + renderDeclarationsFooter() : renderClashAlertsTable()}
+    ${st.tab === 'declarations' ? renderDeclarationsTable() + renderDeclarationsFooter()
+      : st.tab === 'archive' ? renderArchiveEmpty()
+      : renderClashAlertsTable()}
+  </div>`;
+}
+
+function renderArchiveEmpty() {
+  return `
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:56px 24px;text-align:center;">
+    <div style="width:48px;height:48px;background:#f1f5f9;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V8"/><path d="M10 12h4"/></svg>
+    </div>
+    <div style="font-size:14px;font-weight:600;color:#334155;">You currently do not have any voyages in archive</div>
   </div>`;
 }
 
@@ -503,11 +798,12 @@ function renderTabSection() {
 window.render = function() {
   document.getElementById('app').innerHTML = `
     ${SC.Sidebar()}
-    <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
+    <div class="flex-1 min-w-0 flex flex-col">
       ${SC.Topbar()}
-      <main id="cargo-main" class="flex-1 overflow-y-auto scroll-thin bg-ink-100 px-5 py-4">
+      <main id="cargo-main" class="flex-1 bg-ink-100 px-5 py-4">
         <div style="">
           ${renderHeader()}
+          ${renderActionsRow()}
           ${renderPortfolioSummary()}
           ${renderTabSection()}
         </div>
@@ -537,6 +833,398 @@ function cargoPortPopupHTML(rawName, role, coords, color) {
     </div>
     <button class="pp-cta" style="color:${color};border-color:${color};" onclick="sessionStorage.setItem('selectedPort', '${payload}'); window.location.href='PortDetails.html'">View Details</button>
   </div>`;
+}
+
+let wbSeq = 0;
+function makeWorkbookMetrics() {
+  const seq = wbSeq++;
+  const expVals = ['$8.5M', '$12.3M', '$6.2M', '$15.0M', '$9.4M', '$4.1M'];
+  return {
+    completed: 3 + (seq % 4),
+    started:   1 + (seq % 3),
+    pending:   seq % 2,
+    breaches:  1 + (seq % 3),
+    exposure:  expVals[seq % expVals.length],
+  };
+}
+
+/* Commit analysed workbooks into the live VOYAGES list so the Portfolio summary
+   (and the declarations table) recompute. Each workbook contributes voyage rows
+   matching its Completed / Started / Pending / Breaches metrics. */
+let saveSeq = 0;
+const SAVE_NAMES  = ['Indus Voyager','Sohar Pride','Coral Gulf','Aden Mariner','Qeshm Trader','Nizwa','Tabuk','Bandar Star','Khasab','Sur Express','Salwa','Hormuz Pearl'];
+const SAVE_LOADS  = ['Fujairah','Dubai','Abu Dhabi','Muscat'];
+const SAVE_DISCH  = ['Karachi, Pakistan','Mumbai, India','Colombo, Sri Lanka','Chittagong, Bangladesh'];
+const SAVE_REGIONS = ['Gulf of Oman','Strait of Hormuz','Gulf of Aden'];
+function appendWorkbookVoyages(workbooks) {
+  const pad = n => String(n).padStart(2, '0');
+  let added = 0;
+  workbooks.forEach(wb => {
+    const m = wb.metrics || { completed:0, started:0, pending:0, breaches:0 };
+    const statuses = [];
+    for (let k = 0; k < (m.completed || 0); k++) statuses.push('Completed');
+    for (let k = 0; k < (m.started   || 0); k++) statuses.push('Started');
+    for (let k = 0; k < (m.pending   || 0); k++) statuses.push('Pending');
+    let breachLeft = m.breaches || 0;
+    statuses.forEach(status => {
+      const idx = saveSeq++;
+      const cycle = Math.floor(idx / SAVE_NAMES.length);
+      const name = SAVE_NAMES[idx % SAVE_NAMES.length] + (cycle ? ` ${cycle + 1}` : '');
+      const imo = String(9200000 + (idx * 1733) % 799999);
+      const load = SAVE_LOADS[idx % SAVE_LOADS.length];
+      const disch = SAVE_DISCH[idx % SAVE_DISCH.length];
+      const breach = breachLeft > 0; if (breach) breachLeft--;
+      const day = 10 + (idx % 16);
+      const dDay = Math.min(28, day + 3 + (idx % 3));
+      const hh = pad(3 + (idx % 18)), mm = pad((idx * 13) % 60);
+      const estLoad = `2026-04-${pad(day)}`;
+      const actLoad  = status === 'Pending'   ? '—' : `${estLoad} ${hh}:${mm}`;
+      const dischDate = status === 'Completed' ? '—' : `2026-04-${pad(dDay)}`;
+      const actDisch = status === 'Completed' ? `2026-04-${pad(dDay)} ${pad((+hh + 5) % 24)}:${mm}` : '—';
+      VOYAGES.push({
+        status, breach, name, imo, estLoad, actLoad, loadPort: load,
+        dischDate, dischPort: disch, actDisch,
+        breachRegion: breach ? SAVE_REGIONS[idx % SAVE_REGIONS.length] : '',
+        days: breach ? 1 + (idx % 3) : 0,
+      });
+      added++;
+    });
+  });
+  return added;
+}
+function parseExposure(s) { return parseFloat(String(s || '').replace(/[^0-9.]/g, '')) || 0; }
+
+/* Animate a single workbook row's metric strip with the upload/analyse % bar,
+   then restore its metrics (re-screen in place). */
+function reanalyseRow(i) {
+  const strip = document.querySelector(`[data-wb-metrics="${i}"]`);
+  if (!strip || strip.dataset.busy === '1') return;
+  strip.dataset.busy = '1';
+  strip.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;padding:0 12px;">
+      <div class="up-track" style="flex:1;"><div class="up-fill" style="width:1%;"></div></div>
+      <span class="wb-reana-pct" style="font-size:12px;font-weight:700;color:var(--brand-600,#0284c7);font-variant-numeric:tabular-nums;min-width:34px;text-align:right;">1%</span>
+    </div>`;
+  const fill = strip.querySelector('.up-fill');
+  const pctEl = strip.querySelector('.wb-reana-pct');
+  let pct = 1;
+  const timer = setInterval(() => {
+    const step = pct < 70 ? 3 + Math.random() * 4 : 1.5 + Math.random() * 2.5;
+    pct = Math.min(100, pct + step);
+    fill.style.width = pct + '%';
+    pctEl.textContent = Math.round(pct) + '%';
+    if (pct >= 100) {
+      clearInterval(timer);
+      setTimeout(() => {
+        window.render();   // restores the metric strip with the (unchanged) metrics
+        const wb = st.workbooks[i];
+        showToast({ tone:'success', title:'Re-analysed', desc:`${wb ? wb.name : 'Workbook'} re-screened against AIS.` });
+      }, 200);
+    }
+  }, 55);
+}
+
+
+
+function fmtFileSize(bytes) {
+  if (!bytes && bytes !== 0) return '—';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function runUploadProgress(addWorkbook = true) {
+  const fill = document.getElementById('up-fill');
+  const pctEl = document.getElementById('up-pct');
+  if (!fill || !pctEl) { st.uploading = false; st.uploadMode = false; window.render(); return; }
+  let pct = 1;
+  fill.style.width = '1%';
+  pctEl.textContent = '1%';
+  const positionBubble = () => {
+    const track = fill.parentElement;
+    if (!track) return;
+    const w = track.clientWidth;
+    const half = pctEl.offsetWidth / 2;
+    const x = Math.max(half, Math.min(w - half, (pct / 100) * w));
+    pctEl.style.left = x + 'px';
+  };
+  positionBubble();
+  const timer = setInterval(() => {
+    // Ease the increment so it slows slightly near the end
+    const step = pct < 70 ? 3 + Math.random() * 4 : 1.5 + Math.random() * 2.5;
+    pct = Math.min(100, pct + step);
+    fill.style.width = pct + '%';
+    pctEl.textContent = Math.round(pct) + '%';
+    positionBubble();
+    if (pct >= 100) {
+      clearInterval(timer);
+      setTimeout(() => {
+        if (addWorkbook) {
+          st.workbooks.push({ name: st.uploadedFile || 'declarations.xlsx', size: st.uploadedSize || '—', metrics: makeWorkbookMetrics() });
+        }
+        st.uploading = false;
+        st.uploadMode = false;
+        st.uploadedFile = null;
+        st.uploadedSize = null;
+        st.analysed = true;
+        window.render();
+        showToast(addWorkbook
+          ? { tone:'success', title:'Workbook analysed', desc:`${st.workbooks.length} workbook${st.workbooks.length>1?'s':''} in the current list — ${VOYAGES.length} voyages screened.` }
+          : { tone:'success', title:`${VOYAGES.length} voyages re-analysed`, desc:'Every vessel screened against AIS.' });
+      }, 250);
+    }
+  }, 60);
+}
+
+const calIconSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
+
+const DP_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DP_MON_ABBR = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DP_DOW = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+function ordinal(n) {
+  const s = ['th','st','nd','rd'], v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+function fmtRangeDate(d) {
+  if (!d) return '—';
+  return `${DP_MON_ABBR[d.getMonth()]} ${ordinal(d.getDate())} ${d.getFullYear()}`;
+}
+function sameDay(a, b) { return a && b && a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+function dayOnly(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+
+// Date-range picker working state
+let dp = null;
+
+function openDatePicker(anchorEl) {
+  if (document.getElementById('dp-pop')) { closeDatePicker(); return; }
+  const base = st.dateFrom || new Date();
+  dp = {
+    from: st.dateFrom ? dayOnly(st.dateFrom) : null,
+    to:   st.dateTo ? dayOnly(st.dateTo) : null,
+    view: new Date(base.getFullYear(), base.getMonth(), 1),
+    preset: st.datePreset || null,
+  };
+  const pop = document.createElement('div');
+  pop.id = 'dp-pop';
+  pop.className = 'dp-pop';
+  document.body.appendChild(pop);
+  renderDatePicker();
+  positionDatePicker(anchorEl);
+  setTimeout(() => document.addEventListener('mousedown', dpOutside), 0);
+}
+function dpOutside(e) {
+  const pop = document.getElementById('dp-pop');
+  if (pop && !pop.contains(e.target) && !e.target.closest('.date-field')) closeDatePicker();
+}
+function closeDatePicker() {
+  const pop = document.getElementById('dp-pop');
+  if (pop) pop.remove();
+  document.removeEventListener('mousedown', dpOutside);
+  dp = null;
+}
+function positionDatePicker(anchorEl) {
+  const pop = document.getElementById('dp-pop');
+  if (!pop || !anchorEl) return;
+  const r = anchorEl.getBoundingClientRect();
+  const pr = pop.getBoundingClientRect();
+  let left = r.left;
+  let top = r.bottom + 8;
+  if (left + pr.width > window.innerWidth - 12) left = Math.max(12, window.innerWidth - pr.width - 12);
+  if (top + pr.height > window.innerHeight - 12) top = Math.max(12, r.top - pr.height - 8);
+  pop.style.left = left + 'px';
+  pop.style.top = top + 'px';
+}
+
+const DP_PRESETS = [
+  { id:'today',  label:'Today' },
+  { id:'d7',     label:'Last 7 Days' },
+  { id:'d14',    label:'Last 14 Days' },
+  { id:'d30',    label:'Last 30 Days' },
+  { id:'m6',     label:'Last 6 Months' },
+  { id:'m12',    label:'Last 12 Months' },
+  { id:'custom', label:'Custom Range' },
+];
+function applyPreset(id) {
+  const today = dayOnly(new Date());
+  let from = new Date(today), to = new Date(today);
+  if (id === 'today')      { from = new Date(today); to = new Date(today); }
+  else if (id === 'd7')    { from = new Date(today); from.setDate(from.getDate()-6); }
+  else if (id === 'd14')   { from = new Date(today); from.setDate(from.getDate()-13); }
+  else if (id === 'd30')   { from = new Date(today); from.setDate(from.getDate()-29); }
+  else if (id === 'm6')    { from = new Date(today); from.setMonth(from.getMonth()-6); }
+  else if (id === 'm12')   { from = new Date(today); from.setMonth(from.getMonth()-12); }
+  else if (id === 'custom'){ dp.preset = 'custom'; renderDatePicker(); return; }
+  dp.from = from; dp.to = to; dp.preset = id;
+  dp.view = new Date(from.getFullYear(), from.getMonth(), 1);
+  renderDatePicker();
+}
+function dpPickDay(d) {
+  dp.preset = 'custom';
+  if (!dp.from || (dp.from && dp.to)) { dp.from = d; dp.to = null; }
+  else if (d < dp.from) { dp.from = d; }
+  else { dp.to = d; }
+  renderDatePicker();
+}
+function monthGrid(view) {
+  const y = view.getFullYear(), m = view.getMonth();
+  const startDow = new Date(y, m, 1).getDay();
+  const days = new Date(y, m+1, 0).getDate();
+  const cells = [];
+  for (let i = 0; i < startDow; i++) cells.push(null);
+  for (let d = 1; d <= days; d++) cells.push(new Date(y, m, d));
+  while (cells.length % 7 !== 0) cells.push(null);
+  return cells;
+}
+function renderMonth(view) {
+  const cells = monthGrid(view);
+  const from = dp.from, to = dp.to;
+  let html = `<div class="dp-cal">
+    <div class="dp-cal-title">${DP_MONTHS[view.getMonth()]} ${view.getFullYear()}</div>
+    <div class="dp-dow">${DP_DOW.map(d => `<span>${d}</span>`).join('')}</div>
+    <div class="dp-days">`;
+  html += cells.map(d => {
+    if (!d) return `<span class="dp-empty"></span>`;
+    const isEnd = sameDay(d, from) || sameDay(d, to);
+    const inRange = from && to && d > from && d < to;
+    let cls = 'dp-day';
+    if (isEnd) cls += ' dp-end';
+    else if (inRange) cls += ' dp-in';
+    const iso = d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate();
+    return `<button class="${cls}" data-dp-day="${iso}">${d.getDate()}</button>`;
+  }).join('');
+  html += `</div></div>`;
+  return html;
+}
+function renderDatePicker() {
+  const pop = document.getElementById('dp-pop');
+  if (!pop) return;
+  const view2 = new Date(dp.view.getFullYear(), dp.view.getMonth()+1, 1);
+  pop.innerHTML = `
+    <div class="dp-presets">
+      ${DP_PRESETS.map(p => `<button class="dp-preset${dp.preset===p.id?' is-active':''}" data-dp-preset="${p.id}">${p.label}</button>`).join('')}
+    </div>
+    <div class="dp-main">
+      <div class="dp-cals">
+        <button class="dp-nav dp-prev" data-dp-nav="-1" aria-label="Previous month"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+        ${renderMonth(dp.view)}
+        ${renderMonth(view2)}
+        <button class="dp-nav dp-next" data-dp-nav="1" aria-label="Next month"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+      <div class="dp-footer">
+        <button class="dp-btn dp-cancel" data-dp-cancel>Cancel</button>
+        <button class="dp-btn dp-apply" data-dp-apply>Apply</button>
+      </div>
+    </div>`;
+  pop.querySelectorAll('[data-dp-preset]').forEach(b => b.onclick = () => applyPreset(b.dataset.dpPreset));
+  pop.querySelectorAll('[data-dp-nav]').forEach(b => b.onclick = () => {
+    dp.view = new Date(dp.view.getFullYear(), dp.view.getMonth() + (+b.dataset.dpNav), 1);
+    renderDatePicker();
+  });
+  pop.querySelectorAll('[data-dp-day]').forEach(b => b.onclick = () => {
+    const [y,m,d] = b.dataset.dpDay.split('-').map(Number);
+    dpPickDay(new Date(y, m, d));
+  });
+  pop.querySelector('[data-dp-cancel]').onclick = closeDatePicker;
+  pop.querySelector('[data-dp-apply]').onclick = () => {
+    if (dp.from) { st.dateFrom = dp.from; st.dateTo = dp.to || dp.from; st.datePreset = dp.preset; }
+    closeDatePicker();
+    window.render();
+  };
+}
+
+/* ── Toast / Snackbar — Skytek Design System component ───────────────────────
+   White surface, 4-px tone bar, top-right region, depleting timer bar,
+   pause-on-hover, dismiss button, capped 3-deep stack (newest on top). */
+const TOAST_ICONS = {
+  info:    '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+  success: '<path d="M20 6L9 17l-5-5"/>',
+  warning: '<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+  danger:  '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+};
+const TOAST_DUR = { short: 4000, long: 6000, action: 8000 };
+
+function getToastRegion() {
+  let region = document.querySelector('.ds-toast-region');
+  if (!region) {
+    region = document.createElement('div');
+    region.className = 'ds-toast-region';
+    region.setAttribute('aria-label', 'Notifications');
+    document.body.appendChild(region);
+  }
+  return region;
+}
+
+function showToast(opts) {
+  const o = typeof opts === 'string' ? { title: opts } : (opts || {});
+  const tone = o.tone || 'info';
+  const persistent = o.duration === Infinity || tone === 'danger';
+  const duration = persistent ? Infinity
+    : (o.duration || (o.action ? TOAST_DUR.action : tone === 'warning' ? TOAST_DUR.long : TOAST_DUR.short));
+  const region = getToastRegion();
+
+  const el = document.createElement('div');
+  el.className = `ds-toast ds-toast--${tone} is-entering`;
+  el.setAttribute('role', tone === 'danger' ? 'alert' : 'status');
+  el.setAttribute('aria-live', tone === 'danger' ? 'assertive' : 'polite');
+  el.innerHTML = `
+    <svg class="ds-toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TOAST_ICONS[tone] || TOAST_ICONS.info}</svg>
+    <div class="ds-toast-body">
+      <div class="ds-toast-title"></div>
+      ${o.desc ? '<div class="ds-toast-desc"></div>' : ''}
+      ${o.action ? '<div class="ds-toast-actions"><button type="button" class="ds-toast-action" style="height:24px;padding:0 4px;border:0;background:transparent;color:var(--brand-600,#0284c7);font:inherit;font-size:13px;font-weight:600;cursor:pointer;"></button></div>' : ''}
+    </div>
+    <div class="ds-toast-side">
+      <button type="button" class="ds-toast-dismiss" aria-label="Dismiss notification">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>
+      </button>
+    </div>
+    ${persistent ? '' : `<span class="ds-toast-timer" style="animation-duration:${duration}ms" aria-hidden="true"></span>`}`;
+  el.querySelector('.ds-toast-title').textContent = o.title || '';
+  if (o.desc) el.querySelector('.ds-toast-desc').textContent = o.desc;
+
+  let timer = null, started = 0, left = duration;
+  const dismiss = () => {
+    if (timer) { clearTimeout(timer); timer = null; }
+    el.classList.remove('is-entering');
+    el.classList.add('is-leaving');
+    setTimeout(() => el.remove(), 160);
+    o.onDismiss && o.onDismiss();
+  };
+  const arm = (ms) => {
+    if (!ms || ms === Infinity) return;
+    started = Date.now();
+    timer = setTimeout(dismiss, ms);
+  };
+
+  if (o.action) {
+    const btn = el.querySelector('.ds-toast-action');
+    btn.textContent = o.action.label || 'Undo';
+    btn.addEventListener('click', () => { o.action.onClick && o.action.onClick(); dismiss(); });
+  }
+  el.querySelector('.ds-toast-dismiss').addEventListener('click', dismiss);
+
+  if (!persistent) {
+    el.addEventListener('mouseenter', () => {
+      if (!timer) return;
+      left = Math.max(0, left - (Date.now() - started));
+      clearTimeout(timer); timer = null;
+      el.classList.add('is-paused');
+    });
+    el.addEventListener('mouseleave', () => { el.classList.remove('is-paused'); arm(left); });
+  }
+
+  // newest enters at the top; cap visible stack at --toast-max-stack (3)
+  region.insertBefore(el, region.firstChild);
+  region.querySelectorAll('.ds-toast').forEach((t, i) => { if (i >= 3) t.remove(); });
+
+  if (!persistent) arm(duration);
+  return el;
+}
+
+/* Upload confirmation — fires the DS success toast */
+function showUploadToast(msg) {
+  return showToast({ tone: 'success', title: msg });
 }
 
 function initMaps() {
@@ -638,6 +1326,14 @@ function initMaps() {
       });
     }
 
+    // Keep the map sized correctly when the layout reflows (e.g. stacking on mobile)
+    window.addEventListener('resize', () => {
+      if (document.getElementById(`cargo-map-${i}`)) {
+        clearTimeout(map.__rszT);
+        map.__rszT = setTimeout(() => map.invalidateSize(), 180);
+      }
+    });
+
     // Map type selector menu
     const layersBtn = wrap && wrap.querySelector(`[data-map-layers="${i}"]`);
     const menu = wrap && wrap.querySelector(`[data-map-menu="${i}"]`);
@@ -662,17 +1358,88 @@ function wireContent() {
   /* Tab switcher */
   document.querySelectorAll('[data-tab]').forEach(btn => {
     btn.addEventListener('click', () => {
+      if (st.tab === btn.dataset.tab) return;
+      const from = readTabPillRect();   // capture current spot BEFORE re-render
       st.tab = btn.dataset.tab;
-      window.render();
-      requestAnimationFrame(() => positionTabPill());
+      window.render();                  // wireContent() places the new pill at the target
+      slideTabPillFrom(from);           // …then slide it in from where it was
     });
   });
   positionTabPill();
+  window.addEventListener('resize', () => requestAnimationFrame(() => positionTabPill()));
 
   /* Upload Another button */
   const uploadBtn = document.getElementById('upload-another-btn');
   if (uploadBtn) uploadBtn.addEventListener('click', () => {
     st.uploadMode = true; st.uploadedFile = null; window.render();
+  });
+
+  /* Date range fields → open date picker */
+  const dFrom = document.getElementById('date-from-field');
+  const dTo = document.getElementById('date-to-field');
+  if (dFrom) dFrom.addEventListener('click', () => openDatePicker(dFrom));
+  if (dTo) dTo.addEventListener('click', () => openDatePicker(dTo));
+
+  /* Clear current list → return to the file upload view */
+  const clearListBtn = document.getElementById('clear-list-btn');
+  if (clearListBtn) clearListBtn.addEventListener('click', () => {
+    st.analysed = false;
+    st.uploadMode = true;
+    st.uploadedFile = null;
+    st.workbooks = [];
+    window.render();
+  });
+
+  /* Re-analyse a single workbook — animate its metric strip with the % bar */
+  document.querySelectorAll('[data-wb-reanalyse]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = parseInt(btn.dataset.wbReanalyse);
+      if (Number.isNaN(i)) return;
+      reanalyseRow(i);
+    });
+  });
+
+  /* Remove a single workbook from the current list */
+  document.querySelectorAll('[data-wb-remove]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = parseInt(btn.dataset.wbRemove);
+      if (Number.isNaN(i) || !st.workbooks.length) return;
+      const [removed] = st.workbooks.splice(i, 1);
+      if (!st.workbooks.length) { st.analysed = false; st.uploadMode = true; st.uploadedFile = null; }
+      window.render();
+      showToast({ tone:'info', title:`${removed ? removed.name : 'Workbook'} removed`, desc:'Removed from the current declarations list.' });
+    });
+  });
+
+  /* Cancel — discard this upload/analysis session, return to the upload view */
+  const wbCancel = document.getElementById('wb-cancel');
+  if (wbCancel) wbCancel.addEventListener('click', () => {
+    st.analysed = false;
+    st.uploadMode = true;
+    st.uploadedFile = null;
+    st.workbooks = [];
+    window.render();
+  });
+
+  /* Save To Declarations — commit the analysed workbooks to the portfolio,
+     then return to the upload view so another batch can be uploaded */
+  const wbSave = document.getElementById('wb-save');
+  if (wbSave) wbSave.addEventListener('click', () => {
+    const saved = st.workbooks.slice();
+    const n = saved.length;
+    const added = appendWorkbookVoyages(saved);
+    // bump the Highest Single-Day Exposure if a saved workbook exceeds it
+    const maxExp = Math.max(0, ...saved.map(w => parseExposure(w.metrics && w.metrics.exposure)));
+    if (maxExp > parseExposure(st.peakExposure)) st.peakExposure = `$${maxExp.toFixed(1)}M`;
+    // reset the upload session — upload card reappears
+    st.workbooks = [];
+    st.uploadedFile = null;
+    st.uploadedSize = null;
+    st.uploadMode = true;
+    st.analysed = false;
+    st.tab = 'declarations';
+    window.render();
+    showToast({ tone:'success', title:'Saved to Declarations', desc:`${added} voyages from ${n} workbook${n>1?'s':''} added — ${VOYAGES.length} in your portfolio.` });
   });
 
   /* Cancel upload */
@@ -681,17 +1448,46 @@ function wireContent() {
     st.uploadMode = false; st.uploadedFile = null; window.render();
   });
 
-  /* Confirm upload */
+  /* Download declarations template */
+  const dlTemplate = document.getElementById('download-template');
+  if (dlTemplate) dlTemplate.addEventListener('click', () => {
+    const headers = ['Vessel Name','Vessel IMO','Est. Load Date','Load Port','Discharge Date','Discharge Port','Cargo Type','Quantity','Stated Region'];
+    const example = ['Example Carrier','9123456','2024-08-12','Singapore','2024-09-02','Rotterdam, Netherlands','Containers','12500 TEU','South China Sea'];
+    const csv = headers.join(',') + '\n' + example.map(c => /[",\n]/.test(c) ? `"${c.replace(/"/g,'""')}"` : c).join(',') + '\n';
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'declarations-template.csv';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+
+  /* Confirm upload — animated progress bar, then confirmation toast */
   const confirmUpload = document.getElementById('confirm-upload');
   if (confirmUpload) confirmUpload.addEventListener('click', () => {
-    st.uploadMode = false; window.render();
+    st.uploading = true;
+    window.render();
+    runUploadProgress(true);
+  });
+
+  /* Re-analyse — replay the upload progress animation on the current workbook */
+  const reanalyseBtn = document.getElementById('reanalyse-btn');
+  if (reanalyseBtn) reanalyseBtn.addEventListener('click', () => {
+    st.uploadMode = true;
+    st.uploadedFile = 'cargo-voyages-sample.xlsx';
+    st.uploading = true;
+    window.render();
+    runUploadProgress(false);
   });
 
   /* File input browse */
   const fileInput = document.getElementById('file-input');
   if (fileInput) fileInput.addEventListener('change', (e) => {
     const f = e.target.files[0];
-    if (f) { st.uploadedFile = f.name; window.render(); }
+    if (f) { st.uploadedFile = f.name; st.uploadedSize = fmtFileSize(f.size); window.render(); }
   });
 
   /* Drag-and-drop zone */
@@ -709,7 +1505,7 @@ function wireContent() {
     dz.addEventListener('drop', (e) => {
       e.preventDefault();
       const f = e.dataTransfer.files[0];
-      if (f) { st.uploadedFile = f.name; window.render(); }
+      if (f) { st.uploadedFile = f.name; st.uploadedSize = fmtFileSize(f.size); window.render(); }
     });
   }
 
@@ -722,6 +1518,55 @@ function wireContent() {
       window.render();
     });
   });
+
+  /* Row selection checkboxes + select-all + bulk action */
+  const selAll = document.getElementById('select-all');
+  const bulkCount = document.getElementById('bulk-count');
+  function syncSelectAll() {
+    const visible = filteredVoyages();
+    const sel = visible.filter(v => st.selected.has(v.imo)).length;
+    if (selAll) {
+      selAll.checked = visible.length > 0 && sel === visible.length;
+      selAll.indeterminate = sel > 0 && sel < visible.length;
+    }
+    if (bulkCount) bulkCount.textContent = sel ? `${sel} selected` : '';
+  }
+  if (selAll) selAll.addEventListener('change', () => {
+    const visible = filteredVoyages();
+    if (selAll.checked) visible.forEach(v => st.selected.add(v.imo));
+    else visible.forEach(v => st.selected.delete(v.imo));
+    window.render();
+  });
+  document.querySelectorAll('.row-check').forEach(cb => {
+    cb.addEventListener('change', (e) => {
+      e.stopPropagation();
+      if (cb.checked) st.selected.add(cb.dataset.sel);
+      else st.selected.delete(cb.dataset.sel);
+      syncSelectAll();
+    });
+  });
+  const bulkAction = document.getElementById('bulk-action');
+  if (bulkAction) bulkAction.addEventListener('change', () => {
+    const action = bulkAction.value;
+    bulkAction.value = '';                 // reset back to "Bulk Action"
+    if (!action) return;
+    const chosen = VOYAGES.filter(v => st.selected.has(v.imo));
+    if (!chosen.length) {
+      showToast({ tone:'warning', title:'No declarations selected', desc:'Tick at least one row before choosing a bulk action.' });
+      return;
+    }
+    const imos = new Set(chosen.map(v => v.imo));
+    for (let k = VOYAGES.length - 1; k >= 0; k--) if (imos.has(VOYAGES[k].imo)) VOYAGES.splice(k, 1);
+    const n = chosen.length;
+    st.selected.clear();
+    st.expanded = new Set();
+    window.render();
+    setTimeout(initMaps, 80);
+    showToast(action === 'archive'
+      ? { tone:'success', title:`${n} voyage${n>1?'s':''} archived`, desc:'Moved to Archive.' }
+      : { tone:'success', title:`${n} voyage${n>1?'s':''} deleted`, desc:'Removed from declarations.' });
+  });
+  syncSelectAll();
 
   /* Filter input */
   const fi = document.getElementById('vessel-filter');
@@ -752,8 +1597,45 @@ function wireContent() {
       setTimeout(initMaps, 80);
     });
   });
+
+  /* Delete declaration row */
+  /* Archive declaration row */
+  document.querySelectorAll('.row-arch-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const i = parseInt(btn.dataset.archRow);
+      if (Number.isNaN(i)) return;
+      const [removed] = VOYAGES.splice(i, 1);
+      st.expanded = new Set();   // indices shift after removal
+      window.render();
+      setTimeout(initMaps, 80);
+      showToast({
+        tone: 'success',
+        title: `${removed.name} archived`,
+        desc: 'Moved to Archive · undo within 8 s',
+        action: { label: 'Undo', onClick: () => { VOYAGES.splice(i, 0, removed); window.render(); setTimeout(initMaps, 80); } },
+      });
+    });
+  });
+
+  /* Delete declaration row */
+  document.querySelectorAll('.row-del-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const i = parseInt(btn.dataset.delRow);
+      if (Number.isNaN(i)) return;
+      VOYAGES.splice(i, 1);
+      st.expanded = new Set();   // indices shift after removal
+      window.render();
+      setTimeout(initMaps, 80);
+    });
+  });
+
   setTimeout(initMaps, 80);
 }
+
+// Always present the file upload option on arrival.
+st.uploadMode = true;
 
 window.render();
 </script>

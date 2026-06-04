@@ -71,7 +71,7 @@
   .ports-table td { padding:11px 14px; font-size:13px; color:#334155; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
   .ports-table tr:hover td { background:#f8fafc; }
   .port-link { color:#2563eb; font-weight:600; cursor:pointer; }
-  .port-link:hover { color:#1d4ed8; }
+  .port-link:hover { color:#1d4ed8; text-decoration:underline !important; }
 
   /* Map type menu */
   .map-type-opt { padding:8px 12px; font-size:12px; font-weight:600; color:#0f172a; cursor:pointer; display:flex; align-items:center; gap:8px; }
@@ -157,6 +157,23 @@ window.__ports = [
 
 /* ---- Anchor icon SVG ---- */
 const ANCHOR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg>`;
+
+/* ---- Country → ISO 3166-1 alpha-2 (for flags) ---- */
+const COUNTRY_ISO = {
+  'China':'cn','Singapore':'sg','Netherlands':'nl','Belgium':'be','Germany':'de','USA':'us',
+  'Canada':'ca','Brazil':'br','Argentina':'ar','Peru':'pe','Sri Lanka':'lk','India':'in',
+  'UAE':'ae','Greece':'gr','Spain':'es','France':'fr','UK':'gb','South Africa':'za',
+  'Nigeria':'ng','Japan':'jp','South Korea':'kr','Malaysia':'my','Indonesia':'id',
+  'Australia':'au','Russia':'ru'
+};
+function flagImg(country) {
+  const iso = COUNTRY_ISO[country];
+  if (!iso) return `<span style="color:#334155;">${country}</span>`;
+  return `<span style="display:inline-flex;align-items:center;gap:5px;">
+    <img src="https://flagcdn.com/w20/${iso}.png" width="16" style="border-radius:2px;vertical-align:middle;flex-shrink:0;" />
+    <span style="color:#334155;">${country}</span>
+  </span>`;
+}
 
 /* ---- Popup HTML ---- */
 function portPopupHTML(p, idx) {
@@ -335,10 +352,10 @@ function ListView() {
         </tr>
       </thead>
       <tbody>
-        ${window.__ports.map(p => `
+        ${window.__ports.map((p, idx) => `
           <tr>
-            <td><span class="port-link">${p.name}${p.sanctioned?` <span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px;background:#fef2f2;color:#dc2626;vertical-align:middle;">SANCTIONED</span>`:''}</span></td>
-            <td>${p.country}</td>
+            <td><a class="port-link" href="PortDetails.html" onclick="sessionStorage.setItem('selectedPort', JSON.stringify(window.__ports[${idx}]))" style="text-decoration:none;">${p.name}${p.sanctioned?` <span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px;background:#fef2f2;color:#dc2626;vertical-align:middle;">SANCTIONED</span>`:''}</a></td>
+            <td>${flagImg(p.country)}</td>
             <td class="tabular-nums">${p.lat.toFixed(4)}°</td>
             <td class="tabular-nums">${p.lng.toFixed(4)}°</td>
             <td class="tabular-nums font-semibold">${p.terminals}</td>
