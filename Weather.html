@@ -46,9 +46,14 @@
   /* Map controls */
   .map-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;color:#334155;box-shadow:0 1px 2px rgba(15,23,42,.08);cursor:pointer}
   .map-btn:hover{background:#f1f5f9}
+  /* Position the Leaflet zoom bar below the fullscreen button, left-aligned with it (matches Marine Dashboard) */
+  #weather-map .leaflet-top.leaflet-left{top:56px;left:2px}
+  #weather-map .leaflet-top.leaflet-left .leaflet-bar{margin-left:10px !important}
   .leaflet-control-zoom,.leaflet-bar{border:1px solid #e2e8f0 !important;box-shadow:0 1px 2px rgba(15,23,42,.08) !important;border-radius:8px !important;overflow:hidden}
-  .leaflet-bar a{background:#fff !important;color:#334155 !important;line-height:30px !important}
+  .leaflet-bar a{background:#fff !important;color:#334155 !important}
   .leaflet-bar a:hover{background:#f1f5f9 !important}
+  .leaflet-control-zoom a{display:flex !important;align-items:center;justify-content:center;padding:0 !important}
+  .leaflet-control-zoom a svg{width:16px;height:16px}
 
   /* Popups */
   .storm-popup .leaflet-popup-content-wrapper{padding:0;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(15,23,42,.22)}
@@ -60,9 +65,7 @@
   .pp-k{color:#64748b;font-weight:500}
   .pp-v{font-weight:700;color:#0f172a}
 
-  /* Map type menu */
-  .map-type-opt{padding:7px 12px;font-size:12px;font-weight:600;color:#0f172a;cursor:pointer;display:flex;align-items:center;gap:8px}
-  .map-type-opt:hover{background:#f8fafc}
+  /* Map type menu (matches Marine Dashboard — styled via Tailwind utilities on .map-type-opt) */
 
   /* List table */
   .wx-tbl{width:100%;border-collapse:collapse}
@@ -199,8 +202,12 @@ function setMapType(type) {
   if (wxTile) wxMap.removeLayer(wxTile);
   wxTile = L.tileLayer(MAP_TILES[type], { attribution:'', maxZoom:19 }).addTo(wxMap);
   wxTile.bringToBack();
-  document.querySelectorAll('.map-type-opt').forEach(el => {
-    el.style.background = el.dataset.type === type ? '#f1f5f9' : '';
+  document.querySelectorAll('.map-type-opt').forEach(b => {
+    const isOn = b.dataset.mapType === type;
+    const lbl   = b.querySelector('[data-label]');
+    const check = b.querySelector('[data-check]');
+    if (lbl)   { lbl.style.color = isOn ? '#2563eb' : '#334155'; lbl.style.fontWeight = isOn ? '600' : '500'; }
+    if (check) { check.style.opacity = isOn ? '1' : '0'; }
   });
 }
 
@@ -233,7 +240,7 @@ function initMap() {
   if (wxMap) { wxMap.remove(); wxMap = null; wxTile = null; }
 
   wxMap = L.map(el, { center:[-16, 65], zoom:4, zoomControl:true, scrollWheelZoom:true });
-  setMapType('street');
+  setMapType('satellite');
 
   SYSTEMS.forEach(s => {
     // Past track
@@ -271,35 +278,50 @@ function initMap() {
       .addTo(wxMap);
   });
 
-  // Custom zoom icons
+  // Custom zoom icons (match Marine Dashboard — Lucide Plus/Minus, centered)
   setTimeout(() => {
     const zin  = el.querySelector('.leaflet-control-zoom-in');
     const zout = el.querySelector('.leaflet-control-zoom-out');
-    if (zin)  zin.innerHTML  = `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>`;
-    if (zout) zout.innerHTML = `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></span>`;
+    if (zin)  zin.innerHTML  = `<span class="inline-flex items-center justify-center h-full w-full">${SC.I.plus}</span>`;
+    if (zout) zout.innerHTML = `<span class="inline-flex items-center justify-center h-full w-full">${SC.I.minus}</span>`;
   }, 100);
 
-  // Layer switcher
-  const lb = document.getElementById('wx-layers-btn');
-  const lm = document.getElementById('wx-layers-menu');
-  if (lb && lm) {
-    lb.addEventListener('click', e => { e.stopPropagation(); lm.style.display = lm.style.display==='none'?'block':'none'; });
-    document.addEventListener('click', () => { if (lm) lm.style.display='none'; });
-    document.querySelectorAll('.map-type-opt').forEach(o => o.addEventListener('click', () => { setMapType(o.dataset.type); lm.style.display='none'; }));
-  }
+  // Wire fullscreen + layers menu via a single delegated handler (survives re-renders)
+  wireMapControls();
+}
 
-  // Fullscreen
-  const fs = document.getElementById('wx-fs-btn');
-  if (fs) fs.addEventListener('click', () => {
-    const w = document.getElementById('wx-map-wrap');
-    if (!w) return;
-    const isFs = w.classList.toggle('wx-is-fs');
-    if (isFs) w.style.cssText = 'position:fixed;inset:0;z-index:9999;';
-    else w.style.cssText = '';
-    fs.innerHTML = isFs
-      ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 0-2-2h-3m-4 0H5a2 2 0 0 0-2 2v3"/></svg>`
-      : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>`;
-    setTimeout(() => wxMap && wxMap.invalidateSize(), 200);
+/* Delegated map-control handler — attached once, works regardless of how many
+   times the view re-renders and recreates the buttons. */
+let wxControlsWired = false;
+function wireMapControls() {
+  if (wxControlsWired) return;
+  wxControlsWired = true;
+  document.addEventListener('click', (e) => {
+    const menu = document.getElementById('wx-layers-menu');
+    const fsBtn = e.target.closest('#wx-fs-btn');
+    if (fsBtn) {
+      const w = document.getElementById('wx-map-wrap');
+      if (w) {
+        const isFs = w.classList.toggle('wx-is-fs');
+        w.style.cssText = isFs ? 'position:fixed;inset:0;z-index:9999;' : '';
+        fsBtn.innerHTML = isFs ? SC.I.minimize : SC.I.maximize;
+        setTimeout(() => wxMap && wxMap.invalidateSize(), 200);
+      }
+      if (menu) menu.classList.add('hidden');
+      return;
+    }
+    if (e.target.closest('#wx-layers-btn')) {
+      if (menu) menu.classList.toggle('hidden');
+      return;
+    }
+    const opt = e.target.closest('.map-type-opt');
+    if (opt) {
+      setMapType(opt.dataset.mapType);
+      if (menu) menu.classList.add('hidden');
+      return;
+    }
+    // Click anywhere else closes the menu
+    if (menu) menu.classList.add('hidden');
   });
 }
 
@@ -317,20 +339,22 @@ function MapView() {
     </div>
 
     <!-- Fullscreen -->
-    <button id="wx-fs-btn" class="map-btn" style="position:absolute;top:12px;left:12px;z-index:400" title="Fullscreen">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-    </button>
+    <button id="wx-fs-btn" class="map-btn" style="position:absolute;top:12px;left:12px;z-index:400" title="Fullscreen">${SC.I.maximize}</button>
 
     <!-- Layers control -->
     <div style="position:absolute;top:12px;right:12px;z-index:400">
-      <button id="wx-layers-btn" class="map-btn" title="Map type">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      </button>
-      <div id="wx-layers-menu" style="display:none;position:absolute;top:38px;right:0;width:148px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 4px 12px rgba(15,23,42,.12);overflow:hidden">
-        <div style="padding:6px 10px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #f1f5f9">Map Type</div>
-        ${[['street','Street','#e8e0d4'],['light','Light','#e8e8e8'],['dark','Dark','#1a1a2e'],['satellite','Satellite','#0b1e2e']].map(([k,l,c]) =>
-          `<div class="map-type-opt" data-type="${k}"><span style="width:8px;height:8px;border-radius:2px;background:${c};border:1px solid #ddd;flex-shrink:0"></span>${l}</div>`
-        ).join('')}
+      <button id="wx-layers-btn" class="map-btn" title="Map type">${SC.I.layers}</button>
+      <div id="wx-layers-menu" class="hidden absolute w-[160px] bg-white border border-ink-200 rounded-xl shadow-card-hover overflow-hidden py-1" style="top:38px;right:0;z-index:401">
+        ${[
+          {id:'satellite',label:'Satellite'},
+          {id:'street',label:'Street View'},
+          {id:'dark',label:'Dark Mode'},
+          {id:'light',label:'Light Mode'},
+        ].map(o => `
+          <button data-map-type="${o.id}" class="map-type-opt w-full flex items-center justify-between px-3 py-2 text-sm text-ink-700 hover:bg-ink-50 transition-colors">
+            <span data-label>${o.label}</span>
+            <span class="text-brand-600 opacity-0" data-check>${SC.I.check}</span>
+          </button>`).join('')}
       </div>
     </div>
 

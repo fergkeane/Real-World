@@ -35,6 +35,24 @@
   .voy-table tbody tr:hover td{background:#f8fbff;cursor:pointer}
   .voy-table tbody tr.is-expanded td{background:#f0f9ff}
   .voy-table tbody tr.expanded-detail td{background:#f0f9ff;border-bottom:1px solid #bae6fd}
+  /* ── Save-to-Declarations transfer animation ──────────────────────────── */
+  .fly-layer{position:fixed;inset:0;z-index:9000;pointer-events:none;}
+  .fly-chip{position:fixed;display:inline-flex;align-items:center;gap:8px;max-width:230px;height:38px;padding:0 12px;
+    background:#fff;border:1px solid #bae6fd;border-radius:9px;box-shadow:0 10px 24px -8px rgba(2,132,199,.45),0 2px 6px rgba(15,23,42,.12);
+    will-change:transform,opacity;}
+  .fly-chip .fly-ico{width:24px;height:24px;flex-shrink:0;border-radius:6px;background:#e0f2fe;display:flex;align-items:center;justify-content:center;}
+  .fly-chip .fly-name{font-size:12px;font-weight:600;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .cargo-wb-item.is-launching{transition:opacity .35s ease,transform .35s ease;opacity:.25;transform:scale(.97);}
+  @keyframes voy-table-receive{0%{box-shadow:0 0 0 0 rgba(2,132,199,0);}28%{box-shadow:0 0 0 5px rgba(2,132,199,.28);}100%{box-shadow:0 0 0 0 rgba(2,132,199,0);}}
+  .cargo-receiving{animation:voy-table-receive 1.1s ease-out;}
+  @keyframes voy-row-land{0%{background:#bfdbfe;}12%{background:#bfdbfe;}100%{background:transparent;}}
+  .voy-table tbody tr.voy-row-new td{animation:voy-row-land 1.9s ease-out;}
+  @keyframes voy-row-accent{0%,12%{box-shadow:inset 3px 0 0 var(--brand-500,#0284c7);}100%{box-shadow:inset 0 0 0 transparent;}}
+  .voy-table tbody tr.voy-row-new td:first-child{animation:voy-row-land 1.9s ease-out,voy-row-accent 1.9s ease-out;}
+  @media (prefers-reduced-motion: reduce){
+    .fly-chip{display:none;}
+    .voy-table tbody tr.voy-row-new td,.voy-table tbody tr.voy-row-new td:first-child,.cargo-receiving{animation:none;}
+  }
   /* Sort arrow */
   .sort-arrow{display:inline-flex;flex-direction:column;gap:1px;margin-left:3px;vertical-align:middle;opacity:.45}
   .sort-arrow svg{width:7px;height:7px}
@@ -492,8 +510,8 @@ function renderHeader() {
     </div>
     <div style="display:flex;flex-direction:column;gap:8px;">
       ${wbs.map((wb, i) => `
-      <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid #eef2f6;border-radius:8px;background:#f8fafc;flex-wrap:wrap;">
-        <div style="width:34px;height:34px;background:#e0f2fe;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${boxIcon}</div>
+      <div class="cargo-wb-item" data-wb-item="${i}" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid #eef2f6;border-radius:8px;background:#f8fafc;flex-wrap:wrap;">
+        <div class="cargo-wb-icon" style="width:34px;height:34px;background:#e0f2fe;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${boxIcon}</div>
         <div style="width:160px;flex-shrink:0;min-width:0;">
           <div style="font-size:13px;font-weight:600;color:#0f172a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${wb.name}</div>
           <div style="font-size:12px;color:#64748b;margin-top:1px;">${wb.size || '—'}</div>
@@ -634,7 +652,7 @@ function renderDeclarationsTable() {
         ${rows.map((v, i) => {
           const expanded = st.expanded.has(i);
           return `
-          <tr class="${expanded ? 'is-expanded' : ''}" data-row="${i}" style="cursor:pointer;">
+          <tr class="${expanded ? 'is-expanded' : ''}${v._new ? ' voy-row-new' : ''}" data-row="${i}" style="cursor:pointer;">
             <td style="text-align:left;padding:10px 6px 10px 16px;">
               <span style="display:inline-flex;align-items:center;gap:8px;">
                 <input type="checkbox" class="row-check" data-sel="${v.imo}" ${st.selected.has(v.imo) ? 'checked' : ''} onclick="event.stopPropagation();" style="width:15px;height:15px;accent-color:var(--brand-600,#0284c7);cursor:pointer;margin:0;flex-shrink:0;" />
@@ -859,6 +877,7 @@ const SAVE_REGIONS = ['Gulf of Oman','Strait of Hormuz','Gulf of Aden'];
 function appendWorkbookVoyages(workbooks) {
   const pad = n => String(n).padStart(2, '0');
   let added = 0;
+  const fresh = [];   // collected so the batch can be prepended to the top of the table
   workbooks.forEach(wb => {
     const m = wb.metrics || { completed:0, started:0, pending:0, breaches:0 };
     const statuses = [];
@@ -881,15 +900,18 @@ function appendWorkbookVoyages(workbooks) {
       const actLoad  = status === 'Pending'   ? '—' : `${estLoad} ${hh}:${mm}`;
       const dischDate = status === 'Completed' ? '—' : `2026-04-${pad(dDay)}`;
       const actDisch = status === 'Completed' ? `2026-04-${pad(dDay)} ${pad((+hh + 5) % 24)}:${mm}` : '—';
-      VOYAGES.push({
+      fresh.push({
         status, breach, name, imo, estLoad, actLoad, loadPort: load,
         dischDate, dischPort: disch, actDisch,
         breachRegion: breach ? SAVE_REGIONS[idx % SAVE_REGIONS.length] : '',
         days: breach ? 1 + (idx % 3) : 0,
+        _new: true,
       });
       added++;
     });
   });
+  // New declarations go to the top of the table, preserving their batch order.
+  VOYAGES.unshift(...fresh);
   return added;
 }
 function parseExposure(s) { return parseFloat(String(s || '').replace(/[^0-9.]/g, '')) || 0; }
@@ -1425,21 +1447,96 @@ function wireContent() {
      then return to the upload view so another batch can be uploaded */
   const wbSave = document.getElementById('wb-save');
   if (wbSave) wbSave.addEventListener('click', () => {
+    if (wbSave.dataset.busy === '1') return;
     const saved = st.workbooks.slice();
     const n = saved.length;
-    const added = appendWorkbookVoyages(saved);
-    // bump the Highest Single-Day Exposure if a saved workbook exceeds it
-    const maxExp = Math.max(0, ...saved.map(w => parseExposure(w.metrics && w.metrics.exposure)));
-    if (maxExp > parseExposure(st.peakExposure)) st.peakExposure = `$${maxExp.toFixed(1)}M`;
-    // reset the upload session — upload card reappears
-    st.workbooks = [];
-    st.uploadedFile = null;
-    st.uploadedSize = null;
-    st.uploadMode = true;
-    st.analysed = false;
-    st.tab = 'declarations';
-    window.render();
-    showToast({ tone:'success', title:'Saved to Declarations', desc:`${added} voyages from ${n} workbook${n>1?'s':''} added — ${VOYAGES.length} in your portfolio.` });
+
+    // Commit the analysed workbooks, re-render, then draw attention to the new rows.
+    let committed = false;
+    const commit = () => {
+      if (committed) return;
+      committed = true;
+      const added = appendWorkbookVoyages(saved);
+      const maxExp = Math.max(0, ...saved.map(w => parseExposure(w.metrics && w.metrics.exposure)));
+      if (maxExp > parseExposure(st.peakExposure)) st.peakExposure = `$${maxExp.toFixed(1)}M`;
+      st.workbooks = [];
+      st.uploadedFile = null;
+      st.uploadedSize = null;
+      st.uploadMode = true;
+      st.analysed = false;
+      st.tab = 'declarations';
+      window.render();
+      // Bring the freshly-added rows into view if they landed off-screen.
+      requestAnimationFrame(() => {
+        const firstNew = document.querySelector('.voy-table tbody tr.voy-row-new');
+        if (firstNew) {
+          const r = firstNew.getBoundingClientRect();
+          if (r.top < 90 || r.bottom > window.innerHeight - 40) {
+            window.scrollTo({ top: Math.max(0, window.scrollY + r.top - window.innerHeight * 0.45), behavior: 'smooth' });
+          }
+        }
+      });
+      // Clear the one-shot highlight flag so future re-renders don't re-glow.
+      setTimeout(() => { VOYAGES.forEach(v => { delete v._new; }); }, 2300);
+      showToast({ tone:'success', title:'Saved to Declarations', desc:`${added} voyages from ${n} workbook${n>1?'s':''} added — ${VOYAGES.length} in your portfolio.` });
+    };
+
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const items = [...document.querySelectorAll('.cargo-wb-item')];
+    const table = document.querySelector('.voy-table');
+    if (reduce || !items.length || !table) { commit(); return; }
+
+    wbSave.dataset.busy = '1';
+
+    // Landing target: just under the table header, centred on the table.
+    const tRect = table.getBoundingClientRect();
+    const thead = table.querySelector('thead');
+    const landY = (thead ? thead.getBoundingClientRect().bottom : tRect.top) + 26;
+    const landX = tRect.left + Math.min(tRect.width, table.clientWidth) / 2;
+
+    const card = table.closest('.card');
+    if (card) card.classList.add('cargo-receiving');
+
+    const layer = document.createElement('div');
+    layer.className = 'fly-layer';
+    document.body.appendChild(layer);
+
+    const STAGGER = 95, DUR = 680;
+    let finished = 0;
+    items.forEach((item, idx) => {
+      const wb = saved[idx] || {};
+      const rect = item.getBoundingClientRect();
+      const chipW = Math.min(230, Math.max(140, rect.width));
+      const chip = document.createElement('div');
+      chip.className = 'fly-chip';
+      chip.style.left = rect.left + 'px';
+      chip.style.top = (rect.top + rect.height / 2 - 19) + 'px';
+      chip.style.width = chipW + 'px';
+      chip.innerHTML = `<span class="fly-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span><span class="fly-name">${wb.name || 'workbook.xlsx'}</span>`;
+      layer.appendChild(chip);
+      item.classList.add('is-launching');
+
+      const dx = landX - (rect.left + chipW / 2);
+      const dy = landY - (rect.top + rect.height / 2);
+      const anim = chip.animate([
+        { transform:'translate(0,0) scale(1)', opacity:1 },
+        { transform:`translate(${dx * 0.5}px, ${dy * 0.32}px) scale(1.03)`, opacity:1, offset:0.55 },
+        { transform:`translate(${dx}px, ${dy}px) scale(.42)`, opacity:0 },
+      ], { duration: DUR, delay: idx * STAGGER, easing:'cubic-bezier(.45,.05,.3,1)', fill:'forwards' });
+
+      anim.onfinish = () => {
+        chip.remove();
+        finished++;
+        if (finished === items.length) {
+          layer.remove();
+          commit();
+        }
+      };
+    });
+    // Safety net in case an animation event is missed.
+    setTimeout(() => {
+      if (layer.isConnected) { layer.remove(); commit(); }
+    }, items.length * STAGGER + DUR + 400);
   });
 
   /* Cancel upload */

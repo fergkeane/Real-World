@@ -65,6 +65,19 @@
   .map-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:#fff; border:1px solid #e2e8f0; border-radius:8px; color:#334155; box-shadow: 0 1px 2px rgb(15 23 42 / .08); }
   .map-btn:hover { background:#f1f5f9; }
   .marker-icon { position:relative; width:34px; height:34px; display:flex; align-items:center; justify-content:center; border:2px solid #fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.28); color:#fff; }
+  /* Property hover tooltip — name + category + location (matches Marine/Aviation dashboards) */
+  .prop-tip.leaflet-tooltip {
+    background:rgba(15,23,42,.93); border:0; border-radius:7px;
+    box-shadow:0 3px 10px rgba(0,0,0,.4);
+    padding:6px 9px; color:#fff;
+    font-family:'Inter',system-ui,sans-serif;
+  }
+  .prop-tip.leaflet-tooltip-top::before { border-top-color:rgba(15,23,42,.93); }
+  .prop-tip .ptip-row { display:flex; align-items:center; gap:6px; }
+  .prop-tip .ptip-dot { width:9px; height:9px; border-radius:2px; box-shadow:0 0 0 1px rgba(255,255,255,.25); flex-shrink:0; }
+  .prop-tip .ptip-name { font-weight:700; font-size:12px; letter-spacing:.01em; }
+  .prop-tip .ptip-sub { display:block; font-size:11px; color:#cbd5e1; margin-top:2px; }
+  .prop-tip .ptip-risk { font-weight:700; }
   /* Risk pulse — small red dot on top-right corner of the marker for properties
      flagged with an active weather/risk alert (see Southeast Financial Ctr). */
   .marker-icon .marker-pulse{
@@ -323,6 +336,10 @@ function WeatherCard() {
   </div>`;
 }
 
+function buildPropertyTooltipHTML(m) {
+  const cat = PROPERTY_CAT_BY_KEY[m.cat] || PROPERTY_CATEGORIES[0];
+  return `<span class="ptip-row"><span class="ptip-dot" style="background:${cat.color}"></span><span class="ptip-name">${m.name}</span></span><span class="ptip-sub">${m.cat} \u00b7 ${m.location}</span>`;
+}
 function buildPropertyPopupHTML(m, idx) {
   return `
   <div class="pp">
@@ -410,6 +427,7 @@ function initMap() {
     });
     const marker = L.marker([m.lat, m.lng], { icon })
       .bindPopup(buildPropertyPopupHTML(m, idx), { className:'prop-popup', maxWidth:280, minWidth:280, closeButton:true, autoPanPadding:[30,30] })
+      .bindTooltip(buildPropertyTooltipHTML(m), { className:'prop-tip', direction:'top', offset:[0,-14], opacity:1 })
       .addTo(map);
     marker._propCat = m.cat;
     propLeafletMarkers.push(marker);
@@ -500,7 +518,7 @@ function Content() {
       ${RegionCard()}
       ${WeatherCard()}
     </section>
-    <section class="bg-white rounded-xl border border-ink-200 shadow-card overflow-hidden" id="map-container" style="height:calc(100vh - 380px); min-height:400px;">
+    <section class="bg-white rounded-xl border border-ink-200 shadow-card overflow-hidden" id="map-container" style="height:calc((100vh - 380px) * 4 / 3); min-height:533px;">
       <div class="p-3 border-b border-ink-100 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <div class="ds-tabs" data-tab-group="data-view">

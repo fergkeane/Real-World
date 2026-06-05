@@ -65,9 +65,32 @@
   .map-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:#fff; border:1px solid #e2e8f0; border-radius:8px; color:#334155; box-shadow: 0 1px 2px rgb(15 23 42 / .08); }
   .map-btn:hover { background:#f1f5f9; }
   .offshore-marker { display:flex; flex-direction:column; align-items:center; gap:2px; }
-  .offshore-dot { width:10px; height:10px; border-radius:50%; border:2px solid #fff; box-shadow:0 2px 4px rgba(0,0,0,.3); }
+  .offshore-dot { position:relative; width:10px; height:10px; border-radius:50%; border:2px solid #fff; box-shadow:0 2px 4px rgba(0,0,0,.3); cursor:pointer; }
   .offshore-label { background:#1e293b; color:#fff; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:600; white-space:nowrap; box-shadow:0 2px 4px rgba(0,0,0,.3); }
   #offshore-map.no-labels .offshore-label { display:none; }
+  /* Hover / selected ring around the asset dot */
+  .offshore-dot::after {
+    content:''; position:absolute; left:50%; top:50%;
+    width:24px; height:24px; transform:translate(-50%,-50%);
+    border-radius:50%; border:2px solid #fff;
+    box-shadow:0 0 5px rgba(0,0,0,.45);
+    opacity:0; transition:opacity .14s ease; pointer-events:none;
+  }
+  .leaflet-marker-icon:hover .offshore-dot::after,
+  .leaflet-marker-icon.is-selected .offshore-dot::after { opacity:1; }
+  .leaflet-marker-icon:hover, .leaflet-marker-icon.is-selected { z-index:1000 !important; }
+  /* Asset hover tooltip — name + type + flag */
+  .asset-tip.leaflet-tooltip {
+    background:rgba(15,23,42,.93); border:0; border-radius:7px;
+    box-shadow:0 3px 10px rgba(0,0,0,.4);
+    padding:6px 9px; color:#fff;
+    font-family:'Open Sans',system-ui,sans-serif;
+  }
+  .asset-tip.leaflet-tooltip-top::before { border-top-color:rgba(15,23,42,.93); }
+  .asset-tip .atip-row { display:flex; align-items:center; gap:6px; }
+  .asset-tip .atip-flag { border-radius:2px; box-shadow:0 0 0 1px rgba(255,255,255,.25); flex-shrink:0; }
+  .asset-tip .atip-name { font-family:'Exo','Open Sans',sans-serif; font-weight:700; font-size:12px; letter-spacing:.01em; }
+  .asset-tip .atip-type { display:block; font-size:11px; color:#cbd5e1; margin-top:2px; }
   #map-container.is-fullscreen { position:fixed; inset:0; z-index:9999; border-radius:0; border:0; }
   #map-container.is-fullscreen > div { height:100vh !important; }
   .asset-popup .leaflet-popup-content-wrapper { padding:0; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(15,23,42,.25); }
@@ -499,6 +522,19 @@ function WeatherCard() {
 }
 
 /* ----------- ASSET POPUP ----------- */
+const COUNTRY_CC = {
+  'United Kingdom':'gb','Norway':'no','United States':'us','South Africa':'za','Brazil':'br',
+  'Netherlands':'nl','Australia':'au','Nigeria':'ng','Angola':'ao','Canada':'ca','Mexico':'mx',
+  'Saudi Arabia':'sa','United Arab Emirates':'ae','Qatar':'qa','Malaysia':'my','Indonesia':'id',
+  'India':'in','China':'cn','Denmark':'dk','Italy':'it','France':'fr','Egypt':'eg',
+};
+function offshoreAssetTooltipHTML(m) {
+  const cc = COUNTRY_CC[m.country];
+  const flagImg = cc
+    ? `<img class="atip-flag" src="https://flagcdn.com/w40/${cc}.png" srcset="https://flagcdn.com/w80/${cc}.png 2x" width="18" height="13" alt="${m.country}" />`
+    : '';
+  return `<span class="atip-row">${flagImg}<span class="atip-name">${m.name || m.fullName}</span></span><span class="atip-type">${m.assetType}${m.country ? ' \u00b7 ' + m.country : ''}</span>`;
+}
 function buildPopupHTML(m) {
   const statusColor = m.status === 'Operational' ? '#10b981' :
                       m.status === 'Under Maintenance' ? '#f59e0b' : '#94a3b8';
@@ -590,12 +626,24 @@ function initMap() {
     });
     const marker = L.marker([m.lat, m.lng], { icon })
       .bindPopup(buildPopupHTML(m), { className:'asset-popup', maxWidth:300, minWidth:300, closeButton:true, autoPanPadding:[30,30] })
+      .bindTooltip(offshoreAssetTooltipHTML(m), { className:'asset-tip', direction:'top', offset:[0,-10], opacity:1 })
       .on('popupopen', () => { sessionStorage.setItem('selectedOffshoreAsset', JSON.stringify(m)); })
       .addTo(map);
     marker._ftype = mapAssetType(m.assetType);
+    marker._tipHTML = offshoreAssetTooltipHTML(m);
     assetMarkers.push(marker);
   });
   applyAssetFilter();
+
+  // Keep the selection ring visible on the asset whose popup is open
+  map.on('popupopen', e => {
+    const mk = e.popup && e.popup._source;
+    if (mk && mk._icon) mk._icon.classList.add('is-selected');
+  });
+  map.on('popupclose', e => {
+    const mk = e.popup && e.popup._source;
+    if (mk && mk._icon) mk._icon.classList.remove('is-selected');
+  });
 
   // Custom zoom controls
   const zin = document.querySelector('.leaflet-control-zoom-in');
@@ -675,6 +723,14 @@ function initMap() {
     const mapEl = document.getElementById('offshore-map');
     if (!mapEl) return;
     mapEl.classList.toggle('no-labels', !state.showLabels);
+    // Suppress hover tooltips while labels are on (names already shown on the map)
+    assetMarkers.forEach(mk => {
+      if (state.showLabels) {
+        if (mk.getTooltip()) mk.unbindTooltip();
+      } else if (!mk.getTooltip() && mk._tipHTML) {
+        mk.bindTooltip(mk._tipHTML, { className:'asset-tip', direction:'top', offset:[0,-10], opacity:1 });
+      }
+    });
   }
   syncLabelsUI();
   applyLabels();

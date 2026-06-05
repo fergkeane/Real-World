@@ -69,6 +69,31 @@
     pointer-events:none;
   }
   .vessel-marker svg { filter: drop-shadow(0 1px 2px rgba(0,0,0,.5)); }
+  /* Vessel hover tooltip — name + type + flag */
+  .vessel-tip.leaflet-tooltip {
+    background:rgba(15,23,42,.93); border:0; border-radius:7px;
+    box-shadow:0 3px 10px rgba(0,0,0,.4);
+    padding:6px 9px; color:#fff;
+    font-family:'Open Sans',system-ui,sans-serif;
+  }
+  .vessel-tip.leaflet-tooltip-top::before { border-top-color:rgba(15,23,42,.93); }
+  .vessel-tip .vtip-row { display:flex; align-items:center; gap:6px; }
+  .vessel-tip .vtip-flag { border-radius:2px; box-shadow:0 0 0 1px rgba(255,255,255,.25); flex-shrink:0; }
+  .vessel-tip .vtip-name { font-family:'Exo','Open Sans',sans-serif; font-weight:700; font-size:12px; letter-spacing:.01em; }
+  .vessel-tip .vtip-type { display:block; font-size:11px; color:#cbd5e1; margin-top:2px; }
+  /* Hover state — white selection ring around the vessel icon (matches the focus reference) */
+  .vessel-marker { position: relative; cursor: pointer; }
+  .vessel-marker::after {
+    content:''; position:absolute; left:50%; top:50%;
+    width:24px; height:24px; transform: translate(-50%,-50%);
+    border-radius:50%; border:2px solid #fff;
+    box-shadow:0 0 5px rgba(0,0,0,.45);
+    opacity:0; transition: opacity .14s ease, width .14s ease, height .14s ease;
+    pointer-events:none;
+  }
+  .leaflet-marker-icon:hover .vessel-marker::after { opacity:1; }
+  .leaflet-marker-icon.is-selected .vessel-marker::after { opacity:1; }
+  .leaflet-marker-icon:hover, .leaflet-marker-icon.is-selected { z-index: 1000 !important; }
   /* Vessel popup design */
   .vessel-popup .leaflet-popup-content-wrapper { padding:0; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(15,23,42,.25); }
   .vessel-popup .leaflet-popup-content { margin:0; width:300px !important; font-family:'Open Sans',system-ui,sans-serif; }
@@ -643,7 +668,7 @@ function AlertsCard() {
 function MapCard() {
   return `
   <div class="bg-white rounded-xl border border-ink-200 shadow-card overflow-hidden" id="map-container">
-    <div class="relative" style="height:500px">
+    <div class="relative" style="height:667px">
       <div id="marine-map" class="absolute inset-0"></div>
       <!-- fullscreen button above Leaflet zoom control (top-left) -->
       <button id="map-fullscreen" class="map-btn map-btn-fs absolute z-[400]" title="Toggle fullscreen" style="top:12px; left:12px;">${Ico.maximize}</button>
@@ -723,8 +748,14 @@ function Content() {
 
 /* ----------- RENDER + WIRING ----------- */
 /* vessel popup (matches designed tooltip) */
+function vesselTypeLabel(t) {
+  return t === 'Tanker' ? 'Tanker' : t === 'LNG' ? 'LNG Carrier' : t === 'Gas' ? 'Gas Carrier' : t === 'Container' ? 'Container Ship' : t === 'Bulk' ? 'Bulk Carrier' : t === 'Reefer' ? 'Reefer' : 'General Cargo';
+}
+function vesselTooltipHTML(v) {
+  return `<span class="vtip-row"><img class="vtip-flag" src="https://flagcdn.com/w40/${v.flag.cc}.png" srcset="https://flagcdn.com/w80/${v.flag.cc}.png 2x" width="18" height="13" alt="${v.flag.name}" /><span class="vtip-name">${v.name}</span></span><span class="vtip-type">${vesselTypeLabel(v.type)} \u00b7 ${v.flag.name}</span>`;
+}
 function vesselPopupHTML(v) {
-  const typeLabel = v.type === 'Tanker' ? 'Tanker' : v.type === 'LNG' ? 'LNG Carrier' : v.type === 'Gas' ? 'Gas Carrier' : v.type === 'Container' ? 'Container Ship' : v.type === 'Bulk' ? 'Bulk Carrier' : v.type === 'Reefer' ? 'Reefer' : 'General Cargo';
+  const typeLabel = vesselTypeLabel(v.type);
   const latStr = `${v.lat.toFixed(2)}${v.lat>=0?'N':'S'}`;
   const lngStr = `${Math.abs(v.lng).toFixed(2)}${v.lng>=0?'E':'W'}`;
   const flagImg = `<img src="https://flagcdn.com/w40/${v.flag.cc}.png" srcset="https://flagcdn.com/w80/${v.flag.cc}.png 2x" width="18" height="13" alt="${v.flag.name}" style="display:inline-block;border-radius:2px;vertical-align:middle;margin-right:4px;" />`;
@@ -770,11 +801,15 @@ function vesselPopupHTML(v) {
 
 let mapInstance = null;
 
-function vesselIcon(color, heading) {
+function vesselIcon(color, heading, nav) {
+  // Stationary vessels (Moored / At Anchor) are drawn as a circle with no heading rotation.
+  const stationary = nav === 'Moored' || nav === 'At Anchor';
+  const shape = stationary
+    ? `<svg viewBox="0 0 24 24" width="16" height="16" style="color:${color};" fill="currentColor" stroke="#fff" stroke-width="1.5"><circle cx="12" cy="12" r="7.5"/></svg>`
+    : `<svg viewBox="0 0 24 24" width="16" height="16" style="color:${color};" fill="currentColor" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"><path d="M12 2 L19 20 L12 16 L5 20 Z"/></svg>`;
   // Filter-menu shape: a teardrop (rotated 45deg). Rotate by heading + 45 so heading 0 points east.
-  const html = `<div class="vessel-marker" style="transform: rotate(${heading + 45}deg); transform-origin: center;">
-    <svg viewBox="0 0 24 24" width="16" height="16" style="color:${color};" fill="currentColor" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"><path d="M12 2 L19 20 L12 16 L5 20 Z"/></svg>
-  </div>`;
+  const rot = stationary ? '' : `transform: rotate(${heading + 45}deg); transform-origin: center;`;
+  const html = `<div class="vessel-marker" style="${rot}">${shape}</div>`;
   return L.divIcon({ html, className:'', iconSize:[16,16], iconAnchor:[8,8] });
 }
 
@@ -837,15 +872,27 @@ function initMap() {
   const vesselMarkers = [];
   const labelMarkers  = [];
   vessels.forEach(v => {
-    const m = L.marker([v.lat, v.lng], { icon: vesselIcon(v.color, v.heading) })
-      .bindPopup(vesselPopupHTML(v), { className:'vessel-popup', maxWidth: 320, minWidth: 300, closeButton:true, autoPanPadding:[30,30] });
+    const m = L.marker([v.lat, v.lng], { icon: vesselIcon(v.color, v.heading, v.nav) })
+      .bindPopup(vesselPopupHTML(v), { className:'vessel-popup', maxWidth: 320, minWidth: 300, closeButton:true, autoPanPadding:[30,30] })
+      .bindTooltip(vesselTooltipHTML(v), { className:'vessel-tip', direction:'top', offset:[0,-12], opacity:1 });
     m._vtype = v.type;
+    m._tipHTML = vesselTooltipHTML(v);
     m.addTo(map);
     vesselMarkers.push(m);
 
     const lbl = L.marker([v.lat, v.lng], { icon: labelIcon(v.name), interactive:false, keyboard:false });
     lbl._vtype = v.type;
     labelMarkers.push(lbl);
+  });
+
+  // Keep the selection ring visible on the marker whose popup is open
+  map.on('popupopen', e => {
+    const m = e.popup && e.popup._source;
+    if (m && m._icon) m._icon.classList.add('is-selected');
+  });
+  map.on('popupclose', e => {
+    const m = e.popup && e.popup._source;
+    if (m && m._icon) m._icon.classList.remove('is-selected');
   });
 
   function applyVesselFilter() {
@@ -861,6 +908,14 @@ function initMap() {
       const shouldShow = state.showLabels && state.vesselFilter.has(lbl._vtype);
       if (shouldShow && !map.hasLayer(lbl)) lbl.addTo(map);
       if (!shouldShow && map.hasLayer(lbl)) map.removeLayer(lbl);
+    });
+    // Suppress hover tooltips while labels are on (names already shown on the map)
+    vesselMarkers.forEach(m => {
+      if (state.showLabels) {
+        if (m.getTooltip()) m.unbindTooltip();
+      } else if (!m.getTooltip() && m._tipHTML) {
+        m.bindTooltip(m._tipHTML, { className:'vessel-tip', direction:'top', offset:[0,-12], opacity:1 });
+      }
     });
   }
 
