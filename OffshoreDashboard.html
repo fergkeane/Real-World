@@ -719,19 +719,25 @@ function initMap() {
     const knob = labelsSw.querySelector('span');
     if (knob) knob.style.transform = on ? 'translateX(22px)' : 'translateX(2px)';
   }
+  const LABEL_MIN_ZOOM = 6;
   function applyLabels() {
     const mapEl = document.getElementById('offshore-map');
     if (!mapEl) return;
-    mapEl.classList.toggle('no-labels', !state.showLabels);
-    // Suppress hover tooltips while labels are on (names already shown on the map)
+    // Labels only appear at the 3rd-highest zoom level and above (maxZoom 8 → 6, 7, 8).
+    const zoomOK = map && map.getZoom() >= LABEL_MIN_ZOOM;
+    const labelsVisible = state.showLabels && zoomOK;
+    mapEl.classList.toggle('no-labels', !labelsVisible);
+    // Suppress hover tooltips only while labels are actually visible on the map
     assetMarkers.forEach(mk => {
-      if (state.showLabels) {
+      if (labelsVisible) {
         if (mk.getTooltip()) mk.unbindTooltip();
       } else if (!mk.getTooltip() && mk._tipHTML) {
         mk.bindTooltip(mk._tipHTML, { className:'asset-tip', direction:'top', offset:[0,-10], opacity:1 });
       }
     });
   }
+  // Re-evaluate label visibility whenever the zoom level changes.
+  map.on('zoomend', applyLabels);
   syncLabelsUI();
   applyLabels();
   if (labelsBtn && labelsMenu) {

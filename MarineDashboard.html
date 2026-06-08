@@ -903,21 +903,27 @@ function initMap() {
     });
     applyLabels();
   }
+  // Labels only appear at the 3rd-highest zoom level and above (maxZoom 7 → 5, 6, 7).
+  const LABEL_MIN_ZOOM = 5;
   function applyLabels() {
+    const zoomOK = map.getZoom() >= LABEL_MIN_ZOOM;
     labelMarkers.forEach(lbl => {
-      const shouldShow = state.showLabels && state.vesselFilter.has(lbl._vtype);
+      const shouldShow = state.showLabels && zoomOK && state.vesselFilter.has(lbl._vtype);
       if (shouldShow && !map.hasLayer(lbl)) lbl.addTo(map);
       if (!shouldShow && map.hasLayer(lbl)) map.removeLayer(lbl);
     });
-    // Suppress hover tooltips while labels are on (names already shown on the map)
+    // Suppress hover tooltips only while labels are actually visible on the map
+    const labelsVisible = state.showLabels && zoomOK;
     vesselMarkers.forEach(m => {
-      if (state.showLabels) {
+      if (labelsVisible) {
         if (m.getTooltip()) m.unbindTooltip();
       } else if (!m.getTooltip() && m._tipHTML) {
         m.bindTooltip(m._tipHTML, { className:'vessel-tip', direction:'top', offset:[0,-12], opacity:1 });
       }
     });
   }
+  // Re-evaluate label visibility whenever the zoom level changes.
+  map.on('zoomend', applyLabels);
 
   // Swap Leaflet's default "+/−" text glyphs for Lucide Plus/Minus icons.
   const zin = document.querySelector('.leaflet-control-zoom-in');
