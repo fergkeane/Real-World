@@ -105,7 +105,10 @@
   @media(max-width:1023px){
     #app{overflow-x:hidden;}
   }
-</style>
+
+  /* DS table-header treatment for list-card column headers */
+  .tracking-micro.uppercase.text-ink-500{background:var(--slate-50,#F9FAFB);color:var(--text-muted,#6B7280)}
+  </style>
 </head>
 <body class="bg-ink-100 text-ink-900 antialiased" data-density="compact">
 <div id="app" class="min-h-screen w-full flex"></div>
@@ -113,8 +116,8 @@
 <script>
   window.PAGE = { id:'aviation', title:'Aviation', crumb:'Overview' };
   window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-    "density": "compact",
-    "accent": "blue",
+    "density": "comfortable",
+    "accent": "sky",
     "sidebarExpanded": false,
     "showSparklines": true
   }/*EDITMODE-END*/;
@@ -357,7 +360,7 @@ function PortfolioCard() {
     return `
     <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
       <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Portfolio','Portfolio Groups'], state.portfolioTab, 'data-portfolio-tab')}</div>
-      <div class="px-3 py-1.5 flex items-center justify-between text-[10px] font-bold tracking-micro uppercase text-ink-500 border-b border-ink-100">
+      <div class="px-3 py-1.5 flex items-center justify-between text-[11px] font-semibold tracking-micro uppercase text-ink-500 border-b border-ink-100">
         <span>Name</span>
         <span class="flex items-center shrink-0" style="gap:20px">
           <span style="min-width:80px;text-align:right">Assets${sortIco}</span>
@@ -382,10 +385,10 @@ function PortfolioCard() {
   <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
     <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Portfolio','Portfolio Groups'], state.portfolioTab, 'data-portfolio-tab')}</div>
     <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-50">
-      <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto_auto] gap-6 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white">
+      <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto_auto] gap-6 text-[11px] font-semibold tracking-micro uppercase text-ink-500 sticky top-0 bg-white">
         <span>Name</span>
-        <span class="text-right">Assets ↑↓</span>
-        <span class="text-right">Exposure ↑↓</span>
+        <span class="text-right">Assets ${window.dsSortInd(false)}</span>
+        <span class="text-right">Exposure ${window.dsSortInd(false)}</span>
       </div>
       ${PORTFOLIOS.map((p, i) => `
         <button data-avi-pf-idx="${i}" class="w-full text-left px-3 py-2 hover:bg-ink-50 flex items-center justify-between text-xs">
@@ -398,8 +401,12 @@ function PortfolioCard() {
       `).join('')}
     </div>
     <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 flex items-center justify-between text-xs h-9">
-      <button class="inline-flex items-center gap-1 text-brand-600 font-semibold hover:text-brand-700 tracking-micro">+ ADD PORTFOLIO</button>
-      <button class="inline-flex items-center gap-1 text-brand-600 font-semibold hover:text-brand-700 tracking-micro">VIEW ALL PORTFOLIOS &amp; GROUPS</button>
+      <button class="inline-flex items-center gap-1 whitespace-nowrap text-brand-600 font-semibold hover:text-brand-700 tracking-micro">
+        <span class="inline-flex items-center [&_svg]:h-3.5 [&_svg]:w-3.5">${Ico.plus}</span><span>ADD PORTFOLIO</span>
+      </button>
+      <button class="inline-flex items-center gap-1 whitespace-nowrap text-brand-600 font-semibold hover:text-brand-700 tracking-micro">
+        <span>VIEW ALL PORTFOLIOS</span><span class="inline-flex items-center [&_svg]:h-3.5 [&_svg]:w-3.5">${Ico.chev}</span>
+      </button>
     </div>
   </div>`;
 }
@@ -435,7 +442,7 @@ function AirportCard() {
         </div>
       </div>
       <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-50">
-        <div class="px-3 pt-3 pb-1 grid grid-cols-[1.4fr_0.8fr_1fr_1.4fr_auto_auto_auto] gap-3 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white items-center">
+        <div class="px-3 pt-3 pb-1 grid grid-cols-[1.4fr_0.8fr_1fr_1.4fr_auto_auto_auto] gap-3 text-[11px] font-semibold tracking-micro uppercase text-ink-500 sticky top-0 bg-white items-center">
           <span>Name</span>
           <span>Type</span>
           <span>Operator</span>
@@ -478,7 +485,7 @@ function AirportCard() {
         </div>
       </div>
       <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-50">
-        <div class="px-3 pt-3 pb-1 grid grid-cols-[1fr_auto_auto_auto] gap-4 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white items-center">
+        <div class="px-3 pt-3 pb-1 grid grid-cols-[1fr_auto_auto_auto] gap-4 text-[11px] font-semibold tracking-micro uppercase text-ink-500 sticky top-0 bg-white items-center">
           <span>Region</span>
           <span class="inline-flex items-center gap-1 justify-end">${infoIcon} CHW</span>
           <span class="inline-flex items-center gap-1 justify-end">${infoIcon} HULLW</span>
@@ -521,7 +528,7 @@ function AirportCard() {
       </div>
     </div>
     <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-50">
-      <div class="airport-row-grid px-3 pt-2 pb-1 grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white items-center">
+      <div class="airport-row-grid px-3 pt-2 pb-1 grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 text-[11px] font-semibold tracking-micro uppercase text-ink-500 sticky top-0 bg-white items-center">
         <span>Airport</span>
         <span class="text-right">Total</span>
         <span class="is-mcol inline-flex items-center gap-1">${infoIcon} CHW</span>
@@ -566,7 +573,7 @@ function NotamCard() {
     <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
       ${tabBar}
       <div class="flex-1 overflow-y-auto scroll-thin flex flex-col min-h-0">
-        <div class="px-3 py-2 grid text-[11px] font-bold tracking-micro uppercase text-ink-500 border-b border-ink-100 shrink-0" style="grid-template-columns:1fr auto auto;gap:0 12px;">
+        <div class="px-3 py-2 grid text-[11px] font-semibold tracking-micro uppercase text-ink-500 border-b border-ink-100 shrink-0" style="grid-template-columns:1fr auto auto;gap:0 12px;">
           <span>Event Name</span>
           <span>Region</span>
           <span>Category</span>
@@ -647,7 +654,7 @@ function NotamCard() {
   return `
   <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
     ${tabBar}
-    <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto] gap-3 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white">
+    <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto] gap-3 text-[11px] font-semibold tracking-micro uppercase text-ink-500 sticky top-0 bg-white">
       <span>Risk Area</span>
       <span>Status</span>
     </div>
@@ -718,7 +725,7 @@ function buildFlightPopupHTML(p) {
       ${row('Speed', p.spd)}
     </div>
     <div style="padding:10px 16px 14px;display:flex;justify-content:center;">
-      <button style="padding:7px 32px;border:1.5px solid #2563eb;color:#2563eb;border-radius:8px;font-size:13px;font-weight:600;background:#fff;cursor:pointer;" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='#fff'" onclick="window.location.href='AircraftDetails.html'">View Details</button>
+      <button style="padding:0 16px;height:32px;border:1px solid transparent;color:var(--brand-600,#2563eb);border-radius:var(--radius-md,8px);font-size:13px;font-weight:500;background:transparent;cursor:pointer;" onmouseover="this.style.background='var(--brand-50,#eff6ff)'" onmouseout="this.style.background='transparent'" onclick="window.location.href='AircraftDetails.html'">View Details</button>
     </div>`;
 }
 
@@ -758,7 +765,7 @@ function buildAirportPopupHTML(a) {
       ${row('Runways', a.runways + ' runway' + (a.runways !== 1 ? 's' : ''))}
     </div>
     <div style="padding:8px 16px 14px;display:flex;justify-content:center;">
-      <button style="background:#fff;border:1.5px solid #2563eb;border-radius:8px;padding:8px 28px;font-size:13px;font-weight:600;color:#2563eb;cursor:pointer;" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='#fff='none'" onclick="window.location.href='AirportDetails.html'">View Details</button>
+      <button style="background:transparent;border:1px solid transparent;border-radius:var(--radius-md,8px);padding:0 16px;height:32px;font-size:13px;font-weight:500;color:var(--brand-600,#2563eb);cursor:pointer;" onmouseover="this.style.background='var(--brand-50,#eff6ff)'" onmouseout="this.style.background='transparent'" onclick="window.location.href='AirportDetails.html'">View Details</button>
     </div>`;
 }
 
@@ -940,10 +947,10 @@ function AirportListContent() {
 
   return `
     <div class="flex-1 overflow-y-auto scroll-thin min-h-0">
-      <div class="px-4 py-2.5 grid grid-cols-[1fr_140px_260px] gap-6 text-[11px] font-bold tracking-micro uppercase text-ink-500 border-b border-ink-100 sticky top-0 bg-white items-center">
-        <span>Airport <span class="text-ink-300">↑↓</span></span>
-        <span>Code <span class="text-ink-300">↑↓</span></span>
-        <span>Country <span class="text-ink-300">↑↓</span></span>
+      <div class="px-4 py-2.5 grid grid-cols-[1fr_140px_260px] gap-6 text-[11px] font-semibold tracking-micro uppercase text-ink-500 border-b border-ink-100 sticky top-0 bg-white items-center">
+        <span>Airport <span class="text-ink-300">${window.dsSortInd(false)}</span></span>
+        <span>Code <span class="text-ink-300">${window.dsSortInd(false)}</span></span>
+        <span>Country <span class="text-ink-300">${window.dsSortInd(false)}</span></span>
       </div>
       <div class="divide-y divide-ink-50">
         ${rows.map(a => `

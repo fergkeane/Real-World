@@ -69,7 +69,7 @@
 
   /* List table */
   .wx-tbl{width:100%;border-collapse:collapse}
-  .wx-tbl th{padding:10px 14px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;text-align:left;border-bottom:1px solid #e2e8f0;background:#fff;white-space:nowrap}
+  .wx-tbl th{padding:10px 14px;font-size:11px;font-weight:600;color:var(--text-muted,#6B7280);text-transform:uppercase;letter-spacing:.04em;text-align:left;border-bottom:1px solid var(--border-default,#E5E7EB);background:var(--slate-50,#F9FAFB);white-space:nowrap}
   .wx-tbl td{padding:12px 14px;font-size:13px;color:#334155;border-bottom:1px solid #f1f5f9;vertical-align:middle}
   .wx-tbl tr:hover td{background:#f8fafc}
 </style>
@@ -183,6 +183,28 @@ const SYSTEMS = [
     lat:-15.9, lng:56.9, wind:20, pressure:1010, movement:'SE at 10 km/h',
     color:'#3b82f6', glow:'rgba(59,130,246,.3)', radius:8, track:[],
   },
+  {
+    id:6, name:'Hurricane Milena', type:'Hurricane', cat:'Category 3', status:'Active',
+    lat:27.4, lng:-82.3, wind:120, pressure:958, movement:'NNE at 15 km/h',
+    color:'#ef4444', glow:'rgba(239,68,68,.35)', radius:18,
+    track:[
+      {lat:23.4, lng:-84.6, kind:'past'},{lat:24.8, lng:-83.9, kind:'past'},
+      {lat:26.2, lng:-83.0, kind:'past'},
+      {lat:29.0, lng:-81.4, kind:'forecast'},{lat:30.7, lng:-80.3, kind:'forecast'},
+      {lat:32.4, lng:-78.9, kind:'forecast'},
+    ],
+  },
+  {
+    id:7, name:'Typhoon Renji', type:'Typhoon', cat:'Category 4', status:'Active',
+    lat:33.9, lng:137.3, wind:140, pressure:944, movement:'NE at 22 km/h',
+    color:'#dc2626', glow:'rgba(220,38,38,.4)', radius:19,
+    track:[
+      {lat:29.4, lng:133.6, kind:'past'},{lat:31.0, lng:135.0, kind:'past'},
+      {lat:32.5, lng:136.2, kind:'past'},
+      {lat:35.6, lng:138.8, kind:'forecast'},{lat:37.4, lng:140.7, kind:'forecast'},
+      {lat:39.2, lng:142.8, kind:'forecast'},
+    ],
+  },
 ];
 
 /* ── State ────────────────────────────────────────────────────────────────── */
@@ -226,7 +248,7 @@ function stormPopup(s) {
       <div class="pp-row"><span class="pp-k">Movement</span><span class="pp-v">${s.movement}</span></div>
     </div>
     <div style="padding:10px 14px;border-top:1px solid #f1f5f9">
-      <button style="width:100%;height:32px;background:#2563eb;color:#fff;border:0;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:background 120ms" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'" onclick="openStormDetails(${s.id})">
+      <button style="width:100%;height:32px;display:inline-flex;align-items:center;justify-content:center;background:transparent;color:#2563eb;border:0;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:background 120ms" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='transparent'" onclick="openStormDetails(${s.id})">
         View Details
       </button>
     </div>
@@ -277,6 +299,11 @@ function initMap() {
       .bindPopup(stormPopup(s), { className:'storm-popup', maxWidth:230, minWidth:230, closeButton:true })
       .addTo(wxMap);
   });
+
+  // Frame all systems (now spanning Florida → Indian Ocean → Japan) so each is visible.
+  try {
+    wxMap.fitBounds(L.latLngBounds(SYSTEMS.map(s => [s.lat, s.lng])), { padding:[50,50], maxZoom:4 });
+  } catch (e) {}
 
   // Custom zoom icons (match Marine Dashboard — Lucide Plus/Minus, centered)
   setTimeout(() => {
@@ -330,13 +357,6 @@ function MapView() {
   return `
   <div id="wx-map-wrap" class="relative flex-1">
     <div id="weather-map"></div>
-
-    <!-- Active badge -->
-    <div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:400;pointer-events:none">
-      <div style="background:#ef4444;color:#fff;font-size:12px;font-weight:700;padding:5px 14px;border-radius:999px;box-shadow:0 2px 8px rgba(239,68,68,.45);white-space:nowrap">
-        ${SYSTEMS.filter(s=>s.status==='Active').length} Active
-      </div>
-    </div>
 
     <!-- Fullscreen -->
     <button id="wx-fs-btn" class="map-btn" style="position:absolute;top:12px;left:12px;z-index:400" title="Fullscreen">${SC.I.maximize}</button>
@@ -425,7 +445,7 @@ function Content() {
             <span class="ds-tab-label">${lico('List', 13)} List</span>
           </button>
         </div>
-        <span style="font-size:12px;color:#94a3b8">${SYSTEMS.length} systems tracked · ${SYSTEMS.filter(s=>s.status==='Active').length} active</span>
+        <span style="margin-left:auto;background:#ef4444;color:#fff;font-size:12px;font-weight:700;padding:4px 12px;border-radius:999px;white-space:nowrap">${SYSTEMS.filter(s=>s.status==='Active').length} Active</span>
       </div>
       ${viewMode === 'Map' ? MapView() : ListView()}
     </div>

@@ -29,8 +29,9 @@
   .ds-tab-label{position:relative;z-index:1;display:inline-flex;align-items:center;gap:6px}
   /* Table */
   .voy-table{width:100%;border-collapse:collapse;font-size:12px}
-  .voy-table th{padding:9px 12px;text-align:left;font-size:11px;font-weight:700;color:#475569;letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid #e2e8f0;white-space:nowrap;background:#f8fafc;cursor:pointer;user-select:none}
-  .voy-table th:hover{color:#0f172a}
+  .voy-table th{padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text-muted,#6B7280);letter-spacing:.04em;text-transform:uppercase;border-bottom:1px solid var(--border-default,#E5E7EB);white-space:nowrap;background:var(--slate-50,#F9FAFB);cursor:pointer;user-select:none}
+  .voy-table th.ds-th--sortable{padding:0}
+  .voy-table th:hover{color:var(--text-primary,#0f172a)}
   .voy-table td{padding:10px 12px;border-bottom:1px solid #f1f5f9;color:#334155;white-space:nowrap;vertical-align:middle;font-size:12px}
   .voy-table tbody tr:hover td{background:#f8fbff;cursor:pointer}
   .voy-table tbody tr.is-expanded td{background:#f0f9ff}
@@ -53,9 +54,14 @@
     .fly-chip{display:none;}
     .voy-table tbody tr.voy-row-new td,.voy-table tbody tr.voy-row-new td:first-child,.cargo-receiving{animation:none;}
   }
-  /* Sort arrow */
-  .sort-arrow{display:inline-flex;flex-direction:column;gap:1px;margin-left:3px;vertical-align:middle;opacity:.45}
-  .sort-arrow svg{width:7px;height:7px}
+  /* Sortable headers — Skytek Design System */
+  .ds-th-sort{width:100%;display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted,#6B7280);padding:9px 12px;background:transparent;border:0;cursor:pointer;text-align:left;transition:color .12s ease,background .12s ease}
+  .ds-th-sort:hover{color:var(--text-secondary,#4B5563);background:var(--slate-100,#F3F4F6)}
+  .ds-th-sort:focus-visible{outline:0;box-shadow:var(--shadow-focus,0 0 0 3px rgba(45,127,251,.32))}
+  .ds-th-sort .ds-sort-ind{display:inline-flex;flex-shrink:0;color:var(--text-muted,#6B7280);opacity:.4;transition:opacity .12s ease}
+  .ds-th-sort:hover .ds-sort-ind{opacity:.7}
+  .ds-th--active .ds-th-sort,.ds-th--active .ds-th-sort:hover{color:var(--text-primary,#0f172a)}
+  .ds-th--active .ds-sort-ind{opacity:1;color:var(--brand-600,#2d7ffb)}
   /* Status badges */
   .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap}
   .badge-green{background:#dcfce7;color:#15803d}
@@ -258,8 +264,8 @@
   .pp-row:last-child{border-bottom:0;}
   .pp-k{color:#64748b;font-weight:500;}
   .pp-v{font-weight:700;color:#0f172a;}
-  .pp-cta{display:block;width:calc(100% - 28px);margin:4px 14px 14px;background:#fff;border-radius:8px;padding:9px 12px;font-weight:700;font-size:12.5px;cursor:pointer;text-align:center;transition:background .15s;border-width:1.5px;border-style:solid;}
-  .pp-cta:hover{background:#f8fafc;}
+  .pp-cta{display:block;width:calc(100% - 28px);margin:4px 14px 14px;background:transparent;color:var(--brand-600,#2563eb)!important;border:1px solid transparent;border-radius:var(--radius-md,8px);padding:0 12px;height:32px;line-height:32px;font-weight:500;font-size:13px;cursor:pointer;text-align:center;transition:background .15s;}
+  .pp-cta:hover{background:var(--brand-50,#eff6ff);}
   /* Mobile responsive */
   .mobile-tab-select{display:none;width:100%;padding:7px 12px;border:1px solid #e2e8f0;border-radius:9999px;font-size:13px;font-weight:600;color:#334155;background:#f1f5f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;font-family:inherit;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;}
   @media(max-width:767px){
@@ -269,6 +275,7 @@
     .cargo-workbook-btns{flex-wrap:wrap;}
     .cargo-info-bar{flex-direction:column!important;align-items:flex-start!important;}
     .cargo-summary-grid{grid-template-columns:1fr 1fr!important;}
+    .cargo-summary-grid > :last-child{grid-column:1 / -1!important;}
     .cargo-tab-bar{flex-direction:column!important;align-items:stretch!important;gap:8px!important;}
     .cargo-tab-bar .ds-tabs{display:flex!important;width:100%!important;}
     .cargo-tab-bar .ds-tab{flex:1 1 0!important;justify-content:center!important;}
@@ -286,7 +293,7 @@
 <script>
 window.PAGE = { id:'cargo', title:'Cargo', crumb:'Cargo Voyage Analysis' };
 window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-  "density": "compact",
+  "density": "comfortable",
   "accent": "sky",
   "sidebarExpanded": false,
   "showSparklines": true
@@ -380,12 +387,12 @@ let st = {
 };
 
 /* ── HELPERS ─────────────────────────────────────────────────────────────── */
-function sortArrow(col) {
-  const up   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M18 15l-6-6-6 6"/></svg>`;
-  const down = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>`;
-  const both = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M8 9l4-4 4 4M8 15l4 4 4-4"/></svg>`;
-  if (st.sortCol !== col) return `<span class="sort-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" width="8" height="8"><path d="M8 9l4-4 4 4M8 15l4 4 4-4"/></svg></span>`;
-  return `<span class="sort-arrow" style="opacity:.8;color:var(--brand-600,#0284c7)">${st.sortDir > 0 ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" width="8" height="8"><path d="M18 15l-6-6-6 6"/></svg>` : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" width="8" height="8"><path d="M6 9l6 6 6-6"/></svg>`}</span>`;
+const I_SORT='m8 9 4-4 4 4M8 15l4 4 4-4', I_AUP='m12 5 7 7m-7-7-7 7m7-7v14', I_ADN='m12 19 7-7m-7 7-7-7m7 7V5';
+function sortIco(p){ return `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="${p}"/></svg>`; }
+function sortInd(col) {
+  const active = st.sortCol === col;
+  const path = !active ? I_SORT : (st.sortDir > 0 ? I_AUP : I_ADN);
+  return `<span class="ds-sort-ind">${sortIco(path)}</span>`;
 }
 
 function statusBadge(v) {
@@ -654,7 +661,11 @@ function renderPortfolioSummary() {
 
 function renderDeclarationsTable() {
   const rows = filteredVoyages();
-  const th = (label, col) => `<th data-sort="${col}" style="cursor:pointer;">${label}${sortArrow(col)}</th>`;
+  const th = (label, col) => {
+    const active = st.sortCol === col;
+    const aria = !active ? 'none' : (st.sortDir > 0 ? 'ascending' : 'descending');
+    return `<th data-sort="${col}" scope="col" class="ds-th--sortable${active ? ' ds-th--active' : ''}" aria-sort="${aria}"><button type="button" class="ds-th-sort"><span>${label}</span>${sortInd(col)}</button></th>`;
+  };
   return `
   <div style="overflow-x:auto;" class="scroll-thin">
     <table class="voy-table" style="min-width:1280px;">
@@ -879,7 +890,7 @@ function cargoPortPopupHTML(rawName, role, coords, color) {
       <div class="pp-row"><span class="pp-k">Latitude:</span><span class="pp-v">${coords[0].toFixed(4)}°</span></div>
       <div class="pp-row"><span class="pp-k">Longitude:</span><span class="pp-v">${coords[1].toFixed(4)}°</span></div>
     </div>
-    <button class="pp-cta" style="color:${color};border-color:${color};" onclick="sessionStorage.setItem('selectedPort', '${payload}'); window.location.href='PortDetails.html'">View Details</button>
+    <button class="pp-cta" onclick="sessionStorage.setItem('selectedPort', '${payload}'); window.location.href='PortDetails.html'">View Details</button>
   </div>`;
 }
 
@@ -1671,8 +1682,10 @@ function wireContent() {
   document.querySelectorAll('th[data-sort]').forEach(th => {
     th.addEventListener('click', () => {
       const col = th.dataset.sort;
-      if (st.sortCol === col) st.sortDir *= -1;
-      else { st.sortCol = col; st.sortDir = 1; }
+      if (st.sortCol === col) {
+        if (st.sortDir > 0) st.sortDir = -1;
+        else { st.sortCol = null; st.sortDir = 1; }   // third click → unsorted
+      } else { st.sortCol = col; st.sortDir = 1; }
       window.render();
     });
   });

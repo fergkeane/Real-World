@@ -32,7 +32,7 @@
   .scroll-thin::-webkit-scrollbar{width:5px}.scroll-thin::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
   /* Table */
   .co-tbl{width:100%;border-collapse:collapse;min-width:1100px}
-  .co-tbl th{padding:9px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;text-align:left;border-bottom:1px solid #e2e8f0;background:#fff;white-space:nowrap;user-select:none}
+  .co-tbl th{padding:9px 12px;font-size:11px;font-weight:600;color:var(--text-muted,#6B7280);text-transform:uppercase;letter-spacing:.04em;text-align:left;border-bottom:1px solid var(--border-default,#E5E7EB);background:var(--slate-50,#F9FAFB);white-space:nowrap;user-select:none}
   .co-tbl th.sortable{cursor:pointer}.co-tbl th.sortable:hover{color:#334155}.co-tbl th.sorted{color:#2563eb}
   .co-tbl td{padding:10px 12px;font-size:13px;color:#334155;border-bottom:1px solid #f1f5f9;vertical-align:middle}
   .co-tbl tr:last-child td{border-bottom:0}
@@ -131,9 +131,7 @@ const SVG = {
 };
 
 function sortIcon(col) {
-  if (ST.sortCol !== col) return `<svg width="9" height="12" viewBox="0 0 9 12" fill="none" style="display:inline-block;margin-left:2px;vertical-align:middle;opacity:.3"><path d="M4.5 1L1.5 4.5h6z" fill="currentColor"/><path d="M4.5 11L1.5 7.5h6z" fill="currentColor"/></svg>`;
-  const up = ST.sortDir === 'asc';
-  return `<svg width="9" height="12" viewBox="0 0 9 12" fill="none" style="display:inline-block;margin-left:2px;vertical-align:middle"><path d="M4.5 1L1.5 4.5h6z" fill="${up ? '#2563eb' : '#cbd5e1'}"/><path d="M4.5 11L1.5 7.5h6z" fill="${!up ? '#2563eb' : '#cbd5e1'}"/></svg>`;
+  return window.dsSortInd(ST.sortCol === col, ST.sortDir === 'asc');
 }
 
 function typeBadge(type) {

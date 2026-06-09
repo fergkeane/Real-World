@@ -637,10 +637,10 @@ function fleetTabContent() {
       <table class="fleet-table" style="width:100%;border-collapse:collapse;font-size:13px;min-width:840px;">
         <thead>
           <tr style="border-bottom:1px solid #e2e8f0;">
-            <th style="text-align:left;padding:12px 20px;font-size:12.5px;font-weight:700;color:#0f172a;white-space:nowrap;">Report Title</th>
-            <th style="text-align:left;padding:12px 16px;font-size:12.5px;font-weight:700;color:#0f172a;white-space:nowrap;">Date &amp; Time</th>
-            <th style="text-align:left;padding:12px 16px;font-size:12.5px;font-weight:700;color:#0f172a;white-space:nowrap;">Vessels Included</th>
-            <th style="text-align:right;padding:12px 20px;font-size:12.5px;font-weight:700;color:#0f172a;white-space:nowrap;">Actions</th>
+            <th style="text-align:left;padding:12px 20px;font-size:11px;font-weight:600;color:var(--text-muted,#6B7280);text-transform:uppercase;letter-spacing:.04em;background:var(--slate-50,#F9FAFB);white-space:nowrap;">Report Title</th>
+            <th style="text-align:left;padding:12px 16px;font-size:11px;font-weight:600;color:var(--text-muted,#6B7280);text-transform:uppercase;letter-spacing:.04em;background:var(--slate-50,#F9FAFB);white-space:nowrap;">Date &amp; Time</th>
+            <th style="text-align:left;padding:12px 16px;font-size:11px;font-weight:600;color:var(--text-muted,#6B7280);text-transform:uppercase;letter-spacing:.04em;background:var(--slate-50,#F9FAFB);white-space:nowrap;">Vessels Included</th>
+            <th style="text-align:right;padding:12px 20px;font-size:11px;font-weight:600;color:var(--text-muted,#6B7280);text-transform:uppercase;letter-spacing:.04em;background:var(--slate-50,#F9FAFB);white-space:nowrap;">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -725,23 +725,66 @@ function wireFleetTab() {
 
 /* ── Competitor Analysis tab ──────────────────────────────────────────── */
 function riskColor(r) { return r <= 10 ? '#16a34a' : r <= 25 ? '#f59e0b' : '#dc2626'; }
-function riskDonut(r, size = 132) {
-  const stroke = 14;
-  const radius = (size - stroke) / 2;
-  const circ = 2 * Math.PI * radius;
-  const pct = Math.min(100, Math.max(0, r));
-  const dash = (pct / 100) * circ;
-  const color = riskColor(r);
+// Banded gradient gauge — matches the Risk Score gauge on the Vessel Details page.
+let __caGaugeId = 0;
+function riskDonut(r) {
+  const rsScore = Math.min(100, Math.max(0, r));
+  const risk = rsScore <= 10
+    ? { label:'GOOD', c:'#16a34a', glow:'#86efac' }
+    : rsScore <= 25
+    ? { label:'AVERAGE RISK', c:'#f97316', glow:'#fed7aa' }
+    : { label:'BELOW AVERAGE', c:'#ef4444', glow:'#fca5a5' };
+  // Gauge geometry: 270° arc, start=135°, sweep clockwise
+  const CX = 100, CY = 108, R = 80, RO = 95, SW = 11;
+  const toRad = d => d * Math.PI / 180;
+  const pt = (a, rr) => [+(CX + rr * Math.cos(toRad(a))).toFixed(2), +(CY + rr * Math.sin(toRad(a))).toFixed(2)];
+  const [sox, soy] = pt(135, RO);
+  const [eox, eoy] = pt(45, RO);
+  const GAUGE_MAX = 100, GAUGE_START = 135, GAUGE_SWEEP_DEG = 270;
+  const gAngle = s => GAUGE_START + (Math.min(s, GAUGE_MAX) / GAUGE_MAX) * GAUGE_SWEEP_DEG;
+  const arcD = (a1, a2, rr) => {
+    const [x1, y1] = pt(a1, rr), [x2, y2] = pt(a2, rr);
+    const sw = ((a2 - a1) % 360 + 360) % 360;
+    return `M ${x1},${y1} A ${rr},${rr} 0 ${sw > 180 ? 1 : 0},1 ${x2},${y2}`;
+  };
+  // Banded segment color: green ≤10, orange ≤25, red >25
+  const gaugeColor = s => (s <= 10 ? '#22c55e' : s <= 25 ? '#f97316' : '#ef4444');
+  const N = 26, SEG_GAP = 0.9;
+  const whiteCasing = `<path d="${arcD(gAngle(0), gAngle(GAUGE_MAX), R)}" fill="none" stroke="#ffffff" stroke-width="${SW}" stroke-linecap="butt"/>`;
+  const segPaths = Array.from({ length: N }, (_, i) => {
+    const a1 = gAngle(i * GAUGE_MAX / N) + SEG_GAP;
+    const a2 = gAngle((i + 1) * GAUGE_MAX / N) - SEG_GAP;
+    const midScore = (i + 0.5) * GAUGE_MAX / N;
+    const filled = midScore <= rsScore;
+    return `<path d="${arcD(a1, a2, R)}" fill="none" stroke="${filled ? gaugeColor(midScore) : '#e2e8f0'}" stroke-width="${SW}" stroke-linecap="butt"/>`;
+  }).join('');
+  const glowColor = rsScore <= 10 ? '#86efac' : rsScore <= 25 ? '#fcd34d' : '#fca5a5';
+  const fillTipA = gAngle(Math.min(rsScore, GAUGE_MAX));
+  const fillTipB = gAngle(Math.max(0, Math.min(rsScore, GAUGE_MAX) - GAUGE_MAX * 0.08));
+  const glowPath = rsScore > 0 ? `<path d="${arcD(fillTipB, fillTipA, R)}" fill="none" stroke="${glowColor}" stroke-width="${SW + 8}" stroke-linecap="round" opacity="0.3"/>` : '';
+  const gid = `caGaugeGlow${__caGaugeId++}`;
   return `
-    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-      <circle cx="${size/2}" cy="${size/2}" r="${radius}" fill="none" stroke="#e2e8f0" stroke-width="${stroke}"/>
-      <circle cx="${size/2}" cy="${size/2}" r="${radius}" fill="none" stroke="${color}" stroke-width="${stroke}"
-              stroke-dasharray="${dash} ${circ - dash}" stroke-dashoffset="${circ/4}" stroke-linecap="round"
-              transform="rotate(-90 ${size/2} ${size/2})"
-              style="transform-origin:${size/2}px ${size/2}px;transform:none"/>
-      <text x="50%" y="46%" text-anchor="middle" dominant-baseline="middle" style="font:500 11px 'Inter',sans-serif;fill:#94a3b8">Risk Score</text>
-      <text x="50%" y="62%" text-anchor="middle" dominant-baseline="middle" style="font:700 26px 'Inter',sans-serif;fill:#0f172a;letter-spacing:-.02em">${r}</text>
-    </svg>`;
+    <div style="position:relative;width:100%;max-width:185px;">
+      <svg viewBox="0 0 200 200" style="width:100%;height:auto;overflow:visible;" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <radialGradient id="${gid}" cx="50%" cy="55%" r="42%">
+            <stop offset="0%" stop-color="${risk.glow}" stop-opacity="0.55"/>
+            <stop offset="100%" stop-color="${risk.glow}" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="100" cy="108" rx="70" ry="60" fill="url(#${gid})"/>
+        <path d="M ${sox},${soy} A ${RO},${RO} 0 1,1 ${eox},${eoy}"
+          fill="none" stroke="#dde4ef" stroke-width="1.5" stroke-dasharray="3 8.2" stroke-linecap="round"/>
+        ${glowPath}
+        ${whiteCasing}
+        ${segPaths}
+        <text x="100" y="122" text-anchor="middle" font-size="52" font-weight="800" fill="#0f172a" font-family="Inter,sans-serif">${r}</text>
+      </svg>
+    </div>
+    <div style="display:flex;align-items:center;gap:4px;margin-top:-10px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="${risk.c}" stroke-width="2.5" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.8" fill="${risk.c}"/></svg>
+      <span style="font-size:10px;font-weight:700;color:${risk.c};letter-spacing:0.06em;">${risk.label}</span>
+    </div>`;
 }
 
 const CA_ICONS = {

@@ -25,25 +25,130 @@
   /* Map button */
   .map-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;color:#334155;box-shadow:0 1px 2px rgba(15,23,42,.08);cursor:pointer;transition:background 100ms}
   .map-btn:hover{background:#f1f5f9}
+  /* Vessel markers (Marine Dashboard style) */
+  .vessel-marker{position:relative;cursor:pointer}
+  .vessel-marker svg{filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+  .vessel-marker::after{content:'';position:absolute;left:50%;top:50%;width:24px;height:24px;transform:translate(-50%,-50%);border-radius:50%;border:2px solid #fff;opacity:0;transition:opacity .12s;pointer-events:none}
+  .leaflet-marker-icon:hover .vessel-marker::after{opacity:1}
+  .leaflet-marker-icon:hover{z-index:1000!important}
+  /* Vessel hover tooltip — match Marine Dashboard (flag + name + type) */
+  .vessel-tip.leaflet-tooltip{background:rgba(15,23,42,.93);border:0;border-radius:7px;box-shadow:0 3px 10px rgba(0,0,0,.4);padding:6px 9px;color:#fff;font-family:'Open Sans',system-ui,sans-serif}
+  .vessel-tip.leaflet-tooltip-top::before{border-top-color:rgba(15,23,42,.93)}
+  .vessel-tip .vtip-row{display:flex;align-items:center;gap:6px}
+  .vessel-tip .vtip-flag{border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.25);flex-shrink:0}
+  .vessel-tip .vtip-name{font-family:'Exo','Open Sans',sans-serif;font-weight:700;font-size:12px;letter-spacing:.01em}
+  .vessel-tip .vtip-type{display:block;font-size:11px;color:#cbd5e1;margin-top:2px}
+  /* Vessel popup card — match Marine Dashboard */
+  .vessel-popup .leaflet-popup-content-wrapper{padding:0;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(15,23,42,.25)}
+  .vessel-popup .leaflet-popup-content{margin:0;width:300px !important;font-family:'Open Sans',system-ui,sans-serif}
+  .vessel-popup .leaflet-popup-tip{background:#fff}
+  .vp{background:#fff;color:#0f172a}
+  .vp-header{background:var(--brand-600,#2563eb);color:#fff;padding:12px 14px 10px}
+  .vp-header-main{min-width:0}
+  .vp-title{font-family:'Exo','Open Sans',sans-serif;font-weight:800;font-size:15px;letter-spacing:.02em;display:flex;align-items:center}
+  .vp-subtitle{font-size:11.5px;color:rgba(255,255,255,.85);margin-top:2px}
+  .vp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;padding:12px 14px}
+  .vp-grid > div{min-width:0}
+  .vp-span{grid-column:1 / -1}
+  .vp-k{font-size:10.5px;color:#64748b}
+  .vp-v{font-size:12.5px;color:#0f172a;margin-top:1px;font-weight:600}
+  .vp-strong{font-weight:700;color:#0f172a}
+  .vp-cta{display:block;width:calc(100% - 28px);margin:4px 14px 14px;background:transparent;color:var(--brand-600,#2563eb)!important;border:1px solid transparent;border-radius:var(--radius-md,8px);padding:0 12px;height:32px;line-height:32px;font-weight:500;font-size:13px;cursor:pointer;text-align:center;transition:background .15s;text-decoration:none}
+  .vp-cta:hover{background:var(--brand-50,#eff6ff)}
+  .vessel-popup .leaflet-popup-close-button{color:#fff !important;top:8px !important;right:10px !important;font-size:22px !important;font-weight:400 !important;width:24px !important;height:24px !important;line-height:22px !important;padding:0 !important;border-radius:6px;opacity:.9}
+  .vessel-popup .leaflet-popup-close-button:hover{color:#fff !important;background:rgba(255,255,255,.18);opacity:1}
+  /* Property markers — match Property Dashboard */
+  .marker-icon{position:relative;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.28);color:#fff;cursor:pointer}
+  .prop-tip.leaflet-tooltip{background:rgba(15,23,42,.93);border:0;border-radius:7px;box-shadow:0 3px 10px rgba(0,0,0,.4);padding:6px 9px;color:#fff;font-family:'Inter',system-ui,sans-serif}
+  .prop-tip.leaflet-tooltip-top::before{border-top-color:rgba(15,23,42,.93)}
+  .prop-tip .ptip-row{display:flex;align-items:center;gap:6px}
+  .prop-tip .ptip-dot{width:9px;height:9px;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.25);flex-shrink:0}
+  .prop-tip .ptip-name{font-weight:700;font-size:12px;letter-spacing:.01em}
+  .prop-tip .ptip-sub{display:block;font-size:11px;color:#cbd5e1;margin-top:2px}
+  .prop-popup .leaflet-popup-content-wrapper{padding:0;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(15,23,42,.25)}
+  .prop-popup .leaflet-popup-content{margin:0;width:280px !important;font-family:'Inter',sans-serif}
+  .prop-popup .leaflet-popup-tip{background:#fff}
+  .prop-popup .leaflet-popup-close-button{color:#fff !important;top:8px !important;right:10px !important;font-size:22px !important;font-weight:300 !important;width:24px !important;height:24px !important;opacity:.85}
+  .prop-popup .leaflet-popup-close-button:hover{background:rgba(255,255,255,.2) !important;color:#fff !important;opacity:1}
+  .pp{background:#fff;color:#0f172a}
+  .pp-header{background:var(--brand-600,#2563eb);color:#fff;padding:12px 14px 10px;display:flex;align-items:flex-start;justify-content:space-between}
+  .pp-title{font-size:14px;font-weight:700;line-height:1.2}
+  .pp-cat{font-size:11px;font-weight:500;opacity:.75;margin-left:6px}
+  .pp-body{padding:4px 0}
+  .pp-row{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;border-bottom:1px solid #f1f5f9;font-size:12.5px}
+  .pp-row:last-child{border-bottom:0}
+  .pp-k{color:#64748b;font-weight:500}
+  .pp-v{font-weight:600;color:#0f172a;text-align:right}
+  .pp-cta{display:block;width:calc(100% - 28px);margin:4px 14px 14px;background:transparent;color:var(--brand-600,#2563eb)!important;border:1px solid transparent;border-radius:var(--radius-md,8px);padding:0 12px;height:32px;line-height:32px;font-weight:500;font-size:13px;cursor:pointer;text-align:center;transition:background .15s;text-decoration:none}
+  .pp-cta:hover{background:var(--brand-50,#eff6ff)}
+  /* Vessel filter menu */
+  .evt-vf-btn{height:24px;padding:0 8px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;font-family:inherit;font-size:11px;font-weight:600;color:#334155;cursor:pointer}
+  .evt-vf-btn:hover{background:#f1f5f9}
+  .evt-vf-row{display:flex;align-items:center;gap:10px;padding:6px 12px;cursor:pointer}
+  .evt-vf-row:hover{background:#f1f5f9}
+  .evt-vf-head{padding:7px 12px 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#94a3b8;background:#f8fafc;border-bottom:1px solid #f1f5f9}
+  /* Offshore markers — match Offshore Dashboard */
+  .offshore-marker{display:flex;flex-direction:column;align-items:center;gap:2px}
+  .offshore-dot{position:relative;width:11px;height:11px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,.35);cursor:pointer}
+  .offshore-label{background:#1e293b;color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;white-space:nowrap;box-shadow:0 2px 4px rgba(0,0,0,.35)}
+  .offshore-dot::after{content:'';position:absolute;left:50%;top:50%;width:22px;height:22px;transform:translate(-50%,-50%);border-radius:50%;border:2px solid #fff;opacity:0;transition:opacity .14s;pointer-events:none}
+  .leaflet-marker-icon:hover .offshore-dot::after{opacity:1}
+  .asset-tip.leaflet-tooltip{background:rgba(15,23,42,.93);border:0;border-radius:7px;box-shadow:0 3px 10px rgba(0,0,0,.4);padding:6px 9px;color:#fff;font-family:'Open Sans',system-ui,sans-serif}
+  .asset-tip.leaflet-tooltip-top::before{border-top-color:rgba(15,23,42,.93)}
+  .asset-tip .atip-row{display:flex;align-items:center;gap:6px}
+  .asset-tip .atip-flag{border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.25);flex-shrink:0}
+  .asset-tip .atip-name{font-family:'Exo','Open Sans',sans-serif;font-weight:700;font-size:12px;letter-spacing:.01em}
+  .asset-tip .atip-type{display:block;font-size:11px;color:#cbd5e1;margin-top:2px}
+  .asset-popup .leaflet-popup-content-wrapper{padding:0;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(15,23,42,.25)}
+  .asset-popup .leaflet-popup-content{margin:0;width:300px !important;font-family:'Inter',sans-serif}
+  .asset-popup .leaflet-popup-tip{background:#fff}
+  .asset-popup .leaflet-popup-close-button{color:#fff !important;top:8px !important;right:10px !important;font-size:22px !important;font-weight:300 !important;width:24px !important;height:24px !important;opacity:.85}
+  .asset-popup .leaflet-popup-close-button:hover{background:rgba(255,255,255,.2) !important;color:#fff !important;opacity:1}
+  /* Aviation markers — match Aviation Dashboard */
+  .airport-icon{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#06b6d4;border:2px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.25);cursor:pointer}
+  .asset-tip .atip-sub{display:block;font-size:11px;color:#cbd5e1;margin-top:2px}
+  .avia-popup .leaflet-popup-content-wrapper{padding:0;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(15,23,42,.25)}
+  .avia-popup .leaflet-popup-content{margin:0;width:300px !important;font-family:'Inter',sans-serif}
+  .avia-popup .leaflet-popup-tip{background:#fff}
+  .avia-popup .leaflet-popup-close-button{color:#fff !important;top:8px !important;right:10px !important;font-size:22px !important;font-weight:300 !important;width:24px !important;height:24px !important;opacity:.85}
+  .avia-popup .leaflet-popup-close-button:hover{background:rgba(255,255,255,.2) !important;color:#fff !important;opacity:1}
   .leaflet-control-zoom,.leaflet-bar{border:1px solid #e2e8f0!important;box-shadow:0 1px 2px rgba(15,23,42,.08)!important;border-radius:8px!important;overflow:hidden}
   .leaflet-bar a{background:#fff!important;color:#334155!important;line-height:30px!important}
   .leaflet-bar a:hover{background:#f1f5f9!important}
+  /* Zoom control position — match Marine Dashboard (below the top-left fullscreen button, left-aligned with it) */
+  #evt-map .leaflet-top.leaflet-left{top:56px;left:2px}
+  #evt-map .leaflet-top.leaflet-left .leaflet-bar{margin-left:10px!important}
+  /* Map type selector menu */
+  .evt-map-type-opt{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border:0;background:transparent;font-family:inherit;font-size:13px;font-weight:500;color:#334155;cursor:pointer;text-align:left}
+  .evt-map-type-opt:hover{background:#f1f5f9}
+  /* Fullscreen map mode */
+  .evt-map-card.is-fullscreen{position:fixed;inset:0;z-index:9999;border-radius:0;border:0;width:100vw;height:100vh;margin:0}
   /* Portfolio table */
   .pf-tbl{width:100%;border-collapse:collapse;font-size:12px}
-  .pf-tbl th{padding:8px 12px;font-size:11px;font-weight:600;color:#64748b;text-align:left;border-bottom:1px solid #e2e8f0;white-space:nowrap}
-  .pf-tbl td{padding:8px 12px;border-bottom:1px solid #f8fafc;color:#334155;vertical-align:middle}
+  .pf-tbl th{padding:8px 12px;font-size:11px;font-weight:600;color:var(--text-muted,#6B7280);text-transform:uppercase;letter-spacing:.04em;text-align:left;border-bottom:1px solid var(--border-default,#E5E7EB);background:var(--slate-50,#F9FAFB);white-space:nowrap;position:sticky;top:0;z-index:1;cursor:pointer;user-select:none}
+  .pf-tbl th:hover{color:var(--text-primary,#0f172a)}
+  .pf-tbl td{padding:8px 12px;border-bottom:1px solid #f1f5f9;color:#334155;vertical-align:middle}
   .pf-tbl tbody tr:last-child td{border-bottom:0}
-  .pf-tbl tbody tr:hover td{background:#f8fafc}
+  .pf-tbl tbody tr:hover td{background:var(--brand-050,#eff6ff)}
+  .pf-tbl th.ds-th--sortable, .az-tbl th.ds-th--sortable{padding:0}
+  .ds-th-sort{width:100%;display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted,#6B7280);padding:8px 12px;background:transparent;border:0;cursor:pointer;text-align:left;transition:color .12s ease,background .12s ease}
+  .ds-th-sort.num{justify-content:flex-end}
+  .ds-th-sort:hover{color:var(--text-secondary,#475569);background:var(--slate-100,#F3F4F6)}
+  .ds-th-sort:focus-visible{outline:0;box-shadow:var(--shadow-focus,0 0 0 3px rgba(46,134,192,.32))}
+  .ds-th-sort .ds-sort-ind{display:inline-flex;flex-shrink:0;color:var(--text-muted,#6B7280);opacity:.4;transition:opacity .12s ease}
+  .ds-th-sort:hover .ds-sort-ind{opacity:.7}
+  .ds-th--active .ds-th-sort,.ds-th--active .ds-th-sort:hover{color:var(--text-primary,#0f172a)}
+  .ds-th--active .ds-sort-ind{opacity:1;color:var(--brand-600,#2563eb)}
   /* Assets table */
   .az-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
-  .az-tbl th{padding:10px 14px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;text-align:left;border-bottom:1px solid #e2e8f0;white-space:nowrap;cursor:pointer;user-select:none}
-  .az-tbl th:hover{color:#334155}
-  .az-tbl td{padding:11px 14px;border-bottom:1px solid #f1f5f9;color:#334155;vertical-align:middle;white-space:nowrap}
+  .az-tbl th{padding:8px 12px;font-size:11px;font-weight:600;color:var(--text-muted,#6B7280);text-transform:uppercase;letter-spacing:.04em;text-align:left;border-bottom:1px solid var(--border-default,#E5E7EB);background:var(--slate-50,#F9FAFB);white-space:nowrap;position:sticky;top:0;z-index:1;cursor:pointer;user-select:none}
+  .az-tbl th:hover{color:var(--text-primary,#0f172a)}
+  .az-tbl td{padding:10px 12px;border-bottom:1px solid #f1f5f9;color:#334155;vertical-align:middle;white-space:nowrap}
   .az-tbl tbody tr:last-child td{border-bottom:0}
-  .az-tbl tbody tr:hover td{background:#f8fafc}
+  .az-tbl tbody tr:hover td{background:var(--brand-050,#eff6ff)}
   .type-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:9999px;font-size:11px;font-weight:600;white-space:nowrap}
   /* Top row: 2-up on desktop, stacked on small screens */
-  .evt-top-row{display:grid;grid-template-columns:360px 1fr;gap:12px;height:480px;min-height:480px;flex-shrink:0}
+  .evt-top-row{display:grid;grid-template-columns:360px 1fr;gap:12px;height:640px;min-height:640px;flex-shrink:0}
   .evt-portfolio-card,.evt-map-card{min-height:0}
   /* Use natural browser scrolling — no nested scrollers on <main>.
      Sidebar + topbar are both `sticky top-0`, so they stay in place
@@ -73,7 +178,7 @@ window.PAGE = { id:'weather', title:'Weather', crumb:'Event Details' };
 window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "density": "comfortable",
   "accent": "sky",
-  "sidebarExpanded": true,
+  "sidebarExpanded": false,
   "showSparklines": true
 }/*EDITMODE-END*/;
 </script>
@@ -142,6 +247,14 @@ const STORM = (() => {
 /* Update page crumb with storm name */
 window.PAGE.crumb = STORM.name || 'Event Details';
 
+/* Surrounding-asset positions are authored around TC Hidaya's location. Shift the
+   whole constellation by the storm's offset from that base so every weather event
+   shows its at-risk assets clustered around the storm being viewed. */
+const ASSET_BASE = { lat: DEFAULT_STORM.lat, lng: DEFAULT_STORM.lng };
+function relPos(lat, lng) {
+  return [STORM.lat + (lat - ASSET_BASE.lat), STORM.lng + (lng - ASSET_BASE.lng)];
+}
+
 /* ── Portfolio data ─────────────────────────────────────────────────── */
 const PORTFOLIOS = [
   { name:'Car Carrier Fleet',        type:'Marine',   count:15, exposure:'$404.4M' },
@@ -175,16 +288,444 @@ const ASSETS = [
 
 /* ── Asset map positions (relative to storm) ───────────────────────── */
 const ASSET_POS = [
-  { name:'AP WUHU',        lat:-16.0, lng:55.8 },
-  { name:'ZAARIPH',        lat:-14.9, lng:58.6 },
-  { name:'ZAARIMIKA',      lat:-15.7, lng:57.2 },
-  { name:'ZAARIGM LEADER', lat:-18.3, lng:56.4 },
-  { name:'BW TULIP',       lat:-17.6, lng:59.3 },
+  { name:'AP WUHU',        lat:-16.0, lng:55.8, heading:40  },
+  { name:'ZAARIPH',        lat:-14.9, lng:58.6, heading:115 },
+  { name:'ZAARIMIKA',      lat:-15.7, lng:57.2, heading:200 },
+  { name:'ZAARIGM LEADER', lat:-18.3, lng:56.4, heading:310 },
+  { name:'BW TULIP',       lat:-17.6, lng:59.3, heading:150 },
 ];
+const ASSET_INFO = {};
+ASSETS.forEach(a => { ASSET_INFO[a.name] = a; });
+
+/* Map vessels — the original 5 declared assets (full popup data) plus additional
+   AIS-tracked vessels scattered in the open ocean around the event. */
+const MAP_VESSELS = [
+  ...ASSET_POS.map(p => ({ ...ASSET_INFO[p.name], lat:p.lat, lng:p.lng, heading:p.heading })),
+  { name:'OCEAN PIONEER',  type:'Bulk Carrier', typeColor:'#2563eb', cc:'pa', country:'Panama',          lat:-13.8, lng:54.2, heading:70,  imo:'9612345', portfolio:'Bulkcarrier / Renewals',         owner:'Indus Shipping Co.',       exposure:'$31.0M', market:'$44.2M',  ref:'N/A',         inception:'2025-01-12', expiry:'2026-01-12', updated:'2025-02-04' },
+  { name:'NORDIC STAR',    type:'Tanker',       typeColor:'#0ea5e9', cc:'no', country:'Norway',          lat:-14.2, lng:60.1, heading:250, imo:'9701882', portfolio:'Tankers / Renewals',           owner:'Nordic Tankers AS',        exposure:'$48.0M', market:'$71.5M',  ref:'NRT_22',      inception:'2024-11-03', expiry:'2027-11-03', updated:'2025-02-04' },
+  { name:'PACIFIC DAWN',   type:'Container',    typeColor:'#16a34a', cc:'hk', country:'Hong Kong',       lat:-16.4, lng:61.8, heading:300, imo:'9655321', portfolio:'Containerships Sample portfolio', owner:'Pacific Lines Ltd.',       exposure:'$79.9M', market:'$60.5M',  ref:'N/A',         inception:'N/A',        expiry:'N/A',        updated:'2025-02-04' },
+  { name:'BLUE HORIZON',   type:'Bulk Carrier', typeColor:'#2563eb', cc:'mt', country:'Malta',           lat:-19.1, lng:60.6, heading:205, imo:'9588210', portfolio:'Bulkcarrier / Renewals',         owner:'Horizon Bulk Carriers',    exposure:'$22.0M', market:'$38.9M',  ref:'N/A',         inception:'2025-02-01', expiry:'2028-02-01', updated:'2025-02-04' },
+  { name:'SILVER WAVE',    type:'LNG Carrier',  typeColor:'#db2777', cc:'sg', country:'Singapore',       lat:-21.0, lng:58.8, heading:160, imo:'9744119', portfolio:'Norway Flag',                  owner:'BW LNG I Private Li.',     exposure:'$1.0',   market:'$268.0M', ref:'N/A',         inception:'N/A',        expiry:'N/A',        updated:'2025-02-04' },
+  { name:'CORAL GULF',     type:'Car Carrier',  typeColor:'#7c3aed', cc:'mh', country:'Marshall Islands', lat:-20.4, lng:53.2, heading:30,  imo:'9209877', portfolio:'Car Carrier fleet',            owner:'Eastern Heritage Ves Co',  exposure:'$200M',  market:'$66.0M',  ref:'N/A',         inception:'N/A',        expiry:'2026-02-20', updated:'2025-02-04' },
+  { name:'ATLANTIC PEARL', type:'Tanker',       typeColor:'#0ea5e9', cc:'gr', country:'Greece',          lat:-15.0, lng:52.6, heading:110, imo:'9633471', portfolio:'Tankers / VLCC',               owner:'Aegean Maritime SA',       exposure:'$50.0M', market:'$58.3M',  ref:'N/A',         inception:'N/A',        expiry:'N/A',        updated:'2025-02-04' },
+  { name:'MARITIME GLORY', type:'Container',    typeColor:'#16a34a', cc:'lr', country:'Liberia',         lat:-13.0, lng:57.0, heading:190, imo:'9427959', portfolio:'Containerships Tankers',        owner:'Megacarrier No 5 Co.',     exposure:'$79.9M', market:'$60.5M',  ref:'CTA_flat_95', inception:'2025-02-20', expiry:'2028-02-20', updated:'2025-02-04' },
+  { name:'SOUTHERN CROSS', type:'Bulk Carrier', typeColor:'#2563eb', cc:'cy', country:'Cyprus',          lat:-22.2, lng:56.2, heading:20,  imo:'9501230', portfolio:'Bulk sea pontoons',            owner:'Southern Bulk Co.',        exposure:'$5.0M',  market:'$9.4M',   ref:'N/A',         inception:'N/A',        expiry:'N/A',        updated:'2025-02-04' },
+  { name:'DEEP EXPLORER',  type:'LNG Carrier',  typeColor:'#db2777', cc:'jp', country:'Japan',           lat:-18.9, lng:53.0, heading:130, imo:'9788654', portfolio:'Norway Flag',                  owner:'Nippon Gas Lines',         exposure:'$1.0',   market:'$255.1M', ref:'N/A',         inception:'N/A',        expiry:'N/A',        updated:'2025-02-04' },
+];
+
+/* Vessel filter — type list + active-set state (Marine Dashboard style) */
+const EVT_VESSEL_TYPES = [
+  { k:'Car Carrier',  color:'#7c3aed' },
+  { k:'Container',    color:'#16a34a' },
+  { k:'LNG Carrier',  color:'#db2777' },
+  { k:'Bulk Carrier', color:'#2563eb' },
+  { k:'Tanker',       color:'#0ea5e9' },
+];
+let evtVesselFilter = new Set(EVT_VESSEL_TYPES.map(t => t.k));
+let evtVesselMarkers = [];
+function applyEvtVesselFilter() {
+  if (!evtMap) return;
+  evtVesselMarkers.forEach(m => {
+    const show = evtVesselFilter.has(m._vtype);
+    if (show && !evtMap.hasLayer(m)) m.addTo(evtMap);
+    if (!show && evtMap.hasLayer(m)) evtMap.removeLayer(m);
+  });
+}
+
+/* Vessel marker icon — Marine Dashboard style (directional arrow, colored by type) */
+function evtVesselIcon(color, heading) {
+  const shape = `<svg viewBox="0 0 24 24" width="16" height="16" style="color:${color};" fill="currentColor" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"><path d="M12 2 L19 20 L12 16 L5 20 Z"/></svg>`;
+  const rot = `transform: rotate(${(heading || 0) + 45}deg); transform-origin: center;`;
+  return L.divIcon({ html:`<div class="vessel-marker" style="${rot}">${shape}</div>`, className:'', iconSize:[16,16], iconAnchor:[8,8] });
+}
+/* Vessel hover tooltip — Marine Dashboard style (flag + name + type) */
+function evtVesselTooltip(name, info) {
+  const flag = info.cc ? `<img class="vtip-flag" src="https://flagcdn.com/w40/${info.cc}.png" srcset="https://flagcdn.com/w80/${info.cc}.png 2x" width="18" height="13" alt="${info.country || ''}" />` : '';
+  return `<span class="vtip-row">${flag}<span><span class="vtip-name">${name}</span><span class="vtip-type">${info.type}</span></span></span>`;
+}
+/* Vessel click popup card — Marine Dashboard style (.vp) */
+function evtVesselPopup(a, info) {
+  const latStr = `${Math.abs(a.lat).toFixed(2)}${a.lat>=0?'N':'S'}`;
+  const lngStr = `${Math.abs(a.lng).toFixed(2)}${a.lng>=0?'E':'W'}`;
+  const flagImg = info.cc ? `<img src="https://flagcdn.com/w40/${info.cc}.png" srcset="https://flagcdn.com/w80/${info.cc}.png 2x" width="18" height="13" alt="${info.country || ''}" style="display:inline-block;border-radius:2px;vertical-align:middle;margin-right:6px;" />` : '';
+  return `
+  <div class="vp">
+    <div class="vp-header">
+      <div class="vp-header-main">
+        <div class="vp-title">${flagImg}${a.name}</div>
+        <div class="vp-subtitle">${info.type}</div>
+      </div>
+    </div>
+    <div class="vp-grid">
+      <div><div class="vp-k">IMO:</div><div class="vp-v">${info.imo || '—'}</div></div>
+      <div><div class="vp-k">Flag:</div><div class="vp-v">${info.country || '—'}</div></div>
+      <div class="vp-span"><div class="vp-k">Portfolio:</div><div class="vp-v">${info.portfolio || '—'}</div></div>
+      <div class="vp-span"><div class="vp-k">Owner:</div><div class="vp-v">${info.owner || '—'}</div></div>
+      <div><div class="vp-k">Our Exposure:</div><div class="vp-v vp-strong">${info.exposure || '—'}</div></div>
+      <div><div class="vp-k">Estimated Market Value:</div><div class="vp-v vp-strong">${info.market || '—'}</div></div>
+      <div><div class="vp-k">Lat/Lng:</div><div class="vp-v">${latStr} / ${lngStr}</div></div>
+      <div><div class="vp-k">Ref Number:</div><div class="vp-v">${info.ref || '—'}</div></div>
+      <div><div class="vp-k">Inception Date:</div><div class="vp-v">${info.inception || '—'}</div></div>
+      <div><div class="vp-k">Expiry Date:</div><div class="vp-v">${info.expiry || '—'}</div></div>
+      <div class="vp-span"><div class="vp-k">Latest Update:</div><div class="vp-v">${info.updated || '—'}</div></div>
+    </div>
+    <a href="VesselDetails.html" class="vp-cta" style="text-decoration:none;text-align:center;">View Full Vessel Details</a>
+  </div>`;
+}
+
+/* ── Property assets (on land near the event) ───────────────────────────
+   Marker style mirrors the Property Dashboard. Coordinates are placed on
+   land masses within the event view (Madagascar + Mauritius + Réunion). */
+const PROPERTY_CATEGORIES = [
+  { k:'Corporate & Office',      color:'#2563eb', ico:`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M12 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg>` },
+  { k:'Industrial & Logistics',  color:'#ea580c', ico:`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M17 18h1"/><path d="M12 18h1"/><path d="M7 18h1"/></svg>` },
+  { k:'Infrastructure & Energy', color:'#16a34a', ico:`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>` },
+  { k:'Retail & Hospitality',    color:'#ec4899', ico:`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><line x1="2" y1="7" x2="22" y2="7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a3 3 0 0 0-3-3 3 3 0 0 0-3 3v4"/></svg>` },
+];
+const PROPERTY_CAT_BY_KEY = Object.fromEntries(PROPERTY_CATEGORIES.map(c => [c.k, c]));
+const PROPERTY_POS = [
+  { name:'Port Louis Financial Centre', cat:'Corporate & Office',      lat:-20.16, lng:57.50, location:'Port Louis, Mauritius',  value:'$340M', occupancy:'92%', size:'118,000 sq ft', risk:'High',     riskColor:'#dc2626', status:'In storm cone', statusColor:'#dc2626', inspection:'2025-05-18' },
+  { name:'Saint-Denis Grand Hôtel',     cat:'Retail & Hospitality',    lat:-20.88, lng:55.45, location:'Saint-Denis, Réunion',   value:'$96M',  occupancy:'78%', size:'64,000 sq ft',  risk:'Medium',   riskColor:'#d97706', status:'Monitoring',   statusColor:'#d97706', inspection:'2025-04-30' },
+  { name:'Toamasina Port Logistics',    cat:'Industrial & Logistics',  lat:-18.15, lng:49.40, location:'Toamasina, Madagascar',  value:'$152M', occupancy:'85%', size:'240,000 sq ft', risk:'High',     riskColor:'#dc2626', status:'In storm cone', statusColor:'#dc2626', inspection:'2025-06-02' },
+  { name:'Mananjary Power Station',     cat:'Infrastructure & Energy', lat:-21.23, lng:48.34, location:'Mananjary, Madagascar',  value:'$88M',  occupancy:'—',   size:'31,000 sq ft',  risk:'Medium',   riskColor:'#d97706', status:'Monitoring',   statusColor:'#d97706', inspection:'2025-03-21' },
+];
+function evtPropertyIcon(cat) {
+  const c = PROPERTY_CAT_BY_KEY[cat] || PROPERTY_CATEGORIES[0];
+  return L.divIcon({ html:`<div class="marker-icon" style="background:${c.color}">${c.ico}</div>`, className:'', iconSize:[34,34], iconAnchor:[17,17] });
+}
+function evtPropertyTooltip(p) {
+  const c = PROPERTY_CAT_BY_KEY[p.cat] || PROPERTY_CATEGORIES[0];
+  return `<span class="ptip-row"><span class="ptip-dot" style="background:${c.color}"></span><span class="ptip-name">${p.name}</span></span><span class="ptip-sub">${p.cat} · ${p.location}</span>`;
+}
+function evtPropertyPopup(p) {
+  return `
+  <div class="pp">
+    <div class="pp-header"><div><span class="pp-title">${p.name}</span><span class="pp-cat">· ${p.cat}</span></div></div>
+    <div class="pp-body">
+      <div class="pp-row"><span class="pp-k">Location</span><span class="pp-v">${p.location}</span></div>
+      <div class="pp-row"><span class="pp-k">Value</span><span class="pp-v">${p.value}</span></div>
+      <div class="pp-row"><span class="pp-k">Occupancy</span><span class="pp-v">${p.occupancy}</span></div>
+      <div class="pp-row"><span class="pp-k">Size</span><span class="pp-v">${p.size}</span></div>
+      <div class="pp-row"><span class="pp-k">Risk Rating</span><span class="pp-v" style="color:${p.riskColor}">${p.risk}</span></div>
+      <div class="pp-row"><span class="pp-k">Status</span><span class="pp-v" style="color:${p.statusColor}">${p.status}</span></div>
+      <div class="pp-row"><span class="pp-k">Last Inspection</span><span class="pp-v">${p.inspection}</span></div>
+    </div>
+    <a href="PropertyDetails.html" class="pp-cta">View Details</a>
+  </div>`;
+}
+
+/* Property filter — active-category set + apply (Property Dashboard style) */
+let evtPropertyFilter = new Set(PROPERTY_CATEGORIES.map(c => c.k));
+let evtPropertyMarkers = [];
+function applyEvtPropertyFilter() {
+  if (!evtMap) return;
+  evtPropertyMarkers.forEach(m => {
+    const show = evtPropertyFilter.has(m._pcat);
+    if (show && !evtMap.hasLayer(m)) m.addTo(evtMap);
+    if (!show && evtMap.hasLayer(m)) evtMap.removeLayer(m);
+  });
+}
+
+/* ── Offshore assets (in the water near the event) ──────────────────────
+   Marker style mirrors the Offshore Dashboard (colored dot + label). */
+const EVT_OFFSHORE_TYPES = [
+  { k:'Oil Rig',                color:'#ef4444' },
+  { k:'Platform',               color:'#06b6d4' },
+  { k:'Windfarm',               color:'#10b981' },
+  { k:'Floating Storage (FSO)', color:'#8b5cf6' },
+];
+const EVT_OFFSHORE_COLOR = Object.fromEntries(EVT_OFFSHORE_TYPES.map(t => [t.k, t.color]));
+const OFFSHORE_POS = [
+  { name:'Aldabra Alpha',     fullName:'Aldabra Alpha Drilling Rig',  assetType:'Oil Rig',                lat:-15.6, lng:55.0, cc:'sc', country:'Seychelles', operator:'Indian Ocean Energy',  coords:'15.60°S 55.00°E', waterDepth:'1,240 m', status:'Operational',       production:'62,000 bopd', commissioned:'2018', policyType:'Energy Package', field:'Aldabra' },
+  { name:'Mascarene P-2',     fullName:'Mascarene Platform P-2',      assetType:'Platform',               lat:-19.8, lng:56.0, cc:'mu', country:'Mauritius',  operator:'Mascarene Petroleum',  coords:'19.80°S 56.00°E', waterDepth:'420 m',   status:'Operational',       production:'38,500 bopd', commissioned:'2014', policyType:'Energy Package', field:'Mascarene' },
+  { name:'Cargados Array',    fullName:'Cargados Carajos Wind Array', assetType:'Windfarm',               lat:-16.2, lng:60.4, cc:'mu', country:'Mauritius',  operator:'Blue Ocean Wind',      coords:'16.20°S 60.40°E', waterDepth:'48 m',    status:'Operational',       production:'310 MW',      commissioned:'2022', policyType:'Renewables',     field:'Cargados' },
+  { name:'Nazareth FSO-1',    fullName:'Nazareth FSO-1',              assetType:'Floating Storage (FSO)', lat:-21.4, lng:59.2, cc:'lr', country:'Liberia',    operator:'Nazareth Storage Ltd', coords:'21.40°S 59.20°E', waterDepth:'910 m',   status:'Under Maintenance', production:'1.8M bbl cap',commissioned:'2016', policyType:'Hull & Machinery', field:'Nazareth' },
+];
+function evtOffshoreIcon(color) {
+  const html = `<div class="offshore-marker"><div class="offshore-dot" style="background:${color}"></div></div>`;
+  return L.divIcon({ html, className:'', iconSize:[16,16], iconAnchor:[8,8] });
+}
+function evtOffshoreTooltip(m) {
+  const flag = m.cc ? `<img class="atip-flag" src="https://flagcdn.com/w40/${m.cc}.png" srcset="https://flagcdn.com/w80/${m.cc}.png 2x" width="18" height="13" alt="${m.country || ''}" />` : '';
+  return `<span class="atip-row">${flag}<span class="atip-name">${m.name}</span></span><span class="atip-type">${m.assetType}${m.country ? ' · ' + m.country : ''}</span>`;
+}
+function evtOffshorePopup(m) {
+  const statusColor = m.status === 'Operational' ? '#10b981' : m.status === 'Under Maintenance' ? '#f59e0b' : '#94a3b8';
+  const row = (label, val, color) => `<div><div style="font-size:11px;color:#64748b;margin-bottom:2px;">${label}:</div><div style="font-size:13px;font-weight:600;color:${color || '#0f172a'};">${val}</div></div>`;
+  return `
+    <div style="background:var(--brand-600,#2563eb);padding:12px 36px 12px 16px;">
+      <div style="color:#fff;font-weight:700;font-size:13px;line-height:1.35;">${m.fullName}</div>
+      <div style="color:rgba(255,255,255,.75);font-size:11px;font-weight:500;margin-top:2px;">${m.assetType}</div>
+    </div>
+    <div style="padding:14px 16px 6px;display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;">
+      ${row('Operator', m.operator)}
+      ${row('Country', m.country)}
+      ${row('Coordinates', m.coords)}
+      ${row('Water Depth', m.waterDepth)}
+      ${row('Status', m.status, statusColor)}
+      ${row('Production', m.production)}
+    </div>
+    <div style="padding:4px 16px 8px;display:flex;flex-direction:column;gap:8px;">
+      ${row('Commissioned', m.commissioned)}
+      ${row('Policy Type', m.policyType)}
+      ${row('Field', m.field)}
+    </div>
+    <div style="padding:4px 16px 14px;">
+      <a href="AssetOffshoreDetails.html" class="vp-cta" style="width:100%;margin:0">View Details</a>
+    </div>`;
+}
+let evtOffshoreFilter = new Set(EVT_OFFSHORE_TYPES.map(t => t.k));
+let evtOffshoreMarkers = [];
+function applyEvtOffshoreFilter() {
+  if (!evtMap) return;
+  evtOffshoreMarkers.forEach(m => {
+    const show = evtOffshoreFilter.has(m._otype);
+    if (show && !evtMap.hasLayer(m)) m.addTo(evtMap);
+    if (!show && evtMap.hasLayer(m)) evtMap.removeLayer(m);
+  });
+}
+
+/* ── Aviation assets — aircraft (in the air) + airports (on real airports) ──
+   Marker style mirrors the Aviation Dashboard. */
+const AIRPORT_POS = [
+  { code:'MRU', name:'Sir S. Ramgoolam Intl',   country:'Mauritius',  cc:'mu', lat:-20.43, lng:57.68, total:'$4.2B'  },
+  { code:'RUN', name:'Roland Garros Airport',   country:'Réunion',    cc:'fr', lat:-20.89, lng:55.51, total:'$1.8B'  },
+  { code:'TMM', name:'Toamasina Airport',       country:'Madagascar', cc:'mg', lat:-18.11, lng:49.39, total:'$640M'  },
+  { code:'RRR', name:'Sir Gaëtan Duval Airport',country:'Rodrigues',  cc:'mu', lat:-19.76, lng:63.66, total:'$210M'  },
+];
+const PLANE_POS = [
+  { flight:'MK045', type:'A350-900', operator:'Air Mauritius',        from:'CDG', to:'MRU', lat:-15.0, lng:56.4, rot:150, alt:'37,000 ft', speed:'470 kts' },
+  { flight:'UU221', type:'B777-300', operator:'Air Austral',          from:'RUN', to:'CDG', lat:-18.6, lng:54.0, rot:330, alt:'39,000 ft', speed:'500 kts' },
+  { flight:'MD712', type:'A330-900', operator:'Madagascar Airlines',  from:'TNR', to:'MRU', lat:-17.6, lng:51.8, rot:95,  alt:'35,000 ft', speed:'455 kts' },
+  { flight:'ET681', type:'B787-9',   operator:'Ethiopian Airlines',   from:'ADD', to:'MRU', lat:-13.6, lng:59.0, rot:205, alt:'41,000 ft', speed:'480 kts' },
+];
+const EVT_PLANE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>`;
+function evtAirportIcon() {
+  return L.divIcon({ className:'', html:`<div class="airport-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="#fff"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg></div>`, iconSize:[32,32], iconAnchor:[16,16] });
+}
+function evtPlaneIcon(rot) {
+  return L.divIcon({ className:'', html:`<div style="transform:rotate(${rot}deg);color:#eab308;width:24px;height:24px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))">${EVT_PLANE_SVG}</div>`, iconSize:[24,24], iconAnchor:[12,12] });
+}
+function evtAirportTooltip(a) {
+  const flag = a.cc ? `<img class="atip-flag" src="https://flagcdn.com/w40/${a.cc}.png" srcset="https://flagcdn.com/w80/${a.cc}.png 2x" width="18" height="13" alt="${a.country || ''}" />` : '';
+  return `<span class="atip-row">${flag}<span class="atip-name">${a.code} · ${a.name}</span></span><span class="atip-sub">${a.country}</span>`;
+}
+function evtPlaneTooltip(p) {
+  return `<span class="atip-row"><span class="atip-name">${p.flight}</span></span><span class="atip-sub">${p.type} · ${p.operator}</span>`;
+}
+function evtAirportPopup(a) {
+  const row = (label, val, color) => `<div><div style="font-size:11px;color:#64748b;margin-bottom:2px;">${label}:</div><div style="font-size:13px;font-weight:600;color:${color || '#0f172a'};">${val}</div></div>`;
+  const coords = `${Math.abs(a.lat).toFixed(2)}°${a.lat>=0?'N':'S'} ${Math.abs(a.lng).toFixed(2)}°${a.lng>=0?'E':'W'}`;
+  return `
+    <div style="background:var(--brand-600,#2563eb);padding:12px 36px 12px 16px;">
+      <div style="color:#fff;font-weight:700;font-size:13px;line-height:1.35;">${a.name}</div>
+      <div style="color:rgba(255,255,255,.75);font-size:11px;font-weight:500;margin-top:2px;">${a.code} · Airport</div>
+    </div>
+    <div style="padding:14px 16px 10px;display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;">
+      ${row('IATA Code', a.code)}
+      ${row('Country', a.country)}
+      ${row('Coordinates', coords)}
+      ${row('Insured Exposure', a.total)}
+    </div>
+    <div style="padding:0 16px 14px;"><a href="AirportDetails.html" class="vp-cta" style="width:100%;margin:0">View Details</a></div>`;
+}
+function evtPlanePopup(p) {
+  const row = (label, val, color) => `<div><div style="font-size:11px;color:#64748b;margin-bottom:2px;">${label}:</div><div style="font-size:13px;font-weight:600;color:${color || '#0f172a'};">${val}</div></div>`;
+  return `
+    <div style="background:var(--brand-600,#2563eb);padding:12px 36px 12px 16px;">
+      <div style="color:#fff;font-weight:700;font-size:13px;line-height:1.35;">${p.flight}</div>
+      <div style="color:rgba(255,255,255,.75);font-size:11px;font-weight:500;margin-top:2px;">${p.type} · ${p.operator}</div>
+    </div>
+    <div style="padding:14px 16px 10px;display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;">
+      ${row('Route', `${p.from} → ${p.to}`)}
+      ${row('Operator', p.operator)}
+      ${row('Altitude', p.alt)}
+      ${row('Ground Speed', p.speed)}
+    </div>
+    <div style="padding:0 16px 14px;"><a href="AircraftDetails.html" class="vp-cta" style="width:100%;margin:0">View Details</a></div>`;
+}
+const EVT_AVIATION_TYPES = [
+  { k:'Aircraft', color:'#eab308' },
+  { k:'Airports', color:'#06b6d4' },
+];
+let evtAviationFilter = new Set(EVT_AVIATION_TYPES.map(t => t.k));
+let evtAviationMarkers = [];
+function applyEvtAviationFilter() {
+  if (!evtMap) return;
+  evtAviationMarkers.forEach(m => {
+    const show = evtAviationFilter.has(m._avtype);
+    if (show && !evtMap.hasLayer(m)) m.addTo(evtMap);
+    if (!show && evtMap.hasLayer(m)) evtMap.removeLayer(m);
+  });
+}
+
+/* ── Region-specific asset bundles ──────────────────────────────────────
+   Each weather event draws assets that actually belong to its region:
+   airports on real airports, vessels at sea / in port, properties on land. */
+const TC = { 'Car Carrier':'#7c3aed','Container':'#16a34a','LNG Carrier':'#db2777','Bulk Carrier':'#2563eb','Tanker':'#0ea5e9' };
+const mkV = (name,type,cc,country,lat,lng,heading,imo,portfolio,owner,exposure,market) =>
+  ({ name, type, typeColor:TC[type]||'#2563eb', cc, country, lat, lng, heading, imo, portfolio, owner, exposure, market, ref:'N/A', inception:'N/A', expiry:'N/A', updated:'2025-07-04' });
+const mkP = (name,cat,lat,lng,location,value,occupancy,size,risk) =>
+  ({ name, cat, lat, lng, location, value, occupancy, size, risk, riskColor: risk==='High'?'#dc2626':risk==='Medium'?'#d97706':'#16a34a', status: risk==='High'?'In storm cone':'Monitoring', statusColor: risk==='High'?'#dc2626':'#d97706', inspection:'2025-06-02' });
+const mkO = (name,fullName,assetType,lat,lng,cc,country,operator,waterDepth,status,production,field) =>
+  ({ name, fullName, assetType, lat, lng, cc, country, operator, coords:`${Math.abs(lat).toFixed(2)}°${lat>=0?'N':'S'} ${Math.abs(lng).toFixed(2)}°${lng>=0?'E':'W'}`, waterDepth, status, production, commissioned:'2018', policyType:'Energy Package', field });
+const mkA = (code,name,country,cc,lat,lng,total) => ({ code, name, country, cc, lat, lng, total });
+const mkF = (flight,type,operator,from,to,lat,lng,rot,alt,speed) => ({ flight, type, operator, from, to, lat, lng, rot, alt, speed });
+
+const REGION_ASSETS = {
+  mascarene: { vessels: MAP_VESSELS, properties: PROPERTY_POS, offshore: OFFSHORE_POS, airports: AIRPORT_POS, planes: PLANE_POS },
+  florida: {
+    vessels: [
+      mkV('GULF VOYAGER','Tanker','us','United States',27.0,-83.6,60,'9612300','Tankers / VLCC','Gulf Marine LLC','$50.0M','$58.3M'),
+      mkV('TAMPA TRADER','Container','pa','Panama',27.6,-84.2,120,'9655700','Containerships Sample portfolio','Gulf Lines Ltd.','$79.9M','$60.5M'),
+      mkV('EVERGLADE','Bulk Carrier','lr','Liberia',26.4,-84.6,200,'9588300','Bulkcarrier / Renewals','Everglade Bulk Co.','$22.0M','$38.9M'),
+      mkV('MIAMI STAR','Car Carrier','mh','Marshall Islands',26.9,-83.0,310,'9204900','Car Carrier fleet','Atlantic Heritage Ves','$200M','$66.0M'),
+      mkV('KEY WEST LNG','LNG Carrier','us','United States',25.9,-83.8,150,'9744200','Norway Flag','BW LNG I Private Li.','$1.0','$268.0M'),
+    ],
+    properties: [
+      mkP('Tampa Bay Tower','Corporate & Office',27.95,-82.46,'Tampa, FL','$340M','92%','118,000 sq ft','High'),
+      mkP('St. Petersburg Logistics','Industrial & Logistics',27.77,-82.64,'St. Petersburg, FL','$152M','85%','240,000 sq ft','High'),
+      mkP('Sarasota Grand Resort','Retail & Hospitality',27.34,-82.53,'Sarasota, FL','$96M','78%','64,000 sq ft','Medium'),
+      mkP('Fort Myers Power Plant','Infrastructure & Energy',26.64,-81.87,'Fort Myers, FL','$210M','—','31,000 sq ft','High'),
+    ],
+    offshore: [
+      mkO('Gulf Star A','Gulf Star Platform A','Platform',26.6,-84.4,'us','United States','Gulf Coast Energy','620 m','Operational','42,000 bopd','Gulf Star'),
+      mkO('Suncoast Array','Suncoast Wind Array','Windfarm',27.7,-83.9,'us','United States','Suncoast Wind','45 m','Operational','280 MW','Suncoast'),
+    ],
+    airports: [
+      mkA('TPA','Tampa International Airport','United States','us',27.98,-82.53,'$3.8B'),
+      mkA('RSW','Southwest Florida International','United States','us',26.54,-81.75,'$1.6B'),
+      mkA('MCO','Orlando International Airport','United States','us',28.43,-81.31,'$4.4B'),
+    ],
+    planes: [
+      mkF('AA1453','B737-800','American Airlines','MIA','TPA',27.3,-82.0,330,'34,000 ft','450 kts'),
+      mkF('DL782','A321','Delta Air Lines','ATL','RSW',26.9,-82.8,200,'36,000 ft','465 kts'),
+    ],
+  },
+  japan: {
+    vessels: [
+      mkV('TOKYO BAY','Container','jp','Japan',34.2,138.0,40,'9655810','Containerships Sample portfolio','Nippon Lines K.K.','$79.9M','$60.5M'),
+      mkV('KOBE EXPRESS','Car Carrier','pa','Panama',33.6,137.0,110,'9204980','Car Carrier fleet','Pacific Heritage Ves','$200M','$66.0M'),
+      mkV('ISE MARU','Bulk Carrier','jp','Japan',34.6,137.8,300,'9588410','Bulkcarrier / Renewals','Ise Bulk Co.','$22.0M','$38.9M'),
+      mkV('OSAKA SPIRIT','Tanker','lr','Liberia',33.4,136.4,210,'9612410','Tankers / VLCC','Kansai Tankers','$50.0M','$58.3M'),
+      mkV('PACIFIC LNG','LNG Carrier','sg','Singapore',35.0,138.6,150,'9744310','Norway Flag','BW LNG I Private Li.','$1.0','$268.0M'),
+    ],
+    properties: [
+      mkP('Nagoya Sakae Tower','Corporate & Office',35.17,136.91,'Nagoya, Japan','$340M','92%','118,000 sq ft','High'),
+      mkP('Yokkaichi Logistics','Industrial & Logistics',34.96,136.62,'Yokkaichi, Japan','$152M','85%','240,000 sq ft','High'),
+      mkP('Ise-Shima Resort','Retail & Hospitality',34.49,136.71,'Ise-Shima, Japan','$96M','78%','64,000 sq ft','Medium'),
+      mkP('Hamaoka Power Station','Infrastructure & Energy',34.62,138.14,'Omaezaki, Japan','$210M','—','31,000 sq ft','High'),
+    ],
+    offshore: [
+      mkO('Enshu P-1','Enshu Platform P-1','Platform',33.7,137.6,'jp','Japan','Enshu Petroleum','410 m','Operational','36,000 bopd','Enshu'),
+      mkO('Kii Array','Kii Channel Wind Array','Windfarm',33.9,136.0,'jp','Japan','Blue Pacific Wind','52 m','Operational','310 MW','Kii'),
+    ],
+    airports: [
+      mkA('NGO','Chubu Centrair International','Japan','jp',34.86,136.81,'$3.2B'),
+      mkA('KIX','Kansai International Airport','Japan','jp',34.43,135.24,'$4.0B'),
+      mkA('HND','Tokyo Haneda Airport','Japan','jp',35.55,139.78,'$5.6B'),
+    ],
+    planes: [
+      mkF('NH231','B787-9','ANA','HND','NGO',34.9,138.5,250,'38,000 ft','470 kts'),
+      mkF('JL512','A350-900','Japan Airlines','KIX','HND',34.6,137.4,60,'40,000 ft','480 kts'),
+    ],
+  },
+  nwaustralia: {
+    vessels: [
+      mkV('PILBARA PRIDE','Bulk Carrier','au','Australia',-20.8,116.0,300,'9588510','Bulkcarrier / Renewals','Pilbara Bulk Pty','$22.0M','$38.9M'),
+      mkV('NORTH WEST LNG','LNG Carrier','au','Australia',-19.8,115.6,280,'9744410','Norway Flag','Woodside LNG','$1.0','$268.0M'),
+      mkV('EXMOUTH TANKER','Tanker','sg','Singapore',-22.0,113.2,120,'9612510','Tankers / VLCC','Exmouth Tankers','$50.0M','$58.3M'),
+      mkV('DAMPIER STAR','Container','pa','Panama',-20.4,116.6,200,'9655910','Containerships Sample portfolio','Dampier Lines','$79.9M','$60.5M'),
+    ],
+    properties: [
+      mkP('Karratha Operations Centre','Corporate & Office',-20.74,116.85,'Karratha, WA','$180M','88%','96,000 sq ft','High'),
+      mkP('Dampier Port Logistics','Industrial & Logistics',-20.66,116.71,'Dampier, WA','$240M','90%','310,000 sq ft','High'),
+      mkP('Onslow Solar Farm','Infrastructure & Energy',-21.64,115.11,'Onslow, WA','$130M','—','42,000 sq ft','Medium'),
+    ],
+    offshore: [
+      mkO('North Rankin','North Rankin Complex','Platform',-19.59,116.14,'au','Australia','Woodside Energy','125 m','Operational','2.5 Bcf/d','North Rankin'),
+      mkO('Pluto A','Pluto LNG Platform','Oil Rig',-19.90,115.20,'au','Australia','Woodside Energy','85 m','Operational','4.9 Mtpa','Pluto'),
+      mkO('Wheatstone FSO','Wheatstone FSO','Floating Storage (FSO)',-20.30,114.90,'au','Australia','Chevron Australia','220 m','Under Maintenance','1.6M bbl cap','Wheatstone'),
+    ],
+    airports: [
+      mkA('LEA','RAAF Base Learmonth','Australia','au',-22.24,114.10,'$420M'),
+      mkA('KTA','Karratha Airport','Australia','au',-20.71,116.77,'$680M'),
+      mkA('ONS','Onslow Airport','Australia','au',-21.67,115.11,'$140M'),
+    ],
+    planes: [
+      mkF('QF1804','B737-800','Qantas','PER','LEA',-22.0,114.6,20,'37,000 ft','455 kts'),
+      mkF('VA1882','A320','Virgin Australia','PER','KTA',-21.2,116.1,15,'35,000 ft','445 kts'),
+    ],
+  },
+  gulfaden: {
+    vessels: [
+      mkV('ADEN TRADER','Container','lr','Liberia',11.5,50.5,290,'9655410','Containerships Sample portfolio','Gulf Lines Ltd.','$79.9M','$60.5M'),
+      mkV('ARABIAN GULF','Tanker','mh','Marshall Islands',12.5,51.5,280,'9612610','Tankers / VLCC','Arabian Tankers','$50.0M','$58.3M'),
+      mkV('SOCOTRA STAR','Bulk Carrier','pa','Panama',12.0,53.0,250,'9588610','Bulkcarrier / Renewals','Socotra Bulk Co.','$22.0M','$38.9M'),
+      mkV('HORN PIONEER','Tanker','gr','Greece',10.5,50.0,300,'9612710','Tankers / VLCC','Aegean Maritime SA','$50.0M','$58.3M'),
+    ],
+    properties: [
+      mkP('Bosaso Port Office','Corporate & Office',11.28,49.18,'Bosaso, Somalia','$48M','80%','42,000 sq ft','High'),
+      mkP('Mukalla Logistics','Industrial & Logistics',14.54,49.13,'Mukalla, Yemen','$66M','82%','120,000 sq ft','Medium'),
+      mkP('Salalah Free Zone','Industrial & Logistics',17.02,54.09,'Salalah, Oman','$190M','91%','280,000 sq ft','Medium'),
+    ],
+    offshore: [
+      mkO('Masila FSO','Masila FSO','Floating Storage (FSO)',13.5,49.5,'ye','Yemen','Masila Petroleum','640 m','Operational','3.0M bbl cap','Masila'),
+      mkO('Socotra P-1','Socotra Platform P-1','Platform',12.2,53.5,'ye','Yemen','Gulf of Aden Energy','910 m','Operational','28,000 bopd','Socotra'),
+    ],
+    airports: [
+      mkA('BSA','Bosaso Airport','Somalia','so',11.28,49.15,'$120M'),
+      mkA('SCT','Socotra Airport','Yemen','ye',12.63,53.91,'$90M'),
+      mkA('RIY','Riyan Mukalla Airport','Yemen','ye',14.66,49.38,'$160M'),
+    ],
+    planes: [
+      mkF('ET329','B737-700','Ethiopian Airlines','ADD','BSA',11.0,48.6,80,'33,000 ft','440 kts'),
+      mkF('WY621','A330-300','Oman Air','MCT','SLL',15.5,53.0,200,'39,000 ft','470 kts'),
+    ],
+  },
+};
+const REGION_CENTERS = { mascarene:[-17,57], gulfaden:[12,51], nwaustralia:[-21,114], florida:[27,-82], japan:[34,137] };
+function pickRegionAssets() {
+  let best = 'mascarene', bd = Infinity;
+  for (const k in REGION_CENTERS) {
+    const [la, lo] = REGION_CENTERS[k];
+    const d = (la - STORM.lat) ** 2 + (lo - STORM.lng) ** 2;
+    if (d < bd) { bd = d; best = k; }
+  }
+  return REGION_ASSETS[best];
+}
 
 /* ── Map ────────────────────────────────────────────────────────────── */
 let evtMap = null, evtTile = null;
 let mapView = 'Portfolio';
+let mapType = 'satellite';
+
+const EVT_TILES = {
+  satellite: { url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', attr:'Tiles © Esri', bg:'#0b1e2e' },
+  street:    { url:'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', attr:'© OpenStreetMap contributors', bg:'#e2e8f0' },
+  dark:      { url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', attr:'© OpenStreetMap contributors © CARTO', bg:'#0b0f1a' },
+  light:     { url:'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', attr:'© OpenStreetMap contributors © CARTO', bg:'#f1f5f9' },
+};
+function updateEvtLayersMenu() {
+  document.querySelectorAll('[data-map-type]').forEach(b => {
+    const on = b.dataset.mapType === mapType;
+    const lbl = b.querySelector('[data-label]');
+    const chk = b.querySelector('[data-check]');
+    if (lbl) { lbl.style.color = on ? '#2563eb' : '#334155'; lbl.style.fontWeight = on ? '600' : '500'; }
+    if (chk) chk.style.opacity = on ? '1' : '0';
+  });
+}
+function setEvtMapType(type) {
+  if (!EVT_TILES[type]) return;
+  mapType = type;
+  if (evtMap) {
+    if (evtTile) evtMap.removeLayer(evtTile);
+    evtTile = L.tileLayer(EVT_TILES[type].url, { attribution: EVT_TILES[type].attr, maxZoom:18 }).addTo(evtMap);
+    const el = document.getElementById('evt-map');
+    if (el) el.style.background = EVT_TILES[type].bg;
+  }
+  updateEvtLayersMenu();
+}
 
 function initEvtMap() {
   const el = document.getElementById('evt-map');
@@ -194,7 +735,8 @@ function initEvtMap() {
   const zoom = mapView === 'Global' ? 2 : 5;
   const center = mapView === 'Global' ? [10, 30] : [STORM.lat, STORM.lng];
   evtMap = L.map(el, { center, zoom, zoomControl:false, scrollWheelZoom:true });
-  evtTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution:'', maxZoom:18 }).addTo(evtMap);
+  evtTile = L.tileLayer(EVT_TILES[mapType].url, { attribution: EVT_TILES[mapType].attr, maxZoom:18 }).addTo(evtMap);
+  el.style.background = EVT_TILES[mapType].bg;
   L.control.zoom({ position:'topleft' }).addTo(evtMap);
 
   setTimeout(() => {
@@ -202,22 +744,20 @@ function initEvtMap() {
     const zout = el.querySelector('.leaflet-control-zoom-out');
     if (zin)  zin.innerHTML  = `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>`;
     if (zout) zout.innerHTML = `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></span>`;
-    const zc = el.querySelector('.leaflet-control-zoom');
-    if (zc) zc.style.marginTop = '44px';
   }, 100);
 
   /* Storm track */
   const past = (STORM.track || []).filter(t => t.kind === 'past');
   if (past.length) {
-    L.polyline([...past.map(t => [t.lat,t.lng]), [STORM.lat,STORM.lng]], { color:'#94a3b8', weight:1.5, dashArray:'4 5', opacity:.65 }).addTo(evtMap);
-    past.forEach(t => L.circleMarker([t.lat,t.lng], { radius:4, fillColor:'#94a3b8', fillOpacity:1, color:'#fff', weight:1.5 }).addTo(evtMap));
+    L.polyline([...past.map(t => [t.lat,t.lng]), [STORM.lat,STORM.lng]], { color:'#f8fafc', weight:2, dashArray:'4 5', opacity:.9 }).addTo(evtMap);
+    past.forEach(t => L.circleMarker([t.lat,t.lng], { radius:4, fillColor:'#f8fafc', fillOpacity:1, color:'#334155', weight:1.5 }).addTo(evtMap));
   }
   const fore = (STORM.track || []).filter(t => t.kind === 'forecast');
   if (fore.length) {
-    L.polyline([[STORM.lat,STORM.lng], ...fore.map(t => [t.lat,t.lng])], { color:'#64748b', weight:1.5, dashArray:'4 5', opacity:.45 }).addTo(evtMap);
+    L.polyline([[STORM.lat,STORM.lng], ...fore.map(t => [t.lat,t.lng])], { color:'#93c5fd', weight:2, dashArray:'4 5', opacity:.9 }).addTo(evtMap);
     fore.forEach((t, i) => {
       const blue = i >= fore.length - 2;
-      L.circleMarker([t.lat,t.lng], { radius: blue?6:4, fillColor: blue?'#3b82f6':'#64748b', fillOpacity:1, color:'#fff', weight:1.5 }).addTo(evtMap);
+      L.circleMarker([t.lat,t.lng], { radius: blue?6:4, fillColor: blue?'#3b82f6':'#93c5fd', fillOpacity:1, color:'#fff', weight:1.5 }).addTo(evtMap);
     });
   }
 
@@ -231,25 +771,97 @@ function initEvtMap() {
     })
   }).bindTooltip(STORM.name, { permanent:false, direction:'top' }).addTo(evtMap);
 
-  /* Asset markers (portfolio view only) */
+  /* Surrounding assets (portfolio view only) — region-specific to this storm */
   if (mapView === 'Portfolio') {
-    ASSET_POS.forEach(a => {
-      L.marker([a.lat, a.lng], {
-        icon: L.divIcon({
-          className:'',
-          html:`<div style="width:26px;height:26px;border-radius:50%;background:#fff;border:2px solid #2563eb;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(15,23,42,.2);font-size:13px">⚓</div>`,
-          iconSize:[26,26], iconAnchor:[13,13],
-        })
-      }).bindTooltip(a.name, { permanent:false, direction:'top', offset:[0,-14] }).addTo(evtMap);
+    const RA = pickRegionAssets();
+    evtVesselMarkers = [];
+    RA.vessels.forEach(v => {
+      const m = L.marker([v.lat, v.lng], { icon: evtVesselIcon(v.typeColor || '#2563eb', v.heading) })
+        .bindPopup(evtVesselPopup(v, v), { className:'vessel-popup', maxWidth:320, minWidth:300, closeButton:true, autoPanPadding:[30,30] })
+        .bindTooltip(evtVesselTooltip(v.name, v), { className:'vessel-tip', direction:'top', offset:[0,-12], opacity:1 });
+      m._vtype = v.type;
+      if (evtVesselFilter.has(v.type)) m.addTo(evtMap);
+      evtVesselMarkers.push(m);
+    });
+
+    /* Property markers (on land) — Property Dashboard style */
+    evtPropertyMarkers = [];
+    RA.properties.forEach(p => {
+      const m = L.marker([p.lat, p.lng], { icon: evtPropertyIcon(p.cat) })
+        .bindPopup(evtPropertyPopup(p), { className:'prop-popup', maxWidth:280, minWidth:280, closeButton:true, autoPanPadding:[30,30] })
+        .bindTooltip(evtPropertyTooltip(p), { className:'prop-tip', direction:'top', offset:[0,-16], opacity:1 });
+      m._pcat = p.cat;
+      if (evtPropertyFilter.has(p.cat)) m.addTo(evtMap);
+      evtPropertyMarkers.push(m);
+    });
+
+    /* Offshore markers (in water) — Offshore Dashboard style */
+    evtOffshoreMarkers = [];
+    RA.offshore.forEach(o => {
+      const color = EVT_OFFSHORE_COLOR[o.assetType] || '#64748b';
+      const m = L.marker([o.lat, o.lng], { icon: evtOffshoreIcon(color) })
+        .bindPopup(evtOffshorePopup(o), { className:'asset-popup', maxWidth:300, minWidth:300, closeButton:true, autoPanPadding:[30,30] })
+        .bindTooltip(evtOffshoreTooltip(o), { className:'asset-tip', direction:'top', offset:[0,-10], opacity:1 });
+      m._otype = o.assetType;
+      if (evtOffshoreFilter.has(o.assetType)) m.addTo(evtMap);
+      evtOffshoreMarkers.push(m);
+    });
+
+    /* Aviation: airports (on real airports) + aircraft (in air) — Aviation Dashboard style */
+    evtAviationMarkers = [];
+    RA.airports.forEach(a => {
+      const m = L.marker([a.lat, a.lng], { icon: evtAirportIcon() })
+        .bindPopup(evtAirportPopup(a), { className:'avia-popup', maxWidth:320, minWidth:300, closeButton:true, autoPanPadding:[30,30] })
+        .bindTooltip(evtAirportTooltip(a), { className:'asset-tip', direction:'top', offset:[0,-16], opacity:1 });
+      m._avtype = 'Airports';
+      if (evtAviationFilter.has('Airports')) m.addTo(evtMap);
+      evtAviationMarkers.push(m);
+    });
+    RA.planes.forEach(p => {
+      const m = L.marker([p.lat, p.lng], { icon: evtPlaneIcon(p.rot) })
+        .bindPopup(evtPlanePopup(p), { className:'avia-popup', maxWidth:320, minWidth:300, closeButton:true, autoPanPadding:[30,30] })
+        .bindTooltip(evtPlaneTooltip(p), { className:'asset-tip', direction:'top', offset:[0,-12], opacity:1 });
+      m._avtype = 'Aircraft';
+      if (evtAviationFilter.has('Aircraft')) m.addTo(evtMap);
+      evtAviationMarkers.push(m);
     });
   }
 }
 
 /* ── Render ──────────────────────────────────────────────────────────── */
 let pfSearch = '';
+let pfSort = { col:null, dir:1 };
+let azSort = { col:null, dir:1 };
+function sortMoney(s){ const m=String(s||'').match(/([\d.]+)\s*([KMB]?)/i); if(!m) return -Infinity; const n=parseFloat(m[1])||0; const u=(m[2]||'').toUpperCase(); return n*(u==='B'?1e9:u==='M'?1e6:u==='K'?1e3:1); }
+function sortCmp(a,b,key){
+  const money = key==='exposure'||key==='market';
+  const num = key==='count';
+  let av,bv;
+  if(money){ av=sortMoney(a[key]); bv=sortMoney(b[key]); }
+  else if(num){ av=+a[key]||0; bv=+b[key]||0; }
+  else { av=String(a[key]??'').toLowerCase(); bv=String(b[key]??'').toLowerCase(); }
+  return av<bv?-1:av>bv?1:0;
+}
+function sortRows(rows, sort){ return sort.col ? [...rows].sort((a,b)=>sortCmp(a,b,sort.col)*sort.dir) : rows; }
+function cycleSort(sort, k){
+  const num = (k==='exposure' || k==='market' || k==='count');
+  const first = num ? -1 : 1;           // numeric columns open descending
+  if (sort.col !== k){ sort.col = k; sort.dir = first; }
+  else if (sort.dir === first){ sort.dir = -first; }
+  else { sort.col = null; sort.dir = 1; }   // third click → unsorted (default order)
+}
+const I_SORT='m8 9 4-4 4 4M8 15l4 4 4-4', I_AUP='m12 5 7 7m-7-7-7 7m7-7v14', I_ADN='m12 19 7-7m-7 7-7-7m7 7V5';
+function sortIco(path){ return `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="${path}"/></svg>`; }
+function thSort(scope, key, label, sort, num){
+  const active = sort.col===key;
+  const path = !active ? I_SORT : (sort.dir>0 ? I_AUP : I_ADN);
+  const aria = !active ? 'none' : (sort.dir>0 ? 'ascending' : 'descending');
+  return `<th data-${scope}-sort="${key}" scope="col" class="ds-th--sortable${active?' ds-th--active':''}" aria-sort="${aria}"><button type="button" class="ds-th-sort${num?' num':''}"><span>${label}</span><span class="ds-sort-ind">${sortIco(path)}</span></button></th>`;
+}
 
 window.render = function() {
-  const filteredPf = PORTFOLIOS.filter(p => !pfSearch || p.name.toLowerCase().includes(pfSearch.toLowerCase()));
+  const filteredPf = sortRows(PORTFOLIOS.filter(p => !pfSearch || p.name.toLowerCase().includes(pfSearch.toLowerCase())), pfSort);
+  const azRows = sortRows(ASSETS, azSort);
   const stormUpdated = STORM.updated || STORM.updatedAt || DEFAULT_STORM.updated;
 
   document.getElementById('app').innerHTML = `
@@ -279,10 +891,10 @@ window.render = function() {
               <table class="pf-tbl">
                 <thead>
                   <tr>
-                    <th>Portfolio Name</th>
-                    <th>Type</th>
-                    <th style="text-align:right">Count</th>
-                    <th style="text-align:right">Exposure</th>
+                    ${thSort('pf','name','Portfolio Name',pfSort)}
+                    ${thSort('pf','type','Type',pfSort)}
+                    ${thSort('pf','count','Count',pfSort,true)}
+                    ${thSort('pf','exposure','Exposure',pfSort,true)}
                   </tr>
                 </thead>
                 <tbody>
@@ -324,13 +936,69 @@ window.render = function() {
             </div>
             <div style="flex:1;position:relative;overflow:hidden;min-height:0">
               <div id="evt-map"></div>
-              <div style="position:absolute;top:12px;right:12px;z-index:400;display:flex;flex-direction:column;gap:6px">
-                <button class="map-btn" title="Fullscreen">${lico('Maximize2', 14)}</button>
-                <button class="map-btn" title="Layers">${lico('Layers', 14)}</button>
-                <button class="map-btn" title="Marine assets">${lico('Ship', 14)}</button>
-                <button class="map-btn" title="Aviation assets">${lico('Plane', 14)}</button>
-                <button class="map-btn" title="Property assets">${lico('Building2', 14)}</button>
-                <button class="map-btn" title="Offshore assets">${lico('Zap', 14)}</button>
+              <!-- fullscreen (top-left, above the zoom bar) -->
+              <button id="evt-fullscreen" class="map-btn" title="Toggle fullscreen" style="position:absolute;top:12px;left:12px;z-index:400">${lico('Maximize2', 16)}</button>
+              <!-- map type selector + vessel filter (top-right) -->
+              <div style="position:absolute;top:12px;right:12px;z-index:400;display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+                <div style="position:relative">
+                  <button id="evt-layers-btn" class="map-btn" title="Map type">${lico('Layers', 16)}</button>
+                  <div id="evt-layers-menu" style="display:none;position:absolute;top:0;right:calc(100% + 8px);width:160px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 10px 30px rgba(15,23,42,.14);overflow:hidden;padding:4px 0">
+                    ${[
+                      { id:'satellite', label:'Satellite' },
+                      { id:'street',    label:'Street View' },
+                      { id:'dark',      label:'Dark Mode' },
+                      { id:'light',     label:'Light Mode' },
+                    ].map(o => `
+                      <button data-map-type="${o.id}" class="evt-map-type-opt">
+                        <span data-label>${o.label}</span>
+                        <span data-check style="color:#2563eb;opacity:0;display:inline-flex">${lico('Check', 14)}</span>
+                      </button>`).join('')}
+                  </div>
+                </div>
+                <div style="position:relative">
+                  <button id="evt-filters-btn" class="map-btn" title="Filter assets">${lico('Filter', 16)}</button>
+                  <div id="evt-filters-menu" style="display:none;position:absolute;top:0;right:calc(100% + 8px);width:236px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 10px 30px rgba(15,23,42,.14);overflow:hidden">
+                    <div style="padding:9px 12px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between">
+                      <span style="font-size:13px;font-weight:700;color:#0f172a">Filter Assets</span>
+                      <span style="display:flex;gap:4px">
+                        <button id="evt-af-all" class="evt-vf-btn">All</button>
+                        <button id="evt-af-none" class="evt-vf-btn">None</button>
+                      </span>
+                    </div>
+                    <div style="max-height:340px;overflow-y:auto" class="scroll-thin">
+                      <div class="evt-vf-head">Vessels</div>
+                      ${EVT_VESSEL_TYPES.map(t => `
+                        <div class="evt-vf-row" data-vtype="${t.k}">
+                          <input type="checkbox" class="evt-vf-cb" checked style="width:15px;height:15px;accent-color:var(--brand-600,#2563eb);margin:0;pointer-events:none" />
+                          <svg viewBox="0 0 24 24" width="15" height="15" style="transform:rotate(45deg);color:${t.color}" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"><path d="M12 2 L19 20 L12 16 L5 20 Z"/></svg>
+                          <span style="font-size:13px;color:#334155">${t.k}</span>
+                        </div>`).join('')}
+                      <div class="evt-vf-head">Properties</div>
+                      ${PROPERTY_CATEGORIES.map(c => `
+                        <div class="evt-vf-row" data-pcat="${c.k}">
+                          <input type="checkbox" class="evt-pf-cb" checked style="width:15px;height:15px;accent-color:var(--brand-600,#2563eb);margin:0;pointer-events:none" />
+                          <span style="display:inline-flex;align-items:center;justify-content:center;border-radius:6px;width:22px;height:22px;background:${c.color};color:#fff;flex-shrink:0">${c.ico.replace('width="16" height="16"','width="13" height="13"')}</span>
+                          <span style="font-size:13px;color:#334155">${c.k}</span>
+                        </div>`).join('')}
+                      <div class="evt-vf-head">Offshore</div>
+                      ${EVT_OFFSHORE_TYPES.map(o => `
+                        <div class="evt-vf-row" data-otype="${o.k}">
+                          <input type="checkbox" class="evt-of-cb" checked style="width:15px;height:15px;accent-color:var(--brand-600,#2563eb);margin:0;pointer-events:none" />
+                          <span style="display:inline-flex;width:13px;height:13px;border-radius:50%;background:${o.color};border:2px solid #fff;box-shadow:0 0 0 1px ${o.color};flex-shrink:0;margin:0 1px"></span>
+                          <span style="font-size:13px;color:#334155">${o.k}</span>
+                        </div>`).join('')}
+                      <div class="evt-vf-head">Aviation</div>
+                      ${EVT_AVIATION_TYPES.map(t => `
+                        <div class="evt-vf-row" data-avtype="${t.k}">
+                          <input type="checkbox" class="evt-av-cb" checked style="width:15px;height:15px;accent-color:var(--brand-600,#2563eb);margin:0;pointer-events:none" />
+                          ${t.k === 'Aircraft'
+                            ? `<span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;color:#eab308;flex-shrink:0"><svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg></span>`
+                            : `<span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#06b6d4;border:2px solid #fff;box-shadow:0 0 0 1px #06b6d4;flex-shrink:0"></span>`}
+                          <span style="font-size:13px;color:#334155">${t.k}</span>
+                        </div>`).join('')}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -350,13 +1018,13 @@ window.render = function() {
             <table class="az-tbl">
               <thead>
                 <tr>
-                  <th>Asset</th><th>Portfolio</th><th>IMO</th><th>Country</th><th>Type</th>
-                  <th>Ref Number</th><th>Inception Date</th><th>Expiry Date</th><th>Owner</th>
-                  <th>Our Exposure</th><th>Estimated Market Value</th><th>Latest Update</th>
+                  ${thSort('az','name','Asset',azSort)}${thSort('az','portfolio','Portfolio',azSort)}${thSort('az','imo','IMO',azSort)}${thSort('az','country','Country',azSort)}${thSort('az','type','Type',azSort)}
+                  ${thSort('az','ref','Ref Number',azSort)}${thSort('az','inception','Inception Date',azSort)}${thSort('az','expiry','Expiry Date',azSort)}${thSort('az','owner','Owner',azSort)}
+                  ${thSort('az','exposure','Our Exposure',azSort)}${thSort('az','market','Estimated Market Value',azSort)}${thSort('az','updated','Latest Update',azSort)}
                 </tr>
               </thead>
               <tbody>
-                ${ASSETS.map(a => `<tr>
+                ${azRows.map(a => `<tr>
                   <td><a href="#" style="color:#2563eb;font-weight:600;text-decoration:none" onmouseover="this.style.color='#1d4ed8'" onmouseout="this.style.color='#2563eb'">${a.name}</a></td>
                   <td><a href="#" style="color:#2563eb;font-size:12px;text-decoration:none" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${a.portfolio}</a></td>
                   <td style="font-family:monospace;font-size:12px;color:#475569">${a.imo}</td>
@@ -401,6 +1069,109 @@ window.render = function() {
     };
   });
 
+  /* Map fullscreen toggle — expand the map card to fill the viewport */
+  const fsBtn = document.getElementById('evt-fullscreen');
+  const mapCard = document.querySelector('.evt-map-card');
+  if (fsBtn && mapCard) {
+    fsBtn.onclick = () => {
+      const isFs = mapCard.classList.toggle('is-fullscreen');
+      fsBtn.innerHTML = isFs ? lico('Minimize2', 16) : lico('Maximize2', 16);
+      fsBtn.title = isFs ? 'Exit fullscreen' : 'Toggle fullscreen';
+      document.body.style.overflow = isFs ? 'hidden' : '';
+      setTimeout(() => { if (evtMap) evtMap.invalidateSize(); }, 260);
+    };
+  }
+
+  /* Map type selector */
+  const layersBtn = document.getElementById('evt-layers-btn');
+  const layersMenu = document.getElementById('evt-layers-menu');
+  if (layersBtn && layersMenu) {
+    layersBtn.onclick = (e) => { e.stopPropagation(); const open = layersMenu.style.display === 'block'; layersMenu.style.display = open ? 'none' : 'block'; var fm = document.getElementById('evt-filters-menu'); if (fm) fm.style.display = 'none'; };
+    layersMenu.querySelectorAll('[data-map-type]').forEach(opt => {
+      opt.onclick = (e) => { e.stopPropagation(); setEvtMapType(opt.dataset.mapType); layersMenu.style.display = 'none'; };
+    });
+    updateEvtLayersMenu();
+  }
+
+  /* Combined asset filter (vessels + properties) */
+  const filtersBtn = document.getElementById('evt-filters-btn');
+  const filtersMenu = document.getElementById('evt-filters-menu');
+  function syncEvtFilterUI() {
+    if (!filtersMenu) return;
+    filtersMenu.querySelectorAll('[data-vtype]').forEach(row => {
+      const cb = row.querySelector('.evt-vf-cb');
+      if (cb) cb.checked = evtVesselFilter.has(row.dataset.vtype);
+    });
+    filtersMenu.querySelectorAll('[data-pcat]').forEach(row => {
+      const cb = row.querySelector('.evt-pf-cb');
+      if (cb) cb.checked = evtPropertyFilter.has(row.dataset.pcat);
+    });
+    filtersMenu.querySelectorAll('[data-otype]').forEach(row => {
+      const cb = row.querySelector('.evt-of-cb');
+      if (cb) cb.checked = evtOffshoreFilter.has(row.dataset.otype);
+    });
+    filtersMenu.querySelectorAll('[data-avtype]').forEach(row => {
+      const cb = row.querySelector('.evt-av-cb');
+      if (cb) cb.checked = evtAviationFilter.has(row.dataset.avtype);
+    });
+  }
+  if (filtersBtn && filtersMenu) {
+    filtersBtn.onclick = (e) => { e.stopPropagation(); const open = filtersMenu.style.display === 'block'; filtersMenu.style.display = open ? 'none' : 'block'; var lm = document.getElementById('evt-layers-menu'); if (lm) lm.style.display = 'none'; };
+    filtersMenu.querySelectorAll('[data-vtype]').forEach(row => {
+      row.onclick = (e) => {
+        e.stopPropagation();
+        const t = row.dataset.vtype;
+        if (evtVesselFilter.has(t)) evtVesselFilter.delete(t); else evtVesselFilter.add(t);
+        syncEvtFilterUI(); applyEvtVesselFilter();
+      };
+    });
+    filtersMenu.querySelectorAll('[data-pcat]').forEach(row => {
+      row.onclick = (e) => {
+        e.stopPropagation();
+        const c = row.dataset.pcat;
+        if (evtPropertyFilter.has(c)) evtPropertyFilter.delete(c); else evtPropertyFilter.add(c);
+        syncEvtFilterUI(); applyEvtPropertyFilter();
+      };
+    });
+    filtersMenu.querySelectorAll('[data-otype]').forEach(row => {
+      row.onclick = (e) => {
+        e.stopPropagation();
+        const o = row.dataset.otype;
+        if (evtOffshoreFilter.has(o)) evtOffshoreFilter.delete(o); else evtOffshoreFilter.add(o);
+        syncEvtFilterUI(); applyEvtOffshoreFilter();
+      };
+    });
+    filtersMenu.querySelectorAll('[data-avtype]').forEach(row => {
+      row.onclick = (e) => {
+        e.stopPropagation();
+        const a = row.dataset.avtype;
+        if (evtAviationFilter.has(a)) evtAviationFilter.delete(a); else evtAviationFilter.add(a);
+        syncEvtFilterUI(); applyEvtAviationFilter();
+      };
+    });
+    const allB = document.getElementById('evt-af-all'), noneB = document.getElementById('evt-af-none');
+    if (allB)  allB.onclick  = (e) => { e.stopPropagation(); evtVesselFilter = new Set(EVT_VESSEL_TYPES.map(t => t.k)); evtPropertyFilter = new Set(PROPERTY_CATEGORIES.map(c => c.k)); evtOffshoreFilter = new Set(EVT_OFFSHORE_TYPES.map(t => t.k)); evtAviationFilter = new Set(EVT_AVIATION_TYPES.map(t => t.k)); syncEvtFilterUI(); applyEvtVesselFilter(); applyEvtPropertyFilter(); applyEvtOffshoreFilter(); applyEvtAviationFilter(); };
+    if (noneB) noneB.onclick = (e) => { e.stopPropagation(); evtVesselFilter = new Set(); evtPropertyFilter = new Set(); evtOffshoreFilter = new Set(); evtAviationFilter = new Set(); syncEvtFilterUI(); applyEvtVesselFilter(); applyEvtPropertyFilter(); applyEvtOffshoreFilter(); applyEvtAviationFilter(); };
+    syncEvtFilterUI();
+  }
+
+  /* Document-level handlers (wired once): Esc exits fullscreen, outside-click closes the map menus */
+  if (!window.__evtMapDocWired) {
+    window.__evtMapDocWired = true;
+    document.addEventListener('keydown', (e) => {
+      const card = document.querySelector('.evt-map-card');
+      const fb = document.getElementById('evt-fullscreen');
+      if (e.key === 'Escape' && card && card.classList.contains('is-fullscreen') && fb) fb.onclick();
+    });
+    document.addEventListener('click', (e) => {
+      [['evt-layers-menu','evt-layers-btn'], ['evt-filters-menu','evt-filters-btn']].forEach(([mId, bId]) => {
+        const menu = document.getElementById(mId);
+        const btn = document.getElementById(bId);
+        if (menu && btn && !menu.contains(e.target) && e.target !== btn && !btn.contains(e.target)) menu.style.display = 'none';
+      });
+    });
+  }
+
   /* Portfolio search */
   const psi = document.getElementById('pf-search');
   if (psi) {
@@ -408,6 +1179,10 @@ window.render = function() {
     psi.addEventListener('focus', e => { e.target.style.borderColor='#93c5fd'; e.target.style.background='#fff'; });
     psi.addEventListener('blur',  e => { e.target.style.borderColor='#e2e8f0'; e.target.style.background='#f8fafc'; });
   }
+
+  /* Sortable table headers */
+  document.querySelectorAll('[data-pf-sort]').forEach(th => th.onclick = () => { cycleSort(pfSort, th.dataset.pfSort); window.render(); });
+  document.querySelectorAll('[data-az-sort]').forEach(th => th.onclick = () => { cycleSort(azSort, th.dataset.azSort); window.render(); });
 
   setTimeout(initEvtMap, 80);
 };

@@ -65,7 +65,7 @@
   .cov-tab:not(.active):hover{color:#334155}
   /* Stats table */
   .rg-tbl{width:100%;border-collapse:collapse}
-  .rg-tbl th{padding:10px 14px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;text-align:left;border-bottom:1px solid #e2e8f0;background:#fff;white-space:nowrap}
+  .rg-tbl th{padding:10px 14px;font-size:11px;font-weight:600;color:var(--text-muted,#6B7280);text-transform:uppercase;letter-spacing:.04em;text-align:left;border-bottom:1px solid var(--border-default,#E5E7EB);background:var(--slate-50,#F9FAFB);white-space:nowrap}
   .rg-map-fs{position:fixed!important;inset:0!important;z-index:9999!important;}
   #regions-map .leaflet-top.leaflet-left{top:56px;left:2px}
   #regions-map .leaflet-top.leaflet-left .leaflet-bar{margin-left:10px!important}
@@ -416,7 +416,7 @@ function initMap() {
           <span style="color:#64748b;font-size:13px">Risk Level:</span>
           <span style="font-weight:700;font-size:13px;color:${riskColor}">${r.risk}</span>
         </div>
-        <button onclick="window.__regionGo('${r.name.replace(/'/g,"\\'")}')" style="width:100%;padding:8px;border:1.5px solid #2563eb;border-radius:8px;background:#fff;color:#2563eb;font-weight:600;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;transition:background .1s" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='#fff'">View Regional Details</button>
+        <button onclick="window.__regionGo('${r.name.replace(/'/g,"\\'")}')" style="width:100%;padding:0 12px;height:32px;border:1px solid transparent;border-radius:var(--radius-md,8px);background:transparent;color:var(--brand-600,#2563eb);font-weight:500;font-size:13px;cursor:pointer;font-family:inherit;transition:background .1s" onmouseover="this.style.background='var(--brand-50,#eff6ff)'" onmouseout="this.style.background='transparent'">View Regional Details</button>
       </div>
     </div>`;
 

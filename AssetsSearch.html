@@ -73,7 +73,7 @@
   /* --- Data table --- */
   .assets-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
   .assets-table thead tr { border-bottom: 1px solid #e2e8f0; }
-  .assets-table th { padding: 10px 14px; text-align: left; font-size: 12px; font-weight: 600; color: #334155; white-space: nowrap; background: #fff; user-select: none; }
+  .assets-table th { padding: 8px 14px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-muted,#6B7280); text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; background: var(--slate-50,#F9FAFB); user-select: none; }
   .assets-table th.sortable { cursor: pointer; }
   .assets-table th.sortable:hover { color: var(--brand-600, #2563eb); }
   .sort-ico { display: inline-flex; flex-direction: column; gap: 1px; margin-left: 4px; vertical-align: middle; opacity: .55; }
@@ -92,7 +92,7 @@
     z-index: 2;
     box-shadow: 1px 0 0 #e2e8f0;
   }
-  .assets-table thead th:first-child { background: #fff; z-index: 3; }
+  .assets-table thead th:first-child { background: var(--slate-50,#F9FAFB); z-index: 3; }
   .assets-table tbody td:first-child { background: #fff; }
   .assets-table tbody tr:hover td:first-child { background: #f8fafc; }
 
@@ -179,14 +179,7 @@ function flagHtml(code, country) {
 }
 
 function sortIcon(col) {
-  const active = sortCol === col;
-  const brand = 'var(--brand-600, #2563eb)';
-  const upCol   = (active && sortDir === 'asc')  ? brand : '#94a3b8';
-  const downCol = (active && sortDir === 'desc') ? brand : '#94a3b8';
-  return `<span class="sort-ico">
-    <svg viewBox="0 0 24 24" fill="none" style="stroke:${upCol}" stroke-width="3" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
-    <svg viewBox="0 0 24 24" fill="none" style="stroke:${downCol}" stroke-width="3" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
-  </span>`;
+  return window.dsSortInd(sortCol === col, sortDir === 'asc');
 }
 
 function filteredRows() {

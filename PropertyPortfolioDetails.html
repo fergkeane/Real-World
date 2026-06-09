@@ -81,7 +81,28 @@
   /* Responsive */
   .top-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch;}
   @media(max-width:1023px){.top-grid{grid-template-columns:1fr;}}
-</style>
+
+  /* DS table-header treatment for list-card column headers */
+  .tracking-micro.uppercase.text-ink-500{background:var(--slate-50,#F9FAFB);color:var(--text-muted,#6B7280)}
+
+  /* Property map popup — matches Property Dashboard */
+  .prop-popup .leaflet-popup-content-wrapper { padding:0; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(15,23,42,.25); }
+  .prop-popup .leaflet-popup-content { margin:0; width:280px !important; font-family:'Inter',sans-serif; }
+  .prop-popup .leaflet-popup-tip { background:#fff; }
+  .prop-popup .leaflet-popup-close-button { color:#fff !important; top:8px !important; right:10px !important; font-size:22px !important; font-weight:300 !important; width:24px !important; height:24px !important; opacity:.85; }
+  .prop-popup .leaflet-popup-close-button:hover { background:rgba(255,255,255,.2) !important; color:#fff !important; opacity:1; }
+  .pp { background:#fff; color:#0f172a; }
+  .pp-header { background:var(--brand-600,#2563eb); color:#fff; padding:12px 14px 10px; display:flex; align-items:flex-start; justify-content:space-between; }
+  .pp-title { font-size:14px; font-weight:700; line-height:1.2; }
+  .pp-cat { font-size:11px; font-weight:500; opacity:.75; margin-left:6px; }
+  .pp-body { padding:4px 0; }
+  .pp-row { display:flex; align-items:center; justify-content:space-between; padding:7px 14px; border-bottom:1px solid #f1f5f9; font-size:12.5px; }
+  .pp-row:last-child { border-bottom:0; }
+  .pp-k { color:#64748b; font-weight:500; }
+  .pp-v { font-weight:600; color:#0f172a; text-align:right; }
+  .pp-cta { display:block; width:calc(100% - 28px); margin:4px 14px 14px; background:transparent; color:var(--brand-600,#2563eb)!important; border:1px solid transparent; border-radius:8px; padding:0 12px; height:32px; line-height:32px; font-weight:500; font-size:13px; cursor:pointer; text-align:center; transition:background .15s; }
+  .pp-cta:hover { background:var(--brand-50,#eff6ff); }
+  </style>
 </head>
 <body class="bg-slate-100 text-slate-900">
 <div id="app" class="h-screen w-full flex overflow-hidden"></div>
@@ -132,13 +153,35 @@ const WEATHER_RISKS = [
 
 /* Sample property locations (mock — NYC area to match portfolio) */
 const PROPERTIES = [
-  { lat:40.7484, lng:-73.9857, name:'Empire State Building',   value:'$2.1B' },
-  { lat:40.7589, lng:-73.9851, name:'Rockefeller Center',      value:'$1.8B' },
-  { lat:40.7505, lng:-73.9934, name:'Madison Square Garden',   value:'$1.2B' },
-  { lat:40.7488, lng:-73.9680, name:'Chrysler Building',       value:'$890M' },
-  { lat:40.7614, lng:-73.9776, name:'Plaza Hotel',             value:'$540M' },
-  { lat:40.7077, lng:-74.0083, name:'One World Trade Center',  value:'$3.8B' },
+  { lat:40.7484, lng:-73.9857, name:'Empire State Building',  cat:'Corporate & Office',   location:'New York, USA', value:'$2.1B', occupancy:'94%', size:'257,211 sq ft', risk:'Low',    riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-10-14' },
+  { lat:40.7589, lng:-73.9851, name:'Rockefeller Center',     cat:'Corporate & Office',   location:'New York, USA', value:'$1.8B', occupancy:'90%', size:'188,000 sq ft', risk:'Low',    riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-08-22' },
+  { lat:40.7505, lng:-73.9934, name:'Madison Square Garden',  cat:'Retail & Hospitality', location:'New York, USA', value:'$1.2B', occupancy:'87%', size:'164,000 sq ft', risk:'Medium', riskColor:'#f59e0b', status:'Under Review', statusColor:'#f59e0b', inspection:'2024-07-09' },
+  { lat:40.7488, lng:-73.9680, name:'Chrysler Building',      cat:'Corporate & Office',   location:'New York, USA', value:'$890M', occupancy:'85%', size:'118,000 sq ft', risk:'Medium', riskColor:'#f59e0b', status:'Operational', statusColor:'#16a34a', inspection:'2024-06-18' },
+  { lat:40.7614, lng:-73.9776, name:'Plaza Hotel',            cat:'Retail & Hospitality', location:'New York, USA', value:'$540M', occupancy:'78%', size:'92,000 sq ft',  risk:'High',   riskColor:'#dc2626', status:'Under Review', statusColor:'#f59e0b', inspection:'2024-05-30' },
+  { lat:40.7077, lng:-74.0083, name:'One World Trade Center', cat:'Corporate & Office',   location:'New York, USA', value:'$3.8B', occupancy:'96%', size:'325,000 sq ft', risk:'Low',    riskColor:'#16a34a', status:'Operational', statusColor:'#16a34a', inspection:'2024-11-02' },
 ];
+
+function buildPropertyPopupHTML(p, idx) {
+  return `
+  <div class="pp">
+    <div class="pp-header">
+      <div>
+        <span class="pp-title">${p.name}</span>
+        <span class="pp-cat">· ${p.cat}</span>
+      </div>
+    </div>
+    <div class="pp-body">
+      <div class="pp-row"><span class="pp-k">Location</span><span class="pp-v">${p.location}</span></div>
+      <div class="pp-row"><span class="pp-k">Value</span><span class="pp-v">${p.value}</span></div>
+      <div class="pp-row"><span class="pp-k">Occupancy</span><span class="pp-v">${p.occupancy}</span></div>
+      <div class="pp-row"><span class="pp-k">Size</span><span class="pp-v">${p.size}</span></div>
+      <div class="pp-row"><span class="pp-k">Risk Rating</span><span class="pp-v" style="color:${p.riskColor}">${p.risk}</span></div>
+      <div class="pp-row"><span class="pp-k">Status</span><span class="pp-v" style="color:${p.statusColor}">${p.status}</span></div>
+      <div class="pp-row"><span class="pp-k">Last Inspection</span><span class="pp-v">${p.inspection}</span></div>
+    </div>
+    <button class="pp-cta" onclick="sessionStorage.setItem('selectedProperty', JSON.stringify(window.__propMarkers[${idx}])); window.location.href='PropertyDetails.html'">View Details</button>
+  </div>`;
+}
 
 /* ── Icons ──────────────────────────────────────────────────────────────── */
 const IC = {
@@ -155,10 +198,10 @@ function PortfolioDetailsCard() {
     <div class="p-3 border-b border-ink-100 shrink-0">
       <div class="ds-tabs is-stretch" data-tab-group="data-top-tab">
         <span class="ds-tab-pill is-init" data-tab-pill></span>
-        <button data-top-tab="Portfolio Details" aria-selected="${state.topTab==='Portfolio Details'}" class="ds-tab">
+        <button data-top-tab="Portfolio Details" aria-selected="${state.topTab==='Portfolio Details'}" class="ds-tab" style="font-size:12px;padding:6px 12px;">
           <span class="ds-tab-label">Portfolio Details</span>
         </button>
-        <button data-top-tab="Portfolio Groups" aria-selected="${state.topTab==='Portfolio Groups'}" class="ds-tab">
+        <button data-top-tab="Portfolio Groups" aria-selected="${state.topTab==='Portfolio Groups'}" class="ds-tab" style="font-size:12px;padding:6px 12px;">
           <span class="ds-tab-label">Portfolio Groups</span>
         </button>
       </div>
@@ -195,9 +238,9 @@ function PortfolioDetailsCard() {
     </div>
 
     <!-- Footer -->
-    <div class="px-4 py-3 border-t border-ink-100 flex items-center justify-center gap-3 shrink-0">
-      <button class="btn-outline">${IC.plus} Add Policy</button>
-      <button class="btn-outline">${IC.download} Download</button>
+    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 flex items-center justify-center gap-6 text-xs h-9 shrink-0">
+      <button class="inline-flex items-center gap-1 whitespace-nowrap text-brand-600 font-semibold hover:text-brand-700 tracking-micro"><span class="inline-flex items-center [&_svg]:h-3.5 [&_svg]:w-3.5">${IC.plus}</span><span>ADD POLICY</span></button>
+      <button class="inline-flex items-center gap-1 whitespace-nowrap text-brand-600 font-semibold hover:text-brand-700 tracking-micro"><span class="inline-flex items-center [&_svg]:h-3.5 [&_svg]:w-3.5">${IC.download}</span><span>DOWNLOAD</span></button>
     </div>
   </div>`;
 }
@@ -210,11 +253,11 @@ function WeatherRiskCard() {
   return `
   <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="height:360px;">
     <div class="px-4 py-3 border-b border-ink-100 shrink-0">
-      <div class="text-base font-semibold text-ink-900">Property Weather Risk</div>
+      <div class="text-sm font-semibold text-ink-900">Property Weather Risk</div>
     </div>
 
     <!-- Column headers -->
-    <div class="px-4 py-2 grid items-center text-[10px] font-bold tracking-wide uppercase text-ink-500 shrink-0" style="grid-template-columns:1fr auto auto;gap:0 12px;">
+    <div class="px-4 py-2 grid items-center text-[11px] font-semibold tracking-micro uppercase text-ink-500 shrink-0" style="grid-template-columns:1fr auto auto;gap:0 12px;">
       <span>Risk Area</span>
       <span>Status</span>
       <span style="width:24px;"></span>
@@ -242,8 +285,8 @@ function WeatherRiskCard() {
     </div>
 
     <!-- Footer -->
-    <div class="px-4 py-3 border-t border-ink-100 flex items-center justify-center shrink-0">
-      <button class="btn-outline">All Weather Risks</button>
+    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 text-center h-9 flex items-center justify-center shrink-0">
+      <button class="text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">ALL WEATHER RISKS</button>
     </div>
   </div>`;
 }
@@ -278,12 +321,12 @@ function MapCard() {
         </div>
       ` : `
         <div class="overflow-y-auto scroll-thin h-full">
-          <table class="w-full text-sm">
+          <table class="w-full text-[13px]">
             <thead>
               <tr class="bg-ink-50/60 border-b border-ink-100">
-                <th class="text-left px-4 py-2.5 text-[11px] font-bold tracking-wide uppercase text-ink-500">Property Name</th>
-                <th class="text-left px-4 py-2.5 text-[11px] font-bold tracking-wide uppercase text-ink-500">Coordinates</th>
-                <th class="text-right px-4 py-2.5 text-[11px] font-bold tracking-wide uppercase text-ink-500">Value</th>
+                <th class="text-left px-4 py-2.5 text-[11px] font-semibold tracking-micro uppercase text-ink-500">Property Name</th>
+                <th class="text-left px-4 py-2.5 text-[11px] font-semibold tracking-micro uppercase text-ink-500">Coordinates</th>
+                <th class="text-right px-4 py-2.5 text-[11px] font-semibold tracking-micro uppercase text-ink-500">Value</th>
               </tr>
             </thead>
             <tbody>
@@ -304,7 +347,7 @@ function MapCard() {
 }
 
 /* ── Map init ───────────────────────────────────────────────────────────── */
-let ppMap = null, ppTile = null, currentMapType = 'street';
+let ppMap = null, ppTile = null, currentMapType = 'satellite';
 const MAP_TILES = {
   satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
   street:    'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
@@ -328,14 +371,17 @@ function initMap() {
   }, 100);
 
   // Markers
-  PROPERTIES.forEach(p => {
+  window.__propMarkers = PROPERTIES;
+  PROPERTIES.forEach((p, idx) => {
     const icon = L.divIcon({
       className:'',
       html:`<div class="marker-icon">${IC.building}</div>`,
       iconSize:[32,32],
       iconAnchor:[16,16],
     });
-    L.marker([p.lat, p.lng], { icon }).bindPopup(`<strong>${p.name}</strong><br/><span style="color:#64748b">${p.value}</span>`).addTo(ppMap);
+    L.marker([p.lat, p.lng], { icon })
+      .bindPopup(buildPropertyPopupHTML(p, idx), { className:'prop-popup', maxWidth:280, minWidth:280, closeButton:true, autoPanPadding:[30,30] })
+      .addTo(ppMap);
   });
 
   // Fullscreen

@@ -66,7 +66,7 @@
   .val-chip{display:inline-flex;align-items:center;padding:2px 10px;border-radius:999px;font-size:13px;font-weight:700;background:#eff6ff;color:#2563eb}
   /* Table */
   .data-table{width:100%;border-collapse:collapse}
-  .data-table th{text-align:left;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#64748b;padding:8px 12px;border-bottom:1px solid #e2e8f0;background:#f8fafc}
+  .data-table th{text-align:left;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted,#6B7280);padding:8px 12px;border-bottom:1px solid var(--border-default,#E5E7EB);background:var(--slate-50,#F9FAFB)}
   .data-table td{padding:10px 12px;font-size:12px;color:#0f172a;border-bottom:1px solid #f1f5f9}
   .data-table tbody tr:hover{background:#f8fafc}
   .data-table td.link{color:#2563eb;font-weight:600;cursor:pointer}
@@ -197,7 +197,7 @@ function CardPortfolioGround() {
     <div class="flex-1 overflow-y-auto scroll-thin">
       <table class="data-table">
         <thead><tr>
-          <th>Portfolio ↑↓</th><th>Terminal ↑↓</th><th>Reg No ↑↓</th><th>Type ↑↓</th><th class="text-right">Value ↑↓</th>
+          <th>Portfolio ${window.dsSortInd(false)}</th><th>Terminal ${window.dsSortInd(false)}</th><th>Reg No ${window.dsSortInd(false)}</th><th>Type ${window.dsSortInd(false)}</th><th class="text-right">Value ${window.dsSortInd(false)}</th>
         </tr></thead>
         <tbody>
           ${AIRCRAFT_GROUND.map(r=>`<tr>

@@ -53,8 +53,8 @@
   .pp-row:last-child { border-bottom:0; }
   .pp-k { color:#64748b; font-weight:500; }
   .pp-v { font-weight:700; color:#0f172a; }
-  .pp-cta { display:block; width:calc(100% - 28px); margin:4px 14px 14px; background:#fff; color:#2563eb; border:1.5px solid #2563eb; border-radius:8px; padding:9px 12px; font-weight:700; font-size:12.5px; cursor:pointer; text-align:center; transition:background .15s; }
-  .pp-cta:hover { background:#eff6ff; }
+  .pp-cta { display:block; width:calc(100% - 28px); margin:4px 14px 14px; background:transparent; color:var(--brand-600,#2563eb)!important; border:1px solid transparent; border-radius:var(--radius-md,8px); padding:0 12px; height:32px; line-height:32px; font-weight:500; font-size:13px; cursor:pointer; text-align:center; transition:background .15s; }
+  .pp-cta:hover { background:var(--brand-50,#eff6ff); }
 
   /* View toggle — pill tabs */
   .ds-tabs{position:relative;display:inline-flex;gap:4px;padding:4px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9999px;}
@@ -67,7 +67,7 @@
 
   /* List view */
   .ports-table { width:100%; border-collapse:collapse; }
-  .ports-table th { padding:10px 14px; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; text-align:left; border-bottom:1px solid #e2e8f0; background:#fff; white-space:nowrap; }
+  .ports-table th { padding:10px 14px; font-size:11px; font-weight:600; color:var(--text-muted,#6B7280); text-transform:uppercase; letter-spacing:.04em; text-align:left; border-bottom:1px solid var(--border-default,#E5E7EB); background:var(--slate-50,#F9FAFB); white-space:nowrap; }
   .ports-table td { padding:11px 14px; font-size:13px; color:#334155; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
   .ports-table tr:hover td { background:#f8fafc; }
   .port-link { color:#2563eb; font-weight:600; cursor:pointer; }
@@ -195,7 +195,7 @@ function portPopupHTML(p, idx) {
       <div class="pp-row"><span class="pp-k">Longitude:</span><span class="pp-v">${p.lng.toFixed(4)}°</span></div>
       <div class="pp-row"><span class="pp-k">No. of Terminals:</span><span class="pp-v">${p.terminals}</span></div>
     </div>
-    <button class="pp-cta" style="color:${p.sanctioned?'#dc2626':'#2563eb'};border-color:${p.sanctioned?'#dc2626':'#2563eb'};" onclick="sessionStorage.setItem('selectedPort', JSON.stringify(window.__ports[${idx}])); window.location.href='PortDetails.html'">View Details</button>
+    <button class="pp-cta" onclick="sessionStorage.setItem('selectedPort', JSON.stringify(window.__ports[${idx}])); window.location.href='PortDetails.html'">View Details</button>
   </div>`;
 }
 

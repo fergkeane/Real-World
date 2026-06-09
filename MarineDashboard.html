@@ -117,7 +117,7 @@
   .vp-strong { font-weight:700; color:#0f172a; }
   .vp-muted { color:#64748b; font-weight:500; font-size:11px; }
   .vp-nav { color:#16a34a; font-weight:700; }
-  .vp-cta { display:block; width:calc(100% - 28px); margin:4px 14px 14px; background:#fff; color:var(--brand-600,#2563eb); border:1.5px solid var(--brand-600,#2563eb); border-radius:8px; padding:10px 12px; font-weight:700; font-size:12.5px; cursor:pointer; font-family:'Exo','Open Sans',sans-serif; letter-spacing:.02em; }
+  .vp-cta { display:block; width:calc(100% - 28px); margin:4px 14px 14px; background:transparent; color:var(--brand-600,#2563eb)!important; border:1px solid transparent; border-radius:var(--radius-md,8px); padding:0 12px; height:32px; line-height:32px; font-weight:500; font-size:13px; cursor:pointer; text-align:center; transition:background .15s; }
   .vp-cta:hover { background:var(--brand-50,#eff6ff); }
   .vessel-popup .leaflet-popup-close-button { color:#fff !important; top:8px !important; right:10px !important; font-size:22px !important; font-weight:400 !important; width:24px !important; height:24px !important; line-height:22px !important; padding:0 !important; border-radius:6px; opacity:.9; }
   .vessel-popup .leaflet-popup-close-button:hover { color:#fff !important; background:rgba(255,255,255,.18); opacity:1; }
@@ -135,7 +135,10 @@
   .ds-tab-pill.is-init { transition:none; }
   .ds-tab-label { position:relative; z-index:1; display:inline-flex; align-items:center; gap:6px; }
   .ds-tab .tab-ico { display:inline-flex; }
-</style>
+
+  /* DS table-header treatment for list-card column headers */
+  .tracking-micro.uppercase.text-ink-500{background:var(--slate-50,#F9FAFB);color:var(--text-muted,#6B7280)}
+  </style>
 </head>
 <body class="bg-ink-100 text-ink-900 antialiased" data-density="compact">
 <div id="app" class="min-h-screen w-full flex"></div>
@@ -418,7 +421,7 @@ function PortfolioCard() {
   <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
     <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Portfolios','Portfolio Groups'], state.portfolioTab, 'data-portfolio-tab')}</div>
     ${statsRow}
-    <div class="px-3 py-1.5 flex items-center justify-between text-[10px] font-bold tracking-micro uppercase text-ink-500 border-b border-ink-100">
+    <div class="px-3 py-1.5 flex items-center justify-between text-[11px] font-semibold tracking-micro uppercase text-ink-500 border-b border-ink-100">
       <span>Name</span>
       <span class="flex items-center shrink-0" style="gap:20px">
         <span style="min-width:80px;text-align:right">Policies${sortIco}</span>
@@ -444,7 +447,7 @@ function PortfolioCard() {
   <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
     <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Portfolios','Portfolio Groups'], state.portfolioTab, 'data-portfolio-tab')}</div>
     ${statsRow}
-    <div class="px-3 pt-2 pb-1 flex items-center justify-between text-[10px] font-bold tracking-micro uppercase text-ink-500">
+    <div class="px-3 pt-2 pb-1 flex items-center justify-between text-[11px] font-semibold tracking-micro uppercase text-ink-500">
       <span>Name</span>
       <span class="flex gap-6"><span>Policies</span><span>Exposure</span></span>
     </div>
@@ -476,11 +479,11 @@ function RegionsCard() {
     <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Regions Aggregation','Exposure Aggregation'], state.regionTab, 'data-region-tab')}</div>
     <div class="px-4 py-3 flex justify-center border-b border-ink-100">
       <div style="background:#eff6ff;border:1px solid #dbeafe;border-radius:12px;padding:10px 32px;text-align:center;min-width:180px">
-        <div class="text-[10px] font-bold tracking-micro uppercase text-ink-500">Total Exposure</div>
+        <div class="text-[11px] font-semibold tracking-micro uppercase text-ink-500">Total Exposure</div>
         <div class="mt-1 text-xl font-bold text-ink-900 tabular-nums">$605.2B</div>
       </div>
     </div>
-    <div class="px-3 py-1.5 flex items-center justify-between text-[10px] font-bold tracking-micro uppercase text-ink-500 border-b border-ink-100">
+    <div class="px-3 py-1.5 flex items-center justify-between text-[11px] font-semibold tracking-micro uppercase text-ink-500 border-b border-ink-100">
       <span>Aggregation</span>
       <span>Risk Value${sortIco}</span>
     </div>
@@ -501,7 +504,7 @@ function RegionsCard() {
   return `
   <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
     <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Regions Aggregation','Exposure Aggregation'], state.regionTab, 'data-region-tab')}</div>
-    <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto_auto] gap-6 text-[10px] font-bold tracking-micro uppercase text-ink-500">
+    <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto_auto] gap-6 text-[11px] font-semibold tracking-micro uppercase text-ink-500">
       <span>Name</span>
       <span class="text-rose-500">Above<br><span class="line-through decoration-rose-400">1,000,000.0</span></span>
       <span class="text-right">Our Exposure</span>
@@ -535,7 +538,7 @@ function BenchmarkCard() {
     </div>
     <div class="px-4">
       <div class="bg-ink-50 rounded-lg px-3 py-2.5 flex items-center justify-between">
-        <div class="text-[10px] font-bold tracking-micro uppercase text-ink-500">All Vessels</div>
+        <div class="text-[11px] font-semibold tracking-micro uppercase text-ink-500">All Vessels</div>
         <div class="text-lg font-bold text-ink-900 tabular-nums">1.5%</div>
       </div>
     </div>
@@ -594,7 +597,7 @@ function AlertsCard() {
   const windIco = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>`;
 
   const weatherContent = `
-    <div class="px-3 py-2 grid text-[11px] font-bold tracking-micro uppercase text-ink-500 border-b border-ink-100 shrink-0" style="grid-template-columns:1fr auto auto;gap:0 12px;">
+    <div class="px-3 py-2 grid text-[11px] font-semibold tracking-micro uppercase text-ink-500 border-b border-ink-100 shrink-0" style="grid-template-columns:1fr auto auto;gap:0 12px;">
       <span>Event Name</span>
       <span>Region</span>
       <span>Category</span>
@@ -636,7 +639,7 @@ function AlertsCard() {
       </div>
       <div style="font-size:13px;font-weight:700;color:#dc2626;">Sanctioned</div>
     </div>
-    <div class="px-3 py-2 grid text-[11px] font-bold tracking-micro uppercase text-ink-500" style="grid-template-columns:1fr auto auto;gap:0 16px;border-bottom:1px solid #f1f5f9;">
+    <div class="px-3 py-2 grid text-[11px] font-semibold tracking-micro uppercase text-ink-500" style="grid-template-columns:1fr auto auto;gap:0 16px;border-bottom:1px solid #f1f5f9;">
       <span>Vessel</span>
       <span>Date Imposed</span>
       <span>Portfolio</span>

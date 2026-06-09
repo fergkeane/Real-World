@@ -107,9 +107,12 @@
   .pp-row:last-child { border-bottom:0; }
   .pp-k { color:#64748b; font-weight:500; }
   .pp-v { font-weight:600; color:#0f172a; text-align:right; }
-  .pp-cta { display:block; width:calc(100% - 28px); margin:4px 14px 14px; background:#fff; color:#2563eb; border:1.5px solid #2563eb; border-radius:8px; padding:9px 12px; font-weight:700; font-size:12.5px; cursor:pointer; text-align:center; transition:background .15s; }
-  .pp-cta:hover { background:#eff6ff; }
-</style>
+  .pp-cta { display:block; width:calc(100% - 28px); margin:4px 14px 14px; background:transparent; color:var(--brand-600,#2563eb)!important; border:1px solid transparent; border-radius:var(--radius-md,8px); padding:0 12px; height:32px; line-height:32px; font-weight:500; font-size:13px; cursor:pointer; text-align:center; transition:background .15s; }
+  .pp-cta:hover { background:var(--brand-50,#eff6ff); }
+
+  /* DS table-header treatment for list-card column headers */
+  .tracking-micro.uppercase.text-ink-500{background:var(--slate-50,#F9FAFB);color:var(--text-muted,#6B7280)}
+  </style>
 </head>
 <body class="bg-ink-100 text-ink-900 antialiased" data-density="compact">
 <div id="app" class="min-h-screen w-full flex"></div>
@@ -253,10 +256,10 @@ function PortfolioCard() {
       </div>
     </div>
     <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-50">
-      <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto_auto] gap-6 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white">
+      <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto_auto] gap-6 text-[11px] font-semibold tracking-micro uppercase text-ink-500 sticky top-0 bg-white">
         <span>Name</span>
-        <span class="text-right">Properties ↑↓</span>
-        <span class="text-right">Our Exposure ↑↓</span>
+        <span class="text-right">Properties ${window.dsSortInd(false)}</span>
+        <span class="text-right">Our Exposure ${window.dsSortInd(false)}</span>
       </div>
       ${PORTFOLIOS.map((p, idx) => `
         <button class="w-full text-left px-3 py-2 hover:bg-ink-50 flex items-center justify-between text-xs" onclick="sessionStorage.setItem('selectedPropertyPortfolio', JSON.stringify(window.__PROPERTY_PORTFOLIOS[${idx}])); window.location.href='PropertyPortfolioDetails.html'">
@@ -279,10 +282,10 @@ function RegionCard() {
   return `
   <div class="bg-white rounded-xl border border-ink-200 shadow-card flex flex-col" style="max-height:360px">
     <div class="p-3 border-b border-ink-100 shrink-0">${tabs(['Regional Values $','Exposure Aggregation'], state.regionTab, 'data-region-tab')}</div>
-    <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto_auto] gap-6 text-[10px] font-bold tracking-micro uppercase text-ink-500 sticky top-0 bg-white">
+    <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto_auto] gap-6 text-[11px] font-semibold tracking-micro uppercase text-ink-500 sticky top-0 bg-white">
       <span>Location</span>
-      <span class="text-right">Above Threshold ↑↓</span>
-      <span class="text-right">Our Exposure ↑↓</span>
+      <span class="text-right">Above Threshold ${window.dsSortInd(false)}</span>
+      <span class="text-right">Our Exposure ${window.dsSortInd(false)}</span>
     </div>
     <div class="px-3 pt-1 pb-2 text-[10px] font-bold uppercase text-ink-500">High-Value Markets:</div>
     <div class="flex-1 overflow-y-auto scroll-thin divide-y divide-ink-50">
@@ -311,7 +314,7 @@ function WeatherCard() {
     <div class="px-3 pt-2.5 pb-2 border-b border-ink-100 shrink-0">
       <div class="text-sm font-semibold text-ink-900">Property Weather Risk</div>
     </div>
-    <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto] gap-3 text-[10px] font-bold tracking-micro uppercase text-ink-500">
+    <div class="px-3 pt-2 pb-1 grid grid-cols-[1fr_auto] gap-3 text-[11px] font-semibold tracking-micro uppercase text-ink-500">
       <span>Risk Area</span>
       <span>Status</span>
     </div>

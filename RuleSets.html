@@ -14,7 +14,7 @@
   .scroll-thin::-webkit-scrollbar{width:5px}.scroll-thin::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
   /* Table */
   .rs-tbl{width:100%;border-collapse:collapse}
-  .rs-tbl th{padding:10px 16px;font-size:12px;font-weight:500;color:#94a3b8;text-align:left;border-bottom:1px solid #f1f5f9;white-space:nowrap;background:#fff;user-select:none}
+  .rs-tbl th{padding:10px 16px;font-size:12px;font-weight:600;color:var(--text-muted,#6B7280);text-align:left;border-bottom:1px solid #f1f5f9;white-space:nowrap;background:var(--slate-50,#F9FAFB);user-select:none;text-transform:uppercase;letter-spacing:.04em}
   .rs-tbl th.sortable{cursor:pointer}.rs-tbl th.sortable:hover{color:#64748b}.rs-tbl th.sorted{color:#2563eb}
   .rs-tbl td{padding:13px 16px;font-size:13px;color:#334155;border-bottom:1px solid #f1f5f9;vertical-align:middle}
   .rs-tbl tr:last-child td{border-bottom:0}
@@ -96,9 +96,7 @@ function rowIcon(icon, color) {
 
 /* ── Sort arrow ───────────────────────────────────────────────────────────── */
 function sortArrow(col) {
-  if (ST.sortCol !== col) return `<svg width="9" height="12" viewBox="0 0 9 12" fill="none" style="display:inline-block;margin-left:2px;vertical-align:middle;opacity:.3"><path d="M4.5 1L1.5 4.5h6z" fill="currentColor"/><path d="M4.5 11L1.5 7.5h6z" fill="currentColor"/></svg>`;
-  const up = ST.sortDir === 'asc';
-  return `<svg width="9" height="12" viewBox="0 0 9 12" fill="none" style="display:inline-block;margin-left:2px;vertical-align:middle"><path d="M4.5 1L1.5 4.5h6z" fill="${up?'#2563eb':'#cbd5e1'}"/><path d="M4.5 11L1.5 7.5h6z" fill="${!up?'#2563eb':'#cbd5e1'}"/></svg>`;
+  return window.dsSortInd(ST.sortCol === col, ST.sortDir === 'asc');
 }
 
 const SVG = {
