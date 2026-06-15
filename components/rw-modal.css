@@ -1,0 +1,304 @@
+/* ============================================================================
+   RW Modal — Design System Component
+   A standardized, tokenized, accessible dialog primitive.
+
+   Every visual property is driven by a --rw-modal-* CSS variable so the
+   component can be re-themed per surface without touching markup or JS.
+   Defaults below are self-contained (no host tokens required); when a host
+   design system is present they inherit from --brand-* automatically.
+   ----------------------------------------------------------------------------
+   Structure (the five slots):
+     .rw-modal-overlay            (1) Backdrop / scrim
+       └ .rw-modal                (2) Container
+           ├ .rw-modal-header     (3) Header — title + close
+           ├ .rw-modal-body       (4) Body — scrollable content
+           └ .rw-modal-footer     (5) Footer — actions
+   ========================================================================== */
+
+:root {
+  /* ——— Scrim / backdrop ——— */
+  --rw-modal-scrim:        rgba(15, 23, 42, 0.45);
+  --rw-modal-scrim-blur:   2px;
+
+  /* ——— Surface ——— */
+  --rw-modal-surface:      #ffffff;
+  --rw-modal-border:       #e2e8f0;
+
+  /* ——— Roundness ——— */
+  --rw-modal-radius:       12px;
+  --rw-modal-control-radius: 6px;
+
+  /* ——— Elevation ——— */
+  --rw-modal-shadow:       0 24px 56px -12px rgba(15, 23, 42, 0.30), 0 8px 20px -8px rgba(15, 23, 42, 0.18);
+
+  /* ——— Spacing rhythm (4pt grid) ——— */
+  --rw-modal-pad-x:        24px;   /* body inline padding   */
+  --rw-modal-pad-y:        20px;   /* body block padding    */
+  --rw-modal-header-pad-y: 16px;
+  --rw-modal-header-pad-x: 20px;
+  --rw-modal-footer-pad-y: 14px;
+  --rw-modal-footer-pad-x: 20px;
+  --rw-modal-action-gap:   10px;
+  --rw-modal-viewport-pad: 24px;   /* gap between modal and viewport edge */
+
+  /* ——— Size variants (container max-width) ——— */
+  --rw-modal-w-sm:         420px;
+  --rw-modal-w-md:         620px;
+  --rw-modal-w-lg:         820px;
+  --rw-modal-w-xl:         1100px;
+
+  /* ——— Typography ——— */
+  --rw-modal-font:         'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --rw-modal-title-font:   'Exo', 'Inter', system-ui, sans-serif;
+  --rw-modal-title-size:   15px;
+  --rw-modal-title-weight: 700;
+  --rw-modal-text:         #0f172a;
+  --rw-modal-text-muted:   #64748b;
+
+  /* ——— Actions / brand ——— */
+  --rw-modal-primary:        var(--brand-600, #2563eb);
+  --rw-modal-primary-hover:  var(--brand-700, #1d4ed8);
+  --rw-modal-on-primary:     #ffffff;
+  --rw-modal-danger:         #dc2626;
+  --rw-modal-danger-hover:   #b91c1c;
+  --rw-modal-focus-ring:     0 0 0 3px rgba(37, 99, 235, 0.32);
+  --rw-modal-focus-ring-danger: 0 0 0 3px rgba(220, 38, 38, 0.28);
+
+  /* ——— Close button ——— */
+  --rw-modal-close-bg:       #1e293b;
+  --rw-modal-close-bg-hover: #0f172a;
+  --rw-modal-close-fg:       #ffffff;
+
+  /* ——— Motion ——— */
+  --rw-modal-motion:       140ms;
+  --rw-modal-ease:         cubic-bezier(.2, .8, .2, 1);
+
+  /* ——— Stacking ——— */
+  --rw-modal-z:            9999;
+}
+
+/* ===========================================================================
+   1 — OVERLAY / BACKDROP
+   Fixed full-bleed scrim. Centers the container; provides the viewport gutter.
+   =========================================================================== */
+.rw-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--rw-modal-z);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--rw-modal-viewport-pad);
+  background: var(--rw-modal-scrim);
+  -webkit-backdrop-filter: blur(var(--rw-modal-scrim-blur));
+  backdrop-filter: blur(var(--rw-modal-scrim-blur));
+  opacity: 0;
+  animation: rw-modal-fade var(--rw-modal-motion) ease-out forwards;
+}
+.rw-modal-overlay.is-closing { animation: rw-modal-fade-out var(--rw-modal-motion) ease-in forwards; }
+@keyframes rw-modal-fade     { to { opacity: 1; } }
+@keyframes rw-modal-fade-out { to { opacity: 0; } }
+
+/* Top-aligned variant for very tall content */
+.rw-modal-overlay.rw-modal-overlay--top { align-items: flex-start; }
+.rw-modal-overlay.rw-modal-overlay--top .rw-modal { margin-top: 6vh; }
+
+/* ===========================================================================
+   2 — CONTAINER
+   =========================================================================== */
+.rw-modal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: var(--rw-modal-w-md);                 /* default: MD */
+  max-height: calc(100vh - (var(--rw-modal-viewport-pad) * 2));
+  background: var(--rw-modal-surface);
+  border-radius: var(--rw-modal-radius);
+  box-shadow: var(--rw-modal-shadow);
+  overflow: hidden;
+  transform: translateY(8px) scale(.99);
+  animation: rw-modal-rise var(--rw-modal-motion) var(--rw-modal-ease) forwards;
+  font-family: var(--rw-modal-font);
+  color: var(--rw-modal-text);
+}
+.rw-modal-overlay.is-closing .rw-modal { animation: rw-modal-sink var(--rw-modal-motion) ease-in forwards; }
+@keyframes rw-modal-rise { to { transform: translateY(0) scale(1); } }
+@keyframes rw-modal-sink { to { transform: translateY(6px) scale(.99); opacity: .6; } }
+
+/* —— Size variants —— */
+.rw-modal--sm   { max-width: var(--rw-modal-w-sm); }
+.rw-modal--md   { max-width: var(--rw-modal-w-md); }
+.rw-modal--lg   { max-width: var(--rw-modal-w-lg); }
+.rw-modal--xl   { max-width: var(--rw-modal-w-xl); }
+.rw-modal--full { max-width: none; width: calc(100vw - (var(--rw-modal-viewport-pad) * 2));
+                  height: calc(100vh - (var(--rw-modal-viewport-pad) * 2)); max-height: none; }
+
+/* ===========================================================================
+   3 — HEADER
+   =========================================================================== */
+.rw-modal-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: var(--rw-modal-header-pad-y) var(--rw-modal-header-pad-x);
+  border-bottom: 1px solid var(--rw-modal-border);
+}
+.rw-modal-header--plain { display: block; }   /* header with no close button */
+
+.rw-modal-titles { min-width: 0; }
+.rw-modal-title {
+  margin: 0;
+  font-family: var(--rw-modal-title-font);
+  font-size: var(--rw-modal-title-size);
+  font-weight: var(--rw-modal-title-weight);
+  line-height: 1.3;
+  letter-spacing: .01em;
+  color: var(--rw-modal-text);
+}
+.rw-modal-subtitle {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--rw-modal-text-muted);
+}
+
+/* Standardized close button */
+.rw-modal-close-btn {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--rw-modal-close-bg);
+  color: var(--rw-modal-close-fg);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--rw-modal-motion), box-shadow var(--rw-modal-motion);
+}
+.rw-modal-close-btn:hover { background: var(--rw-modal-close-bg-hover); }
+.rw-modal-close-btn:focus-visible { outline: 0; box-shadow: var(--rw-modal-focus-ring); }
+.rw-modal-close-btn svg { width: 12px; height: 12px; display: block; }
+
+/* ===========================================================================
+   4 — BODY (scrollable)
+   =========================================================================== */
+.rw-modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--rw-modal-pad-y) var(--rw-modal-pad-x);
+}
+/* Hairline cues that there is more to scroll */
+.rw-modal-body--bordered { border-top: 1px solid transparent; }
+
+/* Optional section divider inside the body */
+.rw-modal-section-title {
+  font-size: 13px; font-weight: 700; color: var(--rw-modal-text);
+  padding-top: 14px; margin-top: 14px; border-top: 1px solid var(--rw-modal-border);
+}
+
+/* ===========================================================================
+   5 — FOOTER
+   =========================================================================== */
+.rw-modal-footer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--rw-modal-action-gap);
+  padding: var(--rw-modal-footer-pad-y) var(--rw-modal-footer-pad-x);
+  border-top: 1px solid var(--rw-modal-border);
+  background: var(--rw-modal-surface);
+}
+.rw-modal-footer--split   { justify-content: space-between; }   /* destructive far-left */
+.rw-modal-footer--start   { justify-content: flex-start; }
+.rw-modal-footer--center  { justify-content: center; }
+.rw-modal-footer-group { display: flex; align-items: center; gap: var(--rw-modal-action-gap); }
+
+/* ===========================================================================
+   BUTTON VARIANTS (footer actions)
+   =========================================================================== */
+.rw-modal-btn {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  min-height: 34px;
+  border-radius: var(--rw-modal-control-radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--rw-modal-motion), border-color var(--rw-modal-motion),
+              color var(--rw-modal-motion), box-shadow var(--rw-modal-motion);
+}
+.rw-modal-btn:focus-visible { outline: 0; box-shadow: var(--rw-modal-focus-ring); }
+.rw-modal-btn:disabled { opacity: .55; cursor: not-allowed; }
+
+.rw-modal-btn--primary {
+  background: var(--rw-modal-primary);
+  border-color: var(--rw-modal-primary);
+  color: var(--rw-modal-on-primary);
+}
+.rw-modal-btn--primary:hover:not(:disabled) {
+  background: var(--rw-modal-primary-hover);
+  border-color: var(--rw-modal-primary-hover);
+}
+
+.rw-modal-btn--secondary {
+  background: var(--rw-modal-surface);
+  border-color: var(--rw-modal-border);
+  color: var(--rw-modal-text);
+}
+.rw-modal-btn--secondary:hover:not(:disabled) { background: #f1f5f9; border-color: #cbd5e1; }
+
+.rw-modal-btn--ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--rw-modal-text-muted);
+}
+.rw-modal-btn--ghost:hover:not(:disabled) { background: #f1f5f9; color: var(--rw-modal-text); }
+
+.rw-modal-btn--danger {
+  background: var(--rw-modal-danger);
+  border-color: var(--rw-modal-danger);
+  color: #fff;
+}
+.rw-modal-btn--danger:hover:not(:disabled) { background: var(--rw-modal-danger-hover); border-color: var(--rw-modal-danger-hover); }
+.rw-modal-btn--danger:focus-visible { box-shadow: var(--rw-modal-focus-ring-danger); }
+
+/* ===========================================================================
+   BODY SCROLL LOCK (applied to <html> while a modal is open)
+   =========================================================================== */
+html.rw-modal-open, body.rw-modal-open { overflow: hidden; }
+
+/* ===========================================================================
+   REDUCED MOTION
+   =========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .rw-modal-overlay, .rw-modal { animation-duration: .01ms !important; }
+  .rw-modal { transform: none; }
+}
+
+/* ===========================================================================
+   RESPONSIVE
+   =========================================================================== */
+@media (max-width: 640px) {
+  :root {
+    --rw-modal-viewport-pad: 12px;
+    --rw-modal-pad-x: 16px;
+  }
+  .rw-modal { max-width: none; }
+  .rw-modal-footer { flex-wrap: wrap; }
+  .rw-modal-footer .rw-modal-btn { flex: 1 1 auto; }
+}
