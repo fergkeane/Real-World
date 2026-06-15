@@ -46,12 +46,24 @@ try {
 /* ------------------ SHARED CHROME (sidebar, topbar, tweaks, icons) ------------------ */
 /* Expects: window.PAGE = { id, title, crumb } set before this script loads */
 
+/* ------------------ DS sort indicator (shared) ------------------ */
+/* Skytek Design System sortable-header glyph: muted chevrons-up-down by default,
+   a solid brand arrow on the active column. Self-contained so any page can use it. */
+(function(){
+  const SI='m8 9 4-4 4 4M8 15l4 4 4-4', AU='m12 5 7 7m-7-7-7 7m7-7v14', AD='m12 19 7-7m-7 7-7-7m7 7V5';
+  const svg=(p,color,op)=>`<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-left:4px;flex-shrink:0;color:${color};opacity:${op}">${Array.isArray(p)?p.map(d=>`<path d="${d}"/>`).join(''):`<path d="${p}"/>`}</svg>`;
+  window.dsSortInd = function(active, asc){
+    if (!active) return svg(SI, 'currentColor', '.4');
+    return svg(asc ? AU : AD, 'var(--brand-600,#2563eb)', '1');
+  };
+})();
+
 /* ------------------ ICONS (Lucide) ------------------ */
 const LUCIDE_NAMES = {
   menu:'Menu', grid:'LayoutGrid', shield:'ShieldCheck',
   building:'Building', building2Nav:'Warehouse', gem:'Gem', news:'Newspaper',
   plane:'Plane', bolt:'Zap', briefcase:'Briefcase', doc:'FileText',
-  globe:'Globe', wave:'Waves', chart:'BarChart3', book:'BookOpen',
+  globe:'Globe', wave:'Waves', chart:'BarChart3', book:'BookOpen', earth:'Earth', landplot:'LandPlot',
   anchor:'Anchor', cloud:'Cloud', ship:'Ship', building2:'Building2',
   plane2:'Plane', bolt2:'Zap', bell:'Bell', help:'HelpCircle',
   anchor2:'Anchor', pin:'MapPin', cloudrain:'CloudRain', cloudicon:'Cloud',
@@ -95,8 +107,8 @@ const NAV = [
   { id:'portfolios', label:'Portfolios',      icon:'briefcase',    href:'AllPortfolios.html' },
   { id:'reports',    label:'Reports',         icon:'doc',          href:'Reports.html' },
   { id:'companies',  label:'Companies',       icon:'office',       href:'Companies.html' },
-  { id:'regions',    label:'Regions',         icon:'globe',        href:'Regions.html' },
-  { id:'events',     label:'Nat Cat Events',  icon:'wave',         href:'NatCatEvents.html', badge:true },
+  { id:'regions',    label:'Regions',         icon:'landplot',     href:'Regions.html' },
+  { id:'events',     label:'Nat Cat Events',  icon:'earth',        href:'NatCatEvents.html', badge:true },
   { id:'assets',     label:'Assets',          icon:'gem',          href:'AssetsSearch.html' },
   { id:'ports',      label:'Ports',           icon:'anchor',       href:'Ports.html' },
   { id:'weather',    label:'Weather',         icon:'cloud',        href:'Weather.html' },

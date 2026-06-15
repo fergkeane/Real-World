@@ -1,0 +1,438 @@
+/* ============================================================
+   Unverifiable status — extension to the Skytek design system.
+   Adds a third semantic state alongside Ok / Sanctioned for cases
+   where an entity or attribute could not be analysed (e.g.
+   "Unknown" country, "Unknown Entity" beneficial owner).
+   ============================================================ */
+
+:root {
+  /* Slate-toned warning so it cannot be mistaken for "Ok" or "Sanctioned".
+     Distinct from --warning-* which the product already uses for "At risk". */
+  --unverif-700: #6B5B2E;     /* type / icon */
+  --unverif-500: #B89B45;     /* primary (amber-slate) */
+  --unverif-300: #E5D89F;
+  --unverif-100: #FBF3D6;
+  --unverif-050: #FEFAEA;
+  --unverif-stripe: rgba(184, 155, 69, 0.18);
+}
+
+/* ——— Sanction list cell states ——— */
+.s-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.s-cell .s-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+}
+
+/* Ok */
+.s-cell--ok .s-dot { background: var(--success-500); }
+.s-cell--ok       { color: var(--success-700); }
+
+/* Sanctioned */
+.s-cell--sanctioned .s-dot { background: var(--danger-500); }
+.s-cell--sanctioned        { color: var(--danger-700); font-weight: 600; }
+
+/* Unverifiable — the new state.
+   Hollow ring + question mark + amber-slate tone.
+   Clearly NOT green, clearly NOT red. */
+.s-cell--unverif .s-dot {
+  background: var(--white);
+  border: 1.5px solid var(--unverif-500);
+  color: var(--unverif-700);
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  width: 12px; height: 12px;
+}
+.s-cell--unverif .s-dot::after { content: "?"; }
+.s-cell--unverif { color: var(--unverif-700); }
+
+/* Treatment B — diagonal stripe pill (used in tweak variant) */
+.s-cell--unverif-stripe {
+  color: var(--unverif-700);
+  background:
+    repeating-linear-gradient(
+      45deg,
+      var(--unverif-100) 0 6px,
+      var(--unverif-050) 6px 12px
+    );
+  border: 1px solid var(--unverif-300);
+  border-radius: 9999px;
+  padding: 2px 8px 2px 6px;
+}
+.s-cell--unverif-stripe .s-dot {
+  background: var(--white);
+  border: 1.5px solid var(--unverif-500);
+  color: var(--unverif-700);
+  font-size: 9px; font-weight: 800; line-height: 1;
+  width: 12px; height: 12px;
+}
+.s-cell--unverif-stripe .s-dot::after { content: "?"; }
+
+/* Treatment D — minimalist dash with small warn glyph (Sarah/Gabriel's ask) */
+.s-cell--unverif-dash {
+  color: var(--text-muted);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.s-cell--unverif-dash .dash {
+  display: inline-block;
+  width: 12px; text-align: center;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.s-cell--unverif-dash .warn-glyph {
+  color: var(--unverif-500);
+  display: inline-flex;
+}
+
+/* Treatment C — neutral grey "N/A" with warn affordance */
+.s-cell--unverif-na .s-dot {
+  background: var(--slate-200);
+  border: 1px solid var(--slate-300);
+  width: 14px; height: 14px;
+  border-radius: 3px;
+  color: var(--slate-600);
+  font-size: 9px; font-weight: 700;
+  line-height: 1;
+}
+.s-cell--unverif-na .s-dot::after { content: "N/A"; font-size: 7.5px; letter-spacing: -0.02em; }
+.s-cell--unverif-na { color: var(--slate-600); }
+.s-cell--unverif-na .warn-tag {
+  display: inline-flex; align-items: center; gap: 2px;
+  color: var(--unverif-700);
+  font-size: 10.5px; font-weight: 600;
+}
+
+/* ——— Row-level affordance for unverifiable subjects ——— */
+tr.row--unverif > td {
+  background: var(--unverif-050);
+}
+tr.row--unverif:hover > td {
+  background: #FAF1C4 !important;
+}
+tr.row--unverif > td:first-child {
+  position: relative;
+}
+tr.row--unverif > td:first-child::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--unverif-500);
+}
+
+/* Subject value styling — "Unknown" / "Unknown Entity" */
+.s-subject-unknown {
+  color: var(--unverif-700);
+  font-style: italic;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.s-subject-unknown .warn-icon {
+  width: 12px; height: 12px;
+  flex-shrink: 0;
+}
+
+/* ——— Banner alert variant for "cannot be analysed" ——— */
+.ds-alert--unverif {
+  background: var(--unverif-050);
+  border-color: var(--unverif-300);
+  color: var(--unverif-700);
+}
+.ds-alert--unverif .ds-alert-title { color: var(--unverif-700); }
+
+/* ——— Tabs/badge: warning indicator dot on tab label ——— */
+.tab-warn-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--unverif-500);
+  margin-left: 6px;
+  vertical-align: middle;
+  box-shadow: 0 0 0 2px var(--white);
+}
+
+/* ——— "With sanctions" gauge note when unverifiable ——— */
+.gauge-warn {
+  background: var(--unverif-050);
+  border: 1px dashed var(--unverif-300);
+  color: var(--unverif-700);
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  font-size: 11.5px;
+  display: flex; gap: 6px; align-items: flex-start;
+  line-height: 1.4;
+}
+
+/* ——— Mini info popover (hover detail) ——— */
+.info-popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 6px;
+  width: 280px;
+  background: var(--slate-900);
+  color: var(--white);
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  line-height: 1.45;
+  box-shadow: var(--card-shadow-raised);
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-4px);
+  transition: opacity var(--motion-fast) var(--ease-out), transform var(--motion-fast) var(--ease-out);
+}
+.info-popover::before {
+  content: "";
+  position: absolute;
+  top: -5px; left: 16px;
+  width: 10px; height: 10px;
+  background: var(--slate-900);
+  transform: rotate(45deg);
+}
+.info-popover-trigger:hover .info-popover,
+.info-popover-trigger:focus-within .info-popover {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+.info-popover strong { color: var(--unverif-300); }
+.info-popover .pop-title {
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 4px;
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* Compact reuse */
+.row-flex { display: flex; align-items: center; gap: 8px; }
+.muted { color: var(--text-muted); }
+
+/* App container styles for the mock */
+.mock-frame {
+  background: var(--white);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--card-shadow-rest);
+}
+.mock-frame__chrome {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px;
+  background: #2d6cdf;
+  color: var(--white);
+  font-size: 12px;
+}
+.mock-frame__chrome .url {
+  flex: 1;
+  background: rgba(255,255,255,0.18);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: rgba(255,255,255,0.92);
+}
+.mock-tabs {
+  display: flex;
+  background: var(--white);
+  border-bottom: 1px solid var(--border-default);
+  padding: 0 14px;
+  gap: 0;
+}
+.mock-tab {
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 10px 14px;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.mock-tab[aria-selected="true"] {
+  color: var(--brand-600);
+  border-bottom-color: var(--brand-600);
+  font-weight: 600;
+}
+
+/* Compliance table specifics */
+.compliance-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+.compliance-table th {
+  text-align: left;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-default);
+  background: var(--slate-50);
+}
+.compliance-table th.center { text-align: center; }
+.compliance-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  vertical-align: middle;
+}
+.compliance-table td.center { text-align: center; }
+.compliance-table tbody tr:last-child td { border-bottom: 0; }
+.compliance-table .rel {
+  font-weight: 500;
+  color: var(--text-primary);
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.compliance-table .rel .ico {
+  color: var(--text-muted);
+}
+.compliance-table .name a {
+  color: var(--brand-500);
+  text-decoration: none;
+}
+.compliance-table .name a:hover { text-decoration: underline; }
+
+/* Audit before/after sections */
+.audit-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 1100px) {
+  .audit-section { grid-template-columns: 1fr; }
+}
+.audit-pane {
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--white);
+  overflow: hidden;
+}
+.audit-pane__head {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.audit-pane--before .audit-pane__head {
+  background: var(--danger-050);
+  color: var(--danger-700);
+  border-bottom-color: var(--danger-100);
+}
+.audit-pane--after .audit-pane__head {
+  background: var(--success-050);
+  color: var(--success-700);
+  border-bottom-color: var(--success-100);
+}
+.audit-pane__pill {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  background: rgba(255,255,255,0.6);
+}
+
+.page-wrap {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+.page-head {
+  margin-bottom: 24px;
+}
+.page-eyebrow {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--brand-500);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+}
+.page-head h1 {
+  font-family: var(--font-display);
+  font-size: 26px;
+  letter-spacing: -0.015em;
+  margin: 0 0 8px;
+}
+.page-head p {
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 720px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.section-block {
+  margin-top: 36px;
+}
+.section-block h2 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  margin: 0 0 4px;
+  letter-spacing: -0.01em;
+}
+.section-block .lead {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0 0 14px;
+  max-width: 720px;
+}
+
+/* Diff list */
+.diff-list { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 6px; }
+.diff-list li {
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--slate-50);
+  display: flex; gap: 8px;
+}
+.diff-list li::before {
+  content: "→";
+  color: var(--brand-500);
+  font-weight: 600;
+}
+
+/* small group gauge / overall card mini-display */
+.mini-gauge {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--white);
+}
+.mini-gauge__head {
+  display: flex; align-items: baseline; justify-content: space-between;
+}
+.mini-gauge__title {
+  font-size: 12px; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+}
+
+/* Hide tweaks-only rationale by default */
+.show-only-treatment-default,
+.show-only-treatment-stripe,
+.show-only-treatment-na { display: none; }
+.treatment-default .show-only-treatment-default { display: block; }
+.treatment-stripe  .show-only-treatment-stripe  { display: block; }
+.treatment-na      .show-only-treatment-na      { display: block; }

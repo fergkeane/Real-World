@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Brand" name="Modal — Component Spec" subtitle="Tokenized, accessible dialog refactored from AddPortModal" -->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Modal · Skytek Design System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="components/rw-modal.css" />
+<style>
+  body { background: var(--bg-app); }
+  .doc { max-width: 1080px; margin: 0 auto; padding: 0 32px 96px; }
+
+  /* Hero */
+  .doc-hero { padding: 56px 0 36px; border-bottom: 1px solid var(--border-subtle); }
+  .doc-kicker { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600;
+    color: var(--brand-600); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+  .doc-kicker .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--brand-500); }
+  .doc-hero h1 { font-family: var(--font-display); font-size: 40px; line-height: 1.1; letter-spacing: -0.02em; margin: 0 0 12px; }
+  .doc-hero p { font-size: 17px; line-height: 1.6; color: var(--text-secondary); max-width: 720px; margin: 0; }
+  .doc-meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+  .doc-meta .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-family: var(--font-mono);
+    color: var(--text-secondary); background: var(--bg-surface); border: 1px solid var(--border-default);
+    padding: 5px 10px; border-radius: var(--radius-pill); }
+  .doc-meta .chip strong { color: var(--text-primary); font-weight: 600; }
+
+  /* Section rhythm */
+  .doc-sec { padding: 48px 0; border-bottom: 1px solid var(--border-subtle); }
+  .doc-sec > .lbl { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); letter-spacing: 0.04em; }
+  .doc-sec > h2 { font-family: var(--font-display); font-size: 26px; letter-spacing: -0.015em; margin: 6px 0 8px; }
+  .doc-sec > .lead { font-size: 15px; line-height: 1.6; color: var(--text-secondary); max-width: 760px; margin: 0 0 28px; }
+
+  /* Demo trigger cards */
+  .demo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(248px, 1fr)); gap: 14px; }
+  .demo-card { display: flex; flex-direction: column; gap: 12px; padding: 18px; background: var(--bg-surface);
+    border: 1px solid var(--border-default); border-radius: var(--radius-lg); }
+  .demo-card .hd { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .demo-card .hd h3 { margin: 0; font-size: 14px; font-weight: 600; }
+  .demo-card .hd code { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-muted); }
+  .demo-card p { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--text-secondary); flex: 1; }
+  .demo-card .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .size-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  /* Anatomy schematic */
+  .anatomy { display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; align-items: start; }
+  .schematic { border: 1px solid var(--border-default); border-radius: var(--radius-lg); overflow: hidden;
+    background:
+      linear-gradient(var(--bg-canvas), var(--bg-canvas)),
+      repeating-conic-gradient(#fff 0 25%, transparent 0 50%) 50% / 16px 16px;
+    padding: 28px; }
+  .sch-modal { background: #fff; border-radius: 12px; box-shadow: var(--card-shadow-raised);
+    overflow: hidden; position: relative; }
+  .sch-region { position: relative; }
+  .sch-num { position: absolute; top: 8px; left: 8px; z-index: 2; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--brand-600); color: #fff; font-size: 11px; font-weight: 700; display: grid; place-items: center;
+    font-family: var(--font-mono); }
+  .sch-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 14px 36px;
+    border-bottom: 1px solid var(--border-default); }
+  .sch-title { font-family: var(--font-display); font-weight: 700; font-size: 14px; }
+  .sch-x { width: 24px; height: 24px; border-radius: 50%; background: #1e293b; }
+  .sch-body { padding: 18px 16px 18px 36px; min-height: 110px; display: flex; flex-direction: column; gap: 8px; }
+  .sch-line { height: 9px; border-radius: 4px; background: var(--slate-150); }
+  .sch-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 16px 14px 36px;
+    border-top: 1px solid var(--border-default); }
+  .sch-btn { height: 30px; width: 76px; border-radius: 6px; }
+  .sch-btn.sec { background: #fff; border: 1px solid var(--border-default); }
+  .sch-btn.pri { background: var(--brand-600); }
+  .sch-overlay-tag { position: absolute; top: 8px; right: 10px; font-family: var(--font-mono); font-size: 10px;
+    color: var(--brand-600); }
+
+  .slot-legend { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg); overflow: hidden; background: var(--bg-surface); }
+  .slot-item { display: grid; grid-template-columns: 28px 1fr; gap: 12px; padding: 14px 16px;
+    border-top: 1px solid var(--border-subtle); }
+  .slot-item:first-child { border-top: 0; }
+  .slot-item .n { width: 22px; height: 22px; border-radius: 50%; background: var(--brand-050); color: var(--brand-600);
+    font-family: var(--font-mono); font-size: 11px; font-weight: 700; display: grid; place-items: center; }
+  .slot-item .nm { font-size: 13px; font-weight: 600; }
+  .slot-item .nm code { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); font-weight: 400; margin-left: 6px; }
+  .slot-item .ds { font-size: 12.5px; line-height: 1.5; color: var(--text-secondary); margin-top: 3px; }
+
+  /* Demo form (AddPort rebuild) field styles */
+  .demo-twocol { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 20px; }
+  .demo-formgrid { display: grid; gap: 12px; align-content: start; }
+  .demo-field { display: grid; grid-template-columns: 140px 1fr; gap: 14px; align-items: center; }
+  .demo-field-label { font-size: 13px; color: #334155; }
+  .demo-field-control { width: 100%; border: 1px solid #d1d5db; border-radius: 6px; padding: 7px 10px;
+    font: inherit; font-size: 13px; color: #0f172a; background: #fff; transition: border-color 120ms, box-shadow 120ms; }
+  .demo-field-control:focus { outline: 0; border-color: var(--brand-400); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+  .demo-field-select { appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 28px;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center; }
+  .demo-map { min-height: 360px; border: 1px solid #e2e8f0; border-radius: 8px; display: grid; place-items: center;
+    background:
+      linear-gradient(135deg, rgba(45,127,251,0.05), rgba(45,127,251,0.02)),
+      repeating-linear-gradient(45deg, #eef2f7 0 10px, #e6ecf3 10px 20px); }
+  .demo-map-cap { font-family: var(--font-mono); font-size: 11px; color: #64748b; background: rgba(255,255,255,0.8);
+    padding: 4px 10px; border-radius: 6px; }
+  @media (max-width: 768px) { .demo-twocol { grid-template-columns: 1fr; } .demo-map { min-height: 220px; } .demo-field { grid-template-columns: 1fr; gap: 4px; } }
+
+  /* Token table swatch */
+  .tok-sw { width: 22px; height: 22px; border-radius: 5px; border: 1px solid rgba(0,0,0,0.08); display: inline-block; vertical-align: middle; }
+
+  @media (max-width: 820px) {
+    .anatomy { grid-template-columns: 1fr; }
+    .doc { padding: 0 20px 72px; }
+    .doc-hero h1 { font-size: 32px; }
+  }
+</style>
+</head>
+<body>
+<main class="doc">
+
+  <!-- ░░ HERO ░░ -->
+  <header class="doc-hero" data-screen-label="Modal spec">
+    <div class="doc-kicker"><span class="dot"></span> Component · Overlay</div>
+    <h1>Modal</h1>
+    <p>A single, tokenized dialog primitive that standardizes every popup on the platform — assembled from five composable slots, accessible by default, and re-themeable through CSS variables. Refactored from the original <code class="inline">AddPortModal</code>.</p>
+    <div class="doc-meta">
+      <span class="chip"><strong>API</strong> RWModal.open()</span>
+      <span class="chip"><strong>Sizes</strong> SM · MD · LG · XL · Full</span>
+      <span class="chip"><strong>Deps</strong> none (vanilla JS)</span>
+      <span class="chip"><strong>A11y</strong> dialog · focus-trap · ESC</span>
+    </div>
+  </header>
+
+  <!-- ░░ 1 · LIVE DEMOS ░░ -->
+  <section class="doc-sec">
+    <div class="lbl">01 — Playground</div>
+    <h2>Live behavior</h2>
+    <p class="lead">Every dialog below is the real component. Open one and press <kbd>Tab</kbd> to feel the focus trap, <kbd>Esc</kbd> to dismiss, or click the dimmed backdrop where enabled. Focus returns to the trigger button on close.</p>
+
+    <div class="demo-grid">
+      <div class="demo-card">
+        <div class="hd"><h3>Size variants</h3></div>
+        <p>One shell, five widths. Header / body / footer scale identically.</p>
+        <div class="actions size-row">
+          <button class="ds-btn ds-btn--secondary ds-btn--sm" onclick="ModalDemos.openSize('sm')">SM</button>
+          <button class="ds-btn ds-btn--secondary ds-btn--sm" onclick="ModalDemos.openSize('md')">MD</button>
+          <button class="ds-btn ds-btn--secondary ds-btn--sm" onclick="ModalDemos.openSize('lg')">LG</button>
+          <button class="ds-btn ds-btn--secondary ds-btn--sm" onclick="ModalDemos.openSize('xl')">XL</button>
+          <button class="ds-btn ds-btn--secondary ds-btn--sm" onclick="ModalDemos.openSize('full')">Full</button>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <div class="hd"><h3>Scrollable body</h3></div>
+        <p>Long content scrolls inside the body; the header and footer stay pinned.</p>
+        <div class="actions"><button class="ds-btn ds-btn--primary ds-btn--sm" onclick="ModalDemos.openScrollable()">Open long dialog</button></div>
+      </div>
+
+      <div class="demo-card">
+        <div class="hd"><h3>Dismiss policy</h3><code>closeOnOverlayClick</code></div>
+        <p>Toggle whether a backdrop click dismisses, or forces an explicit action.</p>
+        <div class="actions">
+          <button class="ds-btn ds-btn--secondary ds-btn--sm" onclick="ModalDemos.openOverlay(true)">Dismissible</button>
+          <button class="ds-btn ds-btn--secondary ds-btn--sm" onclick="ModalDemos.openOverlay(false)">Locked</button>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <div class="hd"><h3>Confirm helper</h3><code>RWModal.confirm()</code></div>
+        <p>Promise-based destructive confirmation with the danger button variant.</p>
+        <div class="actions"><button class="ds-btn ds-btn--danger ds-btn--sm" onclick="ModalDemos.openConfirm()">Delete portfolio…</button></div>
+      </div>
+
+      <div class="demo-card">
+        <div class="hd"><h3>Composed by hand</h3><code>RWModal.parts</code></div>
+        <p>Assembled slot-by-slot with the low-level builders, then mounted.</p>
+        <div class="actions"><button class="ds-btn ds-btn--secondary ds-btn--sm" onclick="ModalDemos.openComposed()">Open composed</button></div>
+      </div>
+
+      <div class="demo-card" style="border-color: var(--brand-300); background: var(--brand-050);">
+        <div class="hd"><h3>Add a new Port</h3><code>rebuilt</code></div>
+        <p>The original modal, faithfully rebuilt on the standardized shell.</p>
+        <div class="actions"><button class="ds-btn ds-btn--primary ds-btn--sm" onclick="ModalDemos.openAddPort()">Open rebuilt modal</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ░░ 2 · ANATOMY ░░ -->
+  <section class="doc-sec">
+    <div class="lbl">02 — Structure</div>
+    <h2>Anatomy: five slots</h2>
+    <p class="lead">The component decomposes into five independently styleable regions. The high-level <code class="inline">open()</code> assembles them for you; <code class="inline">RWModal.parts.*</code> exposes each as a builder for full control.</p>
+
+    <div class="anatomy">
+      <div class="schematic">
+        <div class="sch-modal sch-region">
+          <span class="sch-overlay-tag">①&nbsp;overlay wraps everything</span>
+          <div class="sch-region sch-head"><span class="sch-num">3</span><span class="sch-title">Dialog title</span><span class="sch-x"></span></div>
+          <div class="sch-region sch-body">
+            <span class="sch-num">4</span>
+            <div class="sch-line" style="width:90%"></div>
+            <div class="sch-line" style="width:78%"></div>
+            <div class="sch-line" style="width:84%"></div>
+            <div class="sch-line" style="width:60%"></div>
+          </div>
+          <div class="sch-region sch-foot"><span class="sch-num">5</span><span class="sch-btn sec"></span><span class="sch-btn pri"></span></div>
+          <span class="sch-num" style="top:-10px; left:-10px;">2</span>
+        </div>
+      </div>
+
+      <div class="slot-legend">
+        <div class="slot-item"><span class="n">1</span><div><div class="nm">Overlay / Backdrop <code>.rw-modal-overlay</code></div><div class="ds">Fixed full-bleed scrim — <code class="inline">rgba(15,23,42,.45)</code> + 2px blur. Centers the container and owns the dismiss-on-backdrop click.</div></div></div>
+        <div class="slot-item"><span class="n">2</span><div><div class="nm">Container <code>.rw-modal</code></div><div class="ds">The surface: 12px radius, layered elevation, size-bounded max-width, capped at the viewport with internal flex column.</div></div></div>
+        <div class="slot-item"><span class="n">3</span><div><div class="nm">Header <code>.rw-modal-header</code></div><div class="ds">Title (+ optional subtitle) and the standardized circular close button. Pinned — never scrolls.</div></div></div>
+        <div class="slot-item"><span class="n">4</span><div><div class="nm">Body <code>.rw-modal-body</code></div><div class="ds">The only scroll region. Consistent <code class="inline">20px / 24px</code> inner padding; <code class="inline">overscroll-behavior: contain</code>.</div></div></div>
+        <div class="slot-item"><span class="n">5</span><div><div class="nm">Footer <code>.rw-modal-footer</code></div><div class="ds">Right-aligned actions with token-driven gap. Primary / secondary / ghost / danger button variants; split layout for destructive-left.</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ░░ 3 · SIZES ░░ -->
+  <section class="doc-sec">
+    <div class="lbl">03 — Sizing</div>
+    <h2>Size variants</h2>
+    <p class="lead">Set with the <code class="inline">size</code> prop. Each maps to one max-width token — widths are the only thing that changes.</p>
+    <div class="panel" style="overflow:hidden;">
+      <table class="spec-table" style="border:0;">
+        <thead><tr><th>Variant</th><th>Prop</th><th>Token</th><th>Max-width</th><th>Use for</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Small</strong></td><td><code>size="sm"</code></td><td><code>--rw-modal-w-sm</code></td><td>420px</td><td>Confirmations, single-field prompts, alerts</td></tr>
+          <tr><td><strong>Medium</strong> <span class="t-caption">(default)</span></td><td><code>size="md"</code></td><td><code>--rw-modal-w-md</code></td><td>620px</td><td>Standard forms, settings panels</td></tr>
+          <tr><td><strong>Large</strong></td><td><code>size="lg"</code></td><td><code>--rw-modal-w-lg</code></td><td>820px</td><td>Multi-section forms, side-by-side content</td></tr>
+          <tr><td><strong>Extra-large</strong></td><td><code>size="xl"</code></td><td><code>--rw-modal-w-xl</code></td><td>1100px</td><td>Form + map / preview (e.g. Add Port)</td></tr>
+          <tr><td><strong>Full-bleed</strong></td><td><code>size="full"</code></td><td>—</td><td>viewport − 48px</td><td>Immersive editors, data tables</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ░░ 4 · API ░░ -->
+  <section class="doc-sec">
+    <div class="lbl">04 — API</div>
+    <h2>Props</h2>
+    <p class="lead"><code class="inline">RWModal.open(config)</code> returns an instance with <code class="inline">.close()</code>, <code class="inline">.query()</code>, <code class="inline">.el</code>, and <code class="inline">.modal</code>.</p>
+    <div class="panel" style="overflow:hidden;">
+      <table class="spec-table" style="border:0;">
+        <thead><tr><th>Prop</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>size</code></td><td><code>'sm'|'md'|'lg'|'xl'|'full'</code></td><td><code>'md'</code></td><td>Container width variant.</td></tr>
+          <tr><td><code>title</code></td><td>string</td><td>—</td><td>Header title; also wires <code class="inline">aria-labelledby</code>.</td></tr>
+          <tr><td><code>subtitle</code></td><td>string</td><td>—</td><td>Secondary line under the title.</td></tr>
+          <tr><td><code>body</code></td><td>string | Node | fn</td><td>—</td><td>Content slot. A function receives the body element to populate imperatively.</td></tr>
+          <tr><td><code>footer</code></td><td>Button[] | Node | <code>false</code></td><td>—</td><td>Array of button configs, custom node, or <code class="inline">false</code> to omit.</td></tr>
+          <tr><td><code>closeButton</code></td><td>boolean</td><td><code>true</code></td><td>Show the standardized × in the header.</td></tr>
+          <tr><td><code>closeOnOverlayClick</code></td><td>boolean</td><td><code>true</code></td><td>Dismiss when the backdrop is clicked.</td></tr>
+          <tr><td><code>closeOnEsc</code></td><td>boolean</td><td><code>true</code></td><td>Dismiss on the Escape key.</td></tr>
+          <tr><td><code>align</code></td><td><code>'center'|'top'</code></td><td><code>'center'</code></td><td>Vertical placement within the viewport.</td></tr>
+          <tr><td><code>initialFocus</code></td><td>selector | Node</td><td>first field</td><td>Element to focus on open.</td></tr>
+          <tr><td><code>onOpen</code></td><td><code>(instance) =&gt; void</code></td><td>—</td><td>Fires after mount + initial focus.</td></tr>
+          <tr><td><code>onClose</code></td><td><code>() =&gt; void</code></td><td>—</td><td>Fires after the close animation completes.</td></tr>
+          <tr><td><code>ariaLabel</code></td><td>string</td><td>—</td><td>Accessible name when there is no visible <code class="inline">title</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="t-h4" style="margin:28px 0 8px;">Footer button config</h3>
+    <div class="panel" style="overflow:hidden;">
+      <table class="spec-table" style="border:0;">
+        <thead><tr><th>Key</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>label</code></td><td>string</td><td>Button text.</td></tr>
+          <tr><td><code>variant</code></td><td><code>'primary'|'secondary'|'ghost'|'danger'</code></td><td>Visual weight / intent.</td></tr>
+          <tr><td><code>onClick</code></td><td><code>(instance) =&gt; void|false</code></td><td>Handler. Return <code class="inline">false</code> to keep the dialog open (e.g. failed validation).</td></tr>
+          <tr><td><code>closeOnClick</code></td><td>boolean</td><td>Force-close after the handler. Defaults to closing unless the handler returns <code class="inline">false</code>.</td></tr>
+          <tr><td><code>disabled</code></td><td>boolean</td><td>Render the button disabled.</td></tr>
+          <tr><td><code>autoFocus</code></td><td>boolean</td><td>Receive initial focus on open.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ░░ 5 · TOKENS ░░ -->
+  <section class="doc-sec">
+    <div class="lbl">05 — Theming</div>
+    <h2>Design tokens</h2>
+    <p class="lead">Every visual property reads from a <code class="inline">--rw-modal-*</code> variable. Override them on <code class="inline">:root</code> — or on any ancestor — to re-theme without touching markup. Defaults are self-contained; <code class="inline">--brand-*</code> are inherited when a host system defines them.</p>
+    <div class="panel" style="overflow:hidden;">
+      <table class="spec-table" style="border:0;">
+        <thead><tr><th>Token</th><th>Default</th><th>Controls</th></tr></thead>
+        <tbody>
+          <tr><td><code>--rw-modal-scrim</code></td><td><span class="tok-sw" style="background:rgba(15,23,42,.45)"></span> rgba(15,23,42,.45)</td><td>Backdrop color / opacity</td></tr>
+          <tr><td><code>--rw-modal-scrim-blur</code></td><td>2px</td><td>Backdrop blur radius</td></tr>
+          <tr><td><code>--rw-modal-surface</code></td><td><span class="tok-sw" style="background:#fff"></span> #ffffff</td><td>Container background</td></tr>
+          <tr><td><code>--rw-modal-radius</code></td><td>12px</td><td>Container corner roundness</td></tr>
+          <tr><td><code>--rw-modal-control-radius</code></td><td>6px</td><td>Button / control roundness</td></tr>
+          <tr><td><code>--rw-modal-shadow</code></td><td>layered</td><td>Container elevation</td></tr>
+          <tr><td><code>--rw-modal-pad-x</code> / <code>-pad-y</code></td><td>24px / 20px</td><td>Body inner padding</td></tr>
+          <tr><td><code>--rw-modal-action-gap</code></td><td>10px</td><td>Footer button spacing</td></tr>
+          <tr><td><code>--rw-modal-w-{sm…xl}</code></td><td>420–1100px</td><td>Size-variant widths</td></tr>
+          <tr><td><code>--rw-modal-primary</code></td><td><span class="tok-sw" style="background:#2563eb"></span> brand-600</td><td>Primary button fill</td></tr>
+          <tr><td><code>--rw-modal-danger</code></td><td><span class="tok-sw" style="background:#dc2626"></span> #dc2626</td><td>Destructive button fill</td></tr>
+          <tr><td><code>--rw-modal-focus-ring</code></td><td>3px brand ring</td><td>Keyboard focus indicator</td></tr>
+          <tr><td><code>--rw-modal-motion</code></td><td>140ms</td><td>Open / close duration</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ░░ 6 · ACCESSIBILITY ░░ -->
+  <section class="doc-sec">
+    <div class="lbl">06 — Accessibility</div>
+    <h2>Built-in a11y</h2>
+    <p class="lead">The component ships WCAG-aligned behavior so consumers don't re-implement it per modal.</p>
+    <div class="grid-2">
+      <div class="callout"><strong>Roles &amp; naming.</strong> The overlay carries <code class="inline">role="dialog"</code> and <code class="inline">aria-modal="true"</code>, with <code class="inline">aria-labelledby</code> bound to the title (or <code class="inline">aria-label</code> when titleless).</div>
+      <div class="callout"><strong>Focus trap.</strong> <kbd>Tab</kbd> / <kbd>Shift+Tab</kbd> cycle within the dialog; a <code class="inline">focusin</code> guard pulls focus back if it ever escapes.</div>
+      <div class="callout"><strong>Return focus.</strong> The element that opened the modal is restored on close, so keyboard users never lose their place.</div>
+      <div class="callout"><strong>Dismissal.</strong> <kbd>Esc</kbd> closes (when enabled); background scroll is locked and nested modals are reference-counted.</div>
+      <div class="callout"><strong>Visible focus.</strong> All interactive elements expose a <code class="inline">:focus-visible</code> ring — never <code class="inline">outline:none</code> without a replacement.</div>
+      <div class="callout"><strong>Reduced motion.</strong> Rise / fade animations collapse under <code class="inline">prefers-reduced-motion</code>.</div>
+    </div>
+  </section>
+
+  <!-- ░░ 7 · USAGE ░░ -->
+  <section class="doc-sec" style="border-bottom:0;">
+    <div class="lbl">07 — Usage</div>
+    <h2>Assembling a modal</h2>
+    <p class="lead">Link the two files, then call the high-level API or compose the slots by hand.</p>
+
+    <h3 class="t-h4" style="margin:8px 0 8px;">Install</h3>
+    <pre class="code">&lt;link rel="stylesheet" href="components/rw-modal.css"&gt;
+&lt;script src="components/rw-modal.js"&gt;&lt;/script&gt;</pre>
+
+    <h3 class="t-h4" style="margin:24px 0 8px;">High-level — open() with slots</h3>
+    <pre class="code">const modal = RWModal.open({
+  size: 'md',
+  title: 'Add a new Port',
+  subtitle: 'Define location and metadata',
+  closeOnOverlayClick: false,        // form has unsaved input
+  initialFocus: '#field-name',
+  body: (el) =&gt; {                    // body slot — populate imperatively
+    el.appendChild(buildPortForm());
+  },
+  footer: [                          // footer slot — button variants
+    { label: 'Cancel', variant: 'secondary', closeOnClick: true },
+    { label: 'Save',   variant: 'primary', onClick: (m) =&gt; {
+        const name = m.query('#field-name').value;
+        if (!name) return false;     // keep open on validation failure
+        save(name);
+        m.close();
+    }},
+  ],
+  onClose: () =&gt; console.log('dismissed'),
+});</pre>
+
+    <h3 class="t-h4" style="margin:24px 0 8px;">Low-level — compose the sub-components</h3>
+    <pre class="code">const P = RWModal.parts;
+const overlay   = P.Overlay({ labelledby: 'm-title' });
+const container = P.Container({ size: 'lg' });
+
+container.appendChild(P.Header({ title: 'Settings', titleId: 'm-title' }));
+container.appendChild(P.Body(myContentNode));
+container.appendChild(P.Footer([
+  { label: 'Done', variant: 'primary', onClick: (m) =&gt; m.close() },
+]));
+overlay.appendChild(container);
+
+// mount() wires focus-trap, ESC, scroll-lock and return-focus
+RWModal.mount(overlay, { closeOnOverlayClick: true, closeOnEsc: true });</pre>
+
+    <h3 class="t-h4" style="margin:24px 0 8px;">Promise-based confirm</h3>
+    <pre class="code">const ok = await RWModal.confirm({
+  title: 'Delete portfolio?',
+  message: 'This cannot be undone.',
+  confirmLabel: 'Delete', danger: true,
+});
+if (ok) deletePortfolio();</pre>
+
+    <h3 class="t-h4" style="margin:24px 0 8px;">Re-theme via tokens</h3>
+    <pre class="code">:root {
+  --rw-modal-radius: 8px;
+  --rw-modal-primary: #0f766e;        /* teal brand */
+  --rw-modal-primary-hover: #115e59;
+  --rw-modal-scrim: rgba(2, 6, 23, 0.6);
+  --rw-modal-w-md: 560px;
+}</pre>
+  </section>
+
+</main>
+
+<script src="components/rw-modal.js"></script>
+<script src="components/rw-modal-demos.js"></script>
+</body>
+</html>

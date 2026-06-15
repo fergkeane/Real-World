@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Changelog · Skytek Design System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=15" />
+  <style>
+    /* ===== Changelog page chrome ===== */
+    .cl-page { max-width: 1000px; margin: 0 auto; padding: 0 0 96px; }
+
+    .cl-topbar {
+      position: sticky; top: 0; z-index: 30;
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 32px;
+      background: rgba(255,255,255,0.86);
+      backdrop-filter: saturate(160%) blur(10px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .cl-topbar .mark {
+      width: 30px; height: 30px; border-radius: 7px;
+      background: var(--brand-600); color: var(--white);
+      display: grid; place-items: center;
+      font-family: var(--font-display); font-weight: 700; font-size: 15px;
+      flex-shrink: 0;
+    }
+    .cl-topbar .wordmark { font-weight: 600; font-size: 14px; }
+    .cl-topbar .wordmark span { display: block; font-size: 11px; color: var(--text-muted); font-weight: 400; }
+    .cl-back {
+      margin-left: auto;
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 500; color: var(--text-link);
+      text-decoration: none; padding: 7px 12px; border-radius: var(--radius-md);
+      border: 1px solid var(--border-default); background: var(--white);
+      box-shadow: var(--shadow-xs);
+    }
+    .cl-back:hover { background: var(--slate-50); border-color: var(--border-strong); }
+    .cl-back svg { width: 15px; height: 15px; }
+
+    .cl-hero { padding: 48px 32px 28px; }
+    .cl-hero .eyebrow {
+      font-size: 12px; font-weight: 600; color: var(--brand-500);
+      text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px;
+    }
+    .cl-hero h1 { font-family: var(--font-display); font-size: 36px; line-height: 1.1; letter-spacing: -0.02em; margin: 0 0 12px; }
+    .cl-hero p { font-size: 16px; line-height: 24px; color: var(--text-secondary); max-width: 64ch; margin: 0; }
+
+    .cl-stats { display: flex; flex-wrap: wrap; gap: 28px; margin-top: 26px; }
+    .cl-stat .k { font-family: var(--font-mono); font-size: 26px; font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+    .cl-stat .l { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-top: 2px; }
+
+    /* ===== Controls ===== */
+    .cl-controls {
+      position: sticky; top: 59px; z-index: 20;
+      margin: 0 32px 28px; padding: 14px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+    }
+    .cl-search { position: relative; margin-bottom: 12px; }
+    .cl-search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-muted); pointer-events: none; }
+    .cl-search input { width: 100%; height: 38px; padding: 0 12px 0 36px; }
+    .cl-filters { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: end; }
+    .cl-field { display: grid; gap: 5px; min-width: 0; flex: 1 1 150px; }
+    .cl-field--date { flex: 1 1 250px; }
+    .cl-field label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); }
+    .cl-field .row { display: flex; gap: 6px; align-items: center; }
+    .cl-field .row .ds-input { flex: 1 1 0; min-width: 0; }
+    .cl-field .row span { font-size: 11px; color: var(--text-muted); }
+    .cl-clear { white-space: nowrap; flex: 0 0 auto; }
+    .cl-resultline { display: flex; align-items: center; gap: 8px; margin: 0 32px 18px; font-size: 13px; color: var(--text-secondary); }
+    .cl-resultline strong { color: var(--text-primary); }
+
+    /* ===== Timeline ===== */
+    .cl-timeline { padding: 0 32px; }
+    .cl-entry { display: grid; grid-template-columns: 168px 1fr; gap: 0; }
+    .cl-rail { position: relative; padding-right: 26px; }
+    .cl-rail::before {
+      content: ""; position: absolute; right: 7px; top: 6px; bottom: -26px;
+      width: 2px; background: var(--border-default);
+    }
+    .cl-entry:last-child .cl-rail::before { display: none; }
+    .cl-node {
+      position: absolute; right: 0; top: 4px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--white); border: 3px solid var(--brand-500);
+      box-shadow: 0 0 0 4px var(--bg-app);
+    }
+    .cl-node.is-breaking { border-color: var(--danger-500); }
+    .cl-node.is-minor    { border-color: var(--info-700); }
+    .cl-node.is-patch    { border-color: var(--success-700); }
+    .cl-node.is-doc      { border-color: var(--slate-400); }
+    .cl-rail .ver { font-family: var(--font-mono); font-size: 15px; font-weight: 600; color: var(--brand-600); letter-spacing: -0.01em; }
+    .cl-rail .date { font-size: 12px; color: var(--text-secondary); margin-top: 3px; font-variant-numeric: tabular-nums; }
+    .cl-rail .time { font-size: 11px; color: var(--text-muted); margin-top: 1px; font-variant-numeric: tabular-nums; }
+
+    .cl-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 26px; overflow: hidden;
+    }
+    .cl-card-head {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+      padding: 14px 18px; border-bottom: 1px solid var(--border-subtle);
+      background: var(--slate-50);
+    }
+    .cl-card-head .by { margin-left: auto; font-size: 12px; color: var(--text-muted); display: inline-flex; align-items: center; gap: 6px; }
+    .cl-card-head .by .who { color: var(--text-secondary); font-weight: 500; }
+    .cl-card-body { padding: 18px; }
+    .cl-summary { font-family: var(--font-display); font-size: 17px; line-height: 1.4; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 16px; }
+
+    .cl-block { margin-top: 16px; }
+    .cl-block:first-child { margin-top: 0; }
+    .cl-block > .lbl { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 7px; }
+    .cl-changes { margin: 0; padding: 0; list-style: none; display: grid; gap: 7px; }
+    .cl-changes li { position: relative; padding-left: 20px; font-size: 14px; line-height: 1.5; color: var(--text-primary); }
+    .cl-changes li::before {
+      content: ""; position: absolute; left: 4px; top: 9px;
+      width: 5px; height: 5px; border-radius: 50%; background: var(--brand-400);
+    }
+    .cl-reason { font-size: 14px; line-height: 1.55; color: var(--text-secondary); margin: 0; }
+    .cl-affected { display: flex; flex-wrap: wrap; gap: 6px; }
+    .cl-chip {
+      font-size: 12px; font-weight: 500; color: var(--text-secondary);
+      background: var(--slate-100); border: 1px solid var(--border-subtle);
+      padding: 3px 9px; border-radius: var(--radius-pill);
+    }
+
+    .cl-empty { text-align: center; padding: 64px 24px; color: var(--text-muted); }
+    .cl-empty .big { font-size: 15px; color: var(--text-secondary); font-weight: 500; margin-bottom: 6px; }
+
+    mark.cl-hl { background: var(--warning-100); color: inherit; border-radius: 2px; padding: 0 1px; }
+
+    @media (max-width: 760px) {
+      .cl-topbar, .cl-hero, .cl-controls, .cl-resultline, .cl-timeline { padding-left: 18px; padding-right: 18px; }
+      .cl-controls, .cl-resultline { margin-left: 18px; margin-right: 18px; }
+      .cl-hero h1 { font-size: 28px; }
+      .cl-filters { gap: 10px; }
+      .cl-field { flex: 1 1 130px; }
+      .cl-field--date { flex: 1 1 100%; }
+      .cl-clear { flex: 1 1 100%; }
+      .cl-entry { grid-template-columns: 1fr; }
+      .cl-rail { display: flex; align-items: baseline; gap: 12px; padding: 0 0 10px 0; }
+      .cl-rail::before, .cl-node { display: none; }
+      .cl-rail .date, .cl-rail .time { margin-top: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="changelog-data.js?v=2"></script>
+
+  <script type="text/babel">
+    const { useState, useMemo } = React;
+
+    const CATEGORIES = ["Component", "Pattern", "Token", "Documentation", "Accessibility", "Brand", "Asset", "Other"];
+    const IMPACTS = ["Breaking", "Minor", "Patch", "Documentation Only"];
+
+    const impactClass = (i) =>
+      i === "Breaking" ? "is-breaking" :
+      i === "Minor" ? "is-minor" :
+      i === "Patch" ? "is-patch" : "is-doc";
+
+    const impactBadge = (i) =>
+      i === "Breaking" ? "ds-badge--danger" :
+      i === "Minor" ? "ds-badge--info" :
+      i === "Patch" ? "ds-badge--success" : "ds-badge--neutral";
+
+    // turn "2026-06-15T14:32:00Z" into a Date for range comparison
+    const dayOf = (iso) => iso.slice(0, 10); // YYYY-MM-DD
+
+    const Icon = ({ d, size = 16 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        {d}
+      </svg>
+    );
+
+    // highlight search term inside a string
+    const Highlight = ({ text, q }) => {
+      if (!q) return <>{text}</>;
+      const idx = text.toLowerCase().indexOf(q.toLowerCase());
+      if (idx === -1) return <>{text}</>;
+      return (
+        <>
+          {text.slice(0, idx)}
+          <mark className="cl-hl">{text.slice(idx, idx + q.length)}</mark>
+          {text.slice(idx + q.length)}
+        </>
+      );
+    };
+
+    const Entry = ({ e, q }) => (
+      <div className="cl-entry">
+        <div className="cl-rail">
+          <div className={`cl-node ${impactClass(e.impact)}`} />
+          <div className="ver">{e.version}</div>
+          <div className="date">{e.date}</div>
+          <div className="time">{e.time}</div>
+        </div>
+        <div className="cl-card">
+          <div className="cl-card-head">
+            <span className="ds-badge ds-badge--neutral">{e.category}</span>
+            <span className={`ds-badge ${impactBadge(e.impact)} ds-badge--dot`}>{e.impact}</span>
+            <span className="by">
+              <Icon d={<><path d="M20 6 9 17l-5-5"/></>} size={13} />
+              Updated by <span className="who">{e.updatedBy}</span>
+            </span>
+          </div>
+          <div className="cl-card-body">
+            <p className="cl-summary"><Highlight text={e.summary} q={q} /></p>
+
+            <div className="cl-block">
+              <div className="lbl">Detailed changes</div>
+              <ul className="cl-changes">
+                {e.changes.map((c, i) => <li key={i}><Highlight text={c} q={q} /></li>)}
+              </ul>
+            </div>
+
+            <div className="cl-block">
+              <div className="lbl">Reason for change</div>
+              <p className="cl-reason"><Highlight text={e.reason} q={q} /></p>
+            </div>
+
+            <div className="cl-block">
+              <div className="lbl">Affected areas</div>
+              <div className="cl-affected">
+                {e.affected.map((a, i) => <span key={i} className="cl-chip">{a}</span>)}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+
+    const App = () => {
+      const all = useMemo(() =>
+        (window.CHANGELOG_ENTRIES || []).slice().sort((a, b) => b.dateISO.localeCompare(a.dateISO)),
+      []);
+
+      const versions = useMemo(() => all.map(e => e.version), [all]);
+
+      const [q, setQ] = useState("");
+      const [cat, setCat] = useState("All");
+      const [impact, setImpact] = useState("All");
+      const [version, setVersion] = useState("All");
+      const [from, setFrom] = useState("");
+      const [to, setTo] = useState("");
+
+      const filtered = useMemo(() => {
+        const needle = q.trim().toLowerCase();
+        return all.filter(e => {
+          if (cat !== "All" && e.category !== cat) return false;
+          if (impact !== "All" && e.impact !== impact) return false;
+          if (version !== "All" && e.version !== version) return false;
+          const d = dayOf(e.dateISO);
+          if (from && d < from) return false;
+          if (to && d > to) return false;
+          if (needle) {
+            const hay = [
+              e.version, e.summary, e.reason, e.category, e.impact, e.date,
+              ...e.changes, ...e.affected
+            ].join(" ").toLowerCase();
+            if (!hay.includes(needle)) return false;
+          }
+          return true;
+        });
+      }, [all, q, cat, impact, version, from, to]);
+
+      const hasFilters = q || cat !== "All" || impact !== "All" || version !== "All" || from || to;
+      const clearAll = () => { setQ(""); setCat("All"); setImpact("All"); setVersion("All"); setFrom(""); setTo(""); };
+
+      const latest = all[0];
+
+      return (
+        <>
+          <div className="cl-topbar">
+            <div className="mark">S</div>
+            <div className="wordmark">Skytek<span>Design System</span></div>
+            <a className="cl-back" href="Skytek Design System.html#overview">
+              <Icon d={<><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></>} size={15} />
+              Back to design system
+            </a>
+          </div>
+
+          <div className="cl-page">
+            <header className="cl-hero">
+              <div className="eyebrow">Living record</div>
+              <h1>Changelog</h1>
+              <p>Every change to the Skytek Design System — components, patterns, tokens, documentation, accessibility, brand and assets — recorded in reverse-chronological order. New entries are appended automatically whenever the system changes.</p>
+              <div className="cl-stats">
+                <div className="cl-stat"><div className="k">{latest ? latest.version : "—"}</div><div className="l">Current version</div></div>
+                <div className="cl-stat"><div className="k">{all.length}</div><div className="l">Total entries</div></div>
+                <div className="cl-stat"><div className="k">{latest ? latest.date : "—"}</div><div className="l">Last updated</div></div>
+              </div>
+            </header>
+
+            <div className="cl-controls">
+              <div className="cl-search">
+                <Icon d={<><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></>} />
+                <input
+                  className="ds-input"
+                  type="search"
+                  placeholder="Search changelog — summary, changes, reason, affected areas…"
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  aria-label="Search changelog"
+                />
+              </div>
+              <div className="cl-filters">
+                <div className="cl-field">
+                  <label htmlFor="f-cat">Category</label>
+                  <select id="f-cat" className="ds-input ds-select" value={cat} onChange={(e) => setCat(e.target.value)}>
+                    <option value="All">All categories</option>
+                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="cl-field">
+                  <label htmlFor="f-impact">Impact level</label>
+                  <select id="f-impact" className="ds-input ds-select" value={impact} onChange={(e) => setImpact(e.target.value)}>
+                    <option value="All">All impact levels</option>
+                    {IMPACTS.map(i => <option key={i} value={i}>{i}</option>)}
+                  </select>
+                </div>
+                <div className="cl-field">
+                  <label htmlFor="f-ver">Version</label>
+                  <select id="f-ver" className="ds-input ds-select" value={version} onChange={(e) => setVersion(e.target.value)}>
+                    <option value="All">All versions</option>
+                    {versions.map(v => <option key={v} value={v}>{v}</option>)}
+                  </select>
+                </div>
+                <div className="cl-field cl-field--date">
+                  <label>Date range</label>
+                  <div className="row">
+                    <input className="ds-input" type="date" value={from} max={to || undefined} onChange={(e) => setFrom(e.target.value)} aria-label="From date" />
+                    <span>–</span>
+                    <input className="ds-input" type="date" value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)} aria-label="To date" />
+                  </div>
+                </div>
+                <button className="ds-btn ds-btn--ghost ds-btn--md cl-clear" onClick={clearAll} disabled={!hasFilters}>Clear</button>
+              </div>
+            </div>
+
+            <div className="cl-resultline">
+              Showing <strong>{filtered.length}</strong> of <strong>{all.length}</strong> {all.length === 1 ? "entry" : "entries"}
+              {hasFilters ? " (filtered)" : ""}
+            </div>
+
+            <div className="cl-timeline">
+              {filtered.length === 0 ? (
+                <div className="cl-empty">
+                  <div className="big">No entries match your filters.</div>
+                  <div>Try a different search term or clear the filters above.</div>
+                </div>
+              ) : (
+                filtered.map(e => <Entry key={e.version + e.dateISO} e={e} q={q.trim()} />)
+              )}
+            </div>
+          </div>
+        </>
+      );
+    };
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
