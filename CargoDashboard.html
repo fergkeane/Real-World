@@ -1412,11 +1412,23 @@ function initMaps() {
     const wrap = document.getElementById(`cargo-map-wrap-${i}`);
     const fsBtn = wrap && wrap.querySelector(`[data-map-fs="${i}"]`);
     if (fsBtn && wrap) {
+      let fsAnchor = null; // placeholder to restore wrap to its original spot
       fsBtn.onclick = () => {
         const isFs = wrap.classList.toggle('is-fullscreen');
         fsBtn.innerHTML = isFs ? SC.I.minimize : SC.I.maximize;
         fsBtn.title = isFs ? 'Exit fullscreen' : 'Toggle fullscreen';
         document.body.style.overflow = isFs ? 'hidden' : '';
+        // Reparent to <body> so the fixed, z-9999 wrap escapes the detail row's
+        // stacking context and paints above the app header/sidebar (z-50).
+        if (isFs) {
+          fsAnchor = document.createComment('cargo-map-fs-anchor');
+          wrap.parentNode.insertBefore(fsAnchor, wrap);
+          document.body.appendChild(wrap);
+        } else if (fsAnchor && fsAnchor.parentNode) {
+          fsAnchor.parentNode.insertBefore(wrap, fsAnchor);
+          fsAnchor.remove();
+          fsAnchor = null;
+        }
         setTimeout(() => map.invalidateSize(), 260);
       };
       document.addEventListener('keydown', (e) => {
