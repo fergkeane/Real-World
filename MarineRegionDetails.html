@@ -17,6 +17,12 @@
   .leaflet-control-zoom,.leaflet-bar{border:1px solid #e2e8f0!important;box-shadow:0 1px 2px rgba(15,23,42,.08)!important;border-radius:8px!important;overflow:hidden}
   .leaflet-bar a{background:#fff!important;color:#334155!important;line-height:30px!important}
   .leaflet-bar a:hover{background:#f1f5f9!important}
+  .leaflet-control-zoom a{display:flex!important;align-items:center;justify-content:center;padding:0!important}
+  .leaflet-control-zoom a svg{width:16px;height:16px}
+  #region-map .leaflet-top.leaflet-left{top:56px;left:2px}
+  #region-map .leaflet-top.leaflet-left .leaflet-bar{margin-left:10px!important}
+  #mrd-map-wrap.is-fullscreen{position:fixed!important;inset:0!important;z-index:9999!important;border-radius:0!important}
+  #mrd-layers-menu button:hover{background:#f1f5f9}
   /* Region popup — matches Regions page */
   .region-popup .leaflet-popup-content-wrapper{padding:0;border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,.15)}
   .region-popup .leaflet-popup-content{margin:0}
@@ -66,11 +72,128 @@
   .pf-tbl td{padding:9px 10px;font-size:13px;color:#334155;border-bottom:1px solid #f8fafc;vertical-align:middle}
   .pf-tbl tr:last-child td{border-bottom:0}
   .pf-tbl tbody tr:hover td{background:#fafafa}
+  /* Policies toolbar + table */
+  .pol-toolbar{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid #f1f5f9;flex-shrink:0;flex-wrap:wrap}
+  .pol-search{flex:1;min-width:200px;position:relative}
+  .pol-search input{width:100%;height:38px;border:1px solid #e2e8f0;border-radius:8px;padding:0 12px 0 36px;font-size:13.5px;color:#334155;font-family:inherit;outline:none;transition:border-color .15s,box-shadow .15s}
+  .pol-search input:focus{border-color:var(--brand-600,#2563eb);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .pol-search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94a3b8;width:15px;height:15px}
+  .pol-btn{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 14px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;font-size:13px;font-weight:600;color:#334155;font-family:inherit;cursor:pointer;white-space:nowrap;transition:background .15s,border-color .15s}
+  .pol-btn:hover{background:#f8fafc;border-color:#cbd5e1}
+  .pol-btn .pchev{color:#94a3b8}
+  .pol-btn-ghost{color:#94a3b8;border-style:solid}
+  .pol-btn-primary{background:var(--brand-600,#2563eb);border-color:var(--brand-600,#2563eb);color:#fff}
+  .pol-btn-primary:hover{background:var(--brand-700,#1d4ed8);border-color:var(--brand-700,#1d4ed8)}
+  .pol-tbl{width:100%;border-collapse:collapse}
+  .pol-tbl th{position:sticky;top:0;z-index:1;background:#fff;padding:10px 16px;font-size:11px;font-weight:600;color:var(--text-muted,#6B7280);text-transform:uppercase;letter-spacing:.04em;text-align:left;border-bottom:1px solid var(--border-default,#E5E7EB);white-space:nowrap;cursor:pointer;user-select:none}
+  .pol-tbl th:hover{color:var(--text-primary,#0f172a)}
+  .pol-tbl th .th-in{display:inline-flex;align-items:center;gap:6px}
+  .pol-tbl td{padding:13px 16px;font-size:13.5px;color:#334155;border-bottom:1px solid #f1f5f9;vertical-align:middle;white-space:nowrap}
+  .pol-tbl tbody tr:nth-child(even) td{background:#f8fafc}
+  .pol-tbl tbody tr:hover td{background:#eff6ff}
+  .pol-link{color:var(--brand-600,#2563eb);font-weight:500;cursor:pointer}
+  .pol-link:hover{text-decoration:underline}
+  .pol-flags{display:inline-flex;align-items:center;gap:12px}
+  .pol-flag{display:inline-flex;align-items:center;gap:6px}
+  /* Notifications header */
+  .notif-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid #f1f5f9;flex-shrink:0}
+  .notif-title{font-size:15px;font-weight:700;color:#0f172a}
+  .notif-tbl td{font-size:13.5px}
+  /* Region History */
+  .hist-title{font-size:15px;font-weight:700;color:#0f172a;padding:14px 16px 4px}
+  .hist-legend{display:grid;grid-template-columns:repeat(5,1fr);gap:8px 18px;padding:8px 20px 16px}
+  .hist-leg{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:#334155;min-width:0}
+  .hist-leg svg{flex-shrink:0}
+  .hist-leg span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .hist-controls{display:flex;gap:14px;padding:4px 20px 20px;flex-wrap:wrap}
+  .hist-panel{border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px;min-width:200px}
+  .hist-panel h4{font-size:14px;font-weight:700;color:#0f172a;margin:0 0 1px}
+  .hist-panel .hist-sub{font-size:12px;color:#94a3b8;margin-bottom:10px}
+  .hist-opt{display:flex;align-items:center;gap:9px;font-size:13.5px;color:#334155;padding:5px 0;cursor:pointer;user-select:none}
+  .hist-radio{width:18px;height:18px;border-radius:50%;border:1.5px solid #cbd5e1;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#fff;transition:background .15s,border-color .15s}
+  .hist-radio.on{background:var(--brand-600,#2563eb);border-color:var(--brand-600,#2563eb)}
+  .hist-check{width:18px;height:18px;border-radius:5px;border:1.5px solid #cbd5e1;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#fff;transition:background .15s,border-color .15s}
+  .hist-check.on{background:var(--brand-600,#2563eb);border-color:var(--brand-600,#2563eb)}
+  /* Create Region Report form */
+  .rpt-select{appearance:none;-webkit-appearance:none;height:38px;padding:0 34px 0 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;color:#334155;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;background-size:13px;font-family:inherit;cursor:pointer;outline:none;transition:border-color .15s,box-shadow .15s}
+  .rpt-select:hover{border-color:#cbd5e1}
+  .rpt-select:focus{border-color:var(--brand-600,#2563eb);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  /* DS button + card footer (mirrors design-system styles.css) */
+  .ds-btn{font-family:inherit;font-size:13px;font-weight:500;line-height:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 12px;height:32px;border-radius:6px;border:1px solid transparent;cursor:pointer;white-space:nowrap;text-decoration:none;outline:0;transition:background .15s,border-color .15s,color .15s,box-shadow .15s}
+  .ds-btn svg{width:14px;height:14px}
+  .ds-btn--sm{height:28px;font-size:12px;padding:0 10px}
+  .ds-btn--sm svg{width:12px;height:12px}
+  .ds-btn--primary{background:var(--brand-600,#2563eb);color:#fff;border-color:var(--brand-600,#2563eb)}
+  .ds-btn--primary:hover{background:var(--brand-500,#3b82f6);border-color:var(--brand-500,#3b82f6)}
+  .ds-btn--secondary{background:#fff;color:#1F2937;border-color:#E5E7EB;box-shadow:0 1px 2px rgba(15,23,42,.05)}
+  .ds-btn--secondary:hover{background:#F9FAFB;border-color:#cbd5e1}
+  .ds-btn--link{background:transparent;color:var(--brand-500,#3b82f6);padding:0;height:auto;border:0;font-weight:500}
+  .ds-btn--link:hover{color:var(--brand-600,#2563eb);text-decoration:underline}
+  .ds-btn--ghost{background:transparent;color:#374151}
+  .ds-btn--ghost:hover{background:#F3F4F6}
+  .ds-card-foot{padding:10px 16px;border-top:1px solid #ECEEF2;background:#F9FAFB;display:flex;justify-content:flex-end;gap:8px;flex-shrink:0;border-bottom-left-radius:inherit;border-bottom-right-radius:inherit}
+  .ds-card-foot--start{justify-content:flex-start}
+  .ds-card-foot .ds-btn{text-transform:uppercase;letter-spacing:.05em;font-weight:600;color:var(--brand-600,#2563eb)}
+  .ds-card-foot .ds-btn:hover{color:var(--brand-700,#1d4ed8)}
   /* Map btn */
   .map-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;color:#334155;box-shadow:0 1px 2px rgba(15,23,42,.08);cursor:pointer}
   .map-btn:hover{background:#f1f5f9}
+  /* Port marker — matches Ports page */
+  .port-marker{width:30px;height:30px;border-radius:50%;background:var(--brand-600,#2563eb);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center}
+  .port-marker-sanctioned{width:30px;height:30px;border-radius:50%;background:#dc2626;border:2px solid #fff;box-shadow:0 2px 8px rgba(220,38,38,.5);display:flex;align-items:center;justify-content:center;animation:pulse-red 2s infinite}
+  @keyframes pulse-red{0%,100%{box-shadow:0 2px 8px rgba(220,38,38,.5)}50%{box-shadow:0 0 0 6px rgba(220,38,38,.15),0 2px 8px rgba(220,38,38,.4)}}
+  /* Port popup — matches Ports page */
+  .port-popup .leaflet-popup-content-wrapper { padding:0; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(15,23,42,.25); }
+  .port-popup .leaflet-popup-content { margin:0; width:280px !important; font-family:'Inter',sans-serif; }
+  .port-popup .leaflet-popup-tip { background:#fff; }
+  .port-popup .leaflet-popup-close-button { color:#fff !important; top:8px !important; right:10px !important; font-size:22px !important; font-weight:300 !important; width:24px !important; height:24px !important; opacity:.85; }
+  .port-popup .leaflet-popup-close-button:hover { background:rgba(255,255,255,.2) !important; color:#fff !important; opacity:1; }
+  .pp-header { background:var(--brand-600,#2563eb); color:#fff; padding:12px 14px 10px; }
+  .pp-title { font-size:14px; font-weight:700; }
+  .pp-sub { font-size:11px; font-weight:500; opacity:.75; margin-left:5px; }
+  .pp-body { background:#fff; }
+  .pp-row { display:flex; align-items:center; justify-content:space-between; padding:9px 14px; border-bottom:1px solid #f1f5f9; font-size:13px; }
+  .pp-row:last-child { border-bottom:0; }
+  .pp-k { color:#64748b; font-weight:500; }
+  .pp-v { font-weight:700; color:#0f172a; }
+  .pp-cta { display:block; width:calc(100% - 28px); margin:4px 14px 14px; background:transparent; color:var(--brand-600,#2563eb)!important; border:1px solid transparent; border-radius:var(--radius-md,8px); padding:0 12px; height:32px; line-height:32px; font-weight:500; font-size:13px; cursor:pointer; text-align:center; transition:background .15s; }
+  .pp-cta:hover { background:var(--brand-50,#eff6ff); }
+  /* Port labels (hover tooltip) — matches Ports page */
+  .port-label { background:#0f172a !important; border:0 !important; border-radius:5px !important; color:#fff !important; font-size:11px !important; font-weight:600 !important; padding:3px 7px !important; white-space:nowrap !important; box-shadow:0 2px 6px rgba(0,0,0,.3) !important; }
+  .port-label::before { border-top-color:#0f172a !important; }
+  /* Vessel markers + hover tooltip + popup — matches Marine Dashboard */
+  .vessel-marker { position:relative; cursor:pointer; }
+  .vessel-marker svg { filter: drop-shadow(0 1px 2px rgba(0,0,0,.5)); }
+  .vessel-marker::after { content:''; position:absolute; left:50%; top:50%; width:24px; height:24px; transform:translate(-50%,-50%); border-radius:50%; border:2px solid #fff; box-shadow:0 0 5px rgba(0,0,0,.45); opacity:0; transition:opacity .14s ease; pointer-events:none; }
+  .leaflet-marker-icon:hover .vessel-marker::after { opacity:1; }
+  .leaflet-marker-icon:hover { z-index:1000 !important; }
+  .vessel-tip.leaflet-tooltip { background:rgba(15,23,42,.93); border:0; border-radius:7px; box-shadow:0 3px 10px rgba(0,0,0,.4); padding:6px 9px; color:#fff; font-family:'Inter',sans-serif; }
+  .vessel-tip.leaflet-tooltip-top::before { border-top-color:rgba(15,23,42,.93); }
+  .vessel-tip .vtip-row { display:flex; align-items:center; gap:6px; }
+  .vessel-tip .vtip-flag { border-radius:2px; box-shadow:0 0 0 1px rgba(255,255,255,.25); flex-shrink:0; }
+  .vessel-tip .vtip-name { font-weight:700; font-size:12px; letter-spacing:.01em; }
+  .vessel-tip .vtip-type { display:block; font-size:11px; color:#cbd5e1; margin-top:2px; }
+  .vessel-popup .leaflet-popup-content-wrapper { padding:0; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(15,23,42,.25); }
+  .vessel-popup .leaflet-popup-content { margin:0; width:300px !important; font-family:'Inter',sans-serif; }
+  .vessel-popup .leaflet-popup-tip { background:#fff; }
+  .vessel-popup .leaflet-popup-close-button { color:#fff !important; top:8px !important; right:10px !important; font-size:22px !important; font-weight:300 !important; width:24px !important; height:24px !important; opacity:.85; }
+  .vessel-popup .leaflet-popup-close-button:hover { background:rgba(255,255,255,.2) !important; color:#fff !important; opacity:1; }
+  .vp { background:#fff; color:#0f172a; }
+  .vp-header { background:var(--brand-600,#2563eb); color:#fff; padding:12px 14px 10px; }
+  .vp-title { font-weight:800; font-size:15px; letter-spacing:.02em; display:flex; align-items:center; }
+  .vp-subtitle { font-size:11.5px; color:rgba(255,255,255,.85); margin-top:2px; }
+  .vp-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 16px; padding:12px 14px; }
+  .vp-grid > div { min-width:0; }
+  .vp-span { grid-column:1 / -1; }
+  .vp-k { font-size:10.5px; color:#64748b; }
+  .vp-v { font-size:12.5px; color:#0f172a; margin-top:1px; font-weight:600; }
+  .vp-strong { font-weight:700; color:#0f172a; }
+  .vp-nav { color:#16a34a; font-weight:700; }
+  .vp-cta { display:block; width:calc(100% - 28px); margin:4px 14px 14px; background:transparent; color:var(--brand-600,#2563eb)!important; border:1px solid transparent; border-radius:var(--radius-md,8px); padding:0 12px; height:32px; line-height:32px; font-weight:500; font-size:13px; cursor:pointer; text-align:center; text-decoration:none; transition:background .15s; }
+  .vp-cta:hover { background:var(--brand-50,#eff6ff); }
   /* Mobile responsive */
-  .mrd-top-row{display:flex;gap:12px;margin-bottom:12px;min-height:0;}
+  .mrd-top-row{display:flex;gap:12px;margin-bottom:12px;min-height:0;height:440px;}
+  .mrd-top-row>div{height:440px;overflow-y:auto!important}
   .mrd-left-panel{width:260px;flex-shrink:0;}
   /* Card tab dropdown — used in place of pill tabs */
   .tab-dd{display:inline-block;min-width:240px;max-width:100%;padding:8px 36px 8px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:600;color:#0f172a;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;background-size:12px;font-family:inherit;cursor:pointer;appearance:none;-webkit-appearance:none;transition:border-color .15s,box-shadow .15s;}
@@ -97,9 +220,13 @@ window.PAGE = { id:'regions', title:'Marine Region', crumb: regionName };
 </script>
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="shared/chrome.js?v=11"></script>
+<script src="shared/chrome.js?v=12"></script>
 <script>
 const SC = window.sharedChrome;
+
+const MRD_MINIMIZE = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>`;
+const MRD_CHECK = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+const MRD_ANCHOR = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg>`;
 
 /* ── State ────────────────────────────────────────────────────────────────── */
 let leftTab   = 'totals';
@@ -107,6 +234,192 @@ let rightTab  = 'stats';
 let statSub   = 'hull';
 let mapTab    = 'map';
 let rMap = null, rTile = null;
+let rMapType = 'satellite';
+let policyQuery = '';
+let notifQuery = '';
+let histInterval = 'Daily';
+let histValue = 'Our Exposure';
+let histGroup = false;
+
+/* ── Policies data ───────────────────────────────────────────────────────── */
+const POLICIES = [
+  { date:'2026-06-10', asset:'CMA CGM TOSCA',      countries:[],           exp:'$5.6M',   war:'$5.7M',  pf:'Containers & Tankers' },
+  { date:'2026-06-10', asset:'Vozrozhdeniye',      countries:['ru'],       exp:'$2.5M',   war:'$2.8M',  pf:'BL portfolio' },
+  { date:'2026-06-10', asset:'HAWA',               countries:[],           exp:'$31.1M',  war:'-',      pf:'MKL vessels' },
+  { date:'2026-06-10', asset:'Bili',               countries:[],           exp:'$2.5M',   war:'$2.8M',  pf:'BL portfolio' },
+  { date:'2026-06-10', asset:'EVER LOTUS',         countries:[],           exp:'$108.7M', war:'$12.5M', pf:'Containers & Tankers' },
+  { date:'2026-06-10', asset:'ASTRA',              countries:[],           exp:'$2.5M',   war:'$2.8M',  pf:'BL portfolio' },
+  { date:'2026-06-10', asset:'Petunia',            countries:[],           exp:'$2.5M',   war:'$2.8M',  pf:'BL portfolio' },
+  { date:'2026-06-10', asset:'Sita',               countries:[],           exp:'$2.5M',   war:'$2.8M',  pf:'BL portfolio' },
+  { date:'2026-06-10', asset:'Zefzaf',             countries:[],           exp:'$20.0M',  war:'-',      pf:'Top 500 yachts' },
+  { date:'2026-06-10', asset:'ECUADOR PROSPERITY', countries:[],           exp:'$50.0M',  war:'-',      pf:'Tankers - VLCC' },
+  { date:'2026-06-10', asset:'BOND',               countries:['ru','gb'],  exp:'$2.5M',   war:'$2.8M',  pf:'BL portfolio' },
+  { date:'2026-06-10', asset:'RHN',                countries:[],           exp:'$40.0M',  war:'-',      pf:'Tankers - VLCC' },
+];
+function mrdFlag(cc) {
+  const names = { ru:'Russia', gb:'United Kingdom', us:'United States', cn:'China', ir:'Iran', pa:'Panama' };
+  return `<span class="pol-flag"><img src="https://flagcdn.com/w40/${cc}.png" srcset="https://flagcdn.com/w80/${cc}.png 2x" width="20" height="14" alt="${cc}" style="border-radius:2px;box-shadow:0 0 0 1px rgba(15,23,42,.12);flex-shrink:0" /><span>${names[cc] || cc.toUpperCase()}</span></span>`;
+}
+
+/* ── Notifications data ──────────────────────────────────────────────────── */
+const NOTIF_REGION = 'Persian Gulf, Oman, IO, Aden, S Red Sea [JWC]';
+const NOTIFICATIONS = [
+  { time:'Wed, 10 Jun 2026 07:20:46 GMT', type:'Exit Alert',     vessel:'Ava 10',          action:'exited region' },
+  { time:'Wed, 10 Jun 2026 07:20:46 GMT', type:'Exit Alert',     vessel:'LILA JAMNAGAR',   action:'exited region' },
+  { time:'Wed, 10 Jun 2026 07:20:46 GMT', type:'Exit Alert',     vessel:'GALVIN',          action:'exited region' },
+  { time:'Wed, 10 Jun 2026 07:20:46 GMT', type:'Entering Alert', vessel:'Asian Progress VII', action:'entered region' },
+  { time:'Wed, 10 Jun 2026 07:20:46 GMT', type:'Entering Alert', vessel:'Terra',           action:'entered region' },
+  { time:'Wed, 10 Jun 2026 07:20:46 GMT', type:'Entering Alert', vessel:'URI',             action:'entered region' },
+  { time:'Wed, 10 Jun 2026 07:20:45 GMT', type:'Entering Alert', vessel:'Zebra',           action:'entered region' },
+  { time:'Wed, 10 Jun 2026 07:20:45 GMT', type:'Entering Alert', vessel:'Sea Latitude',    action:'entered region' },
+  { time:'Wed, 10 Jun 2026 07:20:45 GMT', type:'Entering Alert', vessel:'SANMAR SUPARNA',  action:'entered region' },
+  { time:'Wed, 10 Jun 2026 07:20:45 GMT', type:'Entering Alert', vessel:'Sarah',           action:'entered region' },
+];
+
+/* ── Region History chart ────────────────────────────────────────────────── */
+const HIST_TICKS = ['16 Jun','30 Jun','14 Jul','28 Jul','11 Aug','25 Aug','8 Sep','22 Sep','6 Oct','20 Oct','3 Nov','17 Nov','1 Dec','15 Dec','29 Dec','12 Jan','26 Jan','9 Feb','23 Feb','9 Mar','23 Mar','6 Apr','20 Apr','4 May','18 May','1 Jun'];
+const HIST_SERIES = [
+  { name:'Ardmore MR Pool LLC',                        color:'#3b82f6', profile:'low' },
+  { name:'BL portfolio',                               color:'#4f46e5', profile:'low' },
+  { name:'Bernhard Schulte Shipmanagement (Singapore)',color:'#16a34a', profile:'flat' },
+  { name:'Cargo Exposure',                             color:'#ea580c', profile:'flat' },
+  { name:'Cargo Exposure 2',                           color:'#64748b', profile:'peaks' },
+  { name:'Columbia Shipmanagement Limited',            color:'#c026d3', profile:'low' },
+  { name:'Containers & Tankers',                       color:'#14b8a6', profile:'mid5' },
+  { name:'Cruise Sample portfolio',                    color:'#dc2626', profile:'flat' },
+  { name:'Fleet Ship Management',                      color:'#f59e0b', profile:'flat' },
+  { name:'Gatik Ship Management M S',                  color:'#2dd4bf', profile:'low' },
+  { name:'Kai Heng Long Global Energy Limited',        color:'#0ea5e9', profile:'low' },
+  { name:'MKL vessels',                                color:'#6366f1', profile:'low' },
+  { name:'MPP Carriers 2026',                          color:'#22c55e', profile:'flat' },
+  { name:'MSC containers',                             color:'#d97706', profile:'flat' },
+  { name:'SCI LNG 2026',                               color:'#475569', profile:'low' },
+  { name:'Sample',                                     color:'#a855f7', profile:'flat' },
+  { name:'Scenic Ocean Fleet 2026',                    color:'#06b6d4', profile:'low' },
+  { name:'Scorpio Commercial Management',              color:'#ef4444', profile:'flat' },
+  { name:'Stefan Portfolio Test',                      color:'#f97316', profile:'flat' },
+  { name:'Tankers - VLCC',                             color:'#5eead4', profile:'mid4' },
+  { name:'Top 500 yachts',                             color:'#60a5fa', profile:'low' },
+  { name:'Torm AS',                                    color:'#818cf8', profile:'flat' },
+  { name:'Upload_test',                                color:'#15803d', profile:'flat' },
+  { name:'White Fox Ship Management - FZCO',           color:'#e11d48', profile:'flat' },
+  { name:'missing_fields_test',                        color:'#64748b', profile:'flat' },
+];
+function histNoise(si, pi) { let h = (si*733 + pi*131 + 17) >>> 0; h = (h*9301 + 49297) % 233280; return h/233280; }
+function histVal(profile, t, si, pi) {
+  const n = histNoise(si, pi) - 0.5;
+  switch (profile) {
+    case 'peaks': {
+      let base;
+      if (t < 0.075) base = 6.2;
+      else if (t < 0.10) base = 6.2 - (t-0.075)/0.025*5.6;
+      else if (t > 0.385 && t < 0.41) base = 0.6 + (t-0.385)/0.025*5.6;
+      else if (t >= 0.41) base = 6.2;
+      else base = 0.6;
+      const g1 = 64*Math.exp(-Math.pow((t-0.192)/0.020,2));
+      const g2 = 64*Math.exp(-Math.pow((t-0.269)/0.020,2));
+      return Math.max(0, base + g1 + g2 + n*0.5);
+    }
+    case 'mid5': return Math.max(0, 4.9 + n*1.0 + Math.sin(t*30+si)*0.4);
+    case 'mid4': return Math.max(0, 3.8 + n*1.0 + Math.sin(t*26+si)*0.4);
+    case 'low':  return Math.max(0, 0.6 + n*0.8);
+    default:     return Math.max(0, 0.12 + n*0.18);
+  }
+}
+function renderHistoryChart() {
+  const N = 130, W = 1640, H = 430;
+  const ml = 70, mr = 24, mt = 14, mb = 38;
+  const pw = W - ml - mr, ph = H - mt - mb;
+  const yMax = 80;
+  const ptX = t => ml + t*pw;
+  const ptY = v => mt + (1 - v/yMax)*ph;
+  // gridlines + y labels
+  let grid = '';
+  for (let g = 0; g <= 80; g += 20) {
+    const y = ptY(g);
+    grid += `<line x1="${ml}" y1="${y.toFixed(1)}" x2="${W-mr}" y2="${y.toFixed(1)}" stroke="#f1f5f9" stroke-width="1"/>`;
+    grid += `<text x="${ml-10}" y="${(y+4).toFixed(1)}" text-anchor="end" font-size="12" fill="#94a3b8">$${g}.0B</text>`;
+  }
+  // x labels
+  let xlab = '';
+  HIST_TICKS.forEach((d, i) => {
+    const x = ptX(i/(HIST_TICKS.length-1));
+    xlab += `<text x="${x.toFixed(1)}" y="${H-12}" text-anchor="middle" font-size="11.5" fill="#64748b">${d}</text>`;
+  });
+  // series — draw flat/low first, prominent last
+  const order = HIST_SERIES.map((s,i)=>i).sort((a,b)=>{
+    const rank = p => p==='peaks'?3 : (p==='mid5'||p==='mid4')?2 : p==='low'?1 : 0;
+    return rank(HIST_SERIES[a].profile) - rank(HIST_SERIES[b].profile);
+  });
+  let lines = '';
+  if (histGroup) {
+    // sum all series into one
+    let pts = [];
+    for (let p = 0; p < N; p++) {
+      const t = p/(N-1);
+      let sum = 0;
+      HIST_SERIES.forEach((s,si)=> sum += histVal(s.profile, t, si, p));
+      pts.push(`${ptX(t).toFixed(1)},${ptY(Math.min(yMax,sum)).toFixed(1)}`);
+    }
+    lines = `<polyline points="${pts.join(' ')}" fill="none" stroke="#2563eb" stroke-width="2" stroke-linejoin="round"/>`;
+  } else {
+    order.forEach(si => {
+      const s = HIST_SERIES[si];
+      let pts = [];
+      for (let p = 0; p < N; p++) {
+        const t = p/(N-1);
+        pts.push(`${ptX(t).toFixed(1)},${ptY(histVal(s.profile, t, si, p)).toFixed(1)}`);
+      }
+      const prom = s.profile === 'peaks';
+      lines += `<polyline points="${pts.join(' ')}" fill="none" stroke="${s.color}" stroke-width="${prom?2:1.5}" stroke-linejoin="round" opacity="${prom?1:.9}"/>`;
+    });
+  }
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block;font-family:'Inter',sans-serif">
+    <text transform="translate(20,${mt+ph/2}) rotate(-90)" text-anchor="middle" font-size="12" fill="#64748b">Total exposure</text>
+    ${grid}${lines}${xlab}
+  </svg>`;
+}
+function historyLegend() {
+  return HIST_SERIES.map(s => `<span class="hist-leg"><svg width="22" height="10"><line x1="0" y1="5" x2="22" y2="5" stroke="${s.color}" stroke-width="2"/><circle cx="11" cy="5" r="3" fill="${s.color}"/></svg><span>${s.name}</span></span>`).join('');
+}
+function histRadio(group, val, cur) {
+  const on = val === cur;
+  return `<label class="hist-opt"><span class="hist-radio ${on?'on':''}" data-hist-radio="${group}" data-hist-val="${val.replace(/"/g,'&quot;')}">${on?'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>':''}</span><span>${val}</span></label>`;
+}
+const HIST_CHECK_SVG = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+function renderHistoryControls() {
+  return `
+    <div class="hist-panel">
+      <h4>Interval</h4>
+      <div class="hist-sub">How should the history be displayed?</div>
+      ${['Daily','Weekly','Monthly'].map(v => histRadio('interval', v, histInterval)).join('')}
+    </div>
+    <div class="hist-panel">
+      <h4>Values</h4>
+      <div class="hist-sub">What should be displayed?</div>
+      ${['Our Exposure','Policy Count','Merchant Market Value'].map(v => histRadio('value', v, histValue)).join('')}
+    </div>
+    <div class="hist-panel">
+      <h4>Portfolios</h4>
+      <div class="hist-sub">&nbsp;</div>
+      <label class="hist-opt"><span class="hist-check ${histGroup?'on':''}" id="hist-group">${histGroup?HIST_CHECK_SVG:''}</span><span>Group all portfolios</span></label>
+    </div>`;
+}
+function wireHistoryControls() {
+  document.querySelectorAll('[data-hist-radio]').forEach(el => el.addEventListener('click', () => {
+    const g = el.dataset.histRadio, v = el.dataset.histVal;
+    if (g === 'interval') histInterval = v; else if (g === 'value') histValue = v;
+    updateHistory();
+  }));
+  const grp = document.getElementById('hist-group');
+  if (grp) grp.addEventListener('click', () => { histGroup = !histGroup; updateHistory(); });
+}
+function updateHistory() {
+  const chart = document.getElementById('hist-chart');
+  const ctrls = document.getElementById('hist-controls');
+  if (chart) chart.innerHTML = renderHistoryChart();
+  if (ctrls) { ctrls.innerHTML = renderHistoryControls(); wireHistoryControls(); }
+}
 
 /* ── Stats data by sub-tab ───────────────────────────────────────────────── */
 const STATS = {
@@ -161,6 +474,107 @@ const LAYERS   = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" st
 const TAG      = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`;
 const MAP_PIN  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
 
+/* ── Vessels (region) ───────────────────────────────────────────────────── */
+const MRD_VTYPES = [
+  { k:'Container',          color:'#2563eb' },
+  { k:'Bulk Carrier',       color:'#3b82f6' },
+  { k:'Tanker',             color:'#ef4444' },
+  { k:'Gas Carrier',        color:'#f97316' },
+  { k:'LNG Carrier',        color:'#eab308' },
+  { k:'General Cargo',      color:'#22c55e' },
+  { k:'Cruise Passenger',   color:'#ec4899' },
+  { k:'Vehicle Carrier',    color:'#8b5cf6' },
+];
+const MRD_VNAMES = ['SEA BREEZE','OCEAN PIONEER','NORDIC STAR','ATLANTIC PEARL','BLUE HORIZON','SILVER WAVE','NORTHERN LIGHT','SOUTHERN CROSS','MARITIME GLORY','TIDAL FORCE','GULF VOYAGER','MERIDIAN','AMBER TRADER','IRON DUKE','CAPE HORN'];
+const MRD_VFLAGS = [
+  { cc:'pa', name:'Panama' }, { cc:'lr', name:'Liberia' }, { cc:'mh', name:'Marshall Islands' },
+  { cc:'sg', name:'Singapore' }, { cc:'mt', name:'Malta' }, { cc:'gr', name:'Greece' },
+  { cc:'cy', name:'Cyprus' }, { cc:'no', name:'Norway' }, { cc:'gb', name:'United Kingdom' },
+];
+const MRD_NAVS = ['Underway Using Engine','At Anchor','Moored','Under Sail','Restricted Maneuverability'];
+const MRD_POLICIES = ['Hull & Machinery','Cargo','War Risks','P&I','Liability'];
+function mrdRand(seed){ let s = seed>>>0 || 1; return () => { s = (s*9301 + 49297) % 233280; return s/233280; }; }
+function makeRegionVessels(ports, bounds, regionName) {
+  const r = mrdRand((regionName||'').split('').reduce((a,c)=>a+c.charCodeAt(0),7) * 131 + 17);
+  const n = 5;
+  const anchors = (ports && ports.length) ? ports : null;
+  const list = [];
+  for (let i=0;i<n;i++){
+    const nav = MRD_NAVS[Math.floor(r()*MRD_NAVS.length)];
+    const inPort = nav === 'Moored' || nav === 'At Anchor';
+    let lat, lng, laneHeading = null;
+    if (anchors && anchors.length) {
+      // Always offset seaward from a coastal port along its sea bearing, so vessels
+      // sit on open water. In-port vessels hover at the harbour mouth; underway
+      // vessels sit well offshore.
+      const p = anchors[(i + Math.floor(r()*anchors.length)) % anchors.length];
+      const bearing = (typeof p.sea === 'number' ? p.sea : 180);
+      const d = inPort ? (0.08 + r()*0.12) : (0.55 + r()*0.9);   // ~10–20 km vs ~60–160 km
+      const br = bearing * Math.PI/180;
+      const perp = (bearing + 90) * Math.PI/180;
+      const j = (r()-0.5) * (inPort ? 0.05 : 0.28);              // along-shore spread
+      const cosLat = Math.max(0.2, Math.cos(p.lat*Math.PI/180));
+      lat = p.lat + d*Math.cos(br) + j*Math.cos(perp);
+      lng = p.lng + (d*Math.sin(br) + j*Math.sin(perp))/cosLat;
+      laneHeading = inPort ? Math.round(r()*360) : Math.round((bearing + (r()<0.5?0:180) + 360) % 360);
+    } else {
+      const b = bounds || [[30,-125],[42,-115]];
+      lat = b[0][0] + (b[1][0]-b[0][0])*(0.15 + r()*0.7);
+      lng = b[0][1] + (b[1][1]-b[0][1])*(0.15 + r()*0.7);
+    }
+    const type = MRD_VTYPES[Math.floor(r()*MRD_VTYPES.length)];
+    const flag = MRD_VFLAGS[Math.floor(r()*MRD_VFLAGS.length)];
+    const heading = laneHeading != null ? laneHeading : Math.round(r()*360);
+    const speed = inPort ? 0 : Math.round((8 + r()*14)*10)/10;
+    const draught = Math.round((8 + r()*11)*100)/100;
+    list.push({
+      name: MRD_VNAMES[Math.floor(r()*MRD_VNAMES.length)],
+      type: type.k, color: type.color, flag, nav, heading, speed,
+      course: Math.round(((heading+360)%360)*10)/10,
+      draught, maxD: Math.round((draught+0.4+r()*1.2)*100)/100,
+      policy: MRD_POLICIES[Math.floor(r()*MRD_POLICIES.length)],
+      lat, lng,
+      ts: '2026-06-10 07:2'+Math.floor(r()*9)+' UTC',
+    });
+  }
+  return list;
+}
+function mrdVesselIcon(color, heading, nav) {
+  const stationary = nav === 'Moored' || nav === 'At Anchor';
+  const shape = stationary
+    ? `<svg viewBox="0 0 24 24" width="16" height="16" style="color:${color}" fill="currentColor" stroke="#fff" stroke-width="1.5"><circle cx="12" cy="12" r="7.5"/></svg>`
+    : `<svg viewBox="0 0 24 24" width="16" height="16" style="color:${color}" fill="currentColor" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"><path d="M12 2 L19 20 L12 16 L5 20 Z"/></svg>`;
+  const rot = stationary ? '' : `transform:rotate(${heading + 45}deg);transform-origin:center;`;
+  return L.divIcon({ html:`<div class="vessel-marker" style="${rot}">${shape}</div>`, className:'', iconSize:[16,16], iconAnchor:[8,8] });
+}
+function mrdVesselTooltip(v) {
+  return `<span class="vtip-row"><img class="vtip-flag" src="https://flagcdn.com/w40/${v.flag.cc}.png" srcset="https://flagcdn.com/w80/${v.flag.cc}.png 2x" width="18" height="13" alt="${v.flag.name}" /><span class="vtip-name">${v.name}</span></span><span class="vtip-type">${v.type} · ${v.flag.name}</span>`;
+}
+function mrdVesselPopup(v) {
+  const latStr = `${Math.abs(v.lat).toFixed(2)}°${v.lat>=0?'N':'S'}`;
+  const lngStr = `${Math.abs(v.lng).toFixed(2)}°${v.lng>=0?'E':'W'}`;
+  const flagImg = `<img src="https://flagcdn.com/w40/${v.flag.cc}.png" srcset="https://flagcdn.com/w80/${v.flag.cc}.png 2x" width="18" height="13" alt="${v.flag.name}" style="display:inline-block;border-radius:2px;vertical-align:middle;margin-right:6px" />`;
+  return `
+  <div class="vp">
+    <div class="vp-header">
+      <div class="vp-title">${flagImg}${v.name}</div>
+      <div class="vp-subtitle">${v.type}</div>
+    </div>
+    <div class="vp-grid">
+      <div><div class="vp-k">Lat/Lng:</div><div class="vp-v vp-strong">${latStr} /<br>${lngStr}</div></div>
+      <div><div class="vp-k">Flag:</div><div class="vp-v">${flagImg}${v.flag.name}</div></div>
+      <div class="vp-span"><div class="vp-k">Nav status:</div><div class="vp-v vp-nav">${v.nav}</div></div>
+      <div><div class="vp-k">Speed (Knots):</div><div class="vp-v"><span class="vp-strong">${v.speed}</span> Knots</div></div>
+      <div><div class="vp-k">Course over ground:</div><div class="vp-v">${v.course}</div></div>
+      <div><div class="vp-k">Heading (deg):</div><div class="vp-v">${Math.round(v.course)}</div></div>
+      <div><div class="vp-k">Draught (m):</div><div class="vp-v"><span class="vp-strong">${v.draught.toFixed(2)}</span> (max ${v.maxD.toFixed(2)})</div></div>
+      <div class="vp-span"><div class="vp-k">Policy Type:</div><div class="vp-v vp-strong">${v.policy}</div></div>
+      <div class="vp-span"><div class="vp-k">Timestamp:</div><div class="vp-v">${v.ts}</div></div>
+    </div>
+    <a href="VesselDetails.html" class="vp-cta">View Full Vessel Details</a>
+  </div>`;
+}
+
 /* ── Map ──────────────────────────────────────────────────────────────────── */
 function initMap() {
   const el = document.getElementById('region-map');
@@ -203,51 +617,114 @@ function initMap() {
         </div>
       </div>
     </div>`;
-  L.polygon(coastPoly, { color:'#2563eb', weight:2, fillColor:'#3b82f6', fillOpacity:0.18 })
+  const GEO = (()=>{try{return JSON.parse(sessionStorage.getItem('selectedRegionGeo')||'null')}catch(e){return null}})();
+  const oddPoly=(b,seed)=>{const s=b[0][0],w=b[0][1],n=b[1][0],e=b[1][1],cy=(s+n)/2,cx=(w+e)/2,ry=(n-s)/2,rx=(e-w)/2;let h=(seed||1)>>>0;const rnd=()=>{h=(h*9301+49297)%233280;return h/233280;};return Array.from({length:11},(_,i)=>{const a=i/11*6.28318,j=0.55+rnd()*0.6;return [cy+Math.sin(a)*ry*j,cx+Math.cos(a)*rx*j];});};
+  (GEO ? L.polygon(oddPoly(GEO.bounds, (GEO.name||'').length*13+7), { color:'var(--brand-600,#2563eb)', weight:2, fillColor:'var(--brand-600,#2563eb)', fillOpacity:0.18 })
+       : L.polygon(coastPoly, { color:'#2563eb', weight:2, fillColor:'#3b82f6', fillOpacity:0.18 }))
     .addTo(rMap)
     .bindPopup(regionPopupHTML, { maxWidth:260, minWidth:250, closeButton:true, className:'region-popup' });
+  if (GEO) rMap.fitBounds(GEO.bounds, { padding:[40,40] });
 
-  // Port markers
-  const ports = [
-    { coord:[37.80,-122.28], name:'Port of Oakland',     exposure:'$420M', assets: 312, risk:'Medium' },
-    { coord:[37.33,-121.89], name:'Port of San Jose',    exposure:'$185M', assets: 142, risk:'Low'    },
-    { coord:[33.73,-118.26], name:'Port of Long Beach',  exposure:'$1.2B', assets: 684, risk:'High'   },
-    { coord:[32.72,-117.22], name:'Port of San Diego',   exposure:'$340M', assets: 218, risk:'Medium' },
-    { coord:[34.01,-118.49], name:'Port of Los Angeles', exposure:'$1.4B', assets: 752, risk:'High'   },
+  // Port markers — real-world ports filtered to the region currently in view
+  const WORLD_PORTS = [
+    // North Sea / Scandinavia & Western Europe  (sea = compass bearing toward open water)
+    { name:'Port of Rotterdam',    country:'Netherlands', lat:51.95, lng:4.14,   terminals:11, sea:300 },
+    { name:'Port of Antwerp',      country:'Belgium',     lat:51.26, lng:4.40,   terminals:7,  sea:315 },
+    { name:'Port of Hamburg',      country:'Germany',     lat:53.55, lng:9.99,   terminals:4,  sea:320 },
+    { name:'Port of Le Havre',     country:'France',      lat:49.49, lng:0.11,   terminals:6,  sea:250 },
+    { name:'Port of Felixstowe',   country:'United Kingdom', lat:51.96, lng:1.35, terminals:3, sea:90  },
+    { name:'Port of Bremerhaven',  country:'Germany',     lat:53.54, lng:8.58,   terminals:4,  sea:330 },
+    { name:'Port of Oslo',         country:'Norway',      lat:59.90, lng:10.75,  terminals:3,  sea:190 },
+    { name:'Port of Gothenburg',   country:'Sweden',      lat:57.70, lng:11.97,  terminals:5,  sea:260 },
+    { name:'Port of Bergen',       country:'Norway',      lat:60.39, lng:5.32,   terminals:2,  sea:270 },
+    { name:'Port of Stavanger',    country:'Norway',      lat:58.97, lng:5.73,   terminals:2,  sea:250 },
+    { name:'Port of Aarhus',       country:'Denmark',     lat:56.15, lng:10.20,  terminals:3,  sea:90  },
+    { name:'Port of Gdansk',       country:'Poland',      lat:54.35, lng:18.65,  terminals:4,  sea:0   },
+    // Americas — Gulf Zone & Caribbean
+    { name:'Port of Houston',          country:'USA',       lat:29.75, lng:-95.36, terminals:12, sea:140 },
+    { name:'Port of New Orleans',      country:'USA',       lat:29.95, lng:-90.07, terminals:6,  sea:180 },
+    { name:'Port of Galveston',        country:'USA',       lat:29.30, lng:-94.80, terminals:4,  sea:135 },
+    { name:'Port of Corpus Christi',   country:'USA',       lat:27.80, lng:-97.40, terminals:5,  sea:100 },
+    { name:'Port of Mobile',           country:'USA',       lat:30.69, lng:-88.04, terminals:4,  sea:180 },
+    { name:'Port of Veracruz',         country:'Mexico',    lat:19.17, lng:-96.13, terminals:4,  sea:70  },
+    { name:'Port of Tampico',          country:'Mexico',    lat:22.25, lng:-97.86, terminals:3,  sea:90  },
+    { name:'Puerto Cortés',            country:'Honduras',  lat:15.83, lng:-87.95, terminals:3,  sea:0   },
+    { name:'Puerto Limón',             country:'Costa Rica',lat:10.00, lng:-83.03, terminals:2,  sea:90  },
+    { name:'Puerto Santo Tomás',       country:'Guatemala', lat:15.69, lng:-88.61, terminals:2,  sea:45  },
+    { name:'Port of Bluefields',       country:'Nicaragua', lat:12.01, lng:-83.76, terminals:2,  sea:90  },
+    // Middle East / Levant
+    { name:'Jebel Ali Port',       country:'UAE',          lat:25.01, lng:55.06,  terminals:9,  sea:325 },
+    { name:'Port of Jeddah',       country:'Saudi Arabia', lat:21.48, lng:39.19,  terminals:6,  sea:270 },
+    { name:'Port Said',            country:'Egypt',        lat:31.26, lng:32.30,  terminals:5,  sea:0   },
+    { name:'Port of Beirut',       country:'Lebanon',      lat:33.90, lng:35.50,  terminals:4,  sea:270 },
+    { name:'Port of Haifa',        country:'Israel',       lat:32.82, lng:35.00,  terminals:4,  sea:290 },
+    { name:'Port of Dammam',       country:'Saudi Arabia', lat:26.43, lng:50.10,  terminals:5,  sea:50  },
+    // East Asia
+    { name:'Port of Shanghai',     country:'China',        lat:31.23, lng:121.47, terminals:12, sea:90  },
+    { name:'Port of Busan',        country:'South Korea',  lat:35.10, lng:129.04, terminals:8,  sea:160 },
+    { name:'Port of Hong Kong',    country:'China',        lat:22.30, lng:114.17, terminals:9,  sea:180 },
+    { name:'Port of Kaohsiung',    country:'Taiwan',       lat:22.60, lng:120.30, terminals:6,  sea:270 },
+    { name:'Port of Qingdao',      country:'China',        lat:36.07, lng:120.38, terminals:7,  sea:135 },
+    { name:'Port of Shenzhen',     country:'China',        lat:22.54, lng:114.06, terminals:8,  sea:180 },
+    { name:'Port of Ningbo',       country:'China',        lat:29.87, lng:121.55, terminals:9,  sea:100 },
+    { name:'Port of Tianjin',      country:'China',        lat:38.99, lng:117.70, terminals:6,  sea:100 },
   ];
-  ports.forEach(p => {
+  const CA_PORTS = [
+    { name:'Port of Oakland',     country:'USA', lat:37.80, lng:-122.28, terminals:10, sea:260 },
+    { name:'Port of San Jose',    country:'USA', lat:37.33, lng:-121.89, terminals:4,  sea:330 },
+    { name:'Port of Long Beach',  country:'USA', lat:33.73, lng:-118.26, terminals:10, sea:200 },
+    { name:'Port of San Diego',   country:'USA', lat:32.72, lng:-117.22, terminals:6,  sea:250 },
+    { name:'Port of Los Angeles', country:'USA', lat:34.01, lng:-118.49, terminals:8,  sea:210 },
+  ];
+  let ports;
+  if (GEO && GEO.bounds) {
+    const b = GEO.bounds;
+    ports = WORLD_PORTS.filter(p => p.lat >= b[0][0] && p.lat <= b[1][0] && p.lng >= b[0][1] && p.lng <= b[1][1]);
+    if (ports.length < 2) {
+      // No curated ports inside these bounds — distribute the nearest ones by name within the box
+      const cy = (b[0][0]+b[1][0])/2, cx = (b[0][1]+b[1][1])/2;
+      const near = [...WORLD_PORTS].sort((p,q) => (Math.hypot(p.lat-cy,p.lng-cx) - Math.hypot(q.lat-cy,q.lng-cx))).slice(0,5);
+      const dy=b[1][0]-b[0][0], dx=b[1][1]-b[0][1];
+      ports = near.map((p,i) => ({ ...p, lat: b[0][0]+dy*(0.28+((i*0.41)%1)*0.5), lng: b[0][1]+dx*((i+1)/(near.length+1)) }));
+    }
+    ports = ports.slice(0, 8).map(p => ({ ...p, sanctioned:false }));
+  } else {
+    ports = CA_PORTS.map(p => ({ ...p, sanctioned:false }));
+  }
+  ports.forEach(p => { p.coord = [p.lat, p.lng]; });
+  window.__mrdPorts = ports;
+  const legendStats = document.getElementById('mrd-legend-stats');
+  if (legendStats) legendStats.textContent = `${ports.length} Major Ports · 5 Active Vessels`;
+  ports.forEach((p, idx) => {
+    const markerClass = p.sanctioned ? 'port-marker-sanctioned' : 'port-marker';
     const icon = L.divIcon({
       className:'',
-      html:`<div style="width:26px;height:26px;border-radius:50%;background:#2563eb;border:2.5px solid #fff;box-shadow:0 2px 6px rgba(37,99,235,.4);display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>`,
-      iconSize:[26,26], iconAnchor:[13,13],
+      html:`<div class="${markerClass}">${MRD_ANCHOR}</div>`,
+      iconSize:[30,30], iconAnchor:[15,15],
     });
-    const portRiskColor = {Low:'#16a34a',Medium:'#f97316',High:'#dc2626',Critical:'#7c3aed'}[p.risk] || '#64748b';
+    const sanctionBadge = p.sanctioned
+      ? `<div style="background:#fef2f2;border-bottom:1px solid #fecaca;padding:7px 14px;display:flex;align-items:center;gap:7px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+          <span style="font-size:11px;font-weight:700;color:#dc2626;letter-spacing:.03em;">SANCTIONED PORT</span>
+        </div>`
+      : '';
     const portPopupHTML = `
-      <div style="font-family:'Inter',sans-serif;width:250px;border-radius:12px;overflow:hidden">
-        <div style="background:var(--brand-600,#2563eb);color:#fff;padding:11px 14px;display:flex;align-items:center;gap:8px">
-          <span style="width:11px;height:11px;border-radius:50%;background:#fff;flex-shrink:0;border:1.5px solid rgba(255,255,255,.5);display:inline-flex;align-items:center;justify-content:center">
-            <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          </span>
-          <span style="font-size:14px;font-weight:700;flex:1">${p.name}</span>
+      <div>
+        <div class="pp-header" style="background:${p.sanctioned?'#dc2626':'var(--brand-600,#2563eb)'}">
+          <span class="pp-title">${p.name}</span>
+          <span class="pp-sub">· ${p.country}</span>
         </div>
-        <div style="background:#fff;padding:14px">
-          <div style="display:flex;justify-content:space-between;margin-bottom:9px">
-            <span style="color:#64748b;font-size:13px">Our Exposure:</span>
-            <span style="font-weight:700;color:#0f172a;font-size:13px">${p.exposure}</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:9px">
-            <span style="color:#64748b;font-size:13px">Assets:</span>
-            <span style="font-weight:700;color:#0f172a;font-size:13px">${p.assets.toLocaleString()}</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:12px">
-            <span style="color:#64748b;font-size:13px">Risk Level:</span>
-            <span style="font-weight:700;font-size:13px;color:${portRiskColor}">${p.risk}</span>
-          </div>
-          <button data-port="${p.name.replace(/"/g,'&quot;')}" style="width:100%;padding:0 12px;height:32px;border:1px solid transparent;border-radius:var(--radius-md,8px);background:transparent;color:var(--brand-600,#2563eb);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit" onmouseover="this.style.background='var(--brand-50,#eff6ff)'" onmouseout="this.style.background='transparent'">View Details</button>
+        ${sanctionBadge}
+        <div class="pp-body">
+          <div class="pp-row"><span class="pp-k">Latitude:</span><span class="pp-v">${p.lat.toFixed(4)}°</span></div>
+          <div class="pp-row"><span class="pp-k">Longitude:</span><span class="pp-v">${p.lng.toFixed(4)}°</span></div>
+          <div class="pp-row"><span class="pp-k">No. of Terminals:</span><span class="pp-v">${p.terminals}</span></div>
         </div>
+        <button class="pp-cta" data-port-idx="${idx}">View Details</button>
       </div>`;
     L.marker(p.coord,{icon})
-      .bindPopup(portPopupHTML, { maxWidth:260, minWidth:250, closeButton:true, className:'region-popup' })
+      .bindTooltip(p.name, { direction:'top', className:'port-label', offset:[0,-18] })
+      .bindPopup(portPopupHTML, { className:'port-popup', maxWidth:280, minWidth:280, closeButton:true, autoPanPadding:[30,30] })
       .addTo(rMap);
   });
 
@@ -256,23 +733,78 @@ function initMap() {
   rMap.on('popupopen', (e) => {
     const node = e.popup.getElement();
     if (!node) return;
-    const btn = node.querySelector('button[data-port]');
+    const btn = node.querySelector('button[data-port-idx]');
     if (!btn) return;
     btn.addEventListener('click', () => {
-      sessionStorage.setItem('selectedPort', btn.dataset.port);
+      sessionStorage.setItem('selectedPort', JSON.stringify(window.__mrdPorts[btn.dataset.portIdx]));
       window.location.href = 'PortDetails.html';
     });
+  });
+
+  // Vessel markers — active vessels within the region
+  const vessels = makeRegionVessels(ports, GEO && GEO.bounds, regionName);
+  window.__mrdVessels = vessels;
+  vessels.forEach(v => {
+    L.marker([v.lat, v.lng], { icon: mrdVesselIcon(v.color, v.heading, v.nav) })
+      .bindTooltip(mrdVesselTooltip(v), { className:'vessel-tip', direction:'top', offset:[0,-12], opacity:1 })
+      .bindPopup(mrdVesselPopup(v), { className:'vessel-popup', maxWidth:300, minWidth:300, closeButton:true, autoPanPadding:[30,30] })
+      .addTo(rMap);
   });
 
   // Controls
   setTimeout(() => {
     const zin  = el.querySelector('.leaflet-control-zoom-in');
     const zout = el.querySelector('.leaflet-control-zoom-out');
-    if (zin)  zin.innerHTML  = `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>`;
-    if (zout) zout.innerHTML = `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></span>`;
+    if (zin)  zin.innerHTML  = `<span class="inline-flex items-center justify-center h-full w-full">${SC.I.plus}</span>`;
+    if (zout) zout.innerHTML = `<span class="inline-flex items-center justify-center h-full w-full">${SC.I.minus}</span>`;
   }, 100);
+  // Fullscreen toggle (expand the map wrap to fill the viewport)
   const fsBtn = document.getElementById('mrd-fs');
-  if (fsBtn) fsBtn.addEventListener('click', () => { const w=document.getElementById('mrd-map-wrap'); if(w&&w.requestFullscreen)w.requestFullscreen(); setTimeout(()=>rMap&&rMap.invalidateSize(),300); });
+  const wrap  = document.getElementById('mrd-map-wrap');
+  if (fsBtn && wrap) {
+    fsBtn.onclick = () => {
+      const isFs = wrap.classList.toggle('is-fullscreen');
+      fsBtn.innerHTML = isFs ? SC.I.minimize : SC.I.maximize;
+      fsBtn.title = isFs ? 'Exit fullscreen' : 'Toggle fullscreen';
+      document.body.style.overflow = isFs ? 'hidden' : '';
+      setTimeout(() => rMap && rMap.invalidateSize(), 260);
+    };
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && wrap.classList.contains('is-fullscreen')) fsBtn.onclick();
+    });
+  }
+
+  // Map type selector
+  const RG_TILES = {
+    satellite:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    street:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    dark:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    light:'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  };
+  const setRegionMapType = (type) => {
+    if (!RG_TILES[type] || !rMap) return;
+    rMapType = type;
+    if (rTile) rMap.removeLayer(rTile);
+    rTile = L.tileLayer(RG_TILES[type], { attribution:'', maxZoom:19 }).addTo(rMap);
+    rTile.bringToBack();
+    document.querySelectorAll('#mrd-layers-menu [data-map-type]').forEach(b => {
+      const on = b.dataset.mapType === type;
+      const lbl = b.querySelector('[data-label]'); const chk = b.querySelector('[data-check]');
+      if (lbl) { lbl.style.color = on ? '#2563eb' : '#334155'; lbl.style.fontWeight = on ? '600' : '500'; }
+      if (chk) chk.style.opacity = on ? '1' : '0';
+    });
+  };
+  const lBtn = document.getElementById('mrd-layers-btn');
+  const lMenu = document.getElementById('mrd-layers-menu');
+  if (lBtn && lMenu) {
+    lBtn.onclick = (e) => { e.stopPropagation(); lMenu.classList.toggle('hidden'); };
+    lMenu.addEventListener('click', e => e.stopPropagation());
+    lMenu.querySelectorAll('[data-map-type]').forEach(opt => {
+      opt.onclick = (e) => { e.stopPropagation(); setRegionMapType(opt.dataset.mapType); lMenu.classList.add('hidden'); };
+    });
+    document.addEventListener('click', () => lMenu.classList.add('hidden'));
+    setRegionMapType(rMapType);
+  }
 }
 
 /* ── Render ───────────────────────────────────────────────────────────────── */
@@ -337,8 +869,8 @@ function Content() {
             </tbody>
           </table>
         </div>
-        <div style="padding:10px 14px;border-top:1px solid #f1f5f9;text-align:center;flex-shrink:0">
-          <button style="font-size:13px;color:var(--brand-600,#2563eb);font-weight:600;background:none;border:0;cursor:pointer">View All Portfolios</button>
+        <div class="ds-card-foot ds-card-foot--start">
+          <button class="ds-btn ds-btn--ghost ds-btn--sm">View All Portfolios</button>
         </div>
       </div>
 
@@ -433,14 +965,32 @@ function Content() {
             </div>
           </div>
         </div>` : `
-        <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:24px">
-          <div style="text-align:center;color:#94a3b8;font-size:13px">Report builder coming soon</div>
+        <div style="flex:1;overflow-y:auto;padding:16px" class="scroll-thin">
+          <div style="font-size:12.5px;color:#334155;font-weight:500;margin-bottom:6px">Date Range:</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+            <div style="position:relative;flex:1">
+              <input type="text" value="May 27th 2026" readonly style="width:100%;height:36px;border:1px solid #e2e8f0;border-radius:7px;padding:0 30px 0 10px;font-size:13px;color:#334155;background:#fff;outline:none;font-family:inherit;cursor:pointer" />
+              <span style="position:absolute;right:9px;top:50%;transform:translateY(-50%);display:flex">${CAL_SVG}</span>
+            </div>
+            <div style="position:relative;flex:1">
+              <input type="text" value="Jun 10th 2026" readonly style="width:100%;height:36px;border:1px solid #e2e8f0;border-radius:7px;padding:0 30px 0 10px;font-size:13px;color:#334155;background:#fff;outline:none;font-family:inherit;cursor:pointer" />
+              <span style="position:absolute;right:9px;top:50%;transform:translateY(-50%);display:flex">${CAL_SVG}</span>
+            </div>
+          </div>
+          <div style="font-size:12.5px;color:#334155;font-weight:500;margin-bottom:6px">Filter by Portfolio:</div>
+          <select class="rpt-select" style="width:100%">
+            <option>All portfolios</option>
+            ${PORTFOLIOS.map(p => `<option>${p.name}</option>`).join('')}
+          </select>
+        </div>
+        <div class="ds-card-foot">
+          <button class="ds-btn ds-btn--ghost ds-btn--sm">Generate Report</button>
         </div>`}
       </div>
     </div>
 
     <!-- Bottom: tab bar + map -->
-    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06);overflow:hidden;display:flex;flex-direction:column;min-height:420px">
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06);overflow:hidden;display:flex;flex-direction:column;min-height:840px">
       <!-- Tab selector -->
       <div style="padding:10px 14px;border-bottom:1px solid #f1f5f9;flex-shrink:0;">
         <div class="tabs-desktop-wrap">
@@ -465,16 +1015,97 @@ function Content() {
       ${mapTab === 'map' ? `
       <div id="mrd-map-wrap" style="position:relative;flex:1">
         <div id="region-map"></div>
-        <button id="mrd-fs" class="map-btn" style="position:absolute;top:12px;left:12px;z-index:400">${EXPAND}</button>
+        <button id="mrd-fs" class="map-btn" style="position:absolute;top:12px;left:12px;z-index:400">${SC.I.maximize}</button>
         <div style="position:absolute;top:12px;right:12px;z-index:400;display:flex;flex-direction:column;gap:6px">
-          <button class="map-btn">${LAYERS}</button>
-          <button class="map-btn">${TAG}</button>
+          <div style="position:relative">
+            <button id="mrd-layers-btn" class="map-btn" title="Map type">${SC.I.layers}</button>
+            <div id="mrd-layers-menu" class="hidden" style="position:absolute;top:0;right:calc(100% + 8px);width:160px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 4px 12px rgba(15,23,42,.14);overflow:hidden;padding:4px 0">
+              ${[['satellite','Satellite'],['street','Street View'],['dark','Dark Mode'],['light','Light Mode']].map(([k,l])=>`
+                <button data-map-type="${k}" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;background:transparent;border:0;cursor:pointer;font-family:inherit;font-size:12.5px;color:#334155;text-align:left">
+                  <span data-label>${l}</span>
+                  <span data-check style="display:flex;color:#2563eb;opacity:0">${SC.I.check}</span>
+                </button>`).join('')}
+            </div>
+          </div>
         </div>
         <!-- Legend -->
         <div style="position:absolute;bottom:16px;left:12px;z-index:400;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;box-shadow:0 2px 6px rgba(15,23,42,.1)">
           <div style="font-size:13px;font-weight:700;color:#0f172a">Marine Region</div>
-          <div style="font-size:11.5px;color:#64748b;margin-top:2px">5 Major Ports · 5 Active Vessels</div>
+          <div style="font-size:11.5px;color:#64748b;margin-top:2px" id="mrd-legend-stats">5 Major Ports · 5 Active Vessels</div>
         </div>
+      </div>` : mapTab === 'policies' ? `
+      <div style="display:flex;flex-direction:column;flex:1;min-height:0">
+        <!-- Toolbar -->
+        <div class="pol-toolbar">
+          <div class="pol-search">
+            ${SC.I.search}
+            <input id="pol-search-input" type="text" placeholder="Search" value="${policyQuery.replace(/"/g,'&quot;')}" />
+          </div>
+          <button class="pol-btn pol-btn-ghost" id="pol-reset">${SC.I.filter} Reset Filters</button>
+          <button class="pol-btn">All Portfolios <span class="pchev">${SC.I.chevDown}</span></button>
+          <button class="pol-btn">Active <span class="pchev">${SC.I.chevDown}</span></button>
+          <button class="pol-btn">Policy Type <span class="pchev">${SC.I.chevDown}</span></button>
+          <button class="pol-btn">Select Date ${CAL_SVG}</button>
+          <button class="pol-btn pol-btn-primary"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export To Excel</button>
+        </div>
+        <!-- Table -->
+        <div style="flex:1;overflow:auto" class="scroll-thin">
+          <table class="pol-tbl">
+            <thead><tr>
+              <th><span class="th-in">Date ${window.dsSortInd(true,false)}</span></th>
+              <th><span class="th-in">Asset ${window.dsSortInd(false,true)}</span></th>
+              <th><span class="th-in">Monitored Countries ${window.dsSortInd(false,true)}</span></th>
+              <th><span class="th-in">Exposure ${window.dsSortInd(false,true)}</span></th>
+              <th><span class="th-in">War Exposure ${window.dsSortInd(false,true)}</span></th>
+              <th><span class="th-in">Portfolio ${window.dsSortInd(false,true)}</span></th>
+            </tr></thead>
+            <tbody>
+              ${POLICIES.filter(p => !policyQuery || (p.asset + ' ' + p.pf).toLowerCase().includes(policyQuery.toLowerCase())).map(p => `
+              <tr>
+                <td style="color:#475569">${p.date}</td>
+                <td><span class="pol-link">${p.asset}</span></td>
+                <td>${p.countries.length ? `<span class="pol-flags">${p.countries.map(mrdFlag).join('')}</span>` : '<span style="color:#94a3b8">-</span>'}</td>
+                <td style="font-weight:600;color:#0f172a">${p.exp}</td>
+                <td>${p.war === '-' ? '<span style="color:#94a3b8">-</span>' : `<span style="font-weight:600;color:#dc2626">${p.war}</span>`}</td>
+                <td><span class="pol-link">${p.pf}</span></td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>` : mapTab === 'notif' ? `
+      <div style="display:flex;flex-direction:column;flex:1;min-height:0">
+        <!-- Header with title + search -->
+        <div class="notif-head">
+          <span class="notif-title">Current Notifications in the Region</span>
+          <div class="pol-search" style="flex:0 0 260px;min-width:0">
+            ${SC.I.search}
+            <input id="notif-search-input" type="text" placeholder="Search" value="${notifQuery.replace(/"/g,'&quot;')}" />
+          </div>
+        </div>
+        <!-- Table -->
+        <div style="flex:1;overflow:auto" class="scroll-thin">
+          <table class="pol-tbl notif-tbl">
+            <thead><tr>
+              <th><span class="th-in">Time ${window.dsSortInd(true,false)}</span></th>
+              <th><span class="th-in">Type ${window.dsSortInd(false,true)}</span></th>
+              <th><span class="th-in">Message ${window.dsSortInd(false,true)}</span></th>
+            </tr></thead>
+            <tbody>
+              ${NOTIFICATIONS.filter(n => !notifQuery || (n.vessel + ' ' + n.type).toLowerCase().includes(notifQuery.toLowerCase())).map(n => `
+              <tr>
+                <td style="color:#475569;white-space:nowrap">${n.time}</td>
+                <td style="white-space:nowrap">${n.type}</td>
+                <td style="white-space:normal">Vessel: <span class="pol-link">${n.vessel}</span> ${n.action} <span class="pol-link">${NOTIF_REGION}</span></td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>` : mapTab === 'history' ? `
+      <div style="display:flex;flex-direction:column;flex:1;min-height:0;overflow-y:auto" class="scroll-thin">
+        <div class="hist-title">Region History</div>
+        <div id="hist-chart" style="padding:0 16px">${renderHistoryChart()}</div>
+        <div class="hist-legend">${historyLegend()}</div>
+        <div class="hist-controls" id="hist-controls">${renderHistoryControls()}</div>
       </div>` : `
       <div style="flex:1;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:13px;padding:48px">
         <div style="text-align:center"><div style="font-size:32px;margin-bottom:12px">📋</div>${mapTab.replace(/([A-Z])/g,' $1').replace(/^./,s=>s.toUpperCase())} data coming soon</div>
@@ -534,6 +1165,39 @@ function wire() {
   if (rtabSel) rtabSel.onchange = () => { rightTab = rtabSel.value; rc(); };
   document.querySelectorAll('[data-stab]').forEach(b => b.addEventListener('click', () => { statSub  = b.dataset.stab;  rc(); }));
   document.querySelectorAll('[data-mtab]').forEach(b => b.addEventListener('click', () => { mapTab = b.dataset.mtab; rc(); }));
+  const polSearch = document.getElementById('pol-search-input');
+  if (polSearch) polSearch.addEventListener('input', () => {
+    policyQuery = polSearch.value;
+    const tbody = document.querySelector('.pol-tbl tbody');
+    if (!tbody) return;
+    const q = policyQuery.toLowerCase();
+    const rows = POLICIES.filter(p => !q || (p.asset + ' ' + p.pf).toLowerCase().includes(q));
+    tbody.innerHTML = rows.map(p => `
+      <tr>
+        <td style="color:#475569">${p.date}</td>
+        <td><span class="pol-link">${p.asset}</span></td>
+        <td>${p.countries.length ? `<span class="pol-flags">${p.countries.map(mrdFlag).join('')}</span>` : '<span style="color:#94a3b8">-</span>'}</td>
+        <td style="font-weight:600;color:#0f172a">${p.exp}</td>
+        <td>${p.war === '-' ? '<span style="color:#94a3b8">-</span>' : `<span style="font-weight:600;color:#dc2626">${p.war}</span>`}</td>
+        <td><span class="pol-link">${p.pf}</span></td>
+      </tr>`).join('');
+  });
+  const polReset = document.getElementById('pol-reset');
+  if (polReset) polReset.addEventListener('click', () => { policyQuery = ''; rc(); });
+  const notifSearch = document.getElementById('notif-search-input');  if (notifSearch) notifSearch.addEventListener('input', () => {
+    notifQuery = notifSearch.value;
+    const tbody = document.querySelector('.notif-tbl tbody');
+    if (!tbody) return;
+    const q = notifQuery.toLowerCase();
+    const rows = NOTIFICATIONS.filter(n => !q || (n.vessel + ' ' + n.type).toLowerCase().includes(q));
+    tbody.innerHTML = rows.map(n => `
+      <tr>
+        <td style="color:#475569;white-space:nowrap">${n.time}</td>
+        <td style="white-space:nowrap">${n.type}</td>
+        <td style="white-space:normal">Vessel: <span class="pol-link">${n.vessel}</span> ${n.action} <span class="pol-link">${NOTIF_REGION}</span></td>
+      </tr>`).join('');
+  });
+  wireHistoryControls();
   window.addEventListener('resize', positionTabPills, { passive: true });
   const mapTabSel = document.getElementById('map-tab-sel');
   if (mapTabSel) mapTabSel.onchange = () => { mapTab = mapTabSel.value; rc(); };

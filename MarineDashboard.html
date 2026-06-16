@@ -56,6 +56,7 @@
   .leaflet-control-zoom a svg { width:16px; height:16px; }
   .map-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:#fff; border:1px solid #e2e8f0; border-radius:8px; color:#334155; box-shadow: 0 1px 2px rgb(15 23 42 / .08); }
   .map-btn:hover { background:#f1f5f9; }
+  .map-btn:active { background:#e2e8f0; }
   /* Vessel name label next to marker on the map */
   .vessel-label-wrap { background:transparent !important; border:0 !important; }
   .vessel-label {
@@ -138,7 +139,14 @@
 
   /* DS table-header treatment for list-card column headers */
   .tracking-micro.uppercase.text-ink-500{background:var(--slate-50,#F9FAFB);color:var(--text-muted,#6B7280)}
-  </style>
+    /* DS card footer + Tertiary/Ghost buttons (ALL CAPS) — per Skytek DS */
+  .ds-card-foot{padding:10px 16px;border-top:1px solid #ECEEF2;background:#F9FAFB;display:flex;justify-content:flex-end;align-items:center;gap:8px;border-bottom-left-radius:inherit;border-bottom-right-radius:inherit;}
+  .ds-card-foot--start{justify-content:flex-start;}
+  .ds-card-foot--between{justify-content:space-between;}
+  .ds-card-foot--center{justify-content:center;}
+  .ds-card-foot button{display:inline-flex;align-items:center;gap:4px;height:26px;padding:0 5px;border-radius:6px;background:transparent;border:0;cursor:pointer;font-family:inherit;font-weight:600;font-size:11px;letter-spacing:.02em;text-transform:uppercase;color:var(--brand-600,#2563eb);transition:background .15s,color .15s;white-space:nowrap;}
+  .ds-card-foot button:hover{background:#eef2f7;color:var(--brand-700,#1d4ed8);}
+</style>
 </head>
 <body class="bg-ink-100 text-ink-900 antialiased" data-density="compact">
 <div id="app" class="min-h-screen w-full flex"></div>
@@ -155,7 +163,7 @@
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="shared/chrome.js?v=11"></script>
+<script src="shared/chrome.js?v=12"></script>
 <script>
 const SC = window.sharedChrome;
 const Ico = SC.I;
@@ -431,7 +439,7 @@ function PortfolioCard() {
     <div class="flex-1 overflow-y-auto scroll-thin">
       ${rows}
     </div>
-    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 flex items-center justify-between text-xs h-9">
+    <div class="ds-card-foot ds-card-foot--between shrink-0">
       <button class="inline-flex items-center gap-1 text-brand-600 font-semibold hover:text-brand-700 tracking-micro">
         <span class="inline-flex items-center [&_svg]:h-3.5 [&_svg]:w-3.5">${Ico.plus}</span><span>Add Group</span>
       </button>
@@ -462,7 +470,7 @@ function PortfolioCard() {
         </button>
       `).join('')}
     </div>
-    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 flex items-center justify-between text-xs h-9">
+    <div class="ds-card-foot ds-card-foot--between shrink-0">
       <button class="inline-flex items-center gap-1 text-brand-600 font-semibold hover:text-brand-700 tracking-micro"><span class="inline-flex items-center [&_svg]:h-3.5 [&_svg]:w-3.5">${Ico.plus}</span><span>ADD PORTFOLIO</span></button>
       <button class="inline-flex items-center gap-1 text-brand-600 font-semibold hover:text-brand-700 tracking-micro"><span>VIEW ALL PORTFOLIOS</span><span class="inline-flex items-center [&_svg]:h-3.5 [&_svg]:w-3.5">${Ico.chev}</span></button>
     </div>
@@ -522,7 +530,7 @@ function RegionsCard() {
         </button>
       `).join('')}
     </div>
-    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 text-center h-9 flex items-center justify-center">
+    <div class="ds-card-foot ds-card-foot--center shrink-0">
       <button class="text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">ALL REGIONS</button>
     </div>
   </div>`;
@@ -577,7 +585,7 @@ function AlertsCard() {
       </div>
       <div class="mt-2 space-y-0.5 text-[11px] text-ink-600">
         <div class="flex items-center gap-1.5"><span class="text-ink-400">${Ico.chev}</span>${a.date}</div>
-        <div class="flex items-center gap-1.5"><span class="text-ink-400">${Ico.pin}</span>${a.loc}</div>
+        <div class="flex items-center gap-1.5"><span class="text-ink-400 [&_svg]:h-3.5 [&_svg]:w-3.5">${Ico.pin}</span>${a.loc}</div>
       </div>
       <div class="mt-1.5 text-[11px] text-ink-600 line-clamp-2">${a.body}</div>
       <button class="mt-1 text-[11px] font-semibold text-brand-600 hover:text-brand-700">▸ Show More</button>
@@ -662,7 +670,7 @@ function AlertsCard() {
     <div class="flex-1 overflow-y-auto scroll-thin flex flex-col min-h-0">
       ${state.alertTab === 'Compliance' ? complianceContent : state.alertTab === 'Weather' ? weatherContent : ALERTS.map(row).join('')}
     </div>
-    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 text-center h-9 flex items-center justify-center shrink-0">
+    <div class="ds-card-foot ds-card-foot--center shrink-0">
       <button class="text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">${state.alertTab === 'Compliance' ? 'VIEW ALL' : 'VIEW ALL'}</button>
     </div>
   </div>`;
@@ -700,8 +708,8 @@ function MapCard() {
             <div class="px-3 py-2.5 border-b border-ink-200 flex items-center justify-between">
               <div class="text-sm font-bold text-ink-800">Filter Vessels</div>
               <div class="flex items-center gap-1">
-                <button id="vf-all"  class="h-6 px-2 rounded-md border border-ink-200 text-[11px] font-semibold text-ink-700 hover:bg-ink-50">All</button>
-                <button id="vf-none" class="h-6 px-2 rounded-md border border-ink-200 text-[11px] font-semibold text-ink-700 hover:bg-ink-50">None</button>
+                <button id="vf-all"  class="h-6 px-2 rounded-md border border-ink-200 text-[11px] font-semibold text-ink-700 hover:bg-ink-50 active:bg-ink-100">All</button>
+                <button id="vf-none" class="h-6 px-2 rounded-md border border-ink-200 text-[11px] font-semibold text-ink-700 hover:bg-ink-50 active:bg-ink-100">None</button>
               </div>
             </div>
             <div class="px-3 py-2 bg-ink-50 border-b border-ink-200 text-[11px] font-semibold uppercase tracking-micro text-ink-600">Vessel Type</div>

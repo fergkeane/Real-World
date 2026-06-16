@@ -91,6 +91,12 @@
   #lb-next { right:24px; }
   #lb-close { position:absolute; top:16px; right:20px; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background .15s; }
   #lb-close:hover { background:rgba(255,255,255,.25); }adding:8px; }
+  /* DS card footer + Tertiary/Ghost buttons (ALL CAPS) — per Skytek DS */
+  .ds-card-foot{padding:10px 16px;border-top:1px solid #ECEEF2;background:#F9FAFB;display:flex;justify-content:flex-end;align-items:center;gap:8px;border-bottom-left-radius:inherit;border-bottom-right-radius:inherit;}
+  .ds-card-foot--start{justify-content:flex-start;}
+  .ds-card-foot--between{justify-content:space-between;}
+  .ds-card-foot button{display:inline-flex;align-items:center;gap:4px;height:26px;padding:0 6px;border-radius:6px;background:transparent;border:0;cursor:pointer;font-family:inherit;font-weight:600;font-size:11px;letter-spacing:.02em;text-transform:uppercase;color:var(--brand-600,#2563eb);transition:background .15s,color .15s;white-space:nowrap;}
+  .ds-card-foot button:hover{background:#eef2f7;color:var(--brand-700,#1d4ed8);}
 </style>
 </head>
 <body class="bg-ink-100 text-ink-900 antialiased" data-density="compact">
@@ -108,7 +114,7 @@
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="shared/chrome.js?v=11"></script>
+<script src="shared/chrome.js?v=12"></script>
 <script>
 const SC = window.sharedChrome;
 const Ico = SC.I;
@@ -310,7 +316,7 @@ function Content() {
                 </div>`).join('')}
             </div>`).join('')}
         </div>
-        <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 text-center h-9 flex items-center justify-center shrink-0">
+        <div class="ds-card-foot ds-card-foot--start shrink-0">
           <button class="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
             <span>ADD TO PORTFOLIO</span>

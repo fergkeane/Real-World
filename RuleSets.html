@@ -15,7 +15,7 @@
   /* Table */
   .rs-tbl{width:100%;border-collapse:collapse}
   .rs-tbl th{padding:10px 16px;font-size:12px;font-weight:600;color:var(--text-muted,#6B7280);text-align:left;border-bottom:1px solid #f1f5f9;white-space:nowrap;background:var(--slate-50,#F9FAFB);user-select:none;text-transform:uppercase;letter-spacing:.04em}
-  .rs-tbl th.sortable{cursor:pointer}.rs-tbl th.sortable:hover{color:#64748b}.rs-tbl th.sorted{color:#2563eb}
+  .rs-tbl th.sortable{cursor:pointer}.rs-tbl th.sortable:hover{color:#64748b}.rs-tbl th.sorted{color:var(--brand-600)}
   .rs-tbl td{padding:13px 16px;font-size:13px;color:#334155;border-bottom:1px solid #f1f5f9;vertical-align:middle}
   .rs-tbl tr:last-child td{border-bottom:0}
   .rs-tbl tbody tr:hover td{background:#fafafa}
@@ -33,9 +33,9 @@
   @keyframes slidein{from{transform:translateX(100%)}to{transform:translateX(0)}}
   .form-label{font-size:11px;font-weight:700;color:#64748b;margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.04em}
   .form-input{width:100%;height:36px;padding:0 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;color:#0f172a;outline:none;font-family:inherit;transition:border-color .15s,box-shadow .15s;background:#fff}
-  .form-input:focus{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+  .form-input:focus{border-color:var(--brand-300);box-shadow:0 0 0 3px var(--brand-100)}
   .form-select{width:100%;height:36px;padding:0 28px 0 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;color:#0f172a;outline:none;font-family:inherit;background:#fff;appearance:none;-webkit-appearance:none;cursor:pointer}
-  .form-select:focus{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+  .form-select:focus{border-color:var(--brand-300);box-shadow:0 0 0 3px var(--brand-100)}
 </style>
 </head>
 <body class="bg-slate-100 text-slate-900">
@@ -51,7 +51,7 @@ window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 }/*EDITMODE-END*/;
 </script>
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
-<script src="shared/chrome.js?v=11"></script>
+<script src="shared/chrome.js?v=12"></script>
 <link rel="stylesheet" href="shared/pagination.css" />
 <script src="shared/pagination.js"></script>
 <script>
@@ -187,7 +187,7 @@ function renderModal() {
       </div>
       <div class="shrink-0 px-6 py-4 border-t border-slate-100 flex items-center gap-3">
         <button id="modal-cancel" style="flex:1;height:36px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;font-size:13px;font-weight:500;color:#475569;cursor:pointer;font-family:inherit" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">Cancel</button>
-        <button id="modal-create" style="flex:1;height:36px;border-radius:8px;border:0;background:#2563eb;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">Create Rule Set</button>
+        <button id="modal-create" style="flex:1;height:36px;border-radius:8px;border:0;background:var(--brand-600);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit" onmouseover="this.style.background='var(--brand-700)'" onmouseout="this.style.background='var(--brand-600)'">Create Rule Set</button>
       </div>
     </div>
   </div>`;
@@ -205,7 +205,7 @@ function renderPage() {
   return `
   <!-- Create button row -->
   <div class="shrink-0 px-4 pt-4 pb-3 flex justify-end">
-    <button id="create-rs-btn" style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px;border-radius:8px;background:#2563eb;color:#fff;font-size:13px;font-weight:600;border:0;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .15s" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+    <button id="create-rs-btn" style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px;border-radius:8px;background:var(--brand-600);color:#fff;font-size:13px;font-weight:600;border:0;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .15s" onmouseover="this.style.background='var(--brand-700)'" onmouseout="this.style.background='var(--brand-600)'">
       ${SVG.plus} Create New Rule Set
     </button>
   </div>
@@ -297,7 +297,7 @@ function wireRS() {
   const si = document.getElementById('rs-search');
   if (si) {
     si.addEventListener('input', e => { ST.query = e.target.value; ST.page = 1; rc(); });
-    si.addEventListener('focus', e => { e.target.style.borderColor='#93c5fd'; e.target.style.boxShadow='0 0 0 3px rgba(59,130,246,.12)'; e.target.style.background='#fff'; });
+    si.addEventListener('focus', e => { e.target.style.borderColor='var(--brand-300)'; e.target.style.boxShadow='0 0 0 3px var(--brand-100)'; e.target.style.background='#fff'; });
     si.addEventListener('blur',  e => { e.target.style.borderColor='#e2e8f0'; e.target.style.boxShadow=''; e.target.style.background='#f8fafc'; });
   }
 

@@ -79,6 +79,12 @@
     .rg-panels-row{flex-direction:column!important;height:auto!important;}
     .rg-panels-row>div{flex:none!important;min-height:250px;}
   }
+  /* DS card footer + Tertiary/Ghost button (ALL CAPS) — per Skytek DS */
+  .ds-card-foot{padding:10px 16px;border-top:1px solid #ECEEF2;background:#F9FAFB;display:flex;justify-content:flex-start;align-items:center;gap:8px;flex-shrink:0;border-bottom-left-radius:inherit;border-bottom-right-radius:inherit;}
+  .ds-card-foot--end{justify-content:flex-end;}
+  .ds-card-foot--center{justify-content:center;}
+  .ds-foot-btn{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 8px;border-radius:6px;background:transparent;border:0;cursor:pointer;font-family:inherit;font-weight:600;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--brand-600,#2563eb);transition:background .15s,color .15s;white-space:nowrap;text-decoration:none;}
+  .ds-foot-btn:hover{background:#eef2f7;color:var(--brand-700,#1d4ed8);}
 </style>
 </head>
 <body class="bg-white text-slate-900">
@@ -95,7 +101,7 @@ window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 </script>
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="shared/chrome.js?v=11"></script>
+<script src="shared/chrome.js?v=12"></script>
 <script>
 const SC = window.sharedChrome;
 
@@ -329,14 +335,40 @@ const TABS_DATA = {
   },
 };
 
-const MAP_REGIONS = [
-  {name:'North Sea / Scandinavia',  color:'#f59e0b', bounds:[[54,5],[72,28]],  exposure:'$89.4M',  assets:312,  risk:'Medium'},
-  {name:'Americas — Gulf Zone',     color:'#f59e0b', bounds:[[12,-112],[32,-86]],exposure:'$76.2M', assets:246,  risk:'High'},
-  {name:'Caribbean & Central America',color:'#f59e0b',bounds:[[5,-100],[18,-80]],exposure:'$24.4B', assets:646,  risk:'Medium'},
-  {name:'Western Europe',           color:'#3b82f6', bounds:[[43,-10],[58,28]], exposure:'$182.4B', assets:1240, risk:'Low'},
-  {name:'Middle East / Levant',     color:'#ef4444', bounds:[[20,24],[42,56]],  exposure:'$54.8B',  assets:892,  risk:'Critical'},
-  {name:'East Asia',                color:'#f59e0b', bounds:[[14,88],[52,136]], exposure:'$215.6M', assets:528,  risk:'Medium'},
-];
+const MAP_REGIONS_BY_TAB = {
+  marine: [
+    {name:'North Sea / Scandinavia',  color:'#f59e0b', bounds:[[54,5],[72,28]],  exposure:'$89.4M',  assets:312,  risk:'Medium'},
+    {name:'Americas — Gulf Zone',     color:'#f59e0b', bounds:[[12,-112],[32,-86]],exposure:'$76.2M', assets:246,  risk:'High'},
+    {name:'Caribbean & Central America',color:'#f59e0b',bounds:[[5,-100],[18,-80]],exposure:'$24.4B', assets:646,  risk:'Medium'},
+    {name:'Western Europe',           color:'#3b82f6', bounds:[[43,-10],[58,28]], exposure:'$182.4B', assets:1240, risk:'Low'},
+    {name:'Middle East / Levant',     color:'#ef4444', bounds:[[20,24],[42,56]],  exposure:'$54.8B',  assets:892,  risk:'Critical'},
+    {name:'East Asia',                color:'#f59e0b', bounds:[[14,88],[52,136]], exposure:'$215.6M', assets:528,  risk:'Medium'},
+  ],
+  property: [
+    {name:'US Northeast Metro',       color:'#3b82f6', bounds:[[37,-80],[45,-69]], exposure:'$420.5B', assets:1820, risk:'Low'},
+    {name:'US West Coast',            color:'#f59e0b', bounds:[[32,-123],[42,-117]],exposure:'$268.1B',assets:1240, risk:'Medium'},
+    {name:'Western Europe',           color:'#3b82f6', bounds:[[43,-6],[54,12]],   exposure:'$512.7B', assets:2310, risk:'Low'},
+    {name:'Gulf Cooperation Council', color:'#ef4444', bounds:[[22,46],[30,56]],   exposure:'$96.3B',  assets:540,  risk:'High'},
+    {name:'East Asia Megacities',     color:'#f59e0b', bounds:[[30,118],[40,142]], exposure:'$338.9B', assets:1670, risk:'Medium'},
+  ],
+  aviation: [
+    {name:'North Atlantic Corridor',  color:'#3b82f6', bounds:[[38,-78],[54,-8]],  exposure:'$184.2B', assets:124,  risk:'Low'},
+    {name:'European Hubs',            color:'#f59e0b', bounds:[[42,-6],[54,18]],   exposure:'$142.6B', assets:98,   risk:'Medium'},
+    {name:'Middle East Hubs',         color:'#ef4444', bounds:[[22,42],[30,56]],   exposure:'$118.9B', assets:46,   risk:'High'},
+    {name:'Trans-Pacific',            color:'#f59e0b', bounds:[[24,128],[44,170]], exposure:'$97.4B',  assets:72,   risk:'Medium'},
+    {name:'Southeast Asia',           color:'#3b82f6', bounds:[[-6,98],[16,120]],  exposure:'$64.3B',  assets:58,   risk:'Low'},
+  ],
+  energy: [
+    {name:'North Sea Basin',          color:'#f59e0b', bounds:[[54,0],[62,8]],     exposure:'$210.4B', assets:312,  risk:'Medium'},
+    {name:'Gulf of Mexico',           color:'#ef4444', bounds:[[18,-97],[30,-82]], exposure:'$425.6B', assets:684,  risk:'High'},
+    {name:'Persian Gulf',             color:'#ef4444', bounds:[[24,48],[30,57]],   exposure:'$388.1B', assets:528,  risk:'Critical'},
+    {name:'West Africa Offshore',     color:'#f59e0b', bounds:[[-6,2],[8,12]],     exposure:'$96.8B',  assets:214,  risk:'Medium'},
+    {name:'Brazil Pre-Salt',          color:'#3b82f6', bounds:[[-28,-46],[-18,-36]],exposure:'$152.3B',assets:188,  risk:'Low'},
+  ],
+};
+const MAP_REGIONS = MAP_REGIONS_BY_TAB.marine;
+/* Build an irregular (non-rectangular) polygon roughly filling the given bounds. */
+function oddPoly(b, seed){ const s=b[0][0],w=b[0][1],n=b[1][0],e=b[1][1],cy=(s+n)/2,cx=(w+e)/2,ry=(n-s)/2,rx=(e-w)/2; let h=(seed||1)>>>0; const rnd=()=>{ h=(h*9301+49297)%233280; return h/233280; }; const N=11; return Array.from({length:N},(_,i)=>{ const a=i/N*6.28318; const j=0.55+rnd()*0.6; return [cy+Math.sin(a)*ry*j, cx+Math.cos(a)*rx*j]; }); }
 
 /* ── State ────────────────────────────────────────────────────────────────── */
 let activeTab = 'marine';
@@ -344,7 +376,7 @@ let activeCovTab = 'CHW';
 let viewMode = 'Map';
 let rMap = null, rTile = null;
 let expandedRegions = new Set();
-let rMapType = 'natgeo';
+let rMapType = 'satellite';
 let rLayersOpen = false;
 
 const MAP_TILES = {
@@ -395,7 +427,7 @@ function initMap() {
   rMap = L.map(el, { center:[28,18], zoom:2, zoomControl:true, scrollWheelZoom:true });
   rTile = L.tileLayer(MAP_TILES[rMapType], { attribution:'', maxZoom:12 }).addTo(rMap);
 
-  MAP_REGIONS.forEach(r => {
+  (MAP_REGIONS_BY_TAB[activeTab] || MAP_REGIONS).forEach(r => {
     const riskColor = {Low:'#16a34a',Medium:'#f97316',High:'#dc2626',Critical:'#7c3aed'}[r.risk]||'#64748b';
     const popupHTML = `
     <div style="font-family:'Inter',sans-serif;width:250px;border-radius:12px;overflow:hidden">
@@ -420,7 +452,7 @@ function initMap() {
       </div>
     </div>`;
 
-    L.rectangle(r.bounds, {
+    L.polygon(oddPoly(r.bounds, (r.name||'').length*13+7), {
       color: r.color, weight:2, fillColor:r.color, fillOpacity:.2, opacity:.65,
     }).addTo(rMap)
       .bindPopup(popupHTML, { maxWidth:260, minWidth:250, closeButton:false, className:'region-popup' })
@@ -471,8 +503,8 @@ function PanelMyRegions(d) {
         </div>`).join('') : ''}`;
       }).join('')}
     </div>
-    <div style="padding:10px 16px;border-top:1px solid #f1f5f9;background:#f8fafc;flex-shrink:0;display:flex;justify-content:center">
-      <button style="height:28px;padding:0 14px;border:1px solid #2563eb;border-radius:8px;background:#fff;color:#2563eb;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='#fff'">Add New Region</button>
+    <div class="ds-card-foot ds-card-foot--center">
+      <button class="ds-foot-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add New Region</button>
     </div>
   </div>`;
 }
@@ -513,7 +545,7 @@ function PanelStats(d) {
   const s = d.stats[activeCovTab] || Object.values(d.stats)[0];
   return `
   <div class="info-panel" style="flex:2;min-width:0">
-    <div style="font-size:14px;font-weight:700;color:#0f172a;padding-bottom:10px;border-bottom:1px solid #f1f5f9;margin-bottom:10px">${d.statsTitle}</div>
+    <div style="font-size:14px;font-weight:700;color:#0f172a;margin:-16px -16px 14px;padding:14px 16px;border-bottom:1px solid #f1f5f9">${d.statsTitle}</div>
     <div style="font-size:11.5px;color:#64748b;margin-bottom:5px">Date Range:</div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
       <input type="text" value="Dec 1st 2024" readonly style="flex:1;height:30px;border:1px solid #e2e8f0;border-radius:7px;padding:0 8px;font-size:12.5px;color:#334155;background:#f8fafc;outline:none;font-family:inherit;min-width:0" />
@@ -701,12 +733,15 @@ function wire() {
     marine:   { page: 'MarineRegionDetails.html',   key: 'selectedMarineRegion' },
     property: { page: 'PropertyRegionDetails.html', key: 'selectedPropertyRegion' },
     aviation: { page: 'AviationRegionDetails.html', key: 'selectedAviationRegion' },
-    energy:   { page: 'MarineRegionDetails.html',   key: 'selectedMarineRegion' },
+    energy:   { page: 'OffshoreRegionDetails.html', key: 'selectedOffshoreRegion' },
   };
   const linkFor = () => REGION_PAGE[activeTab] || REGION_PAGE.marine;
   window.__regionGo = (name) => {
     const { page, key } = linkFor();
     sessionStorage.setItem(key, name);
+    const reg = (MAP_REGIONS_BY_TAB[activeTab] || []).find(r => r.name === name);
+    if (reg) sessionStorage.setItem('selectedRegionGeo', JSON.stringify({ name, bounds: reg.bounds, color: reg.color, exposure: reg.exposure, assets: reg.assets, risk: reg.risk }));
+    else sessionStorage.removeItem('selectedRegionGeo');
     window.location.href = page;
   };
   document.querySelectorAll('[data-region-link]').forEach(el => {

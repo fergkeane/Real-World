@@ -81,18 +81,14 @@
   .stat-card .stat-desc{font-size:12px;line-height:16px;color:var(--text-secondary,#4B5563)}
   .row-del-btn:hover{background:#fef2f2 !important;border-color:#fca5a5 !important;color:#dc2626 !important;}
   .row-arch-btn:hover{background:#eff6ff !important;border-color:#bfdbfe !important;color:var(--brand-600,#0284c7) !important;}
-  /* Download template — Skytek secondary button states */
-  #download-template:hover{background:var(--slate-50,#F9FAFB);border-color:var(--border-strong,#D1D5DB);}
-  #download-template:active{background:var(--slate-100,#F3F4F6);}
-  #download-template:focus-visible{outline:0;box-shadow:0 0 0 3px rgba(45,127,251,.32);}
-  /* Browse files — Skytek primary button states */
-  #browse-files-btn:hover{background:#0369a1;border-color:#0369a1;}
-  #browse-files-btn:active{background:#025884;border-color:#025884;}
-  #browse-files-btn:focus-within{outline:0;box-shadow:0 0 0 3px rgba(45,127,251,.32);}
-  /* Export to Excel — Skytek secondary button states */
-  #export-excel-btn:hover{background:var(--slate-50,#F9FAFB);border-color:var(--border-strong,#D1D5DB);}
-  #export-excel-btn:active{background:var(--slate-100,#F3F4F6);}
-  #export-excel-btn:focus-visible{outline:0;box-shadow:0 0 0 3px rgba(45,127,251,.32);}
+  /* Skytek secondary buttons — hover / active / focus (DS: white → slate-50 → slate-100) */
+  #download-template:hover,#export-excel-btn:hover,#wb-cancel:hover{background:var(--slate-50,#F9FAFB);border-color:var(--border-strong,#D1D5DB);}
+  #download-template:active,#export-excel-btn:active,#wb-cancel:active{background:var(--slate-100,#F3F4F6);}
+  #download-template:focus-visible,#export-excel-btn:focus-visible,#wb-cancel:focus-visible{outline:0;box-shadow:0 0 0 3px rgba(45,127,251,.32);}
+  /* Skytek primary buttons — hover / active / focus (DS: brand-600 → brand-500 → #1f5fc7) */
+  #browse-files-btn:hover,#confirm-upload:hover,#wb-save:hover{background:var(--brand-500,#51a2fc);border-color:var(--brand-500,#51a2fc);}
+  #browse-files-btn:active,#confirm-upload:active,#wb-save:active{background:#1f5fc7;border-color:#1f5fc7;}
+  #browse-files-btn:focus-within,#confirm-upload:focus-visible,#wb-save:focus-visible{outline:0;box-shadow:0 0 0 3px rgba(45,127,251,.32);}
   /* ── Date range fields ───────────────────────────────────────────────── */
   .date-field{display:inline-flex;align-items:center;justify-content:space-between;gap:14px;min-width:180px;height:34px;padding:0 12px;background:var(--bg-surface,#fff);border:1px solid var(--border-default,#E5E7EB);border-radius:var(--radius-md,6px);font-family:var(--font-sans);font-size:13px;font-weight:500;color:var(--text-primary,#111827);cursor:pointer;transition:border-color var(--motion-fast,140ms),box-shadow var(--motion-fast,140ms);}
   .date-field:hover{border-color:var(--border-strong,#D1D5DB);}
@@ -124,7 +120,7 @@
   .dp-day.dp-end{border-radius:0 var(--radius-sm,4px) var(--radius-sm,4px) 0;}
   .dp-footer{display:flex;justify-content:flex-end;gap:10px;padding:12px 20px;border-top:1px solid var(--border-subtle,#ECEEF2);}
   .dp-btn{height:32px;padding:0 14px;border-radius:var(--radius-md,6px);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:background var(--motion-fast,140ms),border-color var(--motion-fast,140ms);}
-  .dp-cancel{background:var(--bg-surface,#fff);border:1px solid var(--border-default,#E5E7EB);color:var(--slate-800,#1F2937);box-shadow:var(--shadow-xs,0 1px 2px 0 rgb(15 23 42 / 0.06));}
+  .dp-cancel{background:var(--bg-surface,#fff);border:1px solid var(--border-default,#E5E7EB);color:var(--slate-800,#1F2937);}
   .dp-cancel:hover{background:var(--slate-50,#F9FAFB);border-color:var(--border-strong,#D1D5DB);}
   .dp-apply{background:var(--brand-600,#2d7ffb);border:1px solid var(--brand-600,#2d7ffb);color:var(--white,#fff);}
   .dp-apply:hover{background:var(--brand-500,#51a2fc);border-color:var(--brand-500,#51a2fc);}
@@ -301,7 +297,7 @@ window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 </script>
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="shared/chrome.js?v=11"></script>
+<script src="shared/chrome.js?v=12"></script>
 <link rel="stylesheet" href="shared/pagination.css" />
 <script src="shared/pagination.js"></script>
 <script>
@@ -309,23 +305,23 @@ const SC = window.sharedChrome;
 
 /* ── DATA ────────────────────────────────────────────────────────────────── */
 const VOYAGES = [
-  { status:'Completed', breach:true,  name:'Karachi',       imo:'9903413', estLoad:'2026-03-30', actLoad:'2026-03-30 04:17', loadPort:'Fujairah',   dischDate:'—',          dischPort:'Karachi, Pakistan',      actDisch:'2026-04-01 18:04', breachRegion:'Gulf of Oman',     breachStart:'2026-03-31', breachEnd:'2026-04-01', days:2 },
-  { status:'Completed', breach:true,  name:'Lahore',        imo:'9913511', estLoad:'2026-04-06', actLoad:'2026-04-06 03:08', loadPort:'Fujairah',   dischDate:'—',          dischPort:'Karachi, Pakistan',      actDisch:'2026-04-07 19:44', breachRegion:'Gulf of Oman',     breachStart:'2026-04-06', breachEnd:'2026-04-07', days:2 },
-  { status:'Completed', breach:false, name:'DEIRA GHAIR',   imo:'9834521', estLoad:'2026-04-06', actLoad:'2026-04-06 11:45', loadPort:'Fujairah',   dischDate:'—',          dischPort:'Mumbai, India',          actDisch:'2026-04-09 08:22', breachRegion:'',                 breachStart:'', breachEnd:'', days:0 },
-  { status:'Completed', breach:true,  name:'VESTA',         imo:'9745632', estLoad:'2026-04-06', actLoad:'2026-04-06 14:30', loadPort:'Dubai',      dischDate:'—',          dischPort:'Colombo, Sri Lanka',     actDisch:'2026-04-11 21:15', breachRegion:'Strait of Hormuz', breachStart:'2026-04-07', breachEnd:'2026-04-08', days:1 },
-  { status:'Completed', breach:true,  name:'Mumbai Star',   imo:'9656743', estLoad:'2026-03-25', actLoad:'2026-03-25 09:12', loadPort:'Abu Dhabi',  dischDate:'—',          dischPort:'Mumbai, India',          actDisch:'2026-03-28 16:44', breachRegion:'Gulf of Oman',     breachStart:'2026-03-26', breachEnd:'2026-03-28', days:2 },
-  { status:'Completed', breach:true,  name:'Gulf Trader',   imo:'9567854', estLoad:'2026-03-20', actLoad:'2026-03-20 07:33', loadPort:'Fujairah',   dischDate:'—',          dischPort:'Karachi, Pakistan',      actDisch:'2026-03-22 14:55', breachRegion:'Gulf of Oman',     breachStart:'2026-03-21', breachEnd:'2026-03-22', days:1 },
-  { status:'Started',   breach:false, name:'Arabian Pearl',  imo:'9778214', estLoad:'2026-04-10', actLoad:'2026-04-10 06:50', loadPort:'Muscat',     dischDate:'2026-04-13', dischPort:'Mumbai, India',          actDisch:'—',                breachRegion:'',                 breachStart:'', breachEnd:'', days:0 },
-  { status:'Started',   breach:true,  name:'Makran Express', imo:'9689032', estLoad:'2026-04-09', actLoad:'2026-04-09 18:22', loadPort:'Dubai',      dischDate:'2026-04-14', dischPort:'Colombo, Sri Lanka',     actDisch:'—',                breachRegion:'Strait of Hormuz', breachStart:'2026-04-11', breachEnd:'2026-04-12', days:1 },
-  { status:'Pending',   breach:false, name:'Dhofar Star',    imo:'9812447', estLoad:'2026-04-12', actLoad:'—',                loadPort:'Abu Dhabi',  dischDate:'2026-04-17', dischPort:'Chittagong, Bangladesh', actDisch:'—',                breachRegion:'',                 breachStart:'', breachEnd:'', days:0 },
-  { status:'Completed', breach:false, name:'Salalah Bay',    imo:'9734905', estLoad:'2026-03-28', actLoad:'2026-03-28 10:05', loadPort:'Muscat',     dischDate:'—',          dischPort:'Karachi, Pakistan',      actDisch:'2026-03-31 09:48', breachRegion:'',                 breachStart:'', breachEnd:'', days:0 },
+  { status:'Completed', breach:true,  name:'Velantis Dawn',  imo:'9903413', estLoad:'2026-03-30', actLoad:'2026-03-30 04:17', loadPort:'Fujairah',   dischDate:'—',          dischPort:'Karachi, Pakistan',      actDisch:'2026-04-01 18:04', breachRegion:'Gulf of Oman',     breachStart:'2026-03-31', breachEnd:'2026-04-01', days:2 },
+  { status:'Completed', breach:true,  name:'Maroven Crest',  imo:'9913511', estLoad:'2026-04-06', actLoad:'2026-04-06 03:08', loadPort:'Fujairah',   dischDate:'—',          dischPort:'Karachi, Pakistan',      actDisch:'2026-04-07 19:44', breachRegion:'Gulf of Oman',     breachStart:'2026-04-06', breachEnd:'2026-04-07', days:2 },
+  { status:'Completed', breach:false, name:'Cendara Spirit', imo:'9834521', estLoad:'2026-04-06', actLoad:'2026-04-06 11:45', loadPort:'Fujairah',   dischDate:'—',          dischPort:'Mumbai, India',          actDisch:'2026-04-09 08:22', breachRegion:'',                 breachStart:'', breachEnd:'', days:0 },
+  { status:'Completed', breach:true,  name:'Oryndel',        imo:'9745632', estLoad:'2026-04-06', actLoad:'2026-04-06 14:30', loadPort:'Dubai',      dischDate:'—',          dischPort:'Colombo, Sri Lanka',     actDisch:'2026-04-11 21:15', breachRegion:'Strait of Hormuz', breachStart:'2026-04-07', breachEnd:'2026-04-08', days:1 },
+  { status:'Completed', breach:true,  name:'Tarnessa Star',  imo:'9656743', estLoad:'2026-03-25', actLoad:'2026-03-25 09:12', loadPort:'Abu Dhabi',  dischDate:'—',          dischPort:'Mumbai, India',          actDisch:'2026-03-28 16:44', breachRegion:'Gulf of Oman',     breachStart:'2026-03-26', breachEnd:'2026-03-28', days:2 },
+  { status:'Completed', breach:true,  name:'Brovska Trader', imo:'9567854', estLoad:'2026-03-20', actLoad:'2026-03-20 07:33', loadPort:'Fujairah',   dischDate:'—',          dischPort:'Karachi, Pakistan',      actDisch:'2026-03-22 14:55', breachRegion:'Gulf of Oman',     breachStart:'2026-03-21', breachEnd:'2026-03-22', days:1 },
+  { status:'Started',   breach:false, name:'Ilvarine Pearl', imo:'9778214', estLoad:'2026-04-10', actLoad:'2026-04-10 06:50', loadPort:'Muscat',     dischDate:'2026-04-13', dischPort:'Mumbai, India',          actDisch:'—',                breachRegion:'',                 breachStart:'', breachEnd:'', days:0 },
+  { status:'Started',   breach:true,  name:'Quessano Express', imo:'9689032', estLoad:'2026-04-09', actLoad:'2026-04-09 18:22', loadPort:'Dubai',      dischDate:'2026-04-14', dischPort:'Colombo, Sri Lanka',     actDisch:'—',                breachRegion:'Strait of Hormuz', breachStart:'2026-04-11', breachEnd:'2026-04-12', days:1 },
+  { status:'Pending',   breach:false, name:'Halverra Star',  imo:'9812447', estLoad:'2026-04-12', actLoad:'—',                loadPort:'Abu Dhabi',  dischDate:'2026-04-17', dischPort:'Chittagong, Bangladesh', actDisch:'—',                breachRegion:'',                 breachStart:'', breachEnd:'', days:0 },
+  { status:'Completed', breach:false, name:'Esmeront Bay',   imo:'9734905', estLoad:'2026-03-28', actLoad:'2026-03-28 10:05', loadPort:'Muscat',     dischDate:'—',          dischPort:'Karachi, Pakistan',      actDisch:'2026-03-31 09:48', breachRegion:'',                 breachStart:'', breachEnd:'', days:0 },
 ];
 
 const CLASH_ALERTS = [
-  { vessel:'DEIRA GHAIR',   imo:'9834521', date:'2026-04-06', location:'Fujairah',          type:'Multi-vessel overlap',   vessels:['Lahore','VESTA'],          exposure:'$15.0M', severity:'High'   },
-  { vessel:'Karachi',       imo:'9903413', date:'2026-04-01', location:'Gulf of Oman',       type:'Breach zone transit',    vessels:['Gulf Trader'],             exposure:'$8.5M',  severity:'Medium' },
-  { vessel:'Lahore',        imo:'9913511', date:'2026-04-07', location:'Gulf of Oman',       type:'Breach zone transit',    vessels:['Karachi'],                 exposure:'$12.3M', severity:'High'   },
-  { vessel:'VESTA',         imo:'9745632', date:'2026-04-09', location:'Strait of Hormuz',   type:'Breach zone transit',    vessels:['Makran Express'],          exposure:'$6.2M',  severity:'Medium' },
+  { vessel:'Cendara Spirit', imo:'9834521', date:'2026-04-06', location:'Fujairah',          type:'Multi-vessel overlap',   vessels:['Maroven Crest','Oryndel'], exposure:'$15.0M', severity:'High'   },
+  { vessel:'Velantis Dawn',  imo:'9903413', date:'2026-04-01', location:'Gulf of Oman',       type:'Breach zone transit',    vessels:['Brovska Trader'],          exposure:'$8.5M',  severity:'Medium' },
+  { vessel:'Maroven Crest',  imo:'9913511', date:'2026-04-07', location:'Gulf of Oman',       type:'Breach zone transit',    vessels:['Velantis Dawn'],           exposure:'$12.3M', severity:'High'   },
+  { vessel:'Oryndel',        imo:'9745632', date:'2026-04-09', location:'Strait of Hormuz',   type:'Breach zone transit',    vessels:['Quessano Express'],        exposure:'$6.2M',  severity:'Medium' },
 ];
 
 /* ── GEO DATA ───────────────────────────────────────────────────────────── */
@@ -375,6 +371,7 @@ let st = {
   expanded: new Set(),
   selected: new Set(),    // checked declaration rows, keyed by IMO
   uploadMode: true,
+  uploadCardCollapsed: false,   // first upload card collapsed to header only
   uploadedFile: null,
   uploadedSize: null,
   workbooks: [],          // uploaded declaration files: [{ name, size, metrics }]
@@ -486,15 +483,21 @@ function renderHeader() {
   <!-- Declarations workbook card -->
   ${st.uploadMode ? `
   <div class="card" style="margin-bottom:10px;padding:0;overflow:hidden;">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e2e8f0;">
-      <div style="font-size:13px;font-weight:700;color:#0f172a;">Upload declarations workbook</div>
+    <div id="upload-card-header" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:${st.uploadCardCollapsed ? 'none' : '1px solid #e2e8f0'};">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button id="upload-card-toggle" aria-expanded="${!st.uploadCardCollapsed}" title="${st.uploadCardCollapsed ? 'Expand' : 'Collapse'}" style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border:1px solid var(--border-default,#E5E7EB);border-radius:var(--radius-md,6px);background:var(--white,#fff);color:#64748b;cursor:pointer;flex-shrink:0;padding:0;transition:background .14s ease,border-color .14s ease,color .14s ease;" onmouseover="this.style.background='#eff6ff';this.style.borderColor='#bfdbfe';this.style.color='var(--brand-600,#0284c7)';" onmouseout="this.style.background='var(--white,#fff)';this.style.borderColor='var(--border-default,#E5E7EB)';this.style.color='#64748b';">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/>${st.uploadCardCollapsed ? '<line x1="12" y1="5" x2="12" y2="19"/>' : ''}</svg>
+        </button>
+        <div style="font-size:13px;font-weight:700;color:#0f172a;">Upload declarations workbook</div>
+      </div>
       <div style="display:flex;align-items:center;gap:8px;">
-        <button id="download-template" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;height:28px;padding:0 10px;border:1px solid var(--border-default,#E5E7EB);border-radius:var(--radius-md,6px);background:var(--white,#fff);color:var(--slate-800,#1F2937);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:var(--shadow-xs,0 2px 4px 0 rgb(15 23 42 / 0.08), 0 1px 2px 0 rgb(15 23 42 / 0.06));transition:background .14s ease,border-color .14s ease,box-shadow .14s ease;">
+        <button id="download-template" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;height:28px;padding:0 10px;border:1px solid var(--border-default,#E5E7EB);border-radius:var(--radius-md,6px);background:var(--white,#fff);color:var(--slate-800,#1F2937);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .14s ease,border-color .14s ease,box-shadow .14s ease;">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Download template
         </button>
       </div>
     </div>
+    <div id="upload-card-body"${st.uploadCardCollapsed ? ' style="display:none;"' : ''}>
     ${st.uploading ? `
     <div style="padding:24px;">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
@@ -519,12 +522,12 @@ function renderHeader() {
         <div style="font-size:13px;font-weight:700;color:#0f172a;">${st.uploadedFile}</div>
         <div style="font-size:12px;color:#16a34a;margin-top:1px;">Ready to upload</div>
       </div>
-      <button id="confirm-upload" style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 16px;background:var(--brand-600,#0284c7);color:#fff;border:0;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">
+      <button id="confirm-upload" style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 16px;background:var(--brand-600,#2d7ffb);color:#fff;border:0;border-radius:8px;transition:background .14s ease,border-color .14s ease,box-shadow .14s ease;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         Upload
       </button>
     </div>` : `
-    <div id="drop-zone" style="margin:16px;border:2px dashed #bae6fd;border-radius:10px;padding:36px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#f0f9ff;cursor:pointer;transition:background 150ms,border-color 150ms;">
+    <div id="drop-zone" style="margin:16px;border:2px dashed var(--brand-300,#bfdbfe);border-radius:10px;padding:36px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:var(--brand-050,#eff6ff);cursor:pointer;transition:background 150ms,border-color 150ms;">
       <div style="width:48px;height:48px;background:#e0f2fe;border-radius:12px;display:flex;align-items:center;justify-content:center;">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       </div>
@@ -540,6 +543,7 @@ function renderHeader() {
       </label>
       <div style="font-size:11px;color:#94a3b8;">Supports .xlsx files only</div>
     </div>`}
+    </div>
   </div>` : `
   <div class="card cargo-workbook-card" style="display:flex;flex-direction:column;gap:12px;padding:14px 18px;margin-bottom:10px;align-items:stretch;">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
@@ -577,8 +581,8 @@ function renderHeader() {
       <p style="font-size:13px;color:#334155;flex:1;">Showing <strong>${VOYAGES.length}</strong> voyages from ${wbs.length > 1 ? `<strong>${wbs.length}</strong> uploaded workbooks` : 'the latest upload'} — every row is also saved server-side. Upload another xlsx to merge in more rows before saving to declarations.</p>
     </div>
     <div class="cargo-wb-footer" style="display:flex;align-items:center;justify-content:flex-end;gap:10px;padding-top:12px;border-top:1px solid #f1f5f9;">
-      <button id="wb-cancel" style="height:36px;padding:0 18px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;color:#334155;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">Cancel</button>
-      <button id="wb-save" style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 18px;background:var(--brand-600,#0284c7);color:#fff;border:0;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">
+      <button id="wb-cancel" style="height:36px;padding:0 18px;border:1px solid var(--border-default,#E5E7EB);border-radius:8px;background:var(--white,#fff);color:var(--slate-800,#1F2937);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .14s ease,border-color .14s ease,box-shadow .14s ease;">Cancel</button>
+      <button id="wb-save" style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 18px;background:var(--brand-600,#2d7ffb);color:#fff;border:0;border-radius:8px;transition:background .14s ease,border-color .14s ease,box-shadow .14s ease;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
         Save To Declarations
       </button>
@@ -603,7 +607,7 @@ function renderActionsRow() {
         </button>
       </div>
     </div>
-    <button id="export-excel-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 16px;background:var(--white,#fff);border:1px solid var(--border-default,#E5E7EB);color:var(--slate-800,#1F2937);border-radius:var(--radius-md,6px);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;box-shadow:var(--shadow-xs,0 2px 4px 0 rgb(15 23 42 / 0.08), 0 1px 2px 0 rgb(15 23 42 / 0.06));transition:background .14s ease,border-color .14s ease,box-shadow .14s ease;">
+    <button id="export-excel-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 16px;background:var(--white,#fff);border:1px solid var(--border-default,#E5E7EB);color:var(--slate-800,#1F2937);border-radius:var(--radius-md,6px);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .14s ease,border-color .14s ease,box-shadow .14s ease;">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Export to Excel
     </button>
@@ -911,7 +915,7 @@ function makeWorkbookMetrics() {
    (and the declarations table) recompute. Each workbook contributes voyage rows
    matching its Completed / Started / Pending / Breaches metrics. */
 let saveSeq = 0;
-const SAVE_NAMES  = ['Indus Voyager','Sohar Pride','Coral Gulf','Aden Mariner','Qeshm Trader','Nizwa','Tabuk','Bandar Star','Khasab','Sur Express','Salwa','Hormuz Pearl'];
+const SAVE_NAMES  = ['Verandel Voyager','Sorhana Pride','Calveth Gulf','Adronessa','Qessaril Trader','Nivarro','Tahbira','Brandel Star','Khessari','Surnova Express','Salveth','Orvanic Pearl'];
 const SAVE_LOADS  = ['Fujairah','Dubai','Abu Dhabi','Muscat'];
 const SAVE_DISCH  = ['Karachi, Pakistan','Mumbai, India','Colombo, Sri Lanka','Chittagong, Bangladesh'];
 const SAVE_REGIONS = ['Gulf of Oman','Strait of Hormuz','Gulf of Aden'];
@@ -1617,6 +1621,20 @@ function wireContent() {
     st.uploadMode = false; st.uploadedFile = null; window.render();
   });
 
+  /* Upload card collapse toggle */
+  const upToggle = document.getElementById('upload-card-toggle');
+  if (upToggle) upToggle.addEventListener('click', () => {
+    st.uploadCardCollapsed = !st.uploadCardCollapsed;
+    const body = document.getElementById('upload-card-body');
+    if (body) body.style.display = st.uploadCardCollapsed ? 'none' : '';
+    const hdr = document.getElementById('upload-card-header');
+    if (hdr) hdr.style.borderBottom = st.uploadCardCollapsed ? 'none' : '1px solid #e2e8f0';
+    upToggle.setAttribute('aria-expanded', String(!st.uploadCardCollapsed));
+    upToggle.title = st.uploadCardCollapsed ? 'Expand' : 'Collapse';
+    const svg = upToggle.querySelector('svg');
+    if (svg) svg.innerHTML = '<line x1="5" y1="12" x2="19" y2="12"/>' + (st.uploadCardCollapsed ? '<line x1="12" y1="5" x2="12" y2="19"/>' : '');
+  });
+
   /* Download declarations template */
   const dlTemplate = document.getElementById('download-template');
   if (dlTemplate) dlTemplate.addEventListener('click', () => {
@@ -1664,12 +1682,12 @@ function wireContent() {
   if (dz) {
     dz.addEventListener('dragover', (e) => {
       e.preventDefault();
-      dz.style.background = '#e0f2fe';
-      dz.style.borderColor = 'var(--brand-600,#0284c7)';
+      dz.style.background = 'var(--brand-100,#dbeafe)';
+      dz.style.borderColor = 'var(--brand-600,#2d7ffb)';
     });
     dz.addEventListener('dragleave', () => {
-      dz.style.background = '#f0f9ff';
-      dz.style.borderColor = '#bae6fd';
+      dz.style.background = 'var(--brand-050,#eff6ff)';
+      dz.style.borderColor = 'var(--brand-300,#bfdbfe)';
     });
     dz.addEventListener('drop', (e) => {
       e.preventDefault();

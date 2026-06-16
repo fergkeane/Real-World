@@ -28,7 +28,7 @@
   /* Map btn */
   .map-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;color:#334155;box-shadow:0 1px 2px rgba(15,23,42,.08);cursor:pointer;transition:background .1s}
   .map-btn:hover{background:#f1f5f9}
-  .map-btn.is-active{background:#eff6ff;border-color:#bfdbfe;color:#2563eb}
+  .map-btn.is-active{background:var(--brand-50,#eff6ff);border-color:var(--brand-200,#bfdbfe);color:var(--brand-600,#2563eb)}
   /* Pre/post-event satellite imagery treatments */
   /* Date stamp badge that sits on the imagery patch */
   .imagery-stamp{
@@ -49,17 +49,17 @@
   .filter-opt{display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;background:#fff;border:0;cursor:pointer;text-align:left;font-family:inherit}
   .filter-opt:hover{background:#f8fafc}
   .filter-opt .radio{width:14px;height:14px;border-radius:50%;border:1.5px solid #cbd5e1;flex-shrink:0;position:relative;transition:border-color .15s}
-  .filter-opt.is-on .radio{border-color:#2563eb}
-  .filter-opt.is-on .radio::after{content:'';position:absolute;inset:2px;border-radius:50%;background:#2563eb}
+  .filter-opt.is-on .radio{border-color:var(--brand-600,#2563eb)}
+  .filter-opt.is-on .radio::after{content:'';position:absolute;inset:2px;border-radius:50%;background:var(--brand-600,#2563eb)}
   .filter-opt .opt-title{font-size:13px;font-weight:600;color:#0f172a;line-height:1.2;display:block}
-  .filter-opt.is-on .opt-title{color:#1d4ed8}
+  .filter-opt.is-on .opt-title{color:var(--brand-700,#1d4ed8)}
   .filter-opt .opt-sub{font-size:10.5px;color:#64748b;margin-top:2px;font-variant-numeric:tabular-nums;display:block}
   /* Global view btn */
-  .global-view-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border:1.5px solid #2563eb;border-radius:8px;background:#fff;color:#2563eb;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s}
-  .global-view-btn:hover{background:#eff6ff}
+  .global-view-btn{display:flex;width:100%;align-items:center;justify-content:center;gap:6px;padding:6px 14px;border:1.5px solid var(--brand-600,#2563eb);border-radius:8px;background:#fff;color:var(--brand-600,#2563eb);font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s}
+  .global-view-btn:hover{background:var(--brand-50,#eff6ff)}
   /* Download btn */
-  .download-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px 16px;background:#2563eb;color:#fff;border:0;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s}
-  .download-btn:hover{background:#1d4ed8}
+  .download-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px 16px;background:var(--brand-600,#2563eb);color:#fff;border:0;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s}
+  .download-btn:hover{background:var(--brand-700,#1d4ed8)}
   /* Responsive */
   @media(max-width:767px){
     .analytics-panel{width:100%!important;min-width:0!important;border-right:0;border-bottom:1px solid #e2e8f0;max-height:55vh;}
@@ -74,12 +74,15 @@
 <script>
 window.PAGE = { id:'events', title:'Event Details', crumb:'Event Details' };
 window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-  "density":"compact","accent":"blue","sidebarExpanded":false
+  "density": "comfortable",
+  "accent": "blue",
+  "sidebarExpanded": false,
+  "showSparklines": true
 }/*EDITMODE-END*/;
 </script>
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="shared/chrome.js?v=11"></script>
+<script src="shared/chrome.js?v=12"></script>
 <script>
 const SC = window.sharedChrome;
 
@@ -157,16 +160,19 @@ function AnalyticsPanel() {
   }).join('');
 
   return `
+  <!-- Card header — pinned, does not scroll -->
+  <div style="padding:12px 16px;border-bottom:1px solid #e2e8f0;flex-shrink:0;background:#fff;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#64748b;text-transform:uppercase;">Analytics</div>
+  </div>
+
+  <!-- Global View — pinned, does not scroll -->
+  <div style="padding:12px 16px 10px;border-bottom:1px solid #f1f5f9;flex-shrink:0;background:#fff;">
+    <button class="global-view-btn" onclick="window.location.href='NatCatEvents.html'">
+      ${IC.chevLeft} Global View
+    </button>
+  </div>
+
   <div style="overflow-y:auto;flex:1;" class="scroll-thin">
-    <!-- Header -->
-    <div style="padding:12px 16px;border-bottom:1px solid #e2e8f0;flex-shrink:0;background:#fff;">
-      <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#64748b;text-transform:uppercase;">Analytics</div>
-    </div>
-    <div style="padding:12px 16px 10px;border-bottom:1px solid #f1f5f9;flex-shrink:0;">
-      <button class="global-view-btn" onclick="window.location.href='NatCatEvents.html'">
-        ${IC.chevLeft} Global View
-      </button>
-    </div>
 
     <!-- Event info -->
     <div style="padding:16px;border-bottom:1px solid #f1f5f9;">
@@ -250,7 +256,6 @@ function MapPanel() {
           <span style="min-width:0;flex:1"><span class="opt-title">Post-Event Layer</span><span class="opt-sub" data-post-date></span></span>
         </button>
       </div>
-      </div>
 
       <!-- Expand btn -->
       <button class="map-btn" id="dm-expand-btn" title="Fullscreen"
@@ -287,6 +292,21 @@ const TILE_URLS = {
   light:     'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
   dark:      'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
 };
+
+/* Per-event real dated satellite imagery override.
+   For events where we have actual high-resolution captures, the pre- and
+   post-event layers are sourced from specific dated releases of Esri's World
+   Imagery (Wayback) archive — sub-metre tiles, so the stamped dates match the
+   imagery on screen and the before/after is a genuine comparison.
+   Event 2 = Palisades Fire (Los Angeles wildfire). */
+const waybackUrl = r => `https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/${r}/{z}/{y}/{x}`;
+const EVENT_IMAGERY_OVERRIDE = {
+  2: {
+    zoom: 12,
+    pre:  { url: waybackUrl(16453), date: '2024-12-12' },  // pre-fire capture
+    post: { url: waybackUrl(10842), date: '2026-05-28' },  // post-fire, 2026
+  },
+};
 let activeTile = null;
 let currentMapType = 'street';
 
@@ -295,7 +315,8 @@ function initDetailMap() {
   if (!el) return;
   if (detailMap) { detailMap.remove(); detailMap = null; }
 
-  const zoom = ['earthquake','flood'].includes(ev.type) ? 7 : ev.type === 'wildfire' ? 9 : 8;
+  const imgOverride = EVENT_IMAGERY_OVERRIDE[ev.id];
+  const zoom = imgOverride?.zoom ?? (['earthquake','flood'].includes(ev.type) ? 7 : ev.type === 'wildfire' ? 9 : 8);
   detailMap = L.map(el, { center:[det.lat, det.lng], zoom, zoomControl:false, scrollWheelZoom:true });
   L.control.zoom({ position:'topleft' }).addTo(detailMap);
 
@@ -320,8 +341,9 @@ function initDetailMap() {
     attribution: '© Esri, Maxar, Earthstar Geographics',
     bounds: overlayBounds, maxZoom: 18, zIndex: 200,
   });
-  const preTile  = L.tileLayer(TILE_URLS.satellite, tileOpts());
-  const postTile = L.tileLayer(TILE_URLS.satellite, tileOpts());
+  const wbOpts = { attribution:'Esri, Maxar — World Imagery (Wayback)', bounds: overlayBounds, maxZoom: 19, maxNativeZoom: 19, zIndex: 200 };
+  const preTile  = imgOverride ? L.tileLayer(imgOverride.pre.url,  wbOpts) : L.tileLayer(TILE_URLS.satellite, tileOpts());
+  const postTile = imgOverride ? L.tileLayer(imgOverride.post.url, wbOpts) : L.tileLayer(TILE_URLS.satellite, tileOpts());
   // Faint frame so the imagery patch reads as intentional, not a render glitch.
   L.rectangle(overlayBounds, { color:'#ffffff', weight:1.25, fillOpacity:0, opacity:0.55, dashArray:'4 5' }).addTo(detailMap);
 
@@ -330,8 +352,10 @@ function initDetailMap() {
   // Post-event: 3 wks AFTER event end (or +5 wks from start if no end date),
   // matching the typical timeline for damage-assessment imagery passes.
   const startDate = (() => { const d = new Date(ev.dateStart); return isNaN(d) ? new Date() : d; })();
-  const preDate   = new Date(startDate); preDate.setMonth(preDate.getMonth() - 6);
-  const postDate  = (() => {
+  const preDate   = imgOverride ? new Date(imgOverride.pre.date + 'T00:00:00') : (() => { const d = new Date(startDate); d.setMonth(d.getMonth() - 6); return d; })();
+  const postDate  = imgOverride
+    ? new Date(imgOverride.post.date + 'T00:00:00')
+    : (() => {
     const end = ev.dateEnd ? new Date(ev.dateEnd) : null;
     if (end && !isNaN(end)) { const d = new Date(end); d.setDate(d.getDate() + 21); return d; }
     const d2 = new Date(startDate); d2.setDate(d2.getDate() + 35); return d2;

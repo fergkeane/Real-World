@@ -36,6 +36,8 @@
   .pf-tbl tbody tr:hover td{background:#fafafa}
   /* Airport row card */
   .airport-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;margin-bottom:10px;transition:border-color .15s,box-shadow .15s;cursor:pointer}
+  /* Map airport marker — matches Aviation Dashboard */
+  .airport-icon{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:var(--brand-600,#2d7ffb);border:2px solid #fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.28)}
   .airport-card:hover{border-color:#cbd5e1;box-shadow:0 2px 8px rgba(15,23,42,.05)}
   /* Stat pills */
   .spill-blue{display:inline-block;background:var(--brand-50,#eff6ff);color:var(--brand-600,#2563eb);font-size:12.5px;font-weight:700;padding:3px 9px;border-radius:7px;font-variant-numeric:tabular-nums}
@@ -45,10 +47,17 @@
   .cov-tab.active{background:var(--brand-600,#2563eb);color:#fff}
   .cov-tab:not(.active):hover{color:#334155}
   /* Layout */
-  .ard-top-row{display:grid;grid-template-columns:260px minmax(0,1.4fr) minmax(0,1.2fr);gap:12px;margin-bottom:12px}
+  .ard-top-row{display:grid;grid-template-columns:260px minmax(0,1.4fr) minmax(0,1.2fr);gap:12px;margin-bottom:12px;height:440px}
+  .ard-top-row>div{height:440px;overflow-y:auto!important}
   .ard-bottom-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:12px;height:460px}
   .map-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;color:#334155;box-shadow:0 1px 2px rgba(15,23,42,.08);cursor:pointer}
   .map-btn:hover{background:#f1f5f9}
+  .leaflet-control-zoom a{display:flex!important;align-items:center;justify-content:center;padding:0!important}
+  .leaflet-control-zoom a svg{width:16px;height:16px}
+  #region-map .leaflet-top.leaflet-left{top:56px;left:2px}
+  #region-map .leaflet-top.leaflet-left .leaflet-bar{margin-left:10px!important}
+  #ard-map-wrap.is-fullscreen{position:fixed!important;inset:0!important;z-index:9999!important;border-radius:0!important}
+  #ard-layers-menu button:hover{background:#f1f5f9}
   /* Mobile */
   .mobile-tab-select{display:none;width:100%;padding:7px 12px;border:1px solid #e2e8f0;border-radius:9999px;font-size:13px;font-weight:600;color:#334155;background:#f1f5f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;font-family:inherit;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none}
   @media(max-width:1199px){.ard-top-row{grid-template-columns:1fr}.ard-bottom-row{grid-template-columns:1fr}}
@@ -61,6 +70,12 @@
   /* Coverage map title overlay */
   .ard-map-title{position:absolute;left:12px;top:12px;z-index:400;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:6px 12px;box-shadow:0 1px 3px rgba(15,23,42,.08);display:flex;align-items:center;gap:8px}
   .ard-map-legend{position:absolute;left:12px;bottom:16px;z-index:400;background:rgba(125,211,252,.92);border-radius:8px;padding:8px 14px;box-shadow:0 2px 6px rgba(15,23,42,.1)}
+  /* DS card footer + Tertiary/Ghost button (ALL CAPS) — per Skytek DS */
+  .ds-card-foot{padding:10px 16px;border-top:1px solid #ECEEF2;background:#F9FAFB;display:flex;justify-content:flex-start;align-items:center;gap:8px;flex-shrink:0;border-bottom-left-radius:inherit;border-bottom-right-radius:inherit;}
+  .ds-card-foot--end{justify-content:flex-end;}
+  .ds-card-foot--center{justify-content:center;}
+  .ds-foot-btn{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 8px;border-radius:6px;background:transparent;border:0;cursor:pointer;font-family:inherit;font-weight:600;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--brand-600,#2563eb);transition:background .15s,color .15s;white-space:nowrap;text-decoration:none;}
+  .ds-foot-btn:hover{background:#eef2f7;color:var(--brand-700,#1d4ed8);}
 </style>
 </head>
 <body class="bg-slate-100 text-slate-900">
@@ -68,14 +83,17 @@
 
 <script>
 window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-  "density":"compact","accent":"blue","sidebarExpanded":false,"showSparklines":true
+  "density": "comfortable",
+  "accent": "sky",
+  "sidebarExpanded": true,
+  "showSparklines": true
 }/*EDITMODE-END*/;
 const regionName = sessionStorage.getItem('selectedAviationRegion') || 'East Asia Corridor';
 window.PAGE = { id:'regions', title:'Aviation Region', crumb: regionName };
 </script>
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="shared/chrome.js?v=11"></script>
+<script src="shared/chrome.js?v=12"></script>
 <script>
 const SC = window.sharedChrome;
 
@@ -117,20 +135,71 @@ const STATS_BY_COV = {
   TLOHW: { avgExp:'$38.2M',  hiExp:'$145M',   hiExpDate:'Dec 22nd 2024', loExp:'$18.5M',  loExpDate:'Dec 26th 2024',
            avgA:7,           hiA:15,          hiADate:'Dec 22nd 2024',   loA:2,            loADate:'Dec 26th 2024' },
 };
-const AIRPORTS = [
-  { name:'Beijing Capital',    code:'PEK', coord:[40.08,116.60], aog:15, portfolios:4, hull:'$698.1M', chw:'$518.5M', hullw:'$227.4M', tlohw:'$136.4M' },
-  { name:'Shanghai Pudong',    code:'PVG', coord:[31.14,121.81], aog:20, portfolios:4, hull:'$925.3M', chw:'$464.7M', hullw:'$222.6M', tlohw:'$107.8M' },
-  { name:'Guangzhou Baiyun',   code:'CAN', coord:[23.39,113.30], aog:12, portfolios:3, hull:'$612.4M', chw:'$385.2M', hullw:'$176.8M', tlohw:'$82.5M'  },
-  { name:'Tokyo Haneda',       code:'HND', coord:[35.55,139.78], aog:18, portfolios:5, hull:'$842.7M', chw:'$502.9M', hullw:'$212.5M', tlohw:'$98.3M'  },
-  { name:'Tokyo Narita',       code:'NRT', coord:[35.77,140.39], aog:14, portfolios:3, hull:'$521.8M', chw:'$320.6M', hullw:'$148.4M', tlohw:'$72.1M'  },
-  { name:'Seoul Incheon',      code:'ICN', coord:[37.46,126.44], aog:16, portfolios:4, hull:'$715.2M', chw:'$428.5M', hullw:'$189.7M', tlohw:'$91.4M'  },
-  { name:'Hong Kong Intl',     code:'HKG', coord:[22.31,113.91], aog:11, portfolios:3, hull:'$485.6M', chw:'$298.1M', hullw:'$132.8M', tlohw:'$64.2M'  },
-  { name:'Taipei Taoyuan',     code:'TPE', coord:[25.07,121.23], aog:9,  portfolios:2, hull:'$352.4M', chw:'$215.8M', hullw:'$98.6M',  tlohw:'$45.7M'  },
-  { name:'Osaka Kansai',       code:'KIX', coord:[34.43,135.24], aog:8,  portfolios:2, hull:'$298.7M', chw:'$182.4M', hullw:'$84.2M',  tlohw:'$38.9M'  },
-  { name:'Busan Gimhae',       code:'PUS', coord:[35.18,128.94], aog:7,  portfolios:2, hull:'$245.8M', chw:'$152.6M', hullw:'$69.4M',  tlohw:'$31.5M'  },
-  { name:'Shenzhen Baoan',     code:'SZX', coord:[22.64,113.81], aog:10, portfolios:3, hull:'$412.9M', chw:'$254.7M', hullw:'$115.3M', tlohw:'$52.8M'  },
-  { name:'Chengdu Shuangliu',  code:'CTU', coord:[30.58,103.94], aog:6,  portfolios:2, hull:'$198.5M', chw:'$122.4M', hullw:'$55.8M',  tlohw:'$25.3M'  },
+const WORLD_AIRPORTS = [
+  // Europe
+  { name:'London Heathrow',        code:'LHR', coord:[51.47,-0.45] },
+  { name:'Charles de Gaulle',      code:'CDG', coord:[49.01,2.55]  },
+  { name:'Frankfurt',              code:'FRA', coord:[50.03,8.57]  },
+  { name:'Amsterdam Schiphol',     code:'AMS', coord:[52.31,4.77]  },
+  { name:'Madrid Barajas',         code:'MAD', coord:[40.47,-3.56] },
+  { name:'Vienna Intl',            code:'VIE', coord:[48.11,16.57] },
+  { name:'Istanbul',               code:'IST', coord:[41.26,28.74] },
+  // North Atlantic / Americas
+  { name:'New York JFK',           code:'JFK', coord:[40.64,-73.78] },
+  { name:"Chicago O'Hare",         code:'ORD', coord:[41.98,-87.90] },
+  { name:'Atlanta',                code:'ATL', coord:[33.64,-84.43] },
+  { name:'Los Angeles',            code:'LAX', coord:[33.94,-118.41] },
+  { name:'Toronto Pearson',        code:'YYZ', coord:[43.68,-79.61] },
+  // Middle East
+  { name:'Dubai Intl',             code:'DXB', coord:[25.25,55.36] },
+  { name:'Abu Dhabi',              code:'AUH', coord:[24.43,54.65] },
+  { name:'Doha Hamad',             code:'DOH', coord:[25.27,51.61] },
+  { name:'Jeddah',                 code:'JED', coord:[21.68,39.16] },
+  { name:'Imam Khomeini',          code:'IKA', coord:[35.42,51.15] },
+  { name:'Tel Aviv Ben Gurion',    code:'TLV', coord:[32.01,34.89] },
+  // East Asia
+  { name:'Beijing Capital',        code:'PEK', coord:[40.08,116.60] },
+  { name:'Shanghai Pudong',        code:'PVG', coord:[31.14,121.81] },
+  { name:'Guangzhou Baiyun',       code:'CAN', coord:[23.39,113.30] },
+  { name:'Tokyo Haneda',           code:'HND', coord:[35.55,139.78] },
+  { name:'Tokyo Narita',           code:'NRT', coord:[35.77,140.39] },
+  { name:'Seoul Incheon',          code:'ICN', coord:[37.46,126.44] },
+  { name:'Hong Kong Intl',         code:'HKG', coord:[22.31,113.91] },
+  { name:'Taipei Taoyuan',         code:'TPE', coord:[25.07,121.23] },
+  { name:'Shenzhen Baoan',         code:'SZX', coord:[22.64,113.81] },
+  // SE Asia / Pacific
+  { name:'Singapore Changi',       code:'SIN', coord:[1.35,103.99]  },
+  { name:'Bangkok Suvarnabhumi',   code:'BKK', coord:[13.69,100.75] },
+  { name:'Kuala Lumpur',           code:'KUL', coord:[2.74,101.71]  },
+  { name:'Jakarta Soekarno-Hatta', code:'CGK', coord:[-6.13,106.66] },
+  { name:'Sydney Kingsford Smith', code:'SYD', coord:[-33.94,151.18] },
 ];
+const AP_FIN = [
+  { aog:18, portfolios:5, hull:'$842.7M', chw:'$502.9M', hullw:'$212.5M', tlohw:'$98.3M'  },
+  { aog:15, portfolios:4, hull:'$698.1M', chw:'$518.5M', hullw:'$227.4M', tlohw:'$136.4M' },
+  { aog:20, portfolios:4, hull:'$925.3M', chw:'$464.7M', hullw:'$222.6M', tlohw:'$107.8M' },
+  { aog:12, portfolios:3, hull:'$612.4M', chw:'$385.2M', hullw:'$176.8M', tlohw:'$82.5M'  },
+  { aog:11, portfolios:3, hull:'$485.6M', chw:'$298.1M', hullw:'$132.8M', tlohw:'$64.2M'  },
+  { aog:9,  portfolios:2, hull:'$352.4M', chw:'$215.8M', hullw:'$98.6M',  tlohw:'$45.7M'  },
+  { aog:8,  portfolios:2, hull:'$298.7M', chw:'$182.4M', hullw:'$84.2M',  tlohw:'$38.9M'  },
+  { aog:14, portfolios:3, hull:'$521.8M', chw:'$320.6M', hullw:'$148.4M', tlohw:'$72.1M'  },
+];
+const REGION_GEO = (()=>{ try { return JSON.parse(sessionStorage.getItem('selectedRegionGeo')||'null'); } catch(e){ return null; } })();
+const AIRPORTS = (()=>{
+  let pool;
+  if (REGION_GEO && REGION_GEO.bounds) {
+    const b = REGION_GEO.bounds;
+    pool = WORLD_AIRPORTS.filter(a => a.coord[0]>=b[0][0] && a.coord[0]<=b[1][0] && a.coord[1]>=b[0][1] && a.coord[1]<=b[1][1]);
+    if (pool.length < 2) {
+      const cy=(b[0][0]+b[1][0])/2, cx=(b[0][1]+b[1][1])/2;
+      pool = [...WORLD_AIRPORTS].sort((p,q)=>Math.hypot(p.coord[0]-cy,p.coord[1]-cx)-Math.hypot(q.coord[0]-cy,q.coord[1]-cx)).slice(0,6);
+    }
+  } else {
+    // Default region (East Asia — CN · JP · KR)
+    pool = WORLD_AIRPORTS.filter(a => ['PEK','PVG','CAN','HND','NRT','ICN','HKG','TPE','SZX'].includes(a.code));
+  }
+  return pool.slice(0,8).map((a,i)=>({ ...a, ...AP_FIN[i % AP_FIN.length] }));
+})();
 
 /* ── SVGs ──────────────────────────────────────────────────────────────── */
 const SORT_ICO   = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 4 18 9"/><polyline points="6 15 12 20 18 15"/></svg>`;
@@ -145,19 +214,26 @@ const EXPAND_ICO = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" 
 const LAYERS_ICO = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`;
 
 /* ── Map ───────────────────────────────────────────────────────────────── */
-let rMap = null, rTile = null;
+let rMap = null, rTile = null, rMapType = 'satellite';
 function initMap() {
   const el = document.getElementById('region-map');
   if (!el) return;
   if (rMap) { rMap.remove(); rMap = null; rTile = null; }
   rMap = L.map(el, { center:[32.0,118.0], zoom:4, zoomControl:false, scrollWheelZoom:true });
-  rTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { attribution:'', maxZoom:19 }).addTo(rMap);
+  rTile = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution:'', maxZoom:19 }).addTo(rMap);
   L.control.zoom({ position:'topleft' }).addTo(rMap);
+
+  const GEO = (()=>{try{return JSON.parse(sessionStorage.getItem('selectedRegionGeo')||'null')}catch(e){return null}})();
+  const oddPoly=(b,seed)=>{const s=b[0][0],w=b[0][1],n=b[1][0],e=b[1][1],cy=(s+n)/2,cx=(w+e)/2,ry=(n-s)/2,rx=(e-w)/2;let h=(seed||1)>>>0;const rnd=()=>{h=(h*9301+49297)%233280;return h/233280;};return Array.from({length:11},(_,i)=>{const a=i/11*6.28318,j=0.55+rnd()*0.6;return [cy+Math.sin(a)*ry*j,cx+Math.cos(a)*rx*j];});};
+  if (GEO) {
+    L.polygon(oddPoly(GEO.bounds, (GEO.name||'').length*13+7), { color:'var(--brand-600,#2563eb)', weight:2, fillColor:'var(--brand-600,#2563eb)', fillOpacity:0.18 }).addTo(rMap);
+    rMap.fitBounds(GEO.bounds, { padding:[40,40] });
+  }
 
   AIRPORTS.forEach(a => {
     const icon = L.divIcon({
       className:'',
-      html:`<div style="width:32px;height:32px;border-radius:50%;background:#fff;border:2px solid var(--brand-600,#2563eb);box-shadow:0 2px 6px rgba(37,99,235,.3);display:flex;align-items:center;justify-content:center">${PLANE_ICO('var(--brand-600,#2563eb)')}</div>`,
+      html:`<div class="airport-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg></div>`,
       iconSize:[32,32], iconAnchor:[16,16],
     });
     const popupHTML = `
@@ -167,21 +243,63 @@ function initMap() {
           <div style="display:flex;justify-content:space-between;margin-bottom:7px"><span style="color:#64748b;font-size:13px">Aircraft on Ground:</span><span style="font-weight:700;color:#0f172a;font-size:13px">${a.aog}</span></div>
           <div style="display:flex;justify-content:space-between;margin-bottom:7px"><span style="color:#64748b;font-size:13px">Total Hull:</span><span style="font-weight:700;color:#0f172a;font-size:13px">${a.hull}</span></div>
           <div style="display:flex;justify-content:space-between"><span style="color:#64748b;font-size:13px">CHW:</span><span style="font-weight:700;color:#0f172a;font-size:13px">${a.chw}</span></div>
+          <button class="ard-pp-cta" style="display:block;width:100%;margin-top:12px;height:32px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--brand-600,#2563eb);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s" onmouseover="this.style.background='var(--brand-50,#eff6ff)'" onmouseout="this.style.background='transparent'">View Details</button>
         </div>
       </div>`;
     L.marker(a.coord,{icon})
       .bindPopup(popupHTML, { maxWidth:260, minWidth:240, closeButton:true, className:'region-popup' })
+      .on('popupopen', (e) => {
+        try { sessionStorage.setItem('selectedAirport', JSON.stringify(a)); } catch(err){}
+        const node = e.popup.getElement();
+        const btn = node && node.querySelector('.ard-pp-cta');
+        if (btn) btn.onclick = () => { window.location.href = 'AirportDetails.html'; };
+      })
       .addTo(rMap);
   });
 
   setTimeout(() => {
     const zin  = el.querySelector('.leaflet-control-zoom-in');
     const zout = el.querySelector('.leaflet-control-zoom-out');
-    if (zin)  zin.innerHTML  = `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>`;
-    if (zout) zout.innerHTML = `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></span>`;
+    if (zin)  zin.innerHTML  = `<span class="inline-flex items-center justify-center h-full w-full">${SC.I.plus}</span>`;
+    if (zout) zout.innerHTML = `<span class="inline-flex items-center justify-center h-full w-full">${SC.I.minus}</span>`;
   }, 100);
   const fsBtn = document.getElementById('ard-fs');
-  if (fsBtn) fsBtn.addEventListener('click', () => { const w=document.getElementById('ard-map-wrap'); if(w&&w.requestFullscreen)w.requestFullscreen(); setTimeout(()=>rMap&&rMap.invalidateSize(),300); });
+  const wrap  = document.getElementById('ard-map-wrap');
+  if (fsBtn && wrap) {
+    fsBtn.onclick = () => {
+      const isFs = wrap.classList.toggle('is-fullscreen');
+      fsBtn.innerHTML = isFs ? SC.I.minimize : SC.I.maximize;
+      document.body.style.overflow = isFs ? 'hidden' : '';
+      setTimeout(() => rMap && rMap.invalidateSize(), 260);
+    };
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && wrap.classList.contains('is-fullscreen')) fsBtn.onclick(); });
+  }
+  const RG_TILES = {
+    satellite:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    street:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    dark:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    light:'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  };
+  const setMapType = (type) => {
+    if (!RG_TILES[type] || !rMap) return;
+    rMapType = type;
+    if (rTile) rMap.removeLayer(rTile);
+    rTile = L.tileLayer(RG_TILES[type], { attribution:'', maxZoom:19 }).addTo(rMap);
+    rTile.bringToBack();
+    document.querySelectorAll('#ard-layers-menu [data-map-type]').forEach(b => {
+      const on=b.dataset.mapType===type, lbl=b.querySelector('[data-label]'), chk=b.querySelector('[data-check]');
+      if (lbl){ lbl.style.color = on?'var(--brand-600,#2563eb)':'#334155'; lbl.style.fontWeight = on?'600':'500'; }
+      if (chk) chk.style.opacity = on?'1':'0';
+    });
+  };
+  const lBtn=document.getElementById('ard-layers-btn'), lMenu=document.getElementById('ard-layers-menu');
+  if (lBtn && lMenu) {
+    lBtn.onclick = (e)=>{ e.stopPropagation(); lMenu.classList.toggle('hidden'); };
+    lMenu.addEventListener('click', e=>e.stopPropagation());
+    lMenu.querySelectorAll('[data-map-type]').forEach(opt=>{ opt.onclick=(e)=>{ e.stopPropagation(); setMapType(opt.dataset.mapType); lMenu.classList.add('hidden'); }; });
+    document.addEventListener('click', ()=>lMenu.classList.add('hidden'));
+    setMapType(rMapType);
+  }
 }
 
 /* ── Render ────────────────────────────────────────────────────────────── */
@@ -270,8 +388,8 @@ function Content() {
             </tbody>
           </table>
         </div>
-        <div style="padding:10px 14px;border-top:1px solid #f1f5f9;text-align:center">
-          <button style="font-size:13px;color:var(--brand-600,#2563eb);font-weight:600;background:none;border:1px solid var(--brand-600,#2563eb);border-radius:8px;padding:6px 14px;cursor:pointer">View All Portfolios</button>
+        <div class="ds-card-foot">
+          <button class="ds-foot-btn">View All Portfolios</button>
         </div>
       </div>
 
@@ -374,8 +492,15 @@ function Content() {
         </div>
         <div id="ard-map-wrap" style="position:relative;flex:1">
           <div id="region-map"></div>
-          <button id="ard-fs" class="map-btn" style="position:absolute;top:12px;left:12px;z-index:400">${EXPAND_ICO}</button>
-          <div style="position:absolute;top:12px;right:12px;z-index:400"><button class="map-btn">${LAYERS_ICO}</button></div>
+          <button id="ard-fs" class="map-btn" style="position:absolute;top:12px;left:12px;z-index:400">${SC.I.maximize}</button>
+          <div style="position:absolute;top:12px;right:12px;z-index:400">
+            <div style="position:relative">
+              <button id="ard-layers-btn" class="map-btn" title="Map type">${SC.I.layers}</button>
+              <div id="ard-layers-menu" class="hidden" style="position:absolute;top:0;right:calc(100% + 8px);width:160px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 4px 12px rgba(15,23,42,.14);overflow:hidden;padding:4px 0">
+                ${[['satellite','Satellite'],['street','Street View'],['dark','Dark Mode'],['light','Light Mode']].map(([k,l])=>`<button data-map-type="${k}" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;background:transparent;border:0;cursor:pointer;font-family:inherit;font-size:12.5px;color:#334155;text-align:left"><span data-label>${l}</span><span data-check style="display:flex;color:var(--brand-600,#2563eb);opacity:0">${SC.I.check}</span></button>`).join('')}
+              </div>
+            </div>
+          </div>
           <div class="ard-map-legend">
             <div style="font-size:13px;font-weight:700;color:#0f172a">Aviation Region</div>
             <div style="font-size:11.5px;color:#475569;margin-top:2px">${AIRPORTS.length} Major Airports</div>

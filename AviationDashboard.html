@@ -64,8 +64,9 @@
   .leaflet-control-zoom a svg { width:16px; height:16px; }
   .map-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:#fff; border:1px solid #e2e8f0; border-radius:8px; color:#334155; box-shadow: 0 1px 2px rgb(15 23 42 / .08); }
   .map-btn:hover { background:#f1f5f9; }
+  .map-btn:active { background:#e2e8f0; }
   .plane-icon { width:28px; height:28px; display:flex; align-items:center; justify-content:center; }
-  .airport-icon { width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:#06b6d4; border:2px solid #fff; border-radius:50%; box-shadow:0 2px 6px rgba(0,0,0,.25); }
+  .airport-icon { width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:var(--brand-600,#2d7ffb); border:2px solid #fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.28); }
   /* Airport hover tooltip — name + code + country + flag (matches Marine vessel tooltip) */
   .airport-tip.leaflet-tooltip {
     background:rgba(15,23,42,.93); border:0; border-radius:7px;
@@ -108,7 +109,14 @@
 
   /* DS table-header treatment for list-card column headers */
   .tracking-micro.uppercase.text-ink-500{background:var(--slate-50,#F9FAFB);color:var(--text-muted,#6B7280)}
-  </style>
+    /* DS card footer + Tertiary/Ghost buttons (ALL CAPS) — per Skytek DS */
+  .ds-card-foot{padding:10px 16px;border-top:1px solid #ECEEF2;background:#F9FAFB;display:flex;justify-content:flex-end;align-items:center;gap:8px;border-bottom-left-radius:inherit;border-bottom-right-radius:inherit;}
+  .ds-card-foot--start{justify-content:flex-start;}
+  .ds-card-foot--between{justify-content:space-between;}
+  .ds-card-foot--center{justify-content:center;}
+  .ds-card-foot button{display:inline-flex;align-items:center;gap:4px;height:26px;padding:0 5px;border-radius:6px;background:transparent;border:0;cursor:pointer;font-family:inherit;font-weight:600;font-size:11px;letter-spacing:.02em;text-transform:uppercase;color:var(--brand-600,#2563eb);transition:background .15s,color .15s;white-space:nowrap;}
+  .ds-card-foot button:hover{background:#eef2f7;color:var(--brand-700,#1d4ed8);}
+</style>
 </head>
 <body class="bg-ink-100 text-ink-900 antialiased" data-density="compact">
 <div id="app" class="min-h-screen w-full flex"></div>
@@ -125,7 +133,7 @@
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="shared/chrome.js?v=11"></script>
+<script src="shared/chrome.js?v=12"></script>
 <script>
 const SC = window.sharedChrome;
 const Ico = SC.I;
@@ -370,7 +378,7 @@ function PortfolioCard() {
       <div class="flex-1 overflow-y-auto scroll-thin">
         ${rows}
       </div>
-      <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 flex items-center justify-between text-xs h-9">
+      <div class="ds-card-foot ds-card-foot--between shrink-0">
         <button class="inline-flex items-center gap-1 text-brand-600 font-semibold hover:text-brand-700 tracking-micro">
           <span class="inline-flex items-center [&_svg]:h-3.5 [&_svg]:w-3.5">${Ico.plus}</span><span>Add Group</span>
         </button>
@@ -400,7 +408,7 @@ function PortfolioCard() {
         </button>
       `).join('')}
     </div>
-    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 flex items-center justify-between text-xs h-9">
+    <div class="ds-card-foot ds-card-foot--between shrink-0">
       <button class="inline-flex items-center gap-1 whitespace-nowrap text-brand-600 font-semibold hover:text-brand-700 tracking-micro">
         <span class="inline-flex items-center [&_svg]:h-3.5 [&_svg]:w-3.5">${Ico.plus}</span><span>ADD PORTFOLIO</span>
       </button>
@@ -597,7 +605,7 @@ function NotamCard() {
           </div>`).join('')}
         </div>
       </div>
-      <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 text-center h-9 flex items-center justify-center shrink-0">
+      <div class="ds-card-foot ds-card-foot--center shrink-0">
         <button class="text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">ALL WEATHER RISKS</button>
       </div>
     </div>`;
@@ -645,7 +653,7 @@ function NotamCard() {
           </div>`;
         }).join('') || `<div class="text-center text-ink-400 text-xs py-6">No alerts of this type.</div>`}
       </div>
-      <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 text-center h-9 flex items-center justify-center">
+      <div class="ds-card-foot ds-card-foot--center shrink-0">
         <button class="text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">VIEW ALL ALERTS</button>
       </div>
     </div>`;
@@ -675,7 +683,7 @@ function NotamCard() {
         </div>`;
       }).join('')}
     </div>
-    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 text-center h-9 flex items-center justify-center">
+    <div class="ds-card-foot ds-card-foot--center shrink-0">
       <button class="text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">ALL WEATHER RISKS</button>
     </div>
   </div>`;
@@ -899,8 +907,8 @@ function Content() {
         <div class="flex items-center gap-2">
           <div class="ds-tabs" data-tab-group="data-view">
             <span class="ds-tab-pill is-init" data-tab-pill></span>
-            <button data-view="Map"  aria-selected="${state.viewMode==='Map'}"  class="ds-tab" style="font-size:12px;padding:6px 14px;"><span class="ds-tab-label">Map</span></button>
-            <button data-view="List" aria-selected="${state.viewMode==='List'}" class="ds-tab" style="font-size:12px;padding:6px 14px;"><span class="ds-tab-label">List</span></button>
+            <button data-view="Map"  aria-selected="${state.viewMode==='Map'}"  class="ds-tab" style="font-size:12px;padding:6px 14px;"><span class="ds-tab-label" style="display:inline-flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>Map</span></button>
+            <button data-view="List" aria-selected="${state.viewMode==='List'}" class="ds-tab" style="font-size:12px;padding:6px 14px;"><span class="ds-tab-label" style="display:inline-flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>List</span></button>
           </div>
         </div>
         ${state.viewMode === 'List' ? `

@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Offshore Region Details — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  .scroll-thin::-webkit-scrollbar{width:5px}.scroll-thin::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
+  #region-map{position:absolute;inset:0}
+  .leaflet-control-zoom,.leaflet-bar{border:1px solid #e2e8f0!important;box-shadow:0 1px 2px rgba(15,23,42,.08)!important;border-radius:8px!important;overflow:hidden}
+  .leaflet-bar a{background:#fff!important;color:#334155!important;line-height:30px!important}
+  .leaflet-bar a:hover{background:#f1f5f9!important}
+  .leaflet-control-zoom a{display:flex!important;align-items:center;justify-content:center;padding:0!important}
+  .leaflet-control-zoom a svg{width:16px;height:16px}
+  #region-map .leaflet-top.leaflet-left{top:56px;left:2px}
+  #region-map .leaflet-top.leaflet-left .leaflet-bar{margin-left:10px!important}
+  #mrd-map-wrap.is-fullscreen{position:fixed!important;inset:0!important;z-index:9999!important;border-radius:0!important}
+  #mrd-layers-menu button:hover{background:#f1f5f9}
+  /* Region popup — matches Regions page */
+  .region-popup .leaflet-popup-content-wrapper{padding:0;border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,.15)}
+  .region-popup .leaflet-popup-content{margin:0}
+  .region-popup .leaflet-popup-tip-container{margin-top:-1px}
+  /* Make the close × visible against the blue popup header */
+  .region-popup .leaflet-popup-close-button{
+    color:#fff !important;
+    opacity:.85;
+    font:700 20px/1 'Inter',sans-serif !important;
+    width:26px;height:26px;
+    padding:2px 0 0 0 !important;
+    top:6px !important;right:6px !important;
+    border-radius:6px;
+    text-align:center;
+    text-decoration:none !important;
+    transition:opacity .12s, background .12s;
+  }
+  .region-popup .leaflet-popup-close-button:hover{opacity:1;background:rgba(255,255,255,.18)}
+  /* Pill tabs (Skytek DS — animated sliding pill) */
+  .ds-tabs{position:relative;display:inline-flex;gap:4px;padding:4px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9999px;}
+  .ds-tab{position:relative;font:inherit;font-size:13px;font-weight:600;padding:7px 16px;background:transparent;border:0;border-radius:9999px;color:#64748b;cursor:pointer;transition:color 140ms ease;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+  .ds-tab:hover{color:#0f172a;}
+  .ds-tab[aria-selected="true"]{color:#fff;}
+  .ds-tab-pill{position:absolute;top:4px;left:0;height:calc(100% - 8px);background:var(--brand-600,#2563eb);border-radius:9999px;box-shadow:0 1px 2px rgba(15,23,42,.12);z-index:0;transition:transform 320ms cubic-bezier(.34,1.2,.64,1),width 320ms cubic-bezier(.34,1.2,.64,1);pointer-events:none;}
+  .ds-tab-pill.is-init{transition:none;}
+  .ds-tab-label{position:relative;z-index:1;display:inline-flex;align-items:center;gap:6px;}
+  /* Legacy pill tabs (kept for any leftover usage) */
+  .ptabs{display:inline-flex;gap:4px;padding:4px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9999px;position:relative}
+  .ptab{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:9999px;font-size:13px;font-weight:600;cursor:pointer;border:0;font-family:inherit;transition:background .15s,color .15s;white-space:nowrap}
+  .ptab.active{background:var(--brand-600,#2563eb);color:#fff}
+  .ptab:not(.active){background:transparent;color:#64748b}
+  .ptab:not(.active):hover{color:#0f172a}
+  /* Segment tabs (equal width, no pill container) */
+  .seg-tab{flex:1;padding:7px 4px;font-size:13px;font-weight:600;cursor:pointer;border:0;font-family:inherit;transition:background .15s,color .15s;border-radius:9999px;background:transparent;color:#64748b}
+  .seg-tab.active{background:var(--brand-600,#2563eb);color:#fff}
+  .seg-tab:not(.active):hover{color:#334155}
+  /* Stat pills */
+  .spill-gray{display:inline-block;background:#f1f5f9;color:#334155;font-size:14px;font-weight:700;padding:4px 12px;border-radius:8px}
+  .spill-blue{display:inline-block;background:var(--brand-50,#eff6ff);color:var(--brand-600,#2563eb);font-size:14px;font-weight:700;padding:4px 12px;border-radius:8px}
+  .spill-red {display:inline-block;background:#fef2f2;color:#dc2626;font-size:14px;font-weight:700;padding:4px 12px;border-radius:8px}
+  /* Totals table */
+  .tot-row{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:13px}
+  .tot-row:last-child{border-bottom:0}
+  /* Portfolio table */
+  .pf-tbl{width:100%;border-collapse:collapse}
+  .pf-tbl th{padding:8px 10px;font-size:12px;font-weight:600;color:var(--text-muted,#6B7280);text-align:left;border-bottom:1px solid #f1f5f9;white-space:nowrap;text-transform:uppercase;letter-spacing:.04em}
+  .pf-tbl td{padding:9px 10px;font-size:13px;color:#334155;border-bottom:1px solid #f8fafc;vertical-align:middle}
+  .pf-tbl tr:last-child td{border-bottom:0}
+  .pf-tbl tbody tr:hover td{background:#fafafa}
+  /* Map btn */
+  .map-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;color:#334155;box-shadow:0 1px 2px rgba(15,23,42,.08);cursor:pointer}
+  .map-btn:hover{background:#f1f5f9}
+  /* Port marker — matches Ports page */
+  .port-marker{width:30px;height:30px;border-radius:50%;background:var(--brand-600,#2563eb);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center}
+  .port-marker-sanctioned{width:30px;height:30px;border-radius:50%;background:#dc2626;border:2px solid #fff;box-shadow:0 2px 8px rgba(220,38,38,.5);display:flex;align-items:center;justify-content:center;animation:pulse-red 2s infinite}
+  @keyframes pulse-red{0%,100%{box-shadow:0 2px 8px rgba(220,38,38,.5)}50%{box-shadow:0 0 0 6px rgba(220,38,38,.15),0 2px 8px rgba(220,38,38,.4)}}
+  /* Mobile responsive */
+  .mrd-top-row{display:flex;gap:12px;margin-bottom:12px;min-height:0;height:440px;}
+  .mrd-top-row>div{height:440px;overflow-y:auto!important}
+  .mrd-left-panel{width:260px;flex-shrink:0;}
+  /* Card tab dropdown — used in place of pill tabs */
+  .tab-dd{display:inline-block;min-width:240px;max-width:100%;padding:8px 36px 8px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:600;color:#0f172a;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;background-size:12px;font-family:inherit;cursor:pointer;appearance:none;-webkit-appearance:none;transition:border-color .15s,box-shadow .15s;}
+  .tab-dd:hover{border-color:#cbd5e1;}
+  .tab-dd:focus{outline:none;border-color:var(--brand-600,#2563eb);box-shadow:0 0 0 3px rgba(37,99,235,.15);}
+  .mobile-tab-select{display:none;width:100%;padding:7px 12px;border:1px solid #e2e8f0;border-radius:9999px;font-size:13px;font-weight:600;color:#334155;background:#f1f5f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;font-family:inherit;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;}
+  @media(max-width:767px){
+    .mrd-top-row{flex-direction:column;}
+    .mrd-left-panel{width:100%!important;flex-shrink:unset;}
+    .mobile-tab-select{display:block!important;}
+    .tabs-desktop-wrap{display:none!important;}
+  }
+  /* DS card footer + Tertiary/Ghost button (ALL CAPS) — per Skytek DS */
+  .ds-card-foot{padding:10px 16px;border-top:1px solid #ECEEF2;background:#F9FAFB;display:flex;justify-content:flex-start;align-items:center;gap:8px;flex-shrink:0;border-bottom-left-radius:inherit;border-bottom-right-radius:inherit;}
+  .ds-card-foot--end{justify-content:flex-end;}
+  .ds-card-foot--center{justify-content:center;}
+  .ds-foot-btn{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 8px;border-radius:6px;background:transparent;border:0;cursor:pointer;font-family:inherit;font-weight:600;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--brand-600,#2563eb);transition:background .15s,color .15s;white-space:nowrap;text-decoration:none;}
+  .ds-foot-btn:hover{background:#eef2f7;color:var(--brand-700,#1d4ed8);}
+</style>
+</head>
+<body class="bg-slate-100 text-slate-900">
+<div id="app" class="h-screen w-full flex overflow-hidden"></div>
+
+<script>
+window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "density":"compact","accent":"blue","sidebarExpanded":false,"showSparklines":true
+}/*EDITMODE-END*/;
+const regionName = sessionStorage.getItem('selectedOffshoreRegion') || 'North Sea Basin';
+window.PAGE = { id:'regions', title:'Offshore Region', crumb: regionName };
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="shared/chrome.js?v=12"></script>
+<script>
+const SC = window.sharedChrome;
+
+const MRD_MINIMIZE = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>`;
+const MRD_CHECK = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+const MRD_ANCHOR = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg>`;
+
+/* ── State ────────────────────────────────────────────────────────────────── */
+let leftTab   = 'totals';
+let rightTab  = 'stats';
+let statSub   = 'hull';
+let mapTab    = 'map';
+let rMap = null, rTile = null;
+let rMapType = 'satellite';
+
+/* ── Stats data by sub-tab ───────────────────────────────────────────────── */
+const STATS = {
+  hull: {
+    avgCount:30, avgExp:'$328.6M', avgMkt:'$642.7M',
+    hiCountDate:'Oct 18th 2025', hiCount:50,
+    hiExpDate:'Oct 28th 2025',   hiExp:'$1.9B',
+    hiMktDate:'Nov 4th 2025',    hiMkt:'$1.3B',
+    warAvg:'$156.3M', warHiDate:'Sep 15th 2025', warHi:'$789.5M', warLoDate:'Jul 4th 2025', warLo:'$23.8M',
+    loCountDate:'Aug 17th 2025', loCount:12,
+    loExpDate:'May 20th 2025',   loExp:'$47.7M',
+    loMktDate:'Aug 17th 2025',   loMkt:'$212.4M',
+  },
+  cargo: {
+    avgCount:22, avgExp:'$180.2M', avgMkt:'$320.5M',
+    hiCountDate:'Nov 2nd 2025',  hiCount:38,
+    hiExpDate:'Nov 10th 2025',   hiExp:'$980M',
+    hiMktDate:'Oct 22nd 2025',   hiMkt:'$720M',
+    warAvg:'$82.4M', warHiDate:'Oct 5th 2025', warHi:'$420.2M', warLoDate:'Aug 12th 2025', warLo:'$14.1M',
+    loCountDate:'Sep 3rd 2025',  loCount:8,
+    loExpDate:'Jun 14th 2025',   loExp:'$28.4M',
+    loMktDate:'Sep 3rd 2025',    loMkt:'$98.2M',
+  },
+  liability: {
+    avgCount:15, avgExp:'$65.4M', avgMkt:'$145.8M',
+    hiCountDate:'Dec 1st 2025',  hiCount:28,
+    hiExpDate:'Dec 5th 2025',    hiExp:'$380M',
+    hiMktDate:'Nov 28th 2025',   hiMkt:'$290M',
+    warAvg:'$32.1M', warHiDate:'Nov 20th 2025', warHi:'$185.4M', warLoDate:'Jul 20th 2025', warLo:'$8.2M',
+    loCountDate:'Oct 14th 2025', loCount:5,
+    loExpDate:'Jul 30th 2025',   loExp:'$12.1M',
+    loMktDate:'Oct 14th 2025',   loMkt:'$42.6M',
+  },
+};
+
+const PORTFOLIOS = [
+  { name:'Global Shipping Fleet',   total:'$1.5B',  hull:'$900M',  cargo:'$400M',  liab:'$200M' },
+  { name:'Container Operations',    total:'$980M',  hull:'$650M',  cargo:'$230M',  liab:'$100M' },
+  { name:'Tanker Fleet Portfolio',  total:'$745M',  hull:'$520M',  cargo:'$150M',  liab:'$75M'  },
+  { name:'Bulk Carrier Group',      total:'$612M',  hull:'$380M',  cargo:'$182M',  liab:'$50M'  },
+  { name:'LNG Carrier Fleet',       total:'$890M',  hull:'$700M',  cargo:'$140M',  liab:'$50M'  },
+  { name:'Offshore Support Vessels',total:'$425M',  hull:'$280M',  cargo:'$95M',   liab:'$50M'  },
+  { name:'Yacht Portfolio',         total:'$325M',  hull:'$250M',  cargo:'$50M',   liab:'$25M'  },
+];
+
+/* ── SVGs ─────────────────────────────────────────────────────────────────── */
+const INFO_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+const CAL_SVG  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
+const LINK_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
+const EXPAND   = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>`;
+const LAYERS   = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`;
+const TAG      = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`;
+const MAP_PIN  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
+
+/* ── Map ──────────────────────────────────────────────────────────────────── */
+function initMap() {
+  const el = document.getElementById('region-map');
+  if (!el) return;
+  if (rMap) { rMap.remove(); rMap = null; rTile = null; }
+  rMap = L.map(el, { center:[36.5,-120], zoom:6, zoomControl:false, scrollWheelZoom:true });
+  rTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { attribution:'', maxZoom:19 }).addTo(rMap);
+  L.control.zoom({ position:'topleft' }).addTo(rMap);
+
+  // California coast polygon (marine region boundary)
+  const coastPoly = [
+    [42.0,-124.5],[40.5,-124.4],[38.5,-123.3],[37.8,-122.5],[36.6,-121.9],
+    [35.7,-121.3],[34.4,-120.5],[34.0,-118.5],[33.7,-118.3],[33.4,-117.6],
+    [32.7,-117.3],[32.5,-117.1],[32.5,-119.0],[33.5,-119.5],[34.4,-121.5],
+    [35.5,-122.0],[37.0,-123.0],[38.5,-124.0],[40.0,-124.8],[42.0,-124.5],
+  ];
+  const regionRisk      = 'High';
+  const regionRiskColor = {Low:'#16a34a',Medium:'#f97316',High:'#dc2626',Critical:'#7c3aed'}[regionRisk] || '#64748b';
+  const regionDotColor  = '#2563eb';
+  const regionExposure  = '$5.5B';
+  const regionAssets    = 1247;
+  const regionPopupHTML = `
+    <div style="font-family:'Inter',sans-serif;width:250px;border-radius:12px;overflow:hidden">
+      <div style="background:var(--brand-600,#2563eb);color:#fff;padding:11px 14px;display:flex;align-items:center;gap:8px">
+        <span style="width:11px;height:11px;border-radius:50%;background:${regionDotColor};flex-shrink:0;border:1.5px solid rgba(255,255,255,.5)"></span>
+        <span style="font-size:14px;font-weight:700;flex:1">${regionName}</span>
+      </div>
+      <div style="background:#fff;padding:14px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:9px">
+          <span style="color:#64748b;font-size:13px">Our Exposure:</span>
+          <span style="font-weight:700;color:#0f172a;font-size:13px">${regionExposure}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:9px">
+          <span style="color:#64748b;font-size:13px">Assets:</span>
+          <span style="font-weight:700;color:#0f172a;font-size:13px">${regionAssets.toLocaleString()}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:#64748b;font-size:13px">Risk Level:</span>
+          <span style="font-weight:700;font-size:13px;color:${regionRiskColor}">${regionRisk}</span>
+        </div>
+      </div>
+    </div>`;
+  const GEO = (()=>{try{return JSON.parse(sessionStorage.getItem('selectedRegionGeo')||'null')}catch(e){return null}})();
+  const oddPoly=(b,seed)=>{const s=b[0][0],w=b[0][1],n=b[1][0],e=b[1][1],cy=(s+n)/2,cx=(w+e)/2,ry=(n-s)/2,rx=(e-w)/2;let h=(seed||1)>>>0;const rnd=()=>{h=(h*9301+49297)%233280;return h/233280;};return Array.from({length:11},(_,i)=>{const a=i/11*6.28318,j=0.55+rnd()*0.6;return [cy+Math.sin(a)*ry*j,cx+Math.cos(a)*rx*j];});};
+  (GEO ? L.polygon(oddPoly(GEO.bounds, (GEO.name||'').length*13+7), { color:'var(--brand-600,#2563eb)', weight:2, fillColor:'var(--brand-600,#2563eb)', fillOpacity:0.18 })
+       : L.polygon(coastPoly, { color:'#2563eb', weight:2, fillColor:'#3b82f6', fillOpacity:0.18 }))
+    .addTo(rMap)
+    .bindPopup(regionPopupHTML, { maxWidth:260, minWidth:250, closeButton:true, className:'region-popup' });
+  if (GEO) rMap.fitBounds(GEO.bounds, { padding:[40,40] });
+
+  // Port markers
+  const ports = [
+    { coord:[37.80,-122.28], name:'Platform Alpha',       exposure:'$420M', assets: 312, risk:'Medium' },
+    { coord:[37.33,-121.89], name:'Platform Beta',        exposure:'$185M', assets: 142, risk:'Low'    },
+    { coord:[33.73,-118.26], name:'FPSO Triton',          exposure:'$1.2B', assets: 684, risk:'High'   },
+    { coord:[32.72,-117.22], name:'Subsea Field Delta',   exposure:'$340M', assets: 218, risk:'Medium' },
+    { coord:[34.01,-118.49], name:'Drilling Unit Orion',  exposure:'$1.4B', assets: 752, risk:'High'   },
+  ];
+  if (GEO) { const b=GEO.bounds, dy=b[1][0]-b[0][0], dx=b[1][1]-b[0][1]; ports.forEach((p,i)=>{ const fx=(i+1)/(ports.length+1), fy=0.28+((i*0.41)%1)*0.5; p.coord=[ b[0][0]+dy*fy, b[0][1]+dx*fx ]; }); }
+  ports.forEach(p => {
+    const icon = L.divIcon({
+      className:'',
+      html:`<div class="port-marker">${MRD_ANCHOR}</div>`,
+      iconSize:[30,30], iconAnchor:[15,15],
+    });
+    const portRiskColor = {Low:'#16a34a',Medium:'#f97316',High:'#dc2626',Critical:'#7c3aed'}[p.risk] || '#64748b';
+    const portPopupHTML = `
+      <div style="font-family:'Inter',sans-serif;width:250px;border-radius:12px;overflow:hidden">
+        <div style="background:var(--brand-600,#2563eb);color:#fff;padding:11px 14px;display:flex;align-items:center;gap:8px">
+          <span style="width:11px;height:11px;border-radius:50%;background:#fff;flex-shrink:0;border:1.5px solid rgba(255,255,255,.5);display:inline-flex;align-items:center;justify-content:center">
+            <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </span>
+          <span style="font-size:14px;font-weight:700;flex:1">${p.name}</span>
+        </div>
+        <div style="background:#fff;padding:14px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:9px">
+            <span style="color:#64748b;font-size:13px">Our Exposure:</span>
+            <span style="font-weight:700;color:#0f172a;font-size:13px">${p.exposure}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:9px">
+            <span style="color:#64748b;font-size:13px">Assets:</span>
+            <span style="font-weight:700;color:#0f172a;font-size:13px">${p.assets.toLocaleString()}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:12px">
+            <span style="color:#64748b;font-size:13px">Risk Level:</span>
+            <span style="font-weight:700;font-size:13px;color:${portRiskColor}">${p.risk}</span>
+          </div>
+          <button data-port="${p.name.replace(/"/g,'&quot;')}" style="width:100%;padding:0 12px;height:32px;border:1px solid transparent;border-radius:var(--radius-md,8px);background:transparent;color:var(--brand-600,#2563eb);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit" onmouseover="this.style.background='var(--brand-50,#eff6ff)'" onmouseout="this.style.background='transparent'">View Details</button>
+        </div>
+      </div>`;
+    L.marker(p.coord,{icon})
+      .bindPopup(portPopupHTML, { maxWidth:260, minWidth:250, closeButton:true, className:'region-popup' })
+      .addTo(rMap);
+  });
+
+  // Wire “View Details” buttons inside port popups (event delegation, since popup
+  // markup is injected only when a marker is opened)
+  rMap.on('popupopen', (e) => {
+    const node = e.popup.getElement();
+    if (!node) return;
+    const btn = node.querySelector('button[data-port]');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      sessionStorage.setItem('selectedOffshore', btn.dataset.port);
+      window.location.href = 'AssetOffshoreDetails.html';
+    });
+  });
+
+  // Controls
+  setTimeout(() => {
+    const zin  = el.querySelector('.leaflet-control-zoom-in');
+    const zout = el.querySelector('.leaflet-control-zoom-out');
+    if (zin)  zin.innerHTML  = `<span class="inline-flex items-center justify-center h-full w-full">${SC.I.plus}</span>`;
+    if (zout) zout.innerHTML = `<span class="inline-flex items-center justify-center h-full w-full">${SC.I.minus}</span>`;
+  }, 100);
+  // Fullscreen toggle (expand the map wrap to fill the viewport)
+  const fsBtn = document.getElementById('mrd-fs');
+  const wrap  = document.getElementById('mrd-map-wrap');
+  if (fsBtn && wrap) {
+    fsBtn.onclick = () => {
+      const isFs = wrap.classList.toggle('is-fullscreen');
+      fsBtn.innerHTML = isFs ? SC.I.minimize : SC.I.maximize;
+      fsBtn.title = isFs ? 'Exit fullscreen' : 'Toggle fullscreen';
+      document.body.style.overflow = isFs ? 'hidden' : '';
+      setTimeout(() => rMap && rMap.invalidateSize(), 260);
+    };
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && wrap.classList.contains('is-fullscreen')) fsBtn.onclick();
+    });
+  }
+
+  // Map type selector
+  const RG_TILES = {
+    satellite:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    street:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    dark:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    light:'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  };
+  const setRegionMapType = (type) => {
+    if (!RG_TILES[type] || !rMap) return;
+    rMapType = type;
+    if (rTile) rMap.removeLayer(rTile);
+    rTile = L.tileLayer(RG_TILES[type], { attribution:'', maxZoom:19 }).addTo(rMap);
+    rTile.bringToBack();
+    document.querySelectorAll('#mrd-layers-menu [data-map-type]').forEach(b => {
+      const on = b.dataset.mapType === type;
+      const lbl = b.querySelector('[data-label]'); const chk = b.querySelector('[data-check]');
+      if (lbl) { lbl.style.color = on ? '#2563eb' : '#334155'; lbl.style.fontWeight = on ? '600' : '500'; }
+      if (chk) chk.style.opacity = on ? '1' : '0';
+    });
+  };
+  const lBtn = document.getElementById('mrd-layers-btn');
+  const lMenu = document.getElementById('mrd-layers-menu');
+  if (lBtn && lMenu) {
+    lBtn.onclick = (e) => { e.stopPropagation(); lMenu.classList.toggle('hidden'); };
+    lMenu.addEventListener('click', e => e.stopPropagation());
+    lMenu.querySelectorAll('[data-map-type]').forEach(opt => {
+      opt.onclick = (e) => { e.stopPropagation(); setRegionMapType(opt.dataset.mapType); lMenu.classList.add('hidden'); };
+    });
+    document.addEventListener('click', () => lMenu.classList.add('hidden'));
+    setRegionMapType(rMapType);
+  }
+}
+
+/* ── Render ───────────────────────────────────────────────────────────────── */
+function Content() {
+  const s = STATS[statSub];
+  return `
+  <div class="flex-1 min-h-0 overflow-y-auto scroll-thin" style="padding:12px 16px;background:#f1f5f9">
+
+    <!-- 3-column top row -->
+    <div class="mrd-top-row">
+
+      <!-- LEFT: Totals / Region Details -->
+      <div class="mrd-left-panel" style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06);overflow:hidden;display:flex;flex-direction:column">
+        <div style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">
+          <div class="ds-tabs" data-tab-group="data-ltab">
+            <span class="ds-tab-pill is-init" data-tab-pill></span>
+            <button class="ds-tab" aria-selected="${leftTab==='totals'}"  data-ltab="totals"><span class="ds-tab-label">Totals</span></button>
+            <button class="ds-tab" aria-selected="${leftTab==='details'}" data-ltab="details"><span class="ds-tab-label">Region Details</span></button>
+          </div>
+        </div>
+        <div style="padding:12px 16px">
+          ${leftTab === 'totals' ? `
+          <div style="display:flex;justify-content:flex-end;gap:16px;font-size:11.5px;font-weight:600;color:#64748b;margin-bottom:6px;padding-right:4px">
+            <span>Above Threshold</span><span>Total</span>
+          </div>
+          ${[['All Risk','$850M','$5.5B'],['Hull','$520M','$3.7B'],['Cargo','$230M','$1.2B'],['Liability','$100M','$550M']].map(([lbl,thr,tot]) => `
+          <div class="tot-row">
+            <span style="flex:1;font-size:13px;color:#334155">${lbl}${lbl!=='All Risk'?':':''}</span>
+            <span style="color:#f97316;font-weight:600;font-size:13px;min-width:64px;text-align:right">${thr}</span>
+            <span style="color:#0f172a;font-weight:600;font-size:13px;min-width:56px;text-align:right">${tot}</span>
+          </div>`).join('')}` : `
+          <div style="font-size:13px;color:#64748b;padding:8px 0">
+            <div style="margin-bottom:8px"><span style="font-weight:600;color:#334155">Region:</span> ${regionName}</div>
+            <div style="margin-bottom:8px"><span style="font-weight:600;color:#334155">Type:</span> Marine</div>
+            <div style="margin-bottom:8px"><span style="font-weight:600;color:#334155">Portfolios:</span> 7</div>
+            <div style="margin-bottom:8px"><span style="font-weight:600;color:#334155">Active Vessels:</span> 5</div>
+            <div><span style="font-weight:600;color:#334155">Major Ports:</span> 5</div>
+          </div>`}
+        </div>
+      </div>
+
+      <!-- MIDDLE: Region Exposure by Portfolio -->
+      <div style="flex:1.8;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06);overflow:hidden;display:flex;flex-direction:column">
+        <div style="padding:12px 14px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+          <span style="font-size:14px;font-weight:700;color:#0f172a">Region Exposure by Portfolio</span>
+          <span style="display:flex;align-items:center;gap:5px;font-size:12.5px;color:#64748b">${LINK_SVG} ${PORTFOLIOS.length}</span>
+        </div>
+        <div style="flex:1;overflow-y:auto" class="scroll-thin">
+          <table class="pf-tbl">
+            <thead><tr>
+              <th>Name</th><th>Total</th>
+              <th><div style="display:flex;align-items:center;gap:3px">${INFO_SVG}Hull</div></th>
+              <th><div style="display:flex;align-items:center;gap:3px">${INFO_SVG}Cargo</div></th>
+              <th><div style="display:flex;align-items:center;gap:3px">${INFO_SVG}Liability</div></th>
+            </tr></thead>
+            <tbody>
+              ${PORTFOLIOS.map(p => `<tr>
+                <td style="color:var(--brand-600,#2563eb);font-weight:500;cursor:pointer">${p.name}</td>
+                <td style="font-weight:600">${p.total}</td>
+                <td>${p.hull}</td><td>${p.cargo}</td><td>${p.liab}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div class="ds-card-foot">
+          <button class="ds-foot-btn">View All Portfolios</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: Region Summary Statistics -->
+      <div style="flex:2;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06);overflow:hidden;display:flex;flex-direction:column">
+        <div style="padding:10px 12px;border-bottom:1px solid #f1f5f9;flex-shrink:0">
+          <div class="tabs-desktop-wrap">
+            <div class="ds-tabs" id="rtab-tabs">
+              <span class="ds-tab-pill is-init" data-tab-pill></span>
+              <button class="ds-tab" aria-selected="${rightTab==='stats'}"  data-rtab="stats"><span class="ds-tab-label">Region Summary Statistics</span></button>
+              <button class="ds-tab" aria-selected="${rightTab==='report'}" data-rtab="report"><span class="ds-tab-label">Create Region Report</span></button>
+            </div>
+          </div>
+          <select id="rtab-sel" class="mobile-tab-select" aria-label="Section">
+            <option value="stats"  ${rightTab==='stats'  ? 'selected' : ''}>Region Summary Statistics</option>
+            <option value="report" ${rightTab==='report' ? 'selected' : ''}>Create Region Report</option>
+          </select>
+        </div>
+        ${rightTab === 'stats' ? `
+        <div style="flex:1;overflow-y:auto;padding:12px 16px" class="scroll-thin">
+          <!-- Date range -->
+          <div style="font-size:12px;color:#64748b;margin-bottom:6px">Date Range:</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+            <input type="text" value="Dec 1st 2024" readonly style="flex:1;height:30px;border:1px solid #e2e8f0;border-radius:7px;padding:0 8px;font-size:12.5px;color:#334155;background:#f8fafc;outline:none;font-family:inherit" />
+            <span style="font-size:12px;color:#94a3b8">to</span>
+            <div style="position:relative;flex:1">
+              <input type="text" value="Dec 31st 2024" readonly style="width:100%;height:30px;border:1px solid #e2e8f0;border-radius:7px;padding:0 26px 0 8px;font-size:12.5px;color:#334155;background:#f8fafc;outline:none;font-family:inherit" />
+              <span style="position:absolute;right:7px;top:50%;transform:translateY(-50%);display:flex">${CAL_SVG}</span>
+            </div>
+          </div>
+          <!-- Sub-tabs -->
+          <div style="display:flex;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9999px;padding:4px;gap:4px;margin-bottom:14px">
+            ${['hull','cargo','liability'].map(t => `<button class="seg-tab ${statSub===t?'active':''}" data-stab="${t}">${t.charAt(0).toUpperCase()+t.slice(1)}</button>`).join('')}
+          </div>
+          <!-- Stats grid 4 rows x 3 cols -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+            <div>
+              <div style="font-size:11.5px;color:#94a3b8;margin-bottom:6px">Average Daily Asset Count</div>
+              <span class="spill-gray">${s.avgCount}</span>
+            </div>
+            <div>
+              <div style="font-size:11.5px;color:#94a3b8;margin-bottom:6px">Average Daily Exposure Value</div>
+              <span class="spill-blue">${s.avgExp}</span>
+            </div>
+            <div>
+              <div style="font-size:11.5px;color:#94a3b8;margin-bottom:6px">Average Daily Market Value</div>
+              <span class="spill-blue">${s.avgMkt}</span>
+            </div>
+            <div>
+              <div style="font-size:11.5px;color:#94a3b8;margin-bottom:3px">Highest Daily Asset Count</div>
+              <div style="font-size:11px;color:#f97316;margin-bottom:5px">${s.hiCountDate}</div>
+              <span class="spill-blue">${s.hiCount}</span>
+            </div>
+            <div>
+              <div style="font-size:11.5px;color:#94a3b8;margin-bottom:3px">Highest Daily Exposure Value</div>
+              <div style="font-size:11px;color:#f97316;margin-bottom:5px">${s.hiExpDate}</div>
+              <span class="spill-blue">${s.hiExp}</span>
+            </div>
+            <div>
+              <div style="font-size:11.5px;color:#94a3b8;margin-bottom:3px">Highest Daily Market Value</div>
+              <div style="font-size:11px;color:#f97316;margin-bottom:5px">${s.hiMktDate}</div>
+              <span class="spill-blue">${s.hiMkt}</span>
+            </div>
+            <div>
+              <div style="font-size:11.5px;color:#94a3b8;margin-bottom:6px">Average Daily War Exposure</div>
+              <span class="spill-red">${s.warAvg}</span>
+            </div>
+            <div>
+              <div style="font-size:11.5px;color:#94a3b8;margin-bottom:3px">Highest Daily War Exposure</div>
+              <div style="font-size:11px;color:#f97316;margin-bottom:5px">${s.warHiDate}</div>
+              <span class="spill-red">${s.warHi}</span>
+            </div>
+            <div>
+              <div style="font-size:11.5px;color:#94a3b8;margin-bottom:3px">Lowest Daily War Exposure</div>
+              <div style="font-size:11px;color:#f97316;margin-bottom:5px">${s.warLoDate}</div>
+              <span class="spill-red">${s.warLo}</span>
+            </div>
+            <div>
+              <div style="font-size:11.5px;color:#94a3b8;margin-bottom:3px">Lowest Daily Asset Count</div>
+              <div style="font-size:11px;color:#f97316;margin-bottom:5px">${s.loCountDate}</div>
+              <span class="spill-gray">${s.loCount}</span>
+            </div>
+            <div>
+              <div style="font-size:11.5px;color:#94a3b8;margin-bottom:3px">Lowest Daily Exposure Value</div>
+              <div style="font-size:11px;color:#f97316;margin-bottom:5px">${s.loExpDate}</div>
+              <span class="spill-gray">${s.loExp}</span>
+            </div>
+            <div>
+              <div style="font-size:11.5px;color:#94a3b8;margin-bottom:3px">Lowest Daily Market Value</div>
+              <div style="font-size:11px;color:#f97316;margin-bottom:5px">${s.loMktDate}</div>
+              <span class="spill-gray">${s.loMkt}</span>
+            </div>
+          </div>
+        </div>` : `
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:24px">
+          <div style="text-align:center;color:#94a3b8;font-size:13px">Report builder coming soon</div>
+        </div>`}
+      </div>
+    </div>
+
+    <!-- Bottom: tab bar + map -->
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06);overflow:hidden;display:flex;flex-direction:column;min-height:420px">
+      <!-- Tab selector -->
+      <div style="padding:10px 14px;border-bottom:1px solid #f1f5f9;flex-shrink:0;">
+        <div class="tabs-desktop-wrap">
+          <div class="ds-tabs" id="map-view-tabs" style="display:inline-flex;flex-wrap:wrap;max-width:100%">
+            <span class="ds-tab-pill is-init" data-tab-pill></span>
+            <button class="ds-tab" aria-selected="${mapTab==='map'}"        data-mtab="map"><span class="ds-tab-label">Map</span></button>
+            <button class="ds-tab" aria-selected="${mapTab==='policies'}"   data-mtab="policies"><span class="ds-tab-label">Policies</span></button>
+            <button class="ds-tab" aria-selected="${mapTab==='notif'}"      data-mtab="notif"><span class="ds-tab-label">Notifications</span></button>
+            <button class="ds-tab" aria-selected="${mapTab==='history'}"    data-mtab="history"><span class="ds-tab-label">Region History</span></button>
+            <button class="ds-tab" aria-selected="${mapTab==='casualties'}" data-mtab="casualties"><span class="ds-tab-label">Region Casualties</span></button>
+          </div>
+        </div>
+        <select class="mobile-tab-select" id="map-tab-sel" aria-label="Select view">
+          <option value="map" ${mapTab==='map'?'selected':''}>Map</option>
+          <option value="policies" ${mapTab==='policies'?'selected':''}>Policies</option>
+          <option value="notif" ${mapTab==='notif'?'selected':''}>Notifications</option>
+          <option value="history" ${mapTab==='history'?'selected':''}>Region History</option>
+          <option value="casualties" ${mapTab==='casualties'?'selected':''}>Region Casualties</option>
+        </select>
+      </div>
+      <!-- Content area -->
+      ${mapTab === 'map' ? `
+      <div id="mrd-map-wrap" style="position:relative;flex:1">
+        <div id="region-map"></div>
+        <button id="mrd-fs" class="map-btn" style="position:absolute;top:12px;left:12px;z-index:400">${SC.I.maximize}</button>
+        <div style="position:absolute;top:12px;right:12px;z-index:400;display:flex;flex-direction:column;gap:6px">
+          <div style="position:relative">
+            <button id="mrd-layers-btn" class="map-btn" title="Map type">${SC.I.layers}</button>
+            <div id="mrd-layers-menu" class="hidden" style="position:absolute;top:0;right:calc(100% + 8px);width:160px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 4px 12px rgba(15,23,42,.14);overflow:hidden;padding:4px 0">
+              ${[['satellite','Satellite'],['street','Street View'],['dark','Dark Mode'],['light','Light Mode']].map(([k,l])=>`
+                <button data-map-type="${k}" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;background:transparent;border:0;cursor:pointer;font-family:inherit;font-size:12.5px;color:#334155;text-align:left">
+                  <span data-label>${l}</span>
+                  <span data-check style="display:flex;color:#2563eb;opacity:0">${SC.I.check}</span>
+                </button>`).join('')}
+            </div>
+          </div>
+        </div>
+        <!-- Legend -->
+        <div style="position:absolute;bottom:16px;left:12px;z-index:400;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;box-shadow:0 2px 6px rgba(15,23,42,.1)">
+          <div style="font-size:13px;font-weight:700;color:#0f172a">Offshore Region</div>
+          <div style="font-size:11.5px;color:#64748b;margin-top:2px">5 Installations · 5 Active Rigs</div>
+        </div>
+      </div>` : `
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:13px;padding:48px">
+        <div style="text-align:center"><div style="font-size:32px;margin-bottom:12px">📋</div>${mapTab.replace(/([A-Z])/g,' $1').replace(/^./,s=>s.toUpperCase())} data coming soon</div>
+      </div>`}
+    </div>
+  </div>`;
+}
+
+/* ── Wire ─────────────────────────────────────────────────────────────────── */
+let _main = null;
+function positionTabPills() {
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.ds-tabs').forEach(group => {
+      const pill   = group.querySelector('[data-tab-pill]');
+      const active = group.querySelector('.ds-tab[aria-selected="true"]');
+      if (!pill || !active) return;
+      const gRect = group.getBoundingClientRect();
+      const aRect = active.getBoundingClientRect();
+      const targetW = aRect.width;
+      const targetX = aRect.left - gRect.left;
+      // Animate from previous tab to new one if we have a saved position for this group.
+      const key = group.id || group.dataset.tabGroup || '';
+      window._mrdPillCache = window._mrdPillCache || {};
+      const prev = key && window._mrdPillCache[key];
+      if (prev) {
+        pill.classList.add('is-init');
+        pill.style.width = prev.w + 'px';
+        pill.style.transform = `translateX(${prev.x}px)`;
+        requestAnimationFrame(() => {
+          pill.classList.remove('is-init');
+          requestAnimationFrame(() => {
+            pill.style.width = targetW + 'px';
+            pill.style.transform = `translateX(${targetX}px)`;
+          });
+        });
+      } else {
+        pill.style.width = targetW + 'px';
+        pill.style.transform = `translateX(${targetX}px)`;
+        requestAnimationFrame(() => pill.classList.remove('is-init'));
+      }
+      if (key) window._mrdPillCache[key] = { w: targetW, x: targetX };
+    });
+  });
+}
+
+function rc() {
+  if (!_main) return;
+  _main.innerHTML = Content();
+  wire();
+  positionTabPills();
+  if (mapTab === 'map') setTimeout(initMap, 50);
+}
+function wire() {
+  document.querySelectorAll('[data-ltab]').forEach(b => b.addEventListener('click', () => { leftTab  = b.dataset.ltab;  rc(); }));
+  document.querySelectorAll('[data-rtab]').forEach(b => b.addEventListener('click', () => { rightTab = b.dataset.rtab; rc(); }));
+  const rtabSel = document.getElementById('rtab-sel');
+  if (rtabSel) rtabSel.onchange = () => { rightTab = rtabSel.value; rc(); };
+  document.querySelectorAll('[data-stab]').forEach(b => b.addEventListener('click', () => { statSub  = b.dataset.stab;  rc(); }));
+  document.querySelectorAll('[data-mtab]').forEach(b => b.addEventListener('click', () => { mapTab = b.dataset.mtab; rc(); }));
+  window.addEventListener('resize', positionTabPills, { passive: true });
+  const mapTabSel = document.getElementById('map-tab-sel');
+  if (mapTabSel) mapTabSel.onchange = () => { mapTab = mapTabSel.value; rc(); };
+}
+
+/* ── Main render ──────────────────────────────────────────────────────────── */
+window.render = function() {
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
+      ${SC.Topbar()}
+      <main id="mrd-main" class="flex-1 min-h-0 overflow-hidden flex flex-col"></main>
+    </div>
+    ${SC.TweaksPanel()}
+  `;
+  SC.wireChrome();
+  _main = document.getElementById('mrd-main');
+  rc();
+};
+
+window.render();
+</script>
+</body>
+</html>

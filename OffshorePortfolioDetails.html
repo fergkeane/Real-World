@@ -67,6 +67,12 @@
   .sort-ico svg{width:7px;height:7px}
   /* Select */
   .sel{border:1px solid #e2e8f0;border-radius:6px;padding:4px 22px 4px 8px;font-size:12px;color:#334155;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 5px center;-webkit-appearance:none;font-family:inherit;cursor:pointer}
+  /* DS card footer + Tertiary/Ghost buttons (ALL CAPS) — per Skytek DS */
+  .ds-card-foot{padding:10px 16px;border-top:1px solid #ECEEF2;background:#F9FAFB;display:flex;justify-content:flex-end;align-items:center;gap:8px;border-bottom-left-radius:inherit;border-bottom-right-radius:inherit;}
+  .ds-card-foot--start{justify-content:flex-start;}
+  .ds-card-foot--between{justify-content:space-between;}
+  .ds-card-foot button{display:inline-flex;align-items:center;gap:4px;height:26px;padding:0 4px;border-radius:6px;background:transparent;border:0;cursor:pointer;font-family:inherit;font-weight:600;font-size:10px;letter-spacing:.01em;text-transform:uppercase;color:var(--brand-600,#2563eb);transition:background .15s,color .15s;white-space:nowrap;}
+  .ds-card-foot button:hover{background:#eef2f7;color:var(--brand-700,#1d4ed8);}
 </style>
 </head>
 <body class="bg-ink-100 text-ink-900">
@@ -83,7 +89,7 @@ window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 </script>
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="shared/chrome.js?v=11"></script>
+<script src="shared/chrome.js?v=12"></script>
 <script>
 const SC = window.sharedChrome;
 const Ico = SC.I;
@@ -214,13 +220,11 @@ function PanelDetailsContent() {
         </div>`).join('')}
     </div>
     <!-- Action footer -->
-    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 flex items-center justify-between text-xs h-9 shrink-0 mt-auto">
+    <div class="ds-card-foot ds-card-foot--between shrink-0 mt-auto">
       <button class="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="5 12 12 5 19 12"/></svg>
         <span>ADD POLICIES</span>
       </button>
       <button class="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         <span>DOWNLOAD</span>
       </button>
     </div>`;
@@ -251,7 +255,7 @@ function PanelGroupsContent() {
       </ul>
     </div>
     <!-- Action footer (parity with Details tab) -->
-    <div class="px-3 py-2 border-t border-ink-100 bg-ink-50/50 flex items-center justify-end text-xs h-9 shrink-0 mt-auto">
+    <div class="ds-card-foot shrink-0 mt-auto">
       <button class="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="5 12 12 5 19 12"/></svg>
         <span>ADD TO GROUP</span>

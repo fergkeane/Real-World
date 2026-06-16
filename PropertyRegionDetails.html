@@ -46,8 +46,15 @@
   /* Map btn */
   .map-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;color:#334155;box-shadow:0 1px 2px rgba(15,23,42,.08);cursor:pointer}
   .map-btn:hover{background:#f1f5f9}
+  .leaflet-control-zoom a{display:flex!important;align-items:center;justify-content:center;padding:0!important}
+  .leaflet-control-zoom a svg{width:16px;height:16px}
+  #region-map .leaflet-top.leaflet-left{top:56px;left:2px}
+  #region-map .leaflet-top.leaflet-left .leaflet-bar{margin-left:10px!important}
+  #prd-map-wrap.is-fullscreen{position:fixed!important;inset:0!important;z-index:9999!important;border-radius:0!important}
+  #prd-layers-menu button:hover{background:#f1f5f9}
   /* Layout */
-  .prd-top-row{display:grid;grid-template-columns:260px minmax(0,1fr) minmax(0,1fr);gap:12px;margin-bottom:12px}
+  .prd-top-row{display:grid;grid-template-columns:260px minmax(0,1fr) minmax(0,1fr);gap:12px;margin-bottom:12px;height:440px}
+  .prd-top-row>div{height:440px;overflow-y:auto!important}
   /* Card tab dropdown */
   .tab-dd{display:inline-block;min-width:240px;max-width:100%;padding:8px 36px 8px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:600;color:#0f172a;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;background-size:12px;font-family:inherit;cursor:pointer;appearance:none;-webkit-appearance:none;transition:border-color .15s,box-shadow .15s}
   .tab-dd:hover{border-color:#cbd5e1}
@@ -55,6 +62,12 @@
   .mobile-tab-select{display:none;width:100%;padding:7px 12px;border:1px solid #e2e8f0;border-radius:9999px;font-size:13px;font-weight:600;color:#334155;background:#f1f5f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;font-family:inherit;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none}
   @media(max-width:1023px){.prd-top-row{grid-template-columns:1fr}}
   @media(max-width:767px){.mobile-tab-select{display:block!important}.tabs-desktop-wrap{display:none!important}}
+  /* DS card footer + Tertiary/Ghost button (ALL CAPS) — per Skytek DS */
+  .ds-card-foot{padding:10px 16px;border-top:1px solid #ECEEF2;background:#F9FAFB;display:flex;justify-content:flex-start;align-items:center;gap:8px;flex-shrink:0;border-bottom-left-radius:inherit;border-bottom-right-radius:inherit;}
+  .ds-card-foot--end{justify-content:flex-end;}
+  .ds-card-foot--center{justify-content:center;}
+  .ds-foot-btn{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 8px;border-radius:6px;background:transparent;border:0;cursor:pointer;font-family:inherit;font-weight:600;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--brand-600,#2563eb);transition:background .15s,color .15s;white-space:nowrap;text-decoration:none;}
+  .ds-foot-btn:hover{background:#eef2f7;color:var(--brand-700,#1d4ed8);}
 </style>
 </head>
 <body class="bg-slate-100 text-slate-900">
@@ -69,14 +82,14 @@ window.PAGE = { id:'regions', title:'Property Region', crumb: regionName };
 </script>
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="shared/chrome.js?v=11"></script>
+<script src="shared/chrome.js?v=12"></script>
 <script>
 const SC = window.sharedChrome;
 
 /* ── State ─────────────────────────────────────────────────────────────── */
 let rightTab = 'stats';
 let mapTab   = 'map';
-let rMap = null, rTile = null;
+let rMap = null, rTile = null, rMapType = 'street';
 
 /* ── Data ──────────────────────────────────────────────────────────────── */
 const REGION_DETAILS = {
@@ -126,8 +139,12 @@ function initMap() {
     [25.69,-80.11],[25.72,-80.13],[25.76,-80.14],[25.80,-80.13],[25.84,-80.13],
     [25.88,-80.13],[25.92,-80.13],
   ];
-  L.polygon(regionPoly, { color:'var(--brand-600,#2563eb)', weight:2.5, fillColor:'#3b82f6', fillOpacity:0.22 })
+  const GEO = (()=>{try{return JSON.parse(sessionStorage.getItem('selectedRegionGeo')||'null')}catch(e){return null}})();
+  const oddPoly=(b,seed)=>{const s=b[0][0],w=b[0][1],n=b[1][0],e=b[1][1],cy=(s+n)/2,cx=(w+e)/2,ry=(n-s)/2,rx=(e-w)/2;let h=(seed||1)>>>0;const rnd=()=>{h=(h*9301+49297)%233280;return h/233280;};return Array.from({length:11},(_,i)=>{const a=i/11*6.28318,j=0.55+rnd()*0.6;return [cy+Math.sin(a)*ry*j,cx+Math.cos(a)*rx*j];});};
+  (GEO ? L.polygon(oddPoly(GEO.bounds, (GEO.name||'').length*13+7), { color:'var(--brand-600,#2563eb)', weight:2.5, fillColor:'var(--brand-600,#2563eb)', fillOpacity:0.22 })
+       : L.polygon(regionPoly, { color:'var(--brand-600,#2563eb)', weight:2.5, fillColor:'#3b82f6', fillOpacity:0.22 }))
     .addTo(rMap);
+  if (GEO) rMap.fitBounds(GEO.bounds, { padding:[40,40] });
 
   // Property markers (mix of hotels and yachts)
   const props = [
@@ -140,6 +157,7 @@ function initMap() {
     { coord:[25.832,-80.124], name:'Marriott Aventura',            value:'$36.4M', type:'Hotel' },
     { coord:[25.856,-80.119], name:'Marriott Sunny Isles',         value:'$54.0M', type:'Hotel' },
   ];
+  if (GEO) { const b=GEO.bounds, dy=b[1][0]-b[0][0], dx=b[1][1]-b[0][1]; props.forEach((p,i)=>{ const fx=(i+1)/(props.length+1), fy=0.28+((i*0.41)%1)*0.5; p.coord=[ b[0][0]+dy*fy, b[0][1]+dx*fx ]; }); }
   props.forEach(p => {
     const icon = L.divIcon({
       className:'',
@@ -162,11 +180,46 @@ function initMap() {
   setTimeout(() => {
     const zin  = el.querySelector('.leaflet-control-zoom-in');
     const zout = el.querySelector('.leaflet-control-zoom-out');
-    if (zin)  zin.innerHTML  = `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>`;
-    if (zout) zout.innerHTML = `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></span>`;
+    if (zin)  zin.innerHTML  = `<span class="inline-flex items-center justify-center h-full w-full">${SC.I.plus}</span>`;
+    if (zout) zout.innerHTML = `<span class="inline-flex items-center justify-center h-full w-full">${SC.I.minus}</span>`;
   }, 100);
   const fsBtn = document.getElementById('prd-fs');
-  if (fsBtn) fsBtn.addEventListener('click', () => { const w=document.getElementById('prd-map-wrap'); if(w&&w.requestFullscreen)w.requestFullscreen(); setTimeout(()=>rMap&&rMap.invalidateSize(),300); });
+  const wrap  = document.getElementById('prd-map-wrap');
+  if (fsBtn && wrap) {
+    fsBtn.onclick = () => {
+      const isFs = wrap.classList.toggle('is-fullscreen');
+      fsBtn.innerHTML = isFs ? SC.I.minimize : SC.I.maximize;
+      document.body.style.overflow = isFs ? 'hidden' : '';
+      setTimeout(() => rMap && rMap.invalidateSize(), 260);
+    };
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && wrap.classList.contains('is-fullscreen')) fsBtn.onclick(); });
+  }
+  const RG_TILES = {
+    satellite:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    street:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    dark:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    light:'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  };
+  const setMapType = (type) => {
+    if (!RG_TILES[type] || !rMap) return;
+    rMapType = type;
+    if (rTile) rMap.removeLayer(rTile);
+    rTile = L.tileLayer(RG_TILES[type], { attribution:'', maxZoom:19 }).addTo(rMap);
+    rTile.bringToBack();
+    document.querySelectorAll('#prd-layers-menu [data-map-type]').forEach(b => {
+      const on=b.dataset.mapType===type, lbl=b.querySelector('[data-label]'), chk=b.querySelector('[data-check]');
+      if (lbl){ lbl.style.color = on?'var(--brand-600,#2563eb)':'#334155'; lbl.style.fontWeight = on?'600':'500'; }
+      if (chk) chk.style.opacity = on?'1':'0';
+    });
+  };
+  const lBtn=document.getElementById('prd-layers-btn'), lMenu=document.getElementById('prd-layers-menu');
+  if (lBtn && lMenu) {
+    lBtn.onclick = (e)=>{ e.stopPropagation(); lMenu.classList.toggle('hidden'); };
+    lMenu.addEventListener('click', e=>e.stopPropagation());
+    lMenu.querySelectorAll('[data-map-type]').forEach(opt=>{ opt.onclick=(e)=>{ e.stopPropagation(); setMapType(opt.dataset.mapType); lMenu.classList.add('hidden'); }; });
+    document.addEventListener('click', ()=>lMenu.classList.add('hidden'));
+    setMapType(rMapType);
+  }
 }
 
 /* ── Stat cell helper ──────────────────────────────────────────────────── */
@@ -208,8 +261,8 @@ function Content() {
           <div class="det-row"><span class="det-label">Asset Count Threshold:</span><span class="det-value">${d.assetCountThreshold}</span></div>
           <div class="det-row"><span class="det-label">Monitored Countries:</span><span class="det-value" style="font-size:16px">${d.countries}</span></div>
         </div>
-        <div style="padding:10px 14px;border-top:1px solid #f1f5f9;text-align:right">
-          <a href="#" style="font-size:13px;font-weight:600;color:var(--brand-600,#2563eb);text-decoration:none;display:inline-flex;align-items:center;gap:4px">Further Investigate
+        <div class="ds-card-foot ds-card-foot--end">
+          <a href="#" class="ds-foot-btn">Further Investigate
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           </a>
         </div>
@@ -334,7 +387,15 @@ function Content() {
       ${mapTab === 'map' ? `
       <div id="prd-map-wrap" style="position:relative;flex:1">
         <div id="region-map"></div>
-        <button id="prd-fs" class="map-btn" style="position:absolute;top:12px;left:12px;z-index:400">${EXPAND_ICO}</button>
+        <button id="prd-fs" class="map-btn" style="position:absolute;top:12px;left:12px;z-index:400">${SC.I.maximize}</button>
+        <div style="position:absolute;top:12px;right:12px;z-index:400">
+          <div style="position:relative">
+            <button id="prd-layers-btn" class="map-btn" title="Map type">${SC.I.layers}</button>
+            <div id="prd-layers-menu" class="hidden" style="position:absolute;top:0;right:calc(100% + 8px);width:160px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 4px 12px rgba(15,23,42,.14);overflow:hidden;padding:4px 0">
+              ${[['satellite','Satellite'],['street','Street View'],['dark','Dark Mode'],['light','Light Mode']].map(([k,l])=>`<button data-map-type="${k}" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;background:transparent;border:0;cursor:pointer;font-family:inherit;font-size:12.5px;color:#334155;text-align:left"><span data-label>${l}</span><span data-check style="display:flex;color:var(--brand-600,#2563eb);opacity:0">${SC.I.check}</span></button>`).join('')}
+            </div>
+          </div>
+        </div>
       </div>` : `
       <div style="flex:1;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:13px;padding:48px">
         <div style="text-align:center"><div style="font-size:32px;margin-bottom:12px">📋</div>${mapTab.charAt(0).toUpperCase()+mapTab.slice(1)} data coming soon</div>

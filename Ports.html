@@ -32,7 +32,7 @@
   .map-btn:hover { background:#f1f5f9; }
 
   /* Port marker */
-  .port-marker { width:30px; height:30px; border-radius:50%; background:#2563eb; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,.3); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .port-marker { width:30px; height:30px; border-radius:50%; background:var(--brand-600,#2563eb); border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,.3); display:flex; align-items:center; justify-content:center; cursor:pointer; }
   .port-marker-sanctioned { width:30px; height:30px; border-radius:50%; background:#dc2626; border:2px solid #fff; box-shadow:0 2px 8px rgba(220,38,38,.5); display:flex; align-items:center; justify-content:center; cursor:pointer; animation:pulse-red 2s infinite; }
   @keyframes pulse-red { 0%,100%{box-shadow:0 2px 8px rgba(220,38,38,.5)} 50%{box-shadow:0 0 0 6px rgba(220,38,38,.15),0 2px 8px rgba(220,38,38,.4)} }
   /* Port labels */
@@ -70,8 +70,8 @@
   .ports-table th { padding:10px 14px; font-size:11px; font-weight:600; color:var(--text-muted,#6B7280); text-transform:uppercase; letter-spacing:.04em; text-align:left; border-bottom:1px solid var(--border-default,#E5E7EB); background:var(--slate-50,#F9FAFB); white-space:nowrap; }
   .ports-table td { padding:11px 14px; font-size:13px; color:#334155; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
   .ports-table tr:hover td { background:#f8fafc; }
-  .port-link { color:#2563eb; font-weight:600; cursor:pointer; }
-  .port-link:hover { color:#1d4ed8; text-decoration:underline !important; }
+  .port-link { color:var(--brand-600,#2563eb); font-weight:600; cursor:pointer; }
+  .port-link:hover { color:var(--brand-700,#1d4ed8); text-decoration:underline !important; }
 
   /* Map type menu */
   .map-type-opt { padding:8px 12px; font-size:12px; font-weight:600; color:#0f172a; cursor:pointer; display:flex; align-items:center; gap:8px; }
@@ -85,7 +85,7 @@
 window.PAGE = { id:'ports', title:'Ports', crumb:'Ports' };
 window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "density": "comfortable",
-  "accent": "blue",
+  "accent": "sky",
   "sidebarExpanded": false,
   "showSparklines": true
 }/*EDITMODE-END*/;
@@ -93,7 +93,7 @@ window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="shared/chrome.js?v=11"></script>
+<script src="shared/chrome.js?v=12"></script>
 <link rel="stylesheet" href="modals/modal-base.css" />
 <script src="modals/AddPortModal.js"></script>
 <script>
@@ -185,7 +185,7 @@ function portPopupHTML(p, idx) {
     : '';
   return `
   <div>
-    <div class="pp-header" style="background:${p.sanctioned?'#dc2626':'#2563eb'}">
+    <div class="pp-header" style="background:${p.sanctioned?'#dc2626':'var(--brand-600,#2563eb)'}">
       <span class="pp-title">${p.name}</span>
       <span class="pp-sub">· ${p.country}</span>
     </div>
@@ -274,9 +274,9 @@ function initMap() {
   if (labelsBtn) {
     labelsBtn.addEventListener('click', () => {
       showLabels = !showLabels;
-      labelsBtn.style.background  = showLabels ? '#eff6ff' : '';
-      labelsBtn.style.borderColor = showLabels ? '#bfdbfe' : '';
-      labelsBtn.style.color       = showLabels ? '#2563eb' : '';
+      labelsBtn.style.background  = showLabels ? 'var(--brand-50,#eff6ff)' : '';
+      labelsBtn.style.borderColor = showLabels ? 'var(--brand-200,#bfdbfe)' : '';
+      labelsBtn.style.color       = showLabels ? 'var(--brand-600,#2563eb)' : '';
       if (portsMap) {
         portsMap.eachLayer(layer => {
           if (layer.getTooltip && layer.getTooltip()) {
@@ -359,7 +359,7 @@ function ListView() {
             <td class="tabular-nums">${p.lat.toFixed(4)}°</td>
             <td class="tabular-nums">${p.lng.toFixed(4)}°</td>
             <td class="tabular-nums font-semibold">${p.terminals}</td>
-            <td><span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:${p.sanctioned?'#fef2f2':'#eff6ff'};color:${p.sanctioned?'#dc2626':'#2563eb'};">${p.type}</span></td>
+            <td><span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:${p.sanctioned?'#fef2f2':'var(--brand-50,#eff6ff)'};color:${p.sanctioned?'#dc2626':'var(--brand-600,#2563eb)'};">${p.type}</span></td>
           </tr>`).join('')}
       </tbody>
     </table>

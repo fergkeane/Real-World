@@ -31,10 +31,10 @@
   /* Header controls */
   .hbtn{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;font-size:13px;font-weight:500;color:#334155;cursor:pointer;white-space:nowrap;font-family:inherit;transition:background .1s,border-color .1s}
   .hbtn:hover{background:#f8fafc;border-color:#cbd5e1}
-  .hbtn.hactive{background:#eff6ff;border-color:#bfdbfe;color:#2563eb}
+  .hbtn.hactive{background:var(--brand-50);border-color:var(--brand-200);color:var(--brand-600)}
   /* Dropdowns */
   .fdrop{position:absolute;top:calc(100% + 5px);left:0;min-width:170px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 8px 24px rgba(15,23,42,.12);z-index:9999;overflow:hidden}
-  .fdrop-item{padding:8px 12px;font-size:13px;color:#334155;cursor:pointer}.fdrop-item:hover{background:#f8fafc}.fdrop-item.fsel{color:#2563eb;font-weight:600;background:#eff6ff}
+  .fdrop-item{padding:8px 12px;font-size:13px;color:#334155;cursor:pointer}.fdrop-item:hover{background:#f8fafc}.fdrop-item.fsel{color:var(--brand-600);font-weight:600;background:var(--brand-50)}
   /* Action buttons */
   .actbtn{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:0;background:transparent;cursor:pointer;color:#94a3b8;transition:background .1s,color .1s}
   .actbtn:hover{background:#f1f5f9;color:#334155}
@@ -49,9 +49,9 @@
   @keyframes slidein{from{transform:translateX(100%)}to{transform:translateX(0)}}
   .form-label{font-size:11px;font-weight:700;color:#64748b;margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.04em}
   .form-input{width:100%;height:36px;padding:0 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;color:#0f172a;outline:none;font-family:inherit;transition:border-color .15s,box-shadow .15s;background:#fff}
-  .form-input:focus{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+  .form-input:focus{border-color:var(--brand-300);box-shadow:0 0 0 3px var(--brand-100)}
   .form-select{width:100%;height:36px;padding:0 28px 0 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;color:#0f172a;outline:none;font-family:inherit;background:#fff;appearance:none;-webkit-appearance:none;cursor:pointer}
-  .form-select:focus{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+  .form-select:focus{border-color:var(--brand-300);box-shadow:0 0 0 3px var(--brand-100)}
   .access-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;transition:background .1s,border-color .1s;margin-bottom:6px}
   .access-row:last-child{margin-bottom:0}
   .access-row:hover{background:#f8fafc}
@@ -73,7 +73,7 @@ window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 }/*EDITMODE-END*/;
 </script>
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
-<script src="shared/chrome.js?v=11"></script>
+<script src="shared/chrome.js?v=12"></script>
 <link rel="stylesheet" href="shared/pagination.css" />
 <script src="shared/pagination.js"></script>
 <script>
@@ -225,9 +225,9 @@ function renderModal() {
           <div style="display:flex;gap:8px">
             ${['Active','Pending'].map(s => {
               const sel = f.status === s;
-              return `<label style="display:flex;align-items:center;gap:7px;cursor:pointer;padding:7px 14px;border:1.5px solid ${sel ? '#2563eb' : '#e2e8f0'};border-radius:8px;background:${sel ? '#eff6ff' : '#fff'};flex:1;justify-content:center;transition:all .1s">
-                <input type="radio" name="form-status" value="${s}" ${sel ? 'checked' : ''} style="accent-color:#2563eb;width:14px;height:14px;flex-shrink:0" />
-                <span style="font-size:13px;font-weight:600;color:${sel ? '#2563eb' : '#475569'}">${s}</span>
+              return `<label style="display:flex;align-items:center;gap:7px;cursor:pointer;padding:7px 14px;border:1.5px solid ${sel ? 'var(--brand-600)' : '#e2e8f0'};border-radius:8px;background:${sel ? 'var(--brand-50)' : '#fff'};flex:1;justify-content:center;transition:all .1s">
+                <input type="radio" name="form-status" value="${s}" ${sel ? 'checked' : ''} style="accent-color:var(--brand-600);width:14px;height:14px;flex-shrink:0" />
+                <span style="font-size:13px;font-weight:600;color:${sel ? 'var(--brand-600)' : '#475569'}">${s}</span>
               </label>`;
             }).join('')}
           </div>
@@ -239,7 +239,7 @@ function renderModal() {
           ${['Ports','Weather','Risk'].map(a => {
             const checked = f.access.includes(a);
             return `<div class="access-row ${checked ? ROW_CLS[a] : ''}" data-access-row="${a}">
-              <div style="width:18px;height:18px;border-radius:5px;border:${checked ? '0' : '1.5px solid #cbd5e1'};background:${checked ? '#2563eb' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .1s">
+              <div style="width:18px;height:18px;border-radius:5px;border:${checked ? '0' : '1.5px solid #cbd5e1'};background:${checked ? 'var(--brand-600)' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .1s">
                 ${checked ? `<span style="color:#fff;display:flex">${SVG.check}</span>` : ''}
               </div>
               <span class="chip ${ACCESS_CLS[a]}">${a}</span>
@@ -252,7 +252,7 @@ function renderModal() {
       <!-- Footer -->
       <div class="shrink-0 px-6 py-4 border-t border-slate-100 flex items-center gap-3">
         <button id="modal-cancel" style="flex:1;height:36px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;font-size:13px;font-weight:500;color:#475569;cursor:pointer;font-family:inherit;transition:background .1s" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">Cancel</button>
-        <button id="modal-create" style="flex:1;height:36px;border-radius:8px;border:0;background:#2563eb;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .1s" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">Create Organisation</button>
+        <button id="modal-create" style="flex:1;height:36px;border-radius:8px;border:0;background:var(--brand-600);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .1s" onmouseover="this.style.background='var(--brand-700)'" onmouseout="this.style.background='var(--brand-600)'">Create Organisation</button>
       </div>
     </div>
   </div>`;
@@ -312,7 +312,7 @@ function renderPage() {
       </div>
 
       <!-- Create -->
-      <button id="create-org-btn" style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:8px;background:#2563eb;color:#fff;font-size:13px;font-weight:600;border:0;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .15s" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+      <button id="create-org-btn" style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:8px;background:var(--brand-600);color:#fff;font-size:13px;font-weight:600;border:0;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .15s" onmouseover="this.style.background='var(--brand-700)'" onmouseout="this.style.background='var(--brand-600)'">
         ${SVG.plus} Create New Organisation
       </button>
     </div>
@@ -395,7 +395,7 @@ function wireOrgs() {
   const si = document.getElementById('org-search');
   if (si) {
     si.addEventListener('input', e => { ST.query = e.target.value; ST.page = 1; rc(); });
-    si.addEventListener('focus', e => { e.target.style.borderColor = '#93c5fd'; e.target.style.boxShadow = '0 0 0 3px rgba(59,130,246,.12)'; });
+    si.addEventListener('focus', e => { e.target.style.borderColor = 'var(--brand-300)'; e.target.style.boxShadow = '0 0 0 3px var(--brand-100)'; });
     si.addEventListener('blur',  e => { e.target.style.borderColor = '#e2e8f0'; e.target.style.boxShadow = ''; });
   }
 
