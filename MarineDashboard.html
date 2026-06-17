@@ -239,6 +239,7 @@ const VESSEL_TYPES = [
   { k:'Vehicle Carrier',   color:'#8b5cf6' },
   { k:'Yacht',             color:'#f59e0b' },
 ];
+const POLICY_TYPES = ['Hull','Cargo','Liability','War','Cyber','Hull & War'];
 function randV(seed){ // tiny LCG
   let s = seed;
   return () => { s = (s*9301 + 49297) % 233280; return s/233280; };
@@ -311,8 +312,12 @@ function makeVessels() {
       const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
       const adtMonth = months[Math.floor(r()*12)];
       const etaMonth = months[Math.floor(r()*12)];
+      const portfolio = PORTFOLIOS[Math.floor(r()*PORTFOLIOS.length)].name;
+      const cr = r();
+      const compliance = cr > 0.88 ? 'Sanctioned' : cr > 0.7 ? 'Warning' : 'Ok';
+      const policyType = POLICY_TYPES[Math.floor(r()*POLICY_TYPES.length)];
       list.push({
-        id:++id, lat, lng, heading, type:type.k, color:type.color,
+        id:++id, lat, lng, heading, type:type.k, color:type.color, portfolio, compliance, policyType,
         name, flag,
         from: pFrom, to: pTo,
         adt: `${String(adtDay).padStart(2,'0')} ${adtMonth}, ${String(adtH).padStart(2,'0')}:${String(adtM).padStart(2,'0')}`,
@@ -332,6 +337,9 @@ let state = {
   regionTab: 'Regions Aggregation',
   alertTab: 'Alerts',
   vesselFilter: new Set(VESSEL_TYPES.map(t => t.k)),
+  portfolioFilter: new Set(PORTFOLIOS.map(p => p.name)),
+  complianceFilter: new Set(['Ok','Warning','Sanctioned']),
+  policyTypeFilter: new Set(POLICY_TYPES),
   showLabels: false,
   expandedGroups: new Set(),
 };
@@ -724,6 +732,72 @@ function MapCard() {
           </div>
         </div>
         <div class="relative">
+          <button id="map-portfolio-btn" class="map-btn" title="Filter by portfolio"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></button>
+          <!-- Portfolio filter menu -->
+          <div id="map-portfolio-menu" class="hidden absolute top-0 right-[calc(100%+8px)] w-[240px] bg-white border border-ink-200 rounded-xl shadow-card-hover overflow-hidden flex flex-col" style="max-height:420px;">
+            <div class="px-3 py-2.5 border-b border-ink-200 flex items-center justify-between">
+              <div class="text-sm font-bold text-ink-800">Filter Portfolios</div>
+              <div class="flex items-center gap-1">
+                <button id="pf-all"  class="h-6 px-2 rounded-md border border-ink-200 text-[11px] font-semibold text-ink-700 hover:bg-ink-50 active:bg-ink-100">All</button>
+                <button id="pf-none" class="h-6 px-2 rounded-md border border-ink-200 text-[11px] font-semibold text-ink-700 hover:bg-ink-50 active:bg-ink-100">None</button>
+              </div>
+            </div>
+            <div class="px-3 py-2 bg-ink-50 border-b border-ink-200 text-[11px] font-semibold uppercase tracking-micro text-ink-600">Portfolio</div>
+            <div class="overflow-y-auto scroll-thin py-1" id="pf-list">
+              ${PORTFOLIOS.map(p => `
+                <label class="pf-row flex items-center gap-2.5 px-3 py-1.5 cursor-pointer hover:bg-ink-50" data-portfolio="${p.name}">
+                  <input type="checkbox" class="pf-cb h-4 w-4 rounded border-ink-300 accent-brand-600" checked />
+                  <span class="text-[13px] text-ink-700 truncate">${p.name}</span>
+                </label>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="relative">
+          <button id="map-compliance-btn" class="map-btn" title="Filter by compliance status"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></button>
+          <!-- Compliance filter menu -->
+          <div id="map-compliance-menu" class="hidden absolute top-0 right-[calc(100%+8px)] w-[220px] bg-white border border-ink-200 rounded-xl shadow-card-hover overflow-hidden flex flex-col">
+            <div class="px-3 py-2.5 border-b border-ink-200 flex items-center justify-between">
+              <div class="text-sm font-bold text-ink-800">Compliance Status</div>
+              <div class="flex items-center gap-1">
+                <button id="cs-all"  class="h-6 px-2 rounded-md border border-ink-200 text-[11px] font-semibold text-ink-700 hover:bg-ink-50 active:bg-ink-100">All</button>
+                <button id="cs-none" class="h-6 px-2 rounded-md border border-ink-200 text-[11px] font-semibold text-ink-700 hover:bg-ink-50 active:bg-ink-100">None</button>
+              </div>
+            </div>
+            <div class="py-1">
+              ${[
+                { k:'Ok',         color:'#22c55e' },
+                { k:'Warning',    color:'#f59e0b' },
+                { k:'Sanctioned', color:'#ef4444' },
+              ].map(s => `
+                <label class="cs-row flex items-center gap-2.5 px-3 py-1.5 cursor-pointer hover:bg-ink-50" data-compliance="${s.k}">
+                  <input type="checkbox" class="cs-cb h-4 w-4 rounded border-ink-300 accent-brand-600" checked />
+                  <span class="inline-block h-2.5 w-2.5 rounded-full" style="background:${s.color}"></span>
+                  <span class="text-[13px] text-ink-700">${s.k}</span>
+                </label>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="relative">
+          <button id="map-policy-btn" class="map-btn" title="Filter by policy type"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6"/><path d="M9 17h4"/></svg></button>
+          <!-- Policy type filter menu -->
+          <div id="map-policy-menu" class="hidden absolute top-0 right-[calc(100%+8px)] w-[220px] bg-white border border-ink-200 rounded-xl shadow-card-hover overflow-hidden flex flex-col" style="max-height:420px;">
+            <div class="px-3 py-2.5 border-b border-ink-200 flex items-center justify-between">
+              <div class="text-sm font-bold text-ink-800">Policy Type</div>
+              <div class="flex items-center gap-1">
+                <button id="pt-all"  class="h-6 px-2 rounded-md border border-ink-200 text-[11px] font-semibold text-ink-700 hover:bg-ink-50 active:bg-ink-100">All</button>
+                <button id="pt-none" class="h-6 px-2 rounded-md border border-ink-200 text-[11px] font-semibold text-ink-700 hover:bg-ink-50 active:bg-ink-100">None</button>
+              </div>
+            </div>
+            <div class="overflow-y-auto scroll-thin py-1" id="pt-list">
+              ${POLICY_TYPES.map(p => `
+                <label class="pt-row flex items-center gap-2.5 px-3 py-1.5 cursor-pointer hover:bg-ink-50" data-policy="${p}">
+                  <input type="checkbox" class="pt-cb h-4 w-4 rounded border-ink-300 accent-brand-600" checked />
+                  <span class="text-[13px] text-ink-700">${p}</span>
+                </label>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="relative">
           <button id="map-labels-btn" class="map-btn" title="Vessel labels">${Ico.tag}</button>
           <!-- Labels menu -->
           <div id="map-labels-menu" class="hidden absolute top-0 right-[calc(100%+8px)] w-[260px] bg-white border border-ink-200 rounded-xl shadow-card-hover overflow-hidden p-3">
@@ -887,12 +961,18 @@ function initMap() {
       .bindPopup(vesselPopupHTML(v), { className:'vessel-popup', maxWidth: 320, minWidth: 300, closeButton:true, autoPanPadding:[30,30] })
       .bindTooltip(vesselTooltipHTML(v), { className:'vessel-tip', direction:'top', offset:[0,-12], opacity:1 });
     m._vtype = v.type;
+    m._portfolio = v.portfolio;
+    m._compliance = v.compliance;
+    m._policyType = v.policyType;
     m._tipHTML = vesselTooltipHTML(v);
     m.addTo(map);
     vesselMarkers.push(m);
 
     const lbl = L.marker([v.lat, v.lng], { icon: labelIcon(v.name), interactive:false, keyboard:false });
     lbl._vtype = v.type;
+    lbl._portfolio = v.portfolio;
+    lbl._compliance = v.compliance;
+    lbl._policyType = v.policyType;
     labelMarkers.push(lbl);
   });
 
@@ -908,7 +988,7 @@ function initMap() {
 
   function applyVesselFilter() {
     vesselMarkers.forEach(m => {
-      const show = state.vesselFilter.has(m._vtype);
+      const show = state.vesselFilter.has(m._vtype) && state.portfolioFilter.has(m._portfolio) && state.complianceFilter.has(m._compliance) && state.policyTypeFilter.has(m._policyType);
       if (show && !map.hasLayer(m)) m.addTo(map);
       if (!show && map.hasLayer(m)) map.removeLayer(m);
     });
@@ -919,7 +999,7 @@ function initMap() {
   function applyLabels() {
     const zoomOK = map.getZoom() >= LABEL_MIN_ZOOM;
     labelMarkers.forEach(lbl => {
-      const shouldShow = state.showLabels && zoomOK && state.vesselFilter.has(lbl._vtype);
+      const shouldShow = state.showLabels && zoomOK && state.vesselFilter.has(lbl._vtype) && state.portfolioFilter.has(lbl._portfolio) && state.complianceFilter.has(lbl._compliance) && state.policyTypeFilter.has(lbl._policyType);
       if (shouldShow && !map.hasLayer(lbl)) lbl.addTo(map);
       if (!shouldShow && map.hasLayer(lbl)) map.removeLayer(lbl);
     });
@@ -963,7 +1043,7 @@ function initMap() {
   const layersBtn  = document.getElementById('map-layers-btn');
   const layersMenu = document.getElementById('map-layers-menu');
   if (layersBtn && layersMenu) {
-    layersBtn.onclick = (e) => { e.stopPropagation(); layersMenu.classList.toggle('hidden'); filtersMenu && filtersMenu.classList.add('hidden'); };
+    layersBtn.onclick = (e) => { e.stopPropagation(); layersMenu.classList.toggle('hidden'); filtersMenu && filtersMenu.classList.add('hidden'); pfMenu && pfMenu.classList.add('hidden'); csMenu && csMenu.classList.add('hidden'); ptMenu && ptMenu.classList.add('hidden'); };
     layersMenu.querySelectorAll('[data-map-type]').forEach(opt => {
       opt.onclick = (e) => { e.stopPropagation(); setMapType(opt.dataset.mapType); layersMenu.classList.add('hidden'); };
     });
@@ -979,7 +1059,7 @@ function initMap() {
     });
   }
   if (filtersBtn && filtersMenu) {
-    filtersBtn.onclick = (e) => { e.stopPropagation(); filtersMenu.classList.toggle('hidden'); layersMenu && layersMenu.classList.add('hidden'); };
+    filtersBtn.onclick = (e) => { e.stopPropagation(); filtersMenu.classList.toggle('hidden'); layersMenu && layersMenu.classList.add('hidden'); pfMenu && pfMenu.classList.add('hidden'); csMenu && csMenu.classList.add('hidden'); ptMenu && ptMenu.classList.add('hidden'); };
     filtersMenu.querySelectorAll('.vf-row').forEach(row => {
       row.onclick = (e) => {
         e.stopPropagation();
@@ -992,6 +1072,99 @@ function initMap() {
     const noneBtn = document.getElementById('vf-none');
     if (allBtn)  allBtn.onclick  = (e) => { e.stopPropagation(); state.vesselFilter = new Set(VESSEL_TYPES.map(t=>t.k)); syncFilterUI(); applyVesselFilter(); };
     if (noneBtn) noneBtn.onclick = (e) => { e.stopPropagation(); state.vesselFilter = new Set();                        syncFilterUI(); applyVesselFilter(); };
+  }
+
+  // Portfolio filter menu
+  const pfBtn  = document.getElementById('map-portfolio-btn');
+  const pfMenu = document.getElementById('map-portfolio-menu');
+  function syncPortfolioUI() {
+    pfMenu.querySelectorAll('.pf-row').forEach(row => {
+      row.querySelector('.pf-cb').checked = state.portfolioFilter.has(row.dataset.portfolio);
+    });
+  }
+  if (pfBtn && pfMenu) {
+    pfBtn.onclick = (e) => {
+      e.stopPropagation();
+      pfMenu.classList.toggle('hidden');
+      layersMenu && layersMenu.classList.add('hidden');
+      filtersMenu && filtersMenu.classList.add('hidden');
+      csMenu && csMenu.classList.add('hidden');
+      ptMenu && ptMenu.classList.add('hidden');
+    };
+    pfMenu.querySelectorAll('.pf-row').forEach(row => {
+      row.onclick = (e) => {
+        e.stopPropagation();
+        const p = row.dataset.portfolio;
+        if (state.portfolioFilter.has(p)) state.portfolioFilter.delete(p); else state.portfolioFilter.add(p);
+        syncPortfolioUI(); applyVesselFilter();
+      };
+    });
+    const pfAll  = document.getElementById('pf-all');
+    const pfNone = document.getElementById('pf-none');
+    if (pfAll)  pfAll.onclick  = (e) => { e.stopPropagation(); state.portfolioFilter = new Set(PORTFOLIOS.map(p=>p.name)); syncPortfolioUI(); applyVesselFilter(); };
+    if (pfNone) pfNone.onclick = (e) => { e.stopPropagation(); state.portfolioFilter = new Set();                          syncPortfolioUI(); applyVesselFilter(); };
+  }
+
+  // Compliance filter menu
+  const csBtn  = document.getElementById('map-compliance-btn');
+  const csMenu = document.getElementById('map-compliance-menu');
+  function syncComplianceUI() {
+    csMenu.querySelectorAll('.cs-row').forEach(row => {
+      row.querySelector('.cs-cb').checked = state.complianceFilter.has(row.dataset.compliance);
+    });
+  }
+  if (csBtn && csMenu) {
+    csBtn.onclick = (e) => {
+      e.stopPropagation();
+      csMenu.classList.toggle('hidden');
+      layersMenu && layersMenu.classList.add('hidden');
+      filtersMenu && filtersMenu.classList.add('hidden');
+      pfMenu && pfMenu.classList.add('hidden');
+      ptMenu && ptMenu.classList.add('hidden');
+    };
+    csMenu.querySelectorAll('.cs-row').forEach(row => {
+      row.onclick = (e) => {
+        e.stopPropagation();
+        const s = row.dataset.compliance;
+        if (state.complianceFilter.has(s)) state.complianceFilter.delete(s); else state.complianceFilter.add(s);
+        syncComplianceUI(); applyVesselFilter();
+      };
+    });
+    const csAll  = document.getElementById('cs-all');
+    const csNone = document.getElementById('cs-none');
+    if (csAll)  csAll.onclick  = (e) => { e.stopPropagation(); state.complianceFilter = new Set(['Ok','Warning','Sanctioned']); syncComplianceUI(); applyVesselFilter(); };
+    if (csNone) csNone.onclick = (e) => { e.stopPropagation(); state.complianceFilter = new Set();                              syncComplianceUI(); applyVesselFilter(); };
+  }
+
+  // Policy type filter menu
+  const ptBtn  = document.getElementById('map-policy-btn');
+  const ptMenu = document.getElementById('map-policy-menu');
+  function syncPolicyUI() {
+    ptMenu.querySelectorAll('.pt-row').forEach(row => {
+      row.querySelector('.pt-cb').checked = state.policyTypeFilter.has(row.dataset.policy);
+    });
+  }
+  if (ptBtn && ptMenu) {
+    ptBtn.onclick = (e) => {
+      e.stopPropagation();
+      ptMenu.classList.toggle('hidden');
+      layersMenu && layersMenu.classList.add('hidden');
+      filtersMenu && filtersMenu.classList.add('hidden');
+      pfMenu && pfMenu.classList.add('hidden');
+      csMenu && csMenu.classList.add('hidden');
+    };
+    ptMenu.querySelectorAll('.pt-row').forEach(row => {
+      row.onclick = (e) => {
+        e.stopPropagation();
+        const p = row.dataset.policy;
+        if (state.policyTypeFilter.has(p)) state.policyTypeFilter.delete(p); else state.policyTypeFilter.add(p);
+        syncPolicyUI(); applyVesselFilter();
+      };
+    });
+    const ptAll  = document.getElementById('pt-all');
+    const ptNone = document.getElementById('pt-none');
+    if (ptAll)  ptAll.onclick  = (e) => { e.stopPropagation(); state.policyTypeFilter = new Set(POLICY_TYPES); syncPolicyUI(); applyVesselFilter(); };
+    if (ptNone) ptNone.onclick = (e) => { e.stopPropagation(); state.policyTypeFilter = new Set();            syncPolicyUI(); applyVesselFilter(); };
   }
 
   // Labels menu
@@ -1013,6 +1186,9 @@ function initMap() {
       labelsMenu.classList.toggle('hidden');
       layersMenu && layersMenu.classList.add('hidden');
       filtersMenu && filtersMenu.classList.add('hidden');
+      pfMenu && pfMenu.classList.add('hidden');
+      csMenu && csMenu.classList.add('hidden');
+      ptMenu && ptMenu.classList.add('hidden');
     };
     if (labelsSw) labelsSw.onclick = (e) => {
       e.stopPropagation();
@@ -1026,6 +1202,9 @@ function initMap() {
     if (layersMenu  && !layersMenu.contains(e.target)  && e.target !== layersBtn  && !(layersBtn  && layersBtn.contains(e.target)))  layersMenu.classList.add('hidden');
     if (filtersMenu && !filtersMenu.contains(e.target) && e.target !== filtersBtn && !(filtersBtn && filtersBtn.contains(e.target))) filtersMenu.classList.add('hidden');
     if (labelsMenu  && !labelsMenu.contains(e.target)  && e.target !== labelsBtn  && !(labelsBtn  && labelsBtn.contains(e.target)))  labelsMenu.classList.add('hidden');
+    if (pfMenu      && !pfMenu.contains(e.target)      && e.target !== pfBtn      && !(pfBtn      && pfBtn.contains(e.target)))      pfMenu.classList.add('hidden');
+    if (csMenu      && !csMenu.contains(e.target)      && e.target !== csBtn      && !(csBtn      && csBtn.contains(e.target)))      csMenu.classList.add('hidden');
+    if (ptMenu      && !ptMenu.contains(e.target)      && e.target !== ptBtn      && !(ptBtn      && ptBtn.contains(e.target)))      ptMenu.classList.add('hidden');
   });
 }
 

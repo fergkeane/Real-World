@@ -124,8 +124,26 @@ let state = {
 const VESSEL = {
   name: 'FRESH BREEZE',
   flag: { cc:'es', name:'Spain' },
+  type: 'Crude Oil Tanker',
+  yearBuilt: '2009',
   latestTs: 'Mon, 13 Oct 2025 02:37:51 GMT',
   compliance: 'Sanctioned',
+  monitoredCountries: 'No monitored countries are connected with this vessel',
+  imo: '9419265',
+  mmsi: '224158000',
+  callSign: 'EAVP',
+  shipStatus: 'In Service / Commission',
+  shipBuilder: 'Hyundai Heavy Industries',
+  shipStatusDate: '2009-04-18',
+  width: '48.0',
+  length: '274.0',
+  draught: '17.0',
+  deadweight: '158,000 t',
+  grossTonnage: '84,500',
+  teu: '—',
+  marketScrapValue: '32.4 / 18.7',
+  exName: 'OCEAN PIONEER',
+  inPortfolios: 'Bulkcarriers - Panama',
   speed: '8.2',
   monitoredFlags: 'No monitored flags are connected with this vessel',
 };
@@ -339,6 +357,23 @@ function positionTabPills() {
 }
 
 /* ----------- CARDS ----------- */
+// Overall Compliance pill badge with a status-coloured dot.
+function complianceBadge(status) {
+  const s = (status || '').toLowerCase();
+  let dot, text, bg, border;
+  if (s === 'sanctioned' || s === 'high risk' || s === 'non-compliant') {
+    dot = '#ef4444'; text = '#b91c1c'; bg = '#fef2f2'; border = '#fecaca';
+  } else if (s === 'warning' || s === 'under review' || s === 'flagged' || s === 'medium risk') {
+    dot = '#f59e0b'; text = '#b45309'; bg = '#fffbeb'; border = '#fde68a';
+  } else if (s === 'ok' || s === 'compliant' || s === 'clear' || s === 'low risk') {
+    dot = '#22c55e'; text = '#15803d'; bg = '#f0fdf4'; border = '#bbf7d0';
+  } else {
+    dot = '#94a3b8'; text = '#475569'; bg = '#f8fafc'; border = '#e2e8f0';
+  }
+  return `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold" style="background:${bg};color:${text};border:1px solid ${border};">`
+    + `<span class="w-1.5 h-1.5 rounded-full" style="background:${dot};"></span>${status}</span>`;
+}
+
 function VesselDetailsCard() {
   const topTabs = [
     { k:'Vessel Details',  icon:'ship'   },
@@ -357,11 +392,35 @@ function VesselDetailsCard() {
     body = `
       <div class="space-y-0.5">
         ${row('Name:', VESSEL.name, true)}
-        ${row('Latest Timestamp:', VESSEL.latestTs)}
         ${row('Flag:', `${flag(VESSEL.flag.cc)} ${VESSEL.flag.name}`)}
-        ${row('Overall Compliance:', `<span class="text-red-600 font-semibold">${VESSEL.compliance}</span>`)}
-        ${row('Speed:', VESSEL.speed)}
-        ${row('Monitored Flags:', VESSEL.monitoredFlags)}
+        ${row('Type:', VESSEL.type)}
+        ${row('Year Built:', VESSEL.yearBuilt)}
+        <div class="flex justify-between gap-3 text-xs py-1.5 border-b last:border-b-0" style="border-color:#f1f5f9;">
+          <span class="flex flex-col text-ink-500">
+            <span>Overall Compliance:</span>
+            <span class="text-[11px]">Unknown Affiliations not screened.</span>
+          </span>
+          <span class="flex flex-col items-end gap-1">
+            ${complianceBadge(VESSEL.compliance)}
+            <span class="text-[11px] text-ink-500">Updated at: <span class="text-ink-700 font-medium">${VESSEL.latestTs.replace(/\s\d{2}:\d{2}:\d{2}.*$/, '')}</span></span>
+          </span>
+        </div>
+        ${row('Monitored Countries:', `<span class="block text-right">${VESSEL.monitoredCountries}</span>`)}
+        ${row('IMO:', VESSEL.imo)}
+        ${row('MMSI:', VESSEL.mmsi)}
+        ${row('Call Sign:', VESSEL.callSign)}
+        ${row('Ship Status:', VESSEL.shipStatus)}
+        ${row('Ship Builder:', VESSEL.shipBuilder)}
+        ${row('Ship Status Date:', VESSEL.shipStatusDate)}
+        ${row('Width (m):', VESSEL.width)}
+        ${row('Length (m):', VESSEL.length)}
+        ${row('Draught (m):', VESSEL.draught)}
+        ${row('Deadweight:', VESSEL.deadweight)}
+        ${row('Gross Tonnage:', VESSEL.grossTonnage)}
+        ${row('TEU:', VESSEL.teu)}
+        ${row('Market / Scrap Value (Mil $):', VESSEL.marketScrapValue)}
+        ${row('ExName:', VESSEL.exName)}
+        ${row('In portfolios:', VESSEL.inPortfolios)}
       </div>`;
     footer = `
     <div class="ds-card-foot ds-card-foot--start">
@@ -486,8 +545,8 @@ function PortCallsCard() {
 }
 
 function CasualtyRiskCard() {
-  const avgScore = 32;
-  const score2025 = 6;
+  const avgScore = 58;
+  const score2025 = 32;
   // Match gauge colour: 0-25 green, 25-50 amber, 50+ red
   const scoreTone = avgScore <= 25 ? { bg:'bg-green-100', text:'text-green-700' }
                   : avgScore <= 50 ? { bg:'bg-amber-100',  text:'text-amber-700' }
@@ -542,15 +601,19 @@ function CasualtyRiskCard() {
       }).join('')}
     </div>`;
   } else if (state.topRightTab === 'Risk Score') {
-    const rsScore = 32, rs2024 = 6, rs2023 = 4;
-    const rsDelta25 = rsScore - rs2024;
-    const rsDelta24 = rs2024 - rs2023;
-    const rsPct = Math.round(Math.abs(rsDelta25) / rs2024 * 100);
+    const rsScore = 58, rs2025 = 32, rs2024 = 6, rs2023 = 4;
+    const rsDelta25   = rsScore - rs2025;   // current (main gauge) vs 2025
+    const rsDelta2025 = rs2025  - rs2024;   // 2025 card vs 2024
+    const rsDelta24   = rs2024  - rs2023;   // 2024 card vs 2023
+    const rsPct = Math.round(Math.abs(rsDelta25) / rs2025 * 100);
     const risk = rsScore <= 25
       ? { label:'GOOD', c:'#16a34a', glow:'#86efac', pillBg:'#dcfce7', pillTxt:'#15803d' }
       : rsScore <= 50
       ? { label:'AVERAGE RISK', c:'#f97316', glow:'#fed7aa', pillBg:'#fef3c7', pillTxt:'#b45309' }
       : { label:'BELOW AVERAGE', c:'#ef4444', glow:'#fca5a5', pillBg:'#fee2e2', pillTxt:'#dc2626' };
+    // Year score → band colour (matches the gauge bands: green ≤25, orange ≤50, red >50)
+    const yearColor = s => s <= 25 ? '#16a34a' : s <= 50 ? '#f97316' : '#ef4444';
+    const yearPill  = s => s <= 25 ? { bg:'#dcfce7', txt:'#15803d' } : s <= 50 ? { bg:'#fef3c7', txt:'#b45309' } : { bg:'#fee2e2', txt:'#dc2626' };
     // Gauge geometry: 270° arc, start=135° (7:30 o'clock), sweep clockwise
     const CX=100, CY=108, R=80, RO=95, SW=11;
     const toRad = d => d * Math.PI / 180;
@@ -627,19 +690,19 @@ function CasualtyRiskCard() {
         <!-- Year comparisons -->
         <div style="background:#f8fafc;border-radius:12px;padding:12px 8px;display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:start;">
           <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-            <span style="background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:999px;">2025</span>
+            <span style="background:${yearColor(rs2025)};color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:999px;">2025</span>
             <div style="font-size:9px;color:#64748b;text-align:center;line-height:1.4;">Avg. Risk Score</div>
-            <div style="font-size:34px;font-weight:800;color:${risk.c};line-height:1;">${rsScore}</div>
-            <div style="background:${risk.pillBg};color:${risk.pillTxt};font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;display:flex;align-items:center;gap:2px;white-space:nowrap;">
+            <div style="font-size:34px;font-weight:800;color:${yearColor(rs2025)};line-height:1;">${rs2025}</div>
+            <div style="background:${yearPill(rs2025).bg};color:${yearPill(rs2025).txt};font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;display:flex;align-items:center;gap:2px;white-space:nowrap;">
               <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-              + ${rsDelta25}
+              + ${rsDelta2025}
             </div>
             <div style="font-size:9px;color:#64748b;">vs 2024</div>
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-            <span style="background:#2563eb;color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:999px;">2024</span>
+            <span style="background:${yearColor(rs2024)};color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:999px;">2024</span>
             <div style="font-size:9px;color:#64748b;text-align:center;line-height:1.4;">Avg. Risk Score</div>
-            <div style="font-size:34px;font-weight:800;color:#0f172a;line-height:1;">${rs2024}</div>
+            <div style="font-size:34px;font-weight:800;color:${yearColor(rs2024)};line-height:1;">${rs2024}</div>
             <div style="background:#dbeafe;color:#1d4ed8;font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;display:flex;align-items:center;gap:2px;white-space:nowrap;">
               <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
               + ${rsDelta24}

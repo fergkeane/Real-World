@@ -159,6 +159,7 @@ const PORTFOLIOS = [
   { name:'Transavia France',   assets:89,  exposure:'$12.1B' },
   { name:'Martinair',          assets:267, exposure:'$31.4B' },
 ];
+state.portfolioFilter = new Set(PORTFOLIOS.map(p => p.name));
 
 const PORTFOLIO_GROUPS = [
   { name:'AF-KLM Mainline',  assets:'596',  assetsActive:592, exposure:'$53.0B', portfolios:['Air France / KLM','KLM'] },
@@ -843,7 +844,8 @@ function initMap() {
   });
 
   // Planes
-  PLANES.forEach(p => {
+  const planeMarkers = [];
+  PLANES.forEach((p, i) => {
     const planeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>`;
     const icon = L.divIcon({
       className: '',
@@ -851,12 +853,23 @@ function initMap() {
       iconSize: [24, 24],
       iconAnchor: [12, 12],
     });
-    L.marker([p.lat, p.lng], { icon })
+    const marker = L.marker([p.lat, p.lng], { icon })
       .bindPopup(buildFlightPopupHTML(p), { className:'avia-popup', maxWidth:320, minWidth:300, closeButton:true, autoPanPadding:[30,30] })
       .bindTooltip(buildFlightTooltipHTML(p), { className:'airport-tip', direction:'top', offset:[0,-12], opacity:1 })
       .on('popupopen', () => { try { sessionStorage.setItem('selectedAircraft', JSON.stringify(p)); } catch(e){} })
       .addTo(map);
+    marker._portfolio = PORTFOLIOS[i % PORTFOLIOS.length].name;
+    planeMarkers.push(marker);
   });
+
+  function applyAviationFilter() {
+    planeMarkers.forEach(m => {
+      const show = state.portfolioFilter.has(m._portfolio);
+      if (show && !map.hasLayer(m)) m.addTo(map);
+      if (!show && map.hasLayer(m)) map.removeLayer(m);
+    });
+  }
+  applyAviationFilter();
 
   // Custom zoom controls
   const zin = document.querySelector('.leaflet-control-zoom-in');
@@ -884,11 +897,37 @@ function initMap() {
   const layersBtn = document.getElementById('map-layers-btn');
   const layersMenu = document.getElementById('map-layers-menu');
   if (layersBtn && layersMenu) {
-    layersBtn.onclick = (e) => { e.stopPropagation(); layersMenu.classList.toggle('hidden'); };
+    layersBtn.onclick = (e) => { e.stopPropagation(); layersMenu.classList.toggle('hidden'); portfolioMenu && portfolioMenu.classList.add('hidden'); };
     layersMenu.querySelectorAll('[data-map-type]').forEach(opt => {
       opt.onclick = (e) => { e.stopPropagation(); setMapType(opt.dataset.mapType); layersMenu.classList.add('hidden'); };
     });
     document.addEventListener('click', () => layersMenu.classList.add('hidden'));
+  }
+
+  // Portfolio filter
+  const portfolioBtn  = document.getElementById('map-portfolio-btn');
+  const portfolioMenu = document.getElementById('map-portfolio-menu');
+  if (portfolioBtn && portfolioMenu) {
+    const syncPortfolioUI = () => {
+      portfolioMenu.querySelectorAll('.po-row').forEach(row => {
+        row.querySelector('.po-cb').checked = state.portfolioFilter.has(row.dataset.pfolio);
+      });
+    };
+    portfolioBtn.onclick = (e) => { e.stopPropagation(); portfolioMenu.classList.toggle('hidden'); layersMenu && layersMenu.classList.add('hidden'); };
+    portfolioMenu.onclick = (e) => e.stopPropagation();
+    portfolioMenu.querySelectorAll('.po-row').forEach(row => {
+      row.onclick = (e) => {
+        e.stopPropagation();
+        const p = row.dataset.pfolio;
+        if (state.portfolioFilter.has(p)) state.portfolioFilter.delete(p); else state.portfolioFilter.add(p);
+        syncPortfolioUI(); applyAviationFilter();
+      };
+    });
+    const poAll  = document.getElementById('po-all');
+    const poNone = document.getElementById('po-none');
+    if (poAll)  poAll.onclick  = (e) => { e.stopPropagation(); state.portfolioFilter = new Set(PORTFOLIOS.map(p=>p.name)); syncPortfolioUI(); applyAviationFilter(); };
+    if (poNone) poNone.onclick = (e) => { e.stopPropagation(); state.portfolioFilter = new Set();                          syncPortfolioUI(); applyAviationFilter(); };
+    document.addEventListener('click', () => portfolioMenu.classList.add('hidden'));
   }
   setMapType('satellite');
 }
@@ -941,6 +980,26 @@ function MapContent() {
                 <span data-label>${o.label}</span>
                 <span class="text-brand-600 opacity-0" data-check>${Ico.check}</span>
               </button>`).join('')}
+          </div>
+        </div>
+        <div class="relative">
+          <button id="map-portfolio-btn" class="map-btn" title="Filter by portfolio"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></button>
+          <div id="map-portfolio-menu" class="hidden absolute top-0 right-[calc(100%+8px)] w-[240px] bg-white border border-ink-200 rounded-xl shadow-card-hover overflow-hidden flex flex-col" style="max-height:420px;">
+            <div class="px-3 py-2.5 border-b border-ink-200 flex items-center justify-between">
+              <div class="text-sm font-bold text-ink-800">Filter Portfolios</div>
+              <div class="flex items-center gap-1">
+                <button id="po-all"  class="h-6 px-2 rounded-md border border-ink-200 text-[11px] font-semibold text-ink-700 hover:bg-ink-50 active:bg-ink-100">All</button>
+                <button id="po-none" class="h-6 px-2 rounded-md border border-ink-200 text-[11px] font-semibold text-ink-700 hover:bg-ink-50 active:bg-ink-100">None</button>
+              </div>
+            </div>
+            <div class="px-3 py-2 bg-ink-50 border-b border-ink-200 text-[11px] font-semibold uppercase tracking-micro text-ink-600">Portfolio</div>
+            <div class="overflow-y-auto scroll-thin py-1">
+              ${PORTFOLIOS.map(p => `
+                <div class="po-row flex items-center gap-2.5 px-3 py-1.5 cursor-pointer hover:bg-ink-50" data-pfolio="${p.name}">
+                  <input type="checkbox" class="po-cb h-4 w-4 rounded border-ink-300 accent-brand-600 pointer-events-none" checked />
+                  <span class="text-[13px] text-ink-700 truncate">${p.name}</span>
+                </div>`).join('')}
+            </div>
           </div>
         </div>
       </div>
