@@ -14,54 +14,54 @@
   * { box-sizing:border-box; margin:0; padding:0; }
   html, body { height:100%; }
   body { font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; }
-  .text-ink-900 { color:#0f172a; }
-  .text-ink-800 { color:#1e293b; }
-  .text-ink-700 { color:#334155; }
-  .text-ink-600 { color:#475569; }
-  .text-ink-500 { color:#64748b; }
-  .text-ink-400 { color:#94a3b8; }
-  .text-ink-300 { color:#cbd5e1; }
-  .text-ink-200 { color:#e2e8f0; }
-  .text-ink-100 { color:#f1f5f9; }
-  .bg-ink-100 { background:#f1f5f9; }
-  .bg-ink-50 { background:#f8fafc; }
-  .bg-ink-900 { background:#0f172a; }
-  .border-ink-100 { border-color:#f1f5f9; }
-  .border-ink-200 { border-color:#e2e8f0; }
+  .text-ink-900 { color:#111827; }
+  .text-ink-800 { color:#1f2937; }
+  .text-ink-700 { color:#374151; }
+  .text-ink-600 { color:#4b5563; }
+  .text-ink-500 { color:#6b7280; }
+  .text-ink-400 { color:#9ca3af; }
+  .text-ink-300 { color:#d1d5db; }
+  .text-ink-200 { color:#e5e7eb; }
+  .text-ink-100 { color:#f3f4f6; }
+  .bg-ink-100 { background:#f3f4f6; }
+  .bg-ink-50 { background:#f9fafb; }
+  .bg-ink-900 { background:#111827; }
+  .border-ink-100 { border-color:#f3f4f6; }
+  .border-ink-200 { border-color:#e5e7eb; }
   .shadow-card { box-shadow:0 2px 4px 0 rgb(15 23 42 / 0.08), 0 1px 2px 0 rgb(15 23 42 / 0.06); }
-  .text-brand-600 { color:#2563eb; }
-  .bg-brand-600 { background:#2563eb; }
+  .text-brand-600 { color:#2d7ffb; }
+  .bg-brand-600 { background:#2d7ffb; }
   .bg-brand-050 { background:#eff6ff; }
   .scroll-thin::-webkit-scrollbar { width:6px; height:6px; }
   .scroll-thin::-webkit-scrollbar-track { background:transparent; }
-  .scroll-thin::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:999px; }
-  .scroll-thin::-webkit-scrollbar-thumb:hover { background:#94a3b8; }
+  .scroll-thin::-webkit-scrollbar-thumb { background:#d1d5db; border-radius:999px; }
+  .scroll-thin::-webkit-scrollbar-thumb:hover { background:#9ca3af; }
   .tracking-micro { letter-spacing:0.04em; }
-  .ring-focus:focus-visible { outline:2px solid #3b82f6; outline-offset:2px; border-radius:8px; }
+  .ring-focus:focus-visible { outline:2px solid #2d7ffb; outline-offset:2px; border-radius:8px; }
   [data-density="compact"] .py-density { padding-top:.75rem; padding-bottom:.75rem; }
   [data-density="comfortable"] .py-density { padding-top:1.25rem; padding-bottom:1.25rem; }
   [data-density="compact"] .gap-density { gap:.75rem; }
   [data-density="comfortable"] .gap-density { gap:1rem; }
   /* Pill tabs (Skytek DS — animated pill via shared layout) */
-  .ds-tabs { position:relative; display:inline-flex; gap:4px; padding:4px; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:9999px; }
+  .ds-tabs { position:relative; display:inline-flex; gap:4px; padding:4px; background:#f3f4f6; border:1px solid #e5e7eb; border-radius:9999px; }
   .ds-tabs.is-stretch { display:flex; }
   .ds-tabs.is-stretch > .ds-tab { flex:1; }
-  .ds-tab { position:relative; font:inherit; font-size:13px; font-weight:600; padding:8px 18px; background:transparent; border:0; border-radius:9999px; color:#64748b; cursor:pointer; transition:color 140ms ease; display:inline-flex; align-items:center; justify-content:center; gap:6px; white-space:nowrap; text-align:center; }
-  .ds-tab:hover { color:#0f172a; }
+  .ds-tab { position:relative; font:inherit; font-size:13px; font-weight:600; padding:8px 18px; background:transparent; border:0; border-radius:9999px; color:#6b7280; cursor:pointer; transition:color 140ms ease; display:inline-flex; align-items:center; justify-content:center; gap:6px; white-space:nowrap; text-align:center; }
+  .ds-tab:hover { color:#111827; }
   .ds-tab[aria-selected="true"], .ds-tab[aria-selected="true"]:hover { color:#fff; }
-  .ds-tab-pill { position:absolute; top:4px; left:0; height:calc(100% - 8px); background:#2563eb; border-radius:9999px; box-shadow:0 1px 2px rgba(15,23,42,.12); z-index:0; transform:translateX(0) scaleX(1); transform-origin:left center; transition:transform 320ms cubic-bezier(.34,1.2,.64,1), width 320ms cubic-bezier(.34,1.2,.64,1); pointer-events:none; }
+  .ds-tab-pill { position:absolute; top:4px; left:0; height:calc(100% - 8px); background:#2d7ffb; border-radius:9999px; box-shadow:0 1px 2px rgba(15,23,42,.12); z-index:0; transform:translateX(0) scaleX(1); transform-origin:left center; transition:transform 320ms cubic-bezier(.34,1.2,.64,1), width 320ms cubic-bezier(.34,1.2,.64,1); pointer-events:none; }
   .ds-tab-pill.is-init { transition:none; }
   .ds-tab-label { position:relative; z-index:1; display:inline-flex; align-items:center; gap:6px; }
-  .ds-tab[data-disabled="true"] { color:#cbd5e1; cursor:not-allowed; }
+  .ds-tab[data-disabled="true"] { color:#d1d5db; cursor:not-allowed; }
   /* DS Pagination — provided by shared/pagination.css */
-  #vessel-map { background:#0b1e2e; position:absolute; inset:0; }
+  #vessel-map { background:#0b1220; position:absolute; inset:0; }
   #vessel-map .leaflet-top.leaflet-left { top:46px; left:2px; }
   #vessel-map .leaflet-top.leaflet-left .leaflet-bar { margin-left:10px !important; }
-  .leaflet-control-zoom, .leaflet-bar { border:1px solid #e2e8f0 !important; box-shadow:0 1px 2px rgb(15 23 42/.08) !important; border-radius:8px !important; overflow:hidden; }
-  .leaflet-bar a { background:#fff !important; color:#334155 !important; }
-  .leaflet-bar a:hover { background:#f1f5f9 !important; }
-  .map-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:#fff; border:1px solid #e2e8f0; border-radius:8px; color:#334155; box-shadow:0 1px 2px rgb(15 23 42/.08); cursor:pointer; flex-shrink:0; }
-  .map-btn:hover { background:#f1f5f9; }
+  .leaflet-control-zoom, .leaflet-bar { border:1px solid #e5e7eb !important; box-shadow:0 1px 2px rgb(15 23 42/.08) !important; border-radius:8px !important; overflow:hidden; }
+  .leaflet-bar a { background:#fff !important; color:#374151 !important; }
+  .leaflet-bar a:hover { background:#f3f4f6 !important; }
+  .map-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:#fff; border:1px solid #e5e7eb; border-radius:8px; color:#374151; box-shadow:0 1px 2px rgb(15 23 42/.08); cursor:pointer; flex-shrink:0; }
+  .map-btn:hover { background:#f3f4f6; }
   .map-btn svg { width:16px; height:16px; }
   /* Fullscreen */
   #vessel-tracking-card.is-fullscreen { position:fixed; inset:0; z-index:9999; border-radius:0; }
@@ -69,10 +69,10 @@
   /* Timeline overlay */
   .timeline-overlay { position:absolute; bottom:16px; left:12px; right:12px; z-index:400; background:rgba(15,23,42,.82); border-radius:12px; padding:10px 14px; backdrop-filter:blur(4px); }
   .timeline-track { position:relative; height:6px; background:rgba(255,255,255,.25); border-radius:999px; cursor:pointer; flex:1; }
-  .timeline-fill  { position:absolute; left:0; top:0; bottom:0; background:#3b82f6; border-radius:999px; pointer-events:none; }
-  .timeline-thumb { position:absolute; top:50%; transform:translate(-50%,-50%); width:16px; height:16px; background:#fff; border:2px solid #3b82f6; border-radius:999px; box-shadow:0 2px 6px rgba(0,0,0,.4); pointer-events:none; cursor:grab; }
+  .timeline-fill  { position:absolute; left:0; top:0; bottom:0; background:#2d7ffb; border-radius:999px; pointer-events:none; }
+  .timeline-thumb { position:absolute; top:50%; transform:translate(-50%,-50%); width:16px; height:16px; background:#fff; border:2px solid #2d7ffb; border-radius:999px; box-shadow:0 2px 6px rgba(0,0,0,.4); pointer-events:none; cursor:grab; }
   /* Mobile responsive */
-  .mobile-tab-select{display:none;width:100%;padding:7px 12px;border:1px solid #e2e8f0;border-radius:9999px;font-size:13px;font-weight:600;color:#334155;background:#f1f5f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;font-family:inherit;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;}
+  .mobile-tab-select{display:none;width:100%;padding:7px 12px;border:1px solid #e5e7eb;border-radius:9999px;font-size:13px;font-weight:600;color:#374151;background:#f3f4f6 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;font-family:inherit;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;}
   @media(max-width:767px){
     .mobile-tab-select{display:block!important;}
     .tabs-desktop-wrap{display:none!important;}
@@ -84,9 +84,24 @@
   /* DS card footer + Tertiary/Ghost buttons (ALL CAPS) — per Skytek DS */
   .ds-card-foot{padding:10px 16px;border-top:1px solid #ECEEF2;background:#F9FAFB;display:flex;justify-content:flex-end;align-items:center;gap:8px;border-bottom-left-radius:inherit;border-bottom-right-radius:inherit;}
   .ds-card-foot--start{justify-content:flex-start;}
+  .ds-card-foot--center{justify-content:center;}
   .ds-card-foot--between{justify-content:space-between;}
-  .ds-card-foot button{display:inline-flex;align-items:center;gap:4px;height:26px;padding:0 6px;border-radius:6px;background:transparent;border:0;cursor:pointer;font-family:inherit;font-weight:600;font-size:11px;letter-spacing:.02em;text-transform:uppercase;color:var(--brand-600,#2563eb);transition:background .15s,color .15s;white-space:nowrap;}
-  .ds-card-foot button:hover{background:#eef2f7;color:var(--brand-700,#1d4ed8);}
+  .ds-card-foot button{display:inline-flex;align-items:center;gap:4px;height:26px;padding:0 6px;border-radius:6px;background:transparent;border:0;cursor:pointer;font-family:inherit;font-weight:600;font-size:11px;letter-spacing:.02em;text-transform:uppercase;color:var(--brand-600,#2d7ffb);transition:background .15s,color .15s;white-space:nowrap;}
+  .ds-card-foot button:hover{background:#f3f4f6;color:var(--brand-700,#1f5fc7);}
+
+  /* ── DS color conformance: override off-palette Tailwind utilities ── */
+  .bg-blue-100{background-color:#dbeafe!important}.text-blue-700{color:#1d4ed8!important}
+  .bg-blue-600{background-color:#2d7ffb!important}.text-blue-600{color:#2d7ffb!important}
+  .bg-amber-100{background-color:#fef3c7!important}.text-amber-700{color:#b45309!important}.text-amber-500{color:#d97706!important}
+  .bg-yellow-100{background-color:#fef3c7!important}.text-yellow-700{color:#b45309!important}
+  .bg-orange-50{background-color:#fffbeb!important}.bg-orange-500{background-color:#d97706!important}.text-orange-500{color:#d97706!important}.text-orange-600{color:#b45309!important}
+  .bg-green-50{background-color:#f0fdf4!important}.bg-green-100{background-color:#dcfce7!important}.bg-green-500{background-color:#16a34a!important}
+  .text-green-700{color:#15803d!important}.text-green-500{color:#16a34a!important}.border-green-200{border-color:#dcfce7!important}
+  .bg-red-50{background-color:#fef2f2!important}.bg-red-100{background-color:#fee2e2!important}.bg-red-500{background-color:#dc2626!important}
+  .text-red-700{color:#b91c1c!important}.text-red-600{color:#dc2626!important}.text-red-500{color:#dc2626!important}.text-red-400{color:#dc2626!important}
+  .bg-purple-100{background-color:#f3f4f6!important}.text-purple-700{color:#9333ea!important}
+  .bg-cyan-100{background-color:#f3f4f6!important}.text-cyan-700{color:#0891b2!important}
+  .bg-pink-100{background-color:#f3f4f6!important}.text-pink-700{color:#db2777!important}
 </style>
 </head>
 <body class="bg-ink-100 text-ink-900 antialiased" data-density="compact">
@@ -269,11 +284,11 @@ const ENV_RATING = {
     { label:'Avg. Attained CII:',      value:'7.11' },
   ],
   operationalAspect: [
-    { label:'Major Superior',   badge:'A', color:'#10b981' },
-    { label:'Minor Superior',   badge:'B', color:'#84cc16', icon:true },
-    { label:'Moderate',         badge:'C', color:'#f59e0b' },
-    { label:'Minor Inferior',   badge:'D', color:'#f97316' },
-    { label:'Inferior',         badge:'E', color:'#ef4444' },
+    { label:'Major Superior',   badge:'A', color:'#2e7d4f' },
+    { label:'Minor Superior',   badge:'B', color:'#6fa84a', icon:true },
+    { label:'Moderate',         badge:'C', color:'#c9a227' },
+    { label:'Minor Inferior',   badge:'D', color:'#d97706' },
+    { label:'Inferior',         badge:'E', color:'#c0392b' },
   ],
   technical: [
     { label:'Avg. Required EEXI:', value:'5.53', sub:'1,202.08 Hrs\nAverage time spent at sea', pct:'13%' },
@@ -362,13 +377,13 @@ function complianceBadge(status) {
   const s = (status || '').toLowerCase();
   let dot, text, bg, border;
   if (s === 'sanctioned' || s === 'high risk' || s === 'non-compliant') {
-    dot = '#ef4444'; text = '#b91c1c'; bg = '#fef2f2'; border = '#fecaca';
+    dot = '#dc2626'; text = '#b91c1c'; bg = '#fef2f2'; border = '#fee2e2';
   } else if (s === 'warning' || s === 'under review' || s === 'flagged' || s === 'medium risk') {
-    dot = '#f59e0b'; text = '#b45309'; bg = '#fffbeb'; border = '#fde68a';
+    dot = '#d97706'; text = '#b45309'; bg = '#fffbeb'; border = '#fef3c7';
   } else if (s === 'ok' || s === 'compliant' || s === 'clear' || s === 'low risk') {
-    dot = '#22c55e'; text = '#15803d'; bg = '#f0fdf4'; border = '#bbf7d0';
+    dot = '#16a34a'; text = '#15803d'; bg = '#f0fdf4'; border = '#dcfce7';
   } else {
-    dot = '#94a3b8'; text = '#475569'; bg = '#f8fafc'; border = '#e2e8f0';
+    dot = '#9ca3af'; text = '#4b5563'; bg = '#f9fafb'; border = '#e5e7eb';
   }
   return `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold" style="background:${bg};color:${text};border:1px solid ${border};">`
     + `<span class="w-1.5 h-1.5 rounded-full" style="background:${dot};"></span>${status}</span>`;
@@ -381,7 +396,7 @@ function VesselDetailsCard() {
   ];
   
   const row = (label, value, isBold) => `
-    <div class="flex justify-between text-xs py-1.5 border-b last:border-b-0" style="border-color:#f1f5f9;">
+    <div class="flex justify-between text-xs py-1.5 border-b last:border-b-0" style="border-color:#f3f4f6;">
       <span class="text-ink-500">${label}</span>
       <span class="${isBold?'font-semibold text-ink-900':'text-ink-700'}">${value}</span>
     </div>`;
@@ -395,7 +410,7 @@ function VesselDetailsCard() {
         ${row('Flag:', `${flag(VESSEL.flag.cc)} ${VESSEL.flag.name}`)}
         ${row('Type:', VESSEL.type)}
         ${row('Year Built:', VESSEL.yearBuilt)}
-        <div class="flex justify-between gap-3 text-xs py-1.5 border-b last:border-b-0" style="border-color:#f1f5f9;">
+        <div class="flex justify-between gap-3 text-xs py-1.5 border-b last:border-b-0" style="border-color:#f3f4f6;">
           <span class="flex flex-col text-ink-500">
             <span>Overall Compliance:</span>
             <span class="text-[11px]">Unknown Affiliations not screened.</span>
@@ -423,7 +438,7 @@ function VesselDetailsCard() {
         ${row('In portfolios:', VESSEL.inPortfolios)}
       </div>`;
     footer = `
-    <div class="ds-card-foot ds-card-foot--start">
+    <div class="ds-card-foot ds-card-foot--center">
       <button class="inline-flex items-center gap-1 text-xs text-brand-600 font-semibold hover:text-brand-700 tracking-micro">
         <span class="inline-flex items-center [&_svg]:h-3.5 [&_svg]:w-3.5">${SC.I.plus}</span>
         <span>ADD TO PORTFOLIO</span>
@@ -433,10 +448,10 @@ function VesselDetailsCard() {
     body = `
       <div class="space-y-0.5">
         ${row('Flag:', `${flag(COMPANY.flag.cc)} ${COMPANY.flag.name}`)}
-        ${row('Associations:', `<a href="#" class="inline-flex items-center gap-1.5 font-semibold text-brand-600 hover:underline"><span class="inline-flex items-center justify-center w-4 h-4 rounded-full text-white text-[9px] font-bold" style="background:#f97316">i</span>View company details</a>`)}
+        ${row('Associations:', `<a href="#" class="inline-flex items-center gap-1.5 font-semibold text-brand-600 hover:underline"><span class="inline-flex items-center justify-center w-4 h-4 rounded-full text-white text-[9px] font-bold" style="background:#d97706">i</span>View company details</a>`)}
         ${row('Classification Society:', COMPANY.classificationSociety)}
         ${row('P &amp; I Club:', COMPANY.piClub)}
-        <div class="flex justify-between text-xs py-1.5 border-b last:border-b-0" style="border-color:#f1f5f9;">
+        <div class="flex justify-between text-xs py-1.5 border-b last:border-b-0" style="border-color:#f3f4f6;">
           <span class="text-ink-500">Group Owner:</span>
           <span class="font-semibold text-ink-900">${COMPANY.groupOwner}</span>
         </div>
@@ -460,7 +475,7 @@ function VesselDetailsCard() {
 
 function PolicyDetailsCard() {
   const row = (label, value, isBold) => `
-    <div class="flex justify-between text-xs py-1.5 border-b last:border-b-0" style="border-color:#f1f5f9;">
+    <div class="flex justify-between text-xs py-1.5 border-b last:border-b-0" style="border-color:#f3f4f6;">
       <span class="text-ink-500">${label}</span>
       <span class="${isBold?'font-semibold text-ink-900':'text-ink-700'}">${value}</span>
     </div>`;
@@ -496,8 +511,8 @@ function PortCallsCard() {
       <div class="flex flex-col items-center text-center space-y-2">
 
         <!-- Departure port outlined -->
-        <div style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 12px;background:#f8fafc;">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#64748b;margin-bottom:6px;">Departure Port</div>
+        <div style="width:100%;border:1.5px solid #e5e7eb;border-radius:10px;padding:10px 12px;background:#f9fafb;">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:6px;">Departure Port</div>
           <div class="flex items-center justify-center gap-2 mb-1">
             ${flag('sg')}
             <span class="text-sm font-semibold text-ink-900">Singapore</span>
@@ -524,8 +539,8 @@ function PortCallsCard() {
         <div class="border-l-2 border-dashed border-ink-300 h-6"></div>
 
         <!-- Destination port outlined -->
-        <div style="width:100%;border:1.5px solid var(--brand-300,#7dd3fc);border-radius:10px;padding:10px 12px;background:var(--brand-50,#f0f9ff);">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--brand-600,#0284c7);margin-bottom:6px;">Destination Port</div>
+        <div style="width:100%;border:1.5px solid var(--brand-300,#8ec5fd);border-radius:10px;padding:10px 12px;background:var(--brand-50,#eff6ff);">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--brand-600,#2d7ffb);margin-bottom:6px;">Destination Port</div>
           <div class="flex items-center justify-center gap-2">
             ${flag('de')}
             <span class="text-sm font-semibold text-ink-900">Hamburg</span>
@@ -535,8 +550,8 @@ function PortCallsCard() {
 
       </div>
     </div>
-    <div class="ds-card-foot ds-card-foot--start">
-      <button class="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">
+    <div class="ds-card-foot ds-card-foot--center">
+      <button onclick="window.location.href='VoyageHistory.html'" class="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 hover:text-brand-700 tracking-micro">
         <span>VOYAGE HISTORY</span>
         <span class="inline-flex items-center [&_svg]:h-3.5 [&_svg]:w-3.5">${SC.I.chev}</span>
       </button>
@@ -558,9 +573,9 @@ function CasualtyRiskCard() {
   
   const severityBadge = (c) => {
     const styles = {
-      'Severe':   { bg:'#fef9c3', text:'#92400e', dot:'#ef4444' },
-      'Moderate': { bg:'#ffedd5', text:'#9a3412', dot:'#f97316' },
-      'Minor':    { bg:'#fef9c3', text:'#92400e', dot:'#eab308' },
+      'Severe':   { bg:'#fef3c7', text:'#b45309', dot:'#dc2626' },
+      'Moderate': { bg:'#fef3c7', text:'#b45309', dot:'#d97706' },
+      'Minor':    { bg:'#fef3c7', text:'#b45309', dot:'#d97706' },
     };
     const s = styles[c.severity] || styles['Minor'];
     return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold" style="background:${s.bg}; color:${s.text};">
@@ -607,12 +622,12 @@ function CasualtyRiskCard() {
     const rsDelta24   = rs2024  - rs2023;   // 2024 card vs 2023
     const rsPct = Math.round(Math.abs(rsDelta25) / rs2025 * 100);
     const risk = rsScore <= 25
-      ? { label:'GOOD', c:'#16a34a', glow:'#86efac', pillBg:'#dcfce7', pillTxt:'#15803d' }
+      ? { label:'GOOD', c:'#16a34a', glow:'#16a34a', pillBg:'#dcfce7', pillTxt:'#15803d' }
       : rsScore <= 50
-      ? { label:'AVERAGE RISK', c:'#f97316', glow:'#fed7aa', pillBg:'#fef3c7', pillTxt:'#b45309' }
-      : { label:'BELOW AVERAGE', c:'#ef4444', glow:'#fca5a5', pillBg:'#fee2e2', pillTxt:'#dc2626' };
+      ? { label:'AVERAGE RISK', c:'#d97706', glow:'#fef3c7', pillBg:'#fef3c7', pillTxt:'#b45309' }
+      : { label:'BELOW AVERAGE', c:'#dc2626', glow:'#fee2e2', pillBg:'#fee2e2', pillTxt:'#dc2626' };
     // Year score → band colour (matches the gauge bands: green ≤25, orange ≤50, red >50)
-    const yearColor = s => s <= 25 ? '#16a34a' : s <= 50 ? '#f97316' : '#ef4444';
+    const yearColor = s => s <= 25 ? '#16a34a' : s <= 50 ? '#d97706' : '#dc2626';
     const yearPill  = s => s <= 25 ? { bg:'#dcfce7', txt:'#15803d' } : s <= 50 ? { bg:'#fef3c7', txt:'#b45309' } : { bg:'#fee2e2', txt:'#dc2626' };
     // Gauge geometry: 270° arc, start=135° (7:30 o'clock), sweep clockwise
     const CX=100, CY=108, R=80, RO=95, SW=11;
@@ -631,18 +646,22 @@ function CasualtyRiskCard() {
       return `M ${x1},${y1} A ${r},${r} 0 ${sw > 180 ? 1 : 0},1 ${x2},${y2}`;
     };
     // Banded segment color: green ≤25, orange ≤50, red >50
-    const gaugeColor = s => (s <= 25 ? '#22c55e' : s <= 50 ? '#f97316' : '#ef4444');
-    const N = 26;
-    const SEG_GAP = 0.9; // degrees of white separation between segments
+    const gaugeColor = s => (s <= 25 ? '#16a34a' : s <= 50 ? '#d97706' : '#dc2626');
     const whiteCasing = `<path d="${arcD(gAngle(0), gAngle(GAUGE_MAX), R)}" fill="none" stroke="#ffffff" stroke-width="${SW}" stroke-linecap="butt"/>`;
-    const segPaths = Array.from({length: N}, (_, i) => {
-      const a1 = gAngle(i * GAUGE_MAX / N) + SEG_GAP;
-      const a2 = gAngle((i + 1) * GAUGE_MAX / N) - SEG_GAP;
-      const midScore = (i + 0.5) * GAUGE_MAX / N;
-      const filled = midScore <= rsScore;
-      return `<path d="${arcD(a1, a2, R)}" fill="none" stroke="${filled ? gaugeColor(midScore) : '#e2e8f0'}" stroke-width="${SW}" stroke-linecap="butt"/>`;
+    // Continuous band arcs — divider only between the main bands (at 25 & 50)
+    const BANDS = [[0,25,'#16a34a'],[25,50,'#d97706'],[50,100,'#dc2626']];
+    const BAND_GAP = 1.4; // degrees of separation between main bands
+    const segPaths = BANDS.map(([bs, be, col], bi) => {
+      const aStart = gAngle(bs) + (bi > 0 ? BAND_GAP / 2 : 0);
+      const aEnd   = gAngle(be) - (bi < BANDS.length - 1 ? BAND_GAP / 2 : 0);
+      const fillEnd = Math.max(bs, Math.min(rsScore, be));
+      const aFill = gAngle(fillEnd);
+      let out = '';
+      if (fillEnd > bs) out += `<path d="${arcD(aStart, Math.min(aFill, aEnd), R)}" fill="none" stroke="${col}" stroke-width="${SW}" stroke-linecap="butt"/>`;
+      if (fillEnd < be) out += `<path d="${arcD(Math.max(aFill, aStart), aEnd, R)}" fill="none" stroke="#e5e7eb" stroke-width="${SW}" stroke-linecap="butt"/>`;
+      return out;
     }).join('');
-    const glowColor = rsScore <= 25 ? '#86efac' : rsScore <= 50 ? '#fcd34d' : '#fca5a5';
+    const glowColor = rsScore <= 25 ? '#16a34a' : rsScore <= 50 ? '#d97706' : '#fee2e2';
     const fillTipA = gAngle(Math.min(rsScore, GAUGE_MAX));
     const fillTipB = gAngle(Math.max(0, Math.min(rsScore, GAUGE_MAX) - GAUGE_MAX * 0.08));
     const glowPath = rsScore > 0 ? `<path d="${arcD(fillTipB, fillTipA, R)}" fill="none" stroke="${glowColor}" stroke-width="${SW + 8}" stroke-linecap="round" opacity="0.3"/>` : '';
@@ -650,7 +669,7 @@ function CasualtyRiskCard() {
     <div style="padding:12px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
         <!-- Gauge -->
-        <div style="background:#f8fafc;border-radius:12px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;">
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;">
           <div style="position:relative;width:100%;max-width:185px;">
             <svg viewBox="0 0 200 192" style="width:100%;height:auto;overflow:visible;" preserveAspectRatio="xMidYMid meet">
               <defs>
@@ -661,10 +680,6 @@ function CasualtyRiskCard() {
               </defs>
               <!-- Soft glow behind fill -->
               <ellipse cx="100" cy="108" rx="70" ry="60" fill="url(#rsGaugeGlow)"/>
-              <!-- Outer dotted ring arc (270°) -->
-              <path d="M ${sox},${soy} A ${RO},${RO} 0 1,1 ${eox},${eoy}"
-                fill="none" stroke="#dde4ef" stroke-width="1.5"
-                stroke-dasharray="3 8.2" stroke-linecap="round"/>
               <!-- Glow at fill tip -->
               ${glowPath}
               <!-- White casing behind segments for crisp separators -->
@@ -672,79 +687,79 @@ function CasualtyRiskCard() {
               <!-- Banded fill segments (grey when unfilled) -->
               ${segPaths}
               <!-- Score number -->
-              <text x="100" y="122" text-anchor="middle" font-size="52" font-weight="800" fill="#0f172a" font-family="Inter,sans-serif">${rsScore}</text>
+              <text x="100" y="122" text-anchor="middle" font-size="52" font-weight="800" fill="#111827" font-family="Inter,sans-serif">${rsScore}</text>
             </svg>
           </div>
           <div style="display:flex;align-items:center;gap:4px;margin-top:-14px;margin-bottom:7px;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="${risk.c}" stroke-width="2.5" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.8" fill="${risk.c}"/></svg>
             <span style="font-size:10px;font-weight:700;color:${risk.c};letter-spacing:0.06em;">${risk.label}</span>
           </div>
-          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px;text-align:center;width:100%;">
+          <div style="background:transparent;border:0;border-radius:8px;padding:6px 10px;text-align:center;width:100%;">
             <div style="display:flex;align-items:center;justify-content:center;gap:3px;color:${risk.c};font-weight:700;font-size:13px;">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
               +${rsDelta25} (+${rsPct}%)
             </div>
-            <div style="font-size:10px;color:#64748b;margin-top:1px;">vs 2025</div>
+            <div style="font-size:10px;color:#6b7280;margin-top:1px;">vs 2025</div>
           </div>
         </div>
         <!-- Year comparisons -->
-        <div style="background:#f8fafc;border-radius:12px;padding:12px 8px;display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:start;">
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:12px 8px;display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:start;">
           <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-            <span style="background:${yearColor(rs2025)};color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:999px;">2025</span>
-            <div style="font-size:9px;color:#64748b;text-align:center;line-height:1.4;">Avg. Risk Score</div>
-            <div style="font-size:34px;font-weight:800;color:${yearColor(rs2025)};line-height:1;">${rs2025}</div>
-            <div style="background:${yearPill(rs2025).bg};color:${yearPill(rs2025).txt};font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;display:flex;align-items:center;gap:2px;white-space:nowrap;">
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            <span style="background:#6b7280;color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:999px;">2025</span>
+            <div style="font-size:9px;color:#6b7280;text-align:center;line-height:1.4;">Avg. Risk Score</div>
+            <div style="font-size:24px;font-weight:800;color:#111827;line-height:1;">${rs2025}</div>
+            <div style="background:${yearPill(rs2025).bg};color:${yearPill(rs2025).txt};border:1px solid color-mix(in srgb, ${yearPill(rs2025).txt} 30%, transparent);font-size:14px;font-weight:700;padding:5px 13px;border-radius:999px;display:flex;align-items:center;gap:3px;white-space:nowrap;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
               + ${rsDelta2025}
             </div>
-            <div style="font-size:9px;color:#64748b;">vs 2024</div>
+            <div style="font-size:9px;color:#6b7280;">vs 2024</div>
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-            <span style="background:${yearColor(rs2024)};color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:999px;">2024</span>
-            <div style="font-size:9px;color:#64748b;text-align:center;line-height:1.4;">Avg. Risk Score</div>
-            <div style="font-size:34px;font-weight:800;color:${yearColor(rs2024)};line-height:1;">${rs2024}</div>
-            <div style="background:#dbeafe;color:#1d4ed8;font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;display:flex;align-items:center;gap:2px;white-space:nowrap;">
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            <span style="background:#6b7280;color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:999px;">2024</span>
+            <div style="font-size:9px;color:#6b7280;text-align:center;line-height:1.4;">Avg. Risk Score</div>
+            <div style="font-size:24px;font-weight:800;color:#111827;line-height:1;">${rs2024}</div>
+            <div style="background:${yearPill(rs2024).bg};color:${yearPill(rs2024).txt};border:1px solid color-mix(in srgb, ${yearPill(rs2024).txt} 30%, transparent);font-size:14px;font-weight:700;padding:5px 13px;border-radius:999px;display:flex;align-items:center;gap:3px;white-space:nowrap;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
               + ${rsDelta24}
             </div>
-            <div style="font-size:9px;color:#64748b;">vs 2023</div>
+            <div style="font-size:9px;color:#6b7280;">vs 2023</div>
           </div>
         </div>
       </div>
       <!-- Risk Level Guide -->
       <div>
-        <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:7px;">Risk Level Guide</div>
+        <div style="font-size:12px;font-weight:700;color:#111827;margin-bottom:7px;">Risk Level Guide</div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
-          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:9px 7px;">
-            <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:5px;">
+          <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:9px 7px;">
+            <div style="display:flex;flex-direction:row;align-items:center;text-align:left;gap:8px;">
               <div style="width:26px;height:26px;background:#dcfce7;border-radius:999px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                 <svg width="12" height="12" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
               </div>
               <div>
                 <div style="font-size:11px;font-weight:700;color:#16a34a;line-height:1.1;">Good</div>
-                <div style="font-size:9.5px;color:#64748b;margin-top:1px;">0 → 25</div>
+                <div style="font-size:9.5px;color:#6b7280;margin-top:1px;">0 → 25</div>
               </div>
             </div>
           </div>
-          <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:9px 7px;">
-            <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:5px;">
+          <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:9px 7px;">
+            <div style="display:flex;flex-direction:row;align-items:center;text-align:left;gap:8px;">
               <div style="width:26px;height:26px;background:#fef3c7;border-radius:999px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                 <svg width="12" height="12" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16" stroke-width="3"/></svg>
               </div>
               <div>
                 <div style="font-size:11px;font-weight:700;color:#d97706;line-height:1.1;">Average</div>
-                <div style="font-size:9.5px;color:#64748b;margin-top:1px;">25+ → 50</div>
+                <div style="font-size:9.5px;color:#6b7280;margin-top:1px;">25+ → 50</div>
               </div>
             </div>
           </div>
-          <div style="background:#fff1f2;border:1px solid #fecdd3;border-radius:10px;padding:9px 7px;">
-            <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:5px;">
+          <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:9px 7px;">
+            <div style="display:flex;flex-direction:row;align-items:center;text-align:left;gap:8px;">
               <div style="width:26px;height:26px;background:#fee2e2;border-radius:999px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                 <svg width="12" height="12" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
               </div>
               <div>
                 <div style="font-size:10px;font-weight:700;color:#dc2626;line-height:1.1;white-space:nowrap;">Below Avg.</div>
-                <div style="font-size:9.5px;color:#64748b;margin-top:1px;">50+ → 100</div>
+                <div style="font-size:9.5px;color:#6b7280;margin-top:1px;">50+ → 100</div>
               </div>
             </div>
           </div>
@@ -755,10 +770,10 @@ function CasualtyRiskCard() {
       <div style="margin-top:14px;">
         <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
           <thead>
-            <tr style="border-bottom:1px solid #e2e8f0;">
-              <th style="text-align:left;padding:7px 4px;font-size:11px;font-weight:700;color:#0f172a;">Name</th>
-              <th style="text-align:right;padding:7px 8px;font-size:11px;font-weight:700;color:#0f172a;">Score</th>
-              <th style="text-align:right;padding:7px 4px;font-size:11px;font-weight:700;color:#2563eb;">Impact</th>
+            <tr style="border-bottom:1px solid #e5e7eb;">
+              <th style="text-align:left;padding:7px 4px;font-size:11px;font-weight:700;color:#111827;">Name</th>
+              <th style="text-align:right;padding:7px 8px;font-size:11px;font-weight:700;color:#111827;">Score</th>
+              <th style="text-align:right;padding:7px 4px;font-size:11px;font-weight:700;color:#2d7ffb;">Impact</th>
             </tr>
           </thead>
           <tbody>
@@ -771,10 +786,10 @@ function CasualtyRiskCard() {
               { name:'Overall Compliance',  score:0,  impact:0    },
               { name:'PSC Deficiencies',    score:44, impact:6.62 },
             ].map(r => `
-            <tr style="border-bottom:1px solid #f1f5f9;">
-              <td style="padding:8px 4px;color:#334155;font-size:12px;">${r.name}</td>
-              <td style="padding:8px 8px;text-align:right;font-weight:600;color:#0f172a;font-size:12px;">${r.score}</td>
-              <td style="padding:8px 4px;text-align:right;font-weight:600;color:${r.impact > 0 ? '#d97706' : '#94a3b8'};font-size:12px;">${r.impact > 0 ? r.impact.toFixed(2) : '0'}</td>
+            <tr style="border-bottom:1px solid #f3f4f6;">
+              <td style="padding:8px 4px;color:#374151;font-size:12px;">${r.name}</td>
+              <td style="padding:8px 8px;text-align:right;font-weight:600;color:#111827;font-size:12px;">${r.score}</td>
+              <td style="padding:8px 4px;text-align:right;font-weight:600;color:${r.impact > 0 ? '#d97706' : '#9ca3af'};font-size:12px;">${r.impact > 0 ? r.impact.toFixed(2) : '0'}</td>
             </tr>`).join('')}
           </tbody>
         </table>
@@ -1019,7 +1034,7 @@ function EnvironmentalRatingCard() {
   ];
   
   const gradeBox = `
-  <div class="flex items-center justify-center w-20 h-20 rounded-lg mb-3" style="background:#84cc16;">
+  <div class="flex items-center justify-center w-20 h-20 rounded-lg mb-3" style="background:#6fa84a;">
     <span class="text-4xl font-bold text-white">${ENV_RATING.grade}</span>
   </div>`;
 
@@ -1243,11 +1258,11 @@ function HistoricalDetailsBody() {
     .hist-tbl { border-collapse: separate; border-spacing: 0; }
     .hist-tbl .hd-stk-1, .hist-tbl .hd-stk-2 { position: sticky; z-index: 2; }
     .hist-tbl .hd-stk-1 { left: 0; width: 130px; min-width: 130px; }
-    .hist-tbl .hd-stk-2 { left: 130px; width: 130px; min-width: 130px; box-shadow: 1px 0 0 #e2e8f0; }
-    .hist-tbl thead .hd-stk-1, .hist-tbl thead .hd-stk-2 { background: #f8fafc; z-index: 3; }
+    .hist-tbl .hd-stk-2 { left: 130px; width: 130px; min-width: 130px; box-shadow: 1px 0 0 #e5e7eb; }
+    .hist-tbl thead .hd-stk-1, .hist-tbl thead .hd-stk-2 { background: #f9fafb; z-index: 3; }
     .hist-tbl tbody tr.row-even .hd-stk-1, .hist-tbl tbody tr.row-even .hd-stk-2 { background: #ffffff; }
-    .hist-tbl tbody tr.row-odd  .hd-stk-1, .hist-tbl tbody tr.row-odd  .hd-stk-2 { background: #f8fafc; }
-    .hist-tbl tbody tr:not(:last-child) td { border-bottom: 1px solid #f1f5f9; }
+    .hist-tbl tbody tr.row-odd  .hd-stk-1, .hist-tbl tbody tr.row-odd  .hd-stk-2 { background: #f9fafb; }
+    .hist-tbl tbody tr:not(:last-child) td { border-bottom: 1px solid #f3f4f6; }
   </style>
   <div>
     <div class="flex items-center justify-end flex-wrap gap-2 px-4 pt-3 pb-3">
@@ -1324,11 +1339,11 @@ function VesselTrackingCard() {
           <button id="map-layers-btn" class="map-btn" title="Map type">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
           </button>
-          <div id="map-layers-menu" class="hidden" style="position:absolute;top:0;right:calc(100% + 8px);width:148px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 4px 12px rgba(15,23,42,.12);overflow:hidden;padding:4px 0;">
+          <div id="map-layers-menu" class="hidden" style="position:absolute;top:0;right:calc(100% + 8px);width:148px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 4px 12px rgba(15,23,42,.12);overflow:hidden;padding:4px 0;">
             ${[{id:'satellite',label:'Satellite'},{id:'street',label:'Street'},{id:'dark',label:'Dark'},{id:'light',label:'Light'}].map(o => `
-            <button data-vessel-map-type="${o.id}" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;font-size:13px;color:#334155;background:transparent;border:0;cursor:pointer;text-align:left;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+            <button data-vessel-map-type="${o.id}" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;font-size:13px;color:#374151;background:transparent;border:0;cursor:pointer;text-align:left;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='transparent'">
               <span>${o.label}</span>
-              <span data-check style="color:#2563eb;opacity:0;"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 6L9 17l-5-5"/></svg></span>
+              <span data-check style="color:#2d7ffb;opacity:0;"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 6L9 17l-5-5"/></svg></span>
             </button>`).join('')}
           </div>
         </div>
@@ -1336,17 +1351,17 @@ function VesselTrackingCard() {
       <!-- Timeline overlay -->
       <div class="timeline-overlay">
         <div style="display:flex;align-items:center;gap:10px;">
-          <span style="font-size:11px;color:#94a3b8;white-space:nowrap;">2025-10-07</span>
+          <span style="font-size:11px;color:#9ca3af;white-space:nowrap;">2025-10-07</span>
           <div class="timeline-track" id="timeline-slider">
             <div class="timeline-fill" id="timeline-fill"></div>
             <div class="timeline-thumb" id="timeline-thumb"></div>
           </div>
-          <span style="font-size:11px;color:#94a3b8;white-space:nowrap;">2025-10-09</span>
-          <button style="width:28px;height:28px;background:rgba(255,255,255,.12);border:0;border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#94a3b8;flex-shrink:0;" title="Pick date">
+          <span style="font-size:11px;color:#9ca3af;white-space:nowrap;">2025-10-09</span>
+          <button style="width:28px;height:28px;background:rgba(255,255,255,.12);border:0;border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#9ca3af;flex-shrink:0;" title="Pick date">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke-linecap="round"/><path stroke-linecap="round" d="M16 2v4M8 2v4M3 10h18"/></svg>
           </button>
         </div>
-        <div id="timeline-timestamp" style="font-size:11px;color:#94a3b8;text-align:center;margin-top:5px;">Tue, 07 Oct 2025 09:00:00 GMT</div>
+        <div id="timeline-timestamp" style="font-size:11px;color:#9ca3af;text-align:center;margin-top:5px;">Tue, 07 Oct 2025 09:00:00 GMT</div>
       </div>
     </div>
   </div>`;
@@ -1461,12 +1476,12 @@ function initMap() {
     [37.0, 21.5],
     [38.2, 20.5],   // Crete area
   ];
-  L.polyline(route, { color:'#2563eb', weight:2.5, opacity:0.7, dashArray:'6 4' }).addTo(map);
+  L.polyline(route, { color:'#2d7ffb', weight:2.5, opacity:0.7, dashArray:'6 4' }).addTo(map);
 
   // Vessel marker — stored globally so wireTimeline can move it
   const vesselIcon = L.divIcon({
     className: '',
-    html: `<div style="width:14px;height:14px;background:#ef4444;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(239,68,68,.6)"></div>`,
+    html: `<div style="width:14px;height:14px;background:#dc2626;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(239,68,68,.6)"></div>`,
     iconSize: [14, 14],
     iconAnchor: [7, 7],
   });
@@ -1481,8 +1496,8 @@ function initMap() {
     html: `<div style="width:10px;height:10px;background:${color};border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div>`,
     iconSize: [10, 10], iconAnchor: [5, 5],
   });
-  L.marker([29.9, 32.6], { icon: pinIcon('#94a3b8') }).addTo(map).bindPopup('Suez Canal');
-  L.marker([38.2, 20.5], { icon: pinIcon('#10b981') }).addTo(map).bindPopup('Hamburg (via Med)');
+  L.marker([29.9, 32.6], { icon: pinIcon('#9ca3af') }).addTo(map).bindPopup('Suez Canal');
+  L.marker([38.2, 20.5], { icon: pinIcon('#2e7d4f') }).addTo(map).bindPopup('Hamburg (via Med)');
 
   // Force a size recalculation once layout is stable
   setTimeout(() => map && map.invalidateSize(), 200);

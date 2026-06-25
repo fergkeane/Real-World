@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FRESH BREEZE — Voyage History — Real World</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { height:100%; }
+  body { font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; }
+  .text-ink-900 { color:#111827; } .text-ink-800 { color:#1f2937; } .text-ink-700 { color:#374151; }
+  .text-ink-600 { color:#475569; } .text-ink-500 { color:#6b7280; } .text-ink-400 { color:#9ca3af; }
+  .text-ink-300 { color:#d1d5db; }
+  .bg-ink-100 { background:#f3f4f6; } .bg-ink-50 { background:#f9fafb; }
+  .border-ink-100 { border-color:#f3f4f6; } .border-ink-200 { border-color:#e5e7eb; }
+  .shadow-card { box-shadow:0 2px 4px 0 rgb(15 23 42 / 0.08), 0 1px 2px 0 rgb(15 23 42 / 0.06); }
+  .text-brand-600 { color:var(--brand-600,#2d7ffb); } .bg-brand-600 { background:var(--brand-600,#2d7ffb); }
+  .bg-brand-050 { background:var(--brand-050,#eff6ff); }
+  .font-display { font-family:'Exo','Inter',sans-serif; }
+  .tracking-micro { letter-spacing:0.04em; }
+  .scroll-thin::-webkit-scrollbar { width:6px; height:6px; }
+  .scroll-thin::-webkit-scrollbar-track { background:transparent; }
+  .scroll-thin::-webkit-scrollbar-thumb { background:#d1d5db; border-radius:999px; }
+  .scroll-thin::-webkit-scrollbar-thumb:hover { background:#9ca3af; }
+  /* Pill tabs (Skytek DS) */
+  .ds-tabs { position:relative; display:inline-flex; gap:4px; padding:4px; background:#f3f4f6; border:1px solid #e5e7eb; border-radius:9999px; }
+  .ds-tab { position:relative; font:inherit; font-size:13px; font-weight:600; padding:8px 16px; background:transparent; border:0; border-radius:9999px; color:#6b7280; cursor:pointer; transition:color 140ms ease; display:inline-flex; align-items:center; justify-content:center; gap:7px; white-space:nowrap; }
+  .ds-tab:hover { color:#111827; }
+  .ds-tab[aria-selected="true"], .ds-tab[aria-selected="true"]:hover { color:#fff; }
+  .ds-tab-pill { position:absolute; top:4px; left:0; height:calc(100% - 8px); background:var(--brand-600,#2d7ffb); border-radius:9999px; box-shadow:0 1px 2px rgba(15,23,42,.12); z-index:0; transform-origin:left center; transition:transform 320ms cubic-bezier(.34,1.2,.64,1), width 320ms cubic-bezier(.34,1.2,.64,1); pointer-events:none; }
+  .ds-tab-pill.is-init { transition:none; }
+  .ds-tab-label { position:relative; z-index:1; display:inline-flex; align-items:center; gap:7px; }
+  /* Cards */
+  .card { background:#fff; border:1px solid #e5e7eb; border-radius:14px; box-shadow:0 1px 3px rgb(15 23 42 / .06); }
+  .card-head { display:flex; align-items:center; gap:8px; padding:16px 20px; }
+  .card-title { font-family:'Exo','Inter',sans-serif; font-size:15px; font-weight:600; color:#111827; }
+  /* DS primary button */
+  .btn-primary { display:inline-flex; align-items:center; gap:7px; height:36px; padding:0 16px; background:var(--brand-600,#2d7ffb); color:#fff; border:0; border-radius:8px; font-size:13px; font-weight:600; font-family:inherit; cursor:pointer; transition:background .14s ease; }
+  .btn-primary:hover { background:var(--brand-500,#51a2fc); }
+  .icon-btn { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border:1px solid #e5e7eb; border-radius:8px; background:#fff; color:#475569; cursor:pointer; transition:background .14s,color .14s,border-color .14s; }
+  .icon-btn:hover { background:#f9fafb; color:#111827; }
+  .icon-btn.is-on { background:var(--brand-050,#eff6ff); border-color:var(--brand-300,#bfdbfe); color:var(--brand-600,#2d7ffb); }
+  /* Tables */
+  .vh-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .vh-table th { text-align:left; padding:11px 16px; font-size:11px; font-weight:600; color:#6b7280; letter-spacing:.04em; text-transform:uppercase; border-bottom:1px solid #e5e7eb; white-space:nowrap; }
+  .vh-table th .th-in { display:inline-flex; align-items:center; gap:6px; cursor:pointer; }
+  .vh-table th .th-in:hover { color:#374151; }
+  .vh-table td { padding:12px 16px; border-bottom:1px solid #f3f4f6; color:#374151; vertical-align:middle; }
+  .vh-table tbody tr:last-child td { border-bottom:0; }
+  .vh-table tbody tr:hover td { background:#f8fb ; }
+  .vh-table tbody tr:hover td { background:#f9fafb; }
+  .num { font-variant-numeric:tabular-nums; }
+  .sort-ico { color:#2d7ffb; opacity:.7; }
+  /* Status badge */
+  .badge-status { display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:600; background:#f0fdf4; color:#15803d; border:1px solid #dcfce7; }
+  .badge-status .dot { width:6px; height:6px; border-radius:50%; background:#16a34a; }
+  /* Progress line */
+  .voy-line { position:relative; height:2px; background:#e5e7eb; border-radius:999px; }
+  .voy-line .done { position:absolute; left:0; top:0; height:2px; background:var(--brand-600,#2d7ffb); border-radius:999px; }
+  .voy-line .dashed { position:absolute; top:0; height:2px; background-image:linear-gradient(90deg,#bfdbfe 0 6px,transparent 6px 12px); background-size:12px 2px; }
+  .voy-dot { position:absolute; top:50%; transform:translate(-50%,-50%); width:11px; height:11px; border-radius:50%; }
+  /* Search */
+  .vh-search { display:flex; align-items:center; gap:10px; height:42px; padding:0 14px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; }
+  .vh-search input { flex:1; border:0; background:transparent; font:inherit; font-size:13px; color:#111827; outline:none; }
+  .vh-search input::placeholder { color:#9ca3af; }
+  /* Map */
+  #voyage-map { background:#dbeafe; position:absolute; inset:0; }
+  #voyage-map .leaflet-top.leaflet-left { top:56px; left:10px; }
+  .leaflet-control-zoom, .leaflet-bar { border:1px solid #e5e7eb !important; box-shadow:0 1px 2px rgb(15 23 42/.08) !important; border-radius:8px !important; overflow:hidden; }
+  .leaflet-bar a { background:#fff !important; color:#374151 !important; }
+  .leaflet-bar a:hover { background:#f3f4f6 !important; }
+  .map-btn { width:34px; height:34px; display:flex; align-items:center; justify-content:center; background:#fff; border:1px solid #e5e7eb; border-radius:8px; color:#374151; box-shadow:0 1px 2px rgb(15 23 42/.10); cursor:pointer; }
+  .map-btn:hover { background:#f3f4f6; }
+  .map-btn svg { width:17px; height:17px; }
+  .map-chip { display:inline-flex; align-items:center; padding:7px 12px; background:#fff; border:1px solid #e5e7eb; border-radius:9px; font-size:12px; font-weight:600; color:#374151; box-shadow:0 1px 3px rgb(15 23 42/.10); }
+  /* Per-page select */
+  .vh-select { height:32px; padding:0 28px 0 10px; border:1px solid #e5e7eb; border-radius:7px; background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 9px center; font:inherit; font-size:13px; color:#374151; -webkit-appearance:none; appearance:none; cursor:pointer; }
+  @media (max-width:880px){ .vh-donuts { flex-direction:column !important; } }
+  /* Donut segment tooltip + hover */
+  .voy-seg { transition:opacity .12s ease; cursor:default; }
+  .voy-seg:hover { opacity:.82; }
+  .voy-tip { position:fixed; z-index:9999; pointer-events:none; background:#111827; color:#fff; font-size:11.5px; font-weight:600; padding:6px 9px; border-radius:8px; box-shadow:0 6px 18px rgba(15,23,42,.28); white-space:nowrap; opacity:0; transition:opacity .12s ease; transform:translate(-50%,-100%); }
+  /* Current Voyage map overlays */
+  .voy-overlay { position:absolute; left:16px; right:16px; bottom:16px; z-index:500; background:rgba(255,255,255,.96); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); border:1px solid #e5e7eb; border-radius:14px; box-shadow:0 8px 28px rgb(15 23 42/.16); padding:14px 20px; }
+  /* Vessel popup — matches Marine dashboard popup card */
+  .vessel-popup .leaflet-popup-content-wrapper { padding:0; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(15,23,42,.25); }
+  .vessel-popup .leaflet-popup-content { margin:0; width:290px !important; font-family:'Inter',system-ui,sans-serif; }
+  .vessel-popup .leaflet-popup-tip { background:#fff; }
+  .vp { background:#fff; color:#111827; }
+  .vp-header { background:var(--brand-600,#2d7ffb); color:#fff; padding:12px 14px 10px; display:flex; align-items:flex-start; justify-content:space-between; }
+  .vp-header-main { min-width:0; }
+  .vp-title { font-family:'Exo','Inter',sans-serif; font-weight:800; font-size:15px; letter-spacing:.02em; display:flex; align-items:center; gap:6px; }
+  .vp-subtitle { font-size:11.5px; color:rgba(255,255,255,.85); margin-top:2px; }
+  .vp-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 16px; padding:12px 14px; }
+  .vp-grid > div { min-width:0; }
+  .vp-span { grid-column:1 / -1; }
+  .vp-k { font-size:10.5px; color:#6b7280; }
+  .vp-v { font-size:12.5px; color:#111827; margin-top:1px; font-weight:600; }
+  .vp-strong { font-weight:700; color:#111827; }
+  .vessel-popup .leaflet-popup-close-button { color:#fff !important; top:8px !important; right:10px !important; font-size:22px !important; font-weight:400 !important; width:24px !important; height:24px !important; line-height:22px !important; padding:0 !important; border-radius:6px; opacity:.9; }
+  .vessel-popup .leaflet-popup-close-button:hover { color:#fff !important; background:rgba(255,255,255,.18); opacity:1; }
+  @media (max-width:720px){ .voy-overlay .voy-overlay-row { flex-direction:column !important; align-items:stretch !important; gap:10px !important; } }
+</style>
+</head>
+<body class="bg-ink-100 text-ink-900 antialiased" data-density="compact">
+<div id="app" class="min-h-screen w-full flex"></div>
+
+<script>
+  window.PAGE = { id:'marine', title:'Marine', crumb:'FRESH BREEZE' };
+  window.TWEAK_DEFAULTS = {
+    "density": "compact",
+    "accent": "sky",
+    "sidebarExpanded": false,
+    "showSparklines": true
+  };
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="shared/chrome.js?v=14"></script>
+<script>
+const SC = window.sharedChrome;
+
+/* ===================== STATE ===================== */
+let state = { tab:'Voyage Stats', chartType:'donut', showDetails:false, perPage:25, search:'', sort:{ pc:{key:null,dir:1}, rg:{key:null,dir:1} } };
+
+/* ===================== DS CHART COLORS (categorical palette) =====================
+   Per Skytek DS categorical palette — select by role, never arbitrary hex:
+   cat-8 slate (#475569), cat-1 blue (#2d7ffb), cat-5 pink (#DB2777). */
+const CAT = { portVisit:'#475569', loitering:'#2d7ffb', traveling:'#DB2777' };
+
+/* ===================== DATA ===================== */
+const TOP_TABS = [
+  { k:'Voyage Stats', icon:'activity' },
+  { k:'Port Calls', icon:'anchor' },
+  { k:'Region Entry & Exits', icon:'navigation' },
+];
+
+const DONUTS = [
+  { year:'2025', segs:[ {l:'Port Visit',v:20,c:CAT.portVisit}, {l:'Loitering',v:18,c:CAT.loitering}, {l:'Traveling',v:62,c:CAT.traveling} ] },
+  { year:'2024', segs:[ {l:'Port Visit',v:13,c:CAT.portVisit}, {l:'Loitering',v:9, c:CAT.loitering}, {l:'Traveling',v:78,c:CAT.traveling} ] },
+  { year:'2023', segs:[ {l:'Port Visit',v:11,c:CAT.portVisit}, {l:'Loitering',v:5, c:CAT.loitering}, {l:'Traveling',v:84,c:CAT.traveling} ] },
+];
+
+const ACTIVITY = [
+  { icon:'anchor',         label:'Loiter in Ports',          v:['404 5h','356 17h','54d'] },
+  { icon:'clock',          label:'Time Loitering',           v:['404 5h','338 3h','13d 7h'] },
+  { icon:'timer',          label:'Time Traveling',           v:['1751 14h','2930 3h','365d 22h'] },
+  { icon:'pin',            label:'Number of port calls',     v:['19','28','50'] },
+  { icon:'hash',           label:'Number of times loitering',v:['32','65','17'] },
+  { icon:'voyages',        label:'Number of voyages',        v:['51','111','70'] },
+  { icon:'arrowDownLeft',  label:'Shortest voyage (NM)',     v:['9 NM','2 NM','0 NM'] },
+  { icon:'arrowUpRight',   label:'Longest voyage (NM)',      v:['8737 NM','14032 NM','11825 NM'] },
+  { icon:'triangle',       label:'Total voyage (NM)',        v:['67680 NM','107014 NM','127767 NM'] },
+];
+
+const EVENTS = [
+  { type:'Voyage (Denmark, Norway, United Kingdom, United States)', dur:'11d 21h', from:'2025-09-19 01:28', to:'2025-09-30 22:56', dist:'4222.0 NM', spd:'14.9 kts' },
+  { type:'Loitering 16.5 km away from Zeebrugge, United States',    dur:'4d 12h',  from:'2025-09-14 13:01', to:'2025-09-19 01:28', dist:'–', spd:'–' },
+  { type:'Voyage (Bahamas, Cuba, Mexico, United States-Major Outlying Islands, United States)', dur:'3d 9h', from:'2025-09-11 03:00', to:'2025-09-14 12:51', dist:'1384.0 NM', spd:'17.0 kts' },
+  { type:'Loitering 2.4 km away from Galveston, United States',     dur:'15h',     from:'2025-09-10 11:55', to:'2025-09-11 03:00', dist:'–', spd:'–' },
+  { type:'Voyage (Bahamas, Cuba, Mexico, United States-Major Outlying Islands, United States)', dur:'4d 15h', from:'2025-09-04 00:55', to:'2025-09-10 11:55', dist:'1412.9 NM', spd:'13.2 kts' },
+  { type:'Loitering 1.5 km away from Brunswick, United States',     dur:'7h',      from:'2025-09-09 16:55', to:'2025-09-08 00:55', dist:'–', spd:'–' },
+  { type:'Voyage (United States)',                                  dur:'19h',     from:'2025-09-04 05:55', to:'2025-09-05 16:55', dist:'179.2 NM', spd:'13.8 kts' },
+  { type:'Port Call Charleston',                                    dur:'12h',     from:'2025-09-04 05:55', to:'2025-09-05 03:55', dist:'–', spd:'–' },
+  { type:'Voyage (United States)',                                  dur:'1d 8h',   from:'2025-09-01 06:55', to:'2025-09-04 15:55', dist:'553.2 NM', spd:'16.8 kts' },
+  { type:'Loitering 5.1 km away from Norfolk, United States',       dur:'13h',     from:'2025-08-28 17:01', to:'2025-08-28 17:01', dist:'–', spd:'–' },
+  { type:'Voyage (United States)',                                  dur:'1d 7h',   from:'2025-08-28 17:01', to:'2025-08-30 00:55', dist:'517.9 NM', spd:'16.2 kts' },
+  { type:'Loitering 5.1 km away from Norfolk, United States',       dur:'4d 6h',   from:'2025-08-20 05:55', to:'2025-08-28 17:01', dist:'–', spd:'–' },
+];
+
+const PORT_CALLS = [
+  { port:'Charleston',  cc:'us', country:'United States', arr:'2025-09-04 05:55', arrD:'12.4 m', dep:'2025-09-05 03:55', depD:'9.1 m' },
+  { port:'Norfolk',     cc:'us', country:'United States', arr:'2025-08-30 00:55', arrD:'13.0 m', dep:'2025-08-30 19:40', depD:'10.8 m' },
+  { port:'Houston',     cc:'us', country:'United States', arr:'2025-08-12 22:10', arrD:'11.6 m', dep:'2025-08-14 06:30', depD:'14.2 m' },
+  { port:'Rotterdam',   cc:'nl', country:'Netherlands',   arr:'2025-07-28 11:00', arrD:'15.1 m', dep:'2025-07-29 09:15', depD:'8.3 m' },
+  { port:'Algeciras',   cc:'es', country:'Spain',         arr:'2025-07-19 04:40', arrD:'10.2 m', dep:'2025-07-19 17:55', depD:'10.4 m' },
+  { port:'Singapore',   cc:'sg', country:'Singapore',     arr:'2025-06-30 08:30', arrD:'9.4 m',  dep:'2025-07-02 14:10', depD:'15.0 m' },
+];
+
+const REGIONS = [
+  { region:'US Exclusive Economic Zone', type:'EEZ',            entry:'2025-08-28 17:01', exit:'2025-09-19 01:28', dur:'21d 8h' },
+  { region:'EU Waters',                  type:'Jurisdiction',   entry:'2025-07-18 22:30', exit:'2025-07-29 09:15', dur:'10d 11h' },
+  { region:'Strait of Gibraltar',        type:'Chokepoint',     entry:'2025-07-19 02:10', exit:'2025-07-19 06:05', dur:'4h' },
+  { region:'Suez Canal Transit Zone',    type:'Canal',          entry:'2025-07-09 05:20', exit:'2025-07-09 18:40', dur:'13h' },
+  { region:'Singapore Strait',           type:'Chokepoint',     entry:'2025-06-30 06:00', exit:'2025-07-02 15:30', dur:'2d 9h' },
+];
+
+/* ===================== ICONS (inline, lucide-style) ===================== */
+const IC = {
+  anchor:'<circle cx="12" cy="5" r="2"/><path d="M12 22V7M5 12H2a10 10 0 0 0 20 0h-3"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  timer:'<path d="M10 2h4"/><path d="M12 14l3-3"/><circle cx="12" cy="14" r="8"/>',
+  pin:'<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+  hash:'<path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/>',
+  voyages:'<path d="M3 7l9-4 9 4-9 4-9-4Z"/><path d="M3 7v6l9 4 9-4V7"/>',
+  arrowDownLeft:'<path d="M17 7 7 17M17 17H7V7"/>',
+  arrowUpRight:'<path d="M7 17 17 7M7 7h10v10"/>',
+  triangle:'<path d="M12 3 22 20H2L12 3Z"/>',
+  activity:'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+  navigation:'<path d="M3 11l19-9-9 19-2-8-8-2Z"/>',
+  route:'<circle cx="6" cy="19" r="3"/><circle cx="18" cy="5" r="3"/><path d="M9 19h6a4 4 0 0 0 0-8H9a4 4 0 0 1 0-8h6"/>',
+  search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+  download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/>',
+  barChart:'<path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="7"/><rect x="12" y="6" width="3" height="11"/><rect x="17" y="13" width="3" height="4"/>',
+  pie:'<path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>',
+  layers:'<path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>',
+  sort:'<path d="M8 9l4-4 4 4M8 15l4 4 4-4"/>',
+  position:'<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+  currentVoyage:'<path d="M5 7h11a4 4 0 0 1 0 8H8M5 17h9"/><circle cx="4" cy="7" r="1.5"/><circle cx="4" cy="17" r="1.5"/>',
+};
+function svg(path, size = 16, sw = 1.9) {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`;
+}
+function flag(cc) {
+  return `<img src="https://flagcdn.com/w40/${cc}.png" srcset="https://flagcdn.com/w80/${cc}.png 2x" alt="${cc.toUpperCase()}" width="20" height="14" class="inline-block rounded-[2px] ring-1 ring-ink-200 object-cover align-middle" style="width:20px;height:14px" loading="lazy" />`;
+}
+/* Sortable table helpers (Port Calls / Region tabs) */
+function parseDur(s) {
+  let m = 0; const d = /(\d+)d/.exec(s), h = /(\d+)h/.exec(s), mm = /(\d+)m\b/.exec(s);
+  if (d) m += +d[1] * 1440; if (h) m += +h[1] * 60; if (mm) m += +mm[1];
+  return m;
+}
+function sortHead(label, key, grp, opts = {}) {
+  const s = state.sort[grp], active = s.key === key;
+  const upPath = '<path d="M8 14l4-4 4 4"/>', downPath = '<path d="M8 10l4 4 4-4"/>';
+  const ico = active ? svg(s.dir > 0 ? upPath : downPath, 13, 2.4) : svg(IC.sort, 13, 2);
+  return `<th><button class="th-in" data-sort-grp="${grp}" data-sort-key="${key}" style="background:none;border:0;font:inherit;color:inherit;cursor:pointer;padding:0;text-transform:uppercase;letter-spacing:.04em;font-size:11px;font-weight:600;color:${active ? '#374151' : '#6b7280'};">${label} <span class="sort-ico inline-flex items-center" style="opacity:${active ? '1' : '.7'}">${ico}</span></button></th>`;
+}
+function vhSort(rows, grp, numKeys = [], durKeys = []) {
+  const s = state.sort[grp];
+  if (!s.key) return rows;
+  return [...rows].sort((a, b) => {
+    let x = a[s.key], y = b[s.key];
+    if (numKeys.includes(s.key)) { x = parseFloat(x) || 0; y = parseFloat(y) || 0; }
+    else if (durKeys.includes(s.key)) { x = parseDur(x); y = parseDur(y); }
+    const c = (typeof x === 'number') ? x - y : String(x).localeCompare(String(y));
+    return c * s.dir;
+  });
+}
+
+/* ===================== TABS ===================== */
+function tabBar() {
+  return `
+  <div class="ds-tabs" data-tab-group="tab">
+    <span class="ds-tab-pill is-init" data-tab-pill></span>
+    ${TOP_TABS.map(t => `
+      <button data-tab="${t.k}" aria-selected="${t.k===state.tab}" class="ds-tab">
+        <span class="ds-tab-label"><span class="inline-flex items-center">${svg(IC[t.icon],14)}</span>${t.k}</span>
+      </button>`).join('')}
+  </div>`;
+}
+function positionTabPills() {
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.ds-tabs').forEach(group => {
+      const pill = group.querySelector('[data-tab-pill]');
+      const active = group.querySelector('.ds-tab[aria-selected="true"]');
+      if (!pill || !active) return;
+      const g = group.getBoundingClientRect(), a = active.getBoundingClientRect();
+      if (!a.width) return;
+      pill.style.width = a.width + 'px';
+      pill.style.transform = `translateX(${a.left - g.left}px)`;
+      requestAnimationFrame(() => pill.classList.remove('is-init'));
+    });
+  });
+}
+
+/* ===================== DONUT ===================== */
+function donut(d) {
+  const total = d.segs.reduce((s, x) => s + x.v, 0);
+  const size = 160, cx = 80, cy = 80, rO = 74, rI = 49, gap = 2.2;
+  const polar = (r, deg) => [cx + r * Math.sin(deg * Math.PI / 180), cy - r * Math.cos(deg * Math.PI / 180)];
+  let acc = 0;
+  const segs = d.segs.map((s) => {
+    const a0 = acc / total * 360, a1 = (acc + s.v) / total * 360;
+    acc += s.v;
+    const pct = Math.round(s.v / total * 100);
+    const s0 = a0 + gap, s1 = a1 - gap;
+    const [ox0, oy0] = polar(rO, s0), [ox1, oy1] = polar(rO, s1);
+    const [ix1, iy1] = polar(rI, s1), [ix0, iy0] = polar(rI, s0);
+    const large = (s1 - s0) > 180 ? 1 : 0;
+    const path = `M ${ox0.toFixed(2)} ${oy0.toFixed(2)} A ${rO} ${rO} 0 ${large} 1 ${ox1.toFixed(2)} ${oy1.toFixed(2)} L ${ix1.toFixed(2)} ${iy1.toFixed(2)} A ${rI} ${rI} 0 ${large} 0 ${ix0.toFixed(2)} ${iy0.toFixed(2)} Z`;
+    const [lx, ly] = polar((rO + rI) / 2, (a0 + a1) / 2);
+    const label = pct >= 6 ? `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="10" font-weight="700" style="pointer-events:none;font-family:Inter,sans-serif;">${pct}%</text>` : '';
+    const tip = `voySeg(event,'${s.l}',${pct},'${s.c}')`;
+    return `<path class="voy-seg" d="${path}" fill="${s.c}" onmouseenter="${tip}" onmousemove="voyMove(event)" onmouseleave="voyHide()"></path>${label}`;
+  }).join('');
+  return `
+  <div class="flex flex-col items-center gap-1">
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" role="img" aria-label="${d.year} activity breakdown">
+      ${segs}
+      <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" class="font-display" style="font-size:22px;font-weight:700;fill:#111827;">${d.year}</text>
+    </svg>
+  </div>`;
+}
+/* Donut segment tooltip */
+function voyTipEl() {
+  let t = document.getElementById('voy-tip');
+  if (!t) { t = document.createElement('div'); t.id = 'voy-tip'; t.className = 'voy-tip'; document.body.appendChild(t); }
+  return t;
+}
+function voySeg(e, label, pct, color) {
+  const t = voyTipEl();
+  t.innerHTML = `<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${color};margin-right:7px;vertical-align:middle;"></span><span style="vertical-align:middle;">${label} · <strong>${pct}%</strong></span>`;
+  t.style.opacity = '1';
+  voyMove(e);
+}
+function voyMove(e) { const t = voyTipEl(); t.style.left = e.clientX + 'px'; t.style.top = (e.clientY - 14) + 'px'; }
+function voyHide() { const t = document.getElementById('voy-tip'); if (t) t.style.opacity = '0'; }
+window.voySeg = voySeg; window.voyMove = voyMove; window.voyHide = voyHide;
+function legend() {
+  const item = (label, color) => `
+    <div class="flex items-center gap-2">
+      <span style="width:11px;height:11px;border-radius:3px;background:${color};display:inline-block;"></span>
+      <span class="text-xs font-medium text-ink-700">${label}</span>
+    </div>`;
+  return `<div class="flex items-center justify-center gap-7 mt-4">
+    ${item('Port Visit', CAT.portVisit)}${item('Loitering', CAT.loitering)}${item('Traveling', CAT.traveling)}
+  </div>`;
+}
+/* Grouped vertical bars — one group per year, a bar per category side by side */
+function bar(d) {
+  const total = d.segs.reduce((s, x) => s + x.v, 0);
+  const H = 180;
+  const bars = d.segs.map((s) => {
+    const pct = Math.round(s.v / total * 100);
+    const hh = Math.max(4, s.v / total * H);
+    return `
+      <div class="flex flex-col items-center justify-end" style="height:${H}px;">
+        <span style="font-size:10px;font-weight:700;color:#374151;margin-bottom:3px;">${pct}%</span>
+        <div class="voy-seg" style="width:22px;height:${hh.toFixed(1)}px;background:${s.c};border-radius:4px 4px 0 0;"
+          onmouseenter="voySeg(event,'${s.l}',${pct},'${s.c}')" onmousemove="voyMove(event)" onmouseleave="voyHide()"></div>
+      </div>`;
+  }).join('');
+  return `
+  <div class="flex flex-col items-center gap-2">
+    <div class="flex items-end gap-3" style="height:${H}px;">${bars}</div>
+    <span class="font-display" style="font-size:16px;font-weight:700;color:#111827;">${d.year}</span>
+  </div>`;
+}
+
+/* ===================== CARD 1 — TABBED ===================== */
+function voyageStatsBody() {
+  const sortIco = `<span class="sort-ico inline-flex items-center">${svg(IC.sort,13,2)}</span>`;
+  const yearHead = (y) => `<th><span class="th-in">${y} ${sortIco}</span></th>`;
+  return `
+  <div class="vh-donuts flex items-stretch px-6 pt-2 pb-5">
+    ${DONUTS.map((d, i) => `
+      <div class="flex-1 flex items-center justify-center py-4 ${i > 0 ? 'border-l border-ink-100' : ''}">${state.chartType === 'bar' ? bar(d) : donut(d)}</div>
+    `).join('')}
+  </div>
+  ${legend()}
+  <div class="flex justify-center py-3 border-t border-ink-100 mt-3">
+    <button id="details-toggle" class="inline-flex items-center gap-1 text-[11px] font-semibold tracking-micro uppercase text-brand-600 hover:text-brand-700" style="cursor:pointer;">
+      ${state.showDetails ? '– Hide Details' : '+ Show Details'}
+    </button>
+  </div>
+  ${state.showDetails ? `
+  <div class="overflow-x-auto scroll-thin border-t border-ink-100">
+    <table class="vh-table">
+      <thead>
+        <tr>
+          <th><span class="th-in">Activity ${sortIco}</span></th>
+          ${yearHead('2025')}${yearHead('2024')}${yearHead('2023')}
+        </tr>
+      </thead>
+      <tbody>
+        ${ACTIVITY.map(r => `
+          <tr>
+            <td>
+              <span class="inline-flex items-center gap-2.5">
+                <span class="text-brand-600 inline-flex items-center">${svg(IC[r.icon],15)}</span>
+                <span class="text-ink-700">${r.label}</span>
+              </span>
+            </td>
+            <td class="num font-medium text-ink-900">${r.v[0]}</td>
+            <td class="num text-ink-700">${r.v[1]}</td>
+            <td class="num text-ink-700">${r.v[2]}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>` : ''}`;
+}
+function portCallsBody() {
+  return `
+  <div class="overflow-x-auto scroll-thin border-t border-ink-100">
+    <table class="vh-table">
+      <thead><tr>
+        ${sortHead('Port','port','pc')}
+        ${sortHead('Country','country','pc')}
+        ${sortHead('Arrival Date/Time','arr','pc')}
+        ${sortHead('Arrival Draught','arrD','pc')}
+        ${sortHead('Departure Date/Time','dep','pc')}
+        ${sortHead('Departure Draught','depD','pc')}
+      </tr></thead>
+      <tbody>
+        ${vhSort(PORT_CALLS,'pc',['arrD','depD']).map(p => `
+          <tr>
+            <td><span class="inline-flex items-center gap-2.5"><span class="text-brand-600 inline-flex items-center">${svg(IC.anchor,15)}</span><span class="font-medium text-ink-900">${p.port}</span></span></td>
+            <td><span class="inline-flex items-center gap-2">${flag(p.cc)}<span class="text-ink-700">${p.country}</span></span></td>
+            <td class="num text-ink-700">${p.arr}</td>
+            <td class="num text-ink-700">${p.arrD}</td>
+            <td class="num text-ink-700">${p.dep}</td>
+            <td class="num text-ink-700">${p.depD}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+function regionsBody() {
+  return `
+  <div class="overflow-x-auto scroll-thin border-t border-ink-100">
+    <table class="vh-table">
+      <thead><tr>
+        ${sortHead('Region Name','region','rg')}
+        ${sortHead('Type','type','rg')}
+        ${sortHead('Entry Date/Time','entry','rg')}
+        ${sortHead('Exit Date/Time','exit','rg')}
+        ${sortHead('Duration','dur','rg')}
+      </tr></thead>
+      <tbody>
+        ${vhSort(REGIONS,'rg',[],['dur']).map(r => `
+          <tr>
+            <td><span class="inline-flex items-center gap-2.5"><span class="text-brand-600 inline-flex items-center">${svg(IC.navigation,15)}</span><span class="font-medium text-ink-900">${r.region}</span></span></td>
+            <td class="text-ink-700">${r.type}</td>
+            <td class="num text-ink-700">${r.entry}</td>
+            <td class="num text-ink-700">${r.exit}</td>
+            <td class="num font-medium text-ink-900">${r.dur}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+function statsCard() {
+  let body = '';
+  if (state.tab === 'Voyage Stats') body = voyageStatsBody();
+  else if (state.tab === 'Port Calls') body = portCallsBody();
+  else body = regionsBody();
+  return `
+  <div class="card overflow-hidden">
+    <div class="flex items-center justify-between gap-3 px-5 py-4 border-b border-ink-100">
+      ${tabBar()}
+      <button id="chart-toggle" class="icon-btn" title="${state.chartType === 'bar' ? 'Show donut charts' : 'Show bar charts'}">${svg(state.chartType === 'bar' ? IC.pie : IC.barChart,17)}</button>
+    </div>
+    ${body}
+  </div>`;
+}
+
+/* ===================== CARD 2 — CURRENT VOYAGE ===================== */
+function currentVoyageCard() {
+  const pct = 35;
+  return `
+  <div class="card overflow-hidden">
+    <div class="card-head border-b border-ink-100">
+      <span class="text-brand-600 inline-flex items-center">${svg(IC.currentVoyage,18)}</span>
+      <span class="card-title">Current Voyage</span>
+    </div>
+    <div class="vh-map-col relative" style="min-height:560px;">
+      <div id="voyage-map"></div>
+      <!-- top-left: date + status -->
+      <div style="position:absolute;top:12px;left:12px;z-index:500;display:flex;align-items:center;gap:8px;">
+        <span class="map-chip num">Tue, Oct 7, 2025, 01:00 AM</span>
+        <span class="badge-status" style="box-shadow:0 1px 3px rgb(15 23 42/.12);"><span class="dot"></span>En Route</span>
+      </div>
+      <!-- top-right: layers -->
+      <div style="position:absolute;top:12px;right:12px;z-index:500;">
+        <div style="position:relative;">
+          <button id="map-layers-btn" class="map-btn" title="Map type">${svg(IC.layers,17)}</button>
+          <div id="map-layers-menu" class="hidden" style="position:absolute;top:0;right:calc(100% + 8px);width:148px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 4px 12px rgb(15 23 42/.14);overflow:hidden;padding:4px;">
+            ${[{id:'street',label:'Street'},{id:'satellite',label:'Satellite'},{id:'light',label:'Light'},{id:'dark',label:'Dark'}].map(o => `
+              <button data-map-type="${o.id}" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 10px;font-size:13px;color:#374151;background:transparent;border:0;border-radius:8px;cursor:pointer;font-family:inherit;">
+                <span>${o.label}</span>
+                <span data-check style="color:var(--brand-600,#2d7ffb);opacity:0;">${svg('<path d="M20 6 9 17l-5-5"/>',14,2.5)}</span>
+              </button>`).join('')}
+          </div>
+        </div>
+      </div>
+      <!-- bottom overlay: route summary -->
+      <div class="voy-overlay">
+        <div class="voy-overlay-row flex items-center gap-6">
+          <div style="min-width:140px;flex-shrink:0;">
+            <div class="text-[11px] font-semibold tracking-micro uppercase text-brand-600 mb-0.5">Departure</div>
+            <div class="font-display text-base font-bold text-ink-900 leading-tight">Singapore</div>
+            <div class="flex items-center gap-1.5 mt-1">${flag('sg')}<span class="text-xs text-ink-500">Singapore</span></div>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-center text-xs text-ink-500 mb-1.5 num">8,234 nm</div>
+            <div class="voy-line">
+              <div class="done" style="width:${pct}%;"></div>
+              <div class="dashed" style="left:${pct}%;right:0;"></div>
+              <span class="voy-dot" style="left:0;background:var(--brand-600,#2d7ffb);"></span>
+              <span class="voy-dot" style="left:${pct}%;background:var(--brand-600,#2d7ffb);box-shadow:0 0 0 3px #fff,0 0 0 4px var(--brand-300,#bfdbfe);"></span>
+              <span class="voy-dot" style="left:100%;background:#111827;"></span>
+            </div>
+            <div class="flex items-start justify-between text-[11px] text-ink-500 mt-2.5">
+              <div><div class="mb-0.5">Actual departure:</div><div class="num text-ink-700 font-medium">2026-01-05 08:30 (UTC+8)</div></div>
+              <div class="text-right"><div class="mb-0.5">Estimated arrival:</div><div class="num text-ink-700 font-medium">2026-01-28 14:00 (UTC+1)</div></div>
+            </div>
+          </div>
+          <div style="min-width:140px;flex-shrink:0;text-align:right;">
+            <div class="text-[11px] font-semibold tracking-micro uppercase text-brand-600 mb-0.5">Destination</div>
+            <div class="font-display text-base font-bold text-ink-900 leading-tight">Rotterdam</div>
+            <div class="flex items-center justify-end gap-1.5 mt-1">${flag('nl')}<span class="text-xs text-ink-500">Netherlands</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ===================== CARD 3 — VOYAGE EVENTS ===================== */
+function eventsCard() {
+  const sortIco = `<span class="sort-ico inline-flex items-center">${svg(IC.sort,13,2)}</span>`;
+  const head = (label, alignRight) => `<th class="${alignRight ? 'text-right' : ''}"><span class="th-in ${alignRight ? 'justify-end' : ''}">${label} ${sortIco}</span></th>`;
+  return `
+  <div class="card overflow-hidden">
+    <div class="card-head border-b border-ink-100">
+      <span class="text-brand-600 inline-flex items-center">${svg(IC.activity,18)}</span>
+      <span class="card-title">Voyage Events</span>
+    </div>
+    <div class="p-5 pb-4">
+      <div class="vh-search">
+        <span class="text-ink-400 inline-flex items-center">${svg(IC.search,16)}</span>
+        <input id="event-search" type="text" placeholder="Search voyage events…" value="${state.search.replace(/"/g,'&quot;')}" />
+      </div>
+    </div>
+    <div class="overflow-x-auto scroll-thin border-t border-ink-100">
+      <table class="vh-table" id="events-table">
+        <thead><tr>
+          ${head('Event Type')}${head('Duration')}${head('From')}${head('To')}${head('Distance', true)}${head('Avg Speed', true)}
+        </tr></thead>
+        <tbody>
+          ${EVENTS.map(e => `
+            <tr data-event-row data-search="${e.type.toLowerCase().replace(/"/g,'')}">
+              <td class="text-ink-800" style="min-width:280px;">${e.type}</td>
+              <td class="num text-ink-700">${e.dur}</td>
+              <td class="num text-ink-700">${e.from}</td>
+              <td class="num text-ink-700">${e.to}</td>
+              <td class="text-right num text-ink-700">${e.dist}</td>
+              <td class="text-right num text-ink-700">${e.spd}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div class="flex items-center justify-between gap-3 px-5 py-3 border-t border-ink-100">
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-ink-500">Items per page:</span>
+        <select id="per-page" class="vh-select">
+          ${[25,50,100].map(n => `<option value="${n}" ${n===state.perPage?'selected':''}>${n}</option>`).join('')}
+        </select>
+      </div>
+      <span id="events-count" class="text-xs text-ink-500">${EVENTS.length} total items</span>
+    </div>
+  </div>`;
+}
+
+/* ===================== CONTENT ===================== */
+function Content() {
+  return `
+  <main class="flex-1 min-w-0 overflow-y-auto scroll-thin" style="background:#f3f4f6;">
+    <div class="w-full" style="padding:20px 24px 40px;">
+      <div class="flex items-center justify-between gap-3 mb-4">
+        <div>
+          <h1 class="font-display text-xl font-bold text-ink-900">Voyage History</h1>
+          <div class="text-xs text-ink-500 mt-0.5">FRESH BREEZE · IMO 9419265</div>
+        </div>
+        <button class="btn-primary">${svg(IC.download,15)} Download Report</button>
+      </div>
+      <div class="flex flex-col gap-4">
+        ${statsCard()}
+        ${currentVoyageCard()}
+        ${eventsCard()}
+      </div>
+    </div>
+  </main>`;
+}
+
+/* ===================== MAP ===================== */
+let map = null, tileLayer = null;
+const MAP_TYPES = {
+  street:    { url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', sub:'abcd' },
+  satellite: { url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', sub:'abc' },
+  light:     { url:'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', sub:'abcd' },
+  dark:      { url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', sub:'abcd' },
+};
+let currentMapType = 'street';
+function setMapType(type) {
+  if (!map || !MAP_TYPES[type]) return;
+  currentMapType = type;
+  if (tileLayer) map.removeLayer(tileLayer);
+  const t = MAP_TYPES[type];
+  tileLayer = L.tileLayer(t.url, { maxZoom:19, subdomains:t.sub, attribution:'' }).addTo(map);
+  document.querySelectorAll('[data-map-type]').forEach(b => {
+    const chk = b.querySelector('[data-check]'); if (chk) chk.style.opacity = b.dataset.mapType === type ? '1' : '0';
+  });
+}
+function initMap() {
+  const c = document.getElementById('voyage-map');
+  if (!c) return;
+  if (map) {
+    if (!document.body.contains(map.getContainer())) { map.remove(); map = null; }
+    else { map.invalidateSize(); return; }
+  }
+  const current = [8.5667, 76.8833];   // current position (off SW India)
+  map = L.map(c, { center: current, zoom: 4, zoomControl:true, scrollWheelZoom:true, attributionControl:false });
+  setMapType('street');
+  const singapore = [1.29, 103.85], rotterdam = [51.95, 4.14];
+  // Travelled (solid) Singapore → current
+  L.polyline([singapore, [6.0, 95.0], [7.0, 82.0], current], { color:'#2d7ffb', weight:3, opacity:0.9 }).addTo(map);
+  // Remaining (dashed) current → Rotterdam
+  L.polyline([current, [12.0, 60.0], [12.5, 43.0], [30.0, 32.5], [37.0, 11.0], rotterdam], { color:'#2d7ffb', weight:2.5, opacity:0.7, dashArray:'7 6' }).addTo(map);
+  const pin = (color) => L.divIcon({ className:'', html:`<div style="width:11px;height:11px;background:${color};border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div>`, iconSize:[11,11], iconAnchor:[5,5] });
+  L.marker(singapore, { icon:pin('#475569') }).addTo(map).bindPopup('Singapore (departure)');
+  L.marker(rotterdam, { icon:pin('#111827') }).addTo(map).bindPopup('Rotterdam (destination)');
+  const vesselIcon = L.divIcon({ className:'', html:`<div style="width:15px;height:15px;background:var(--brand-600,#2d7ffb);border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(45,127,251,.6)"></div>`, iconSize:[15,15], iconAnchor:[7,7] });
+  const popHtml = `
+    <div class="vp">
+      <div class="vp-header">
+        <div class="vp-header-main">
+          <div class="vp-title">${flag('es')} FRESH BREEZE</div>
+          <div class="vp-subtitle">Crude Oil Tanker · En Route</div>
+        </div>
+      </div>
+      <div class="vp-grid">
+        <div class="vp-span"><div class="vp-k">Completed:</div><div class="vp-v vp-strong">2,847 nm (35%)</div></div>
+        <div><div class="vp-k">Avg Speed:</div><div class="vp-v"><span class="vp-strong">14.2</span> Knots</div></div>
+        <div><div class="vp-k">Current Speed:</div><div class="vp-v"><span class="vp-strong">15.1</span> Knots</div></div>
+        <div><div class="vp-k">Latitude:</div><div class="vp-v vp-strong">8.5667°N</div></div>
+        <div><div class="vp-k">Longitude:</div><div class="vp-v vp-strong">76.8833°E</div></div>
+      </div>
+    </div>`;
+  const vesselMarker = L.marker(current, { icon:vesselIcon })
+    .addTo(map)
+    .bindPopup(popHtml, { autoClose:false, closeOnClick:false, offset:[0,-4], className:'vessel-popup', maxWidth:320, minWidth:290 });
+  map.fitBounds([singapore, rotterdam], { paddingTopLeft:[60,70], paddingBottomRight:[60,150] });
+  // Open the vessel popup by default once the map has settled
+  setTimeout(() => { if (map && document.body.contains(map.getContainer())) vesselMarker.openPopup(); }, 250);
+  // Layers menu
+  const lb = document.getElementById('map-layers-btn'), lm = document.getElementById('map-layers-menu');
+  if (lb && lm) {
+    lb.onclick = (e) => { e.stopPropagation(); lm.classList.toggle('hidden'); };
+    lm.querySelectorAll('[data-map-type]').forEach(b => b.onclick = (e) => { e.stopPropagation(); setMapType(b.dataset.mapType); lm.classList.add('hidden'); });
+    document.addEventListener('click', () => lm.classList.add('hidden'));
+  }
+}
+
+/* ===================== RENDER + WIRING ===================== */
+window.render = function render() {
+  if (map) { map.remove(); map = null; }
+  document.getElementById('app').innerHTML = `
+    ${SC.Sidebar()}
+    <div class="flex-1 min-w-0 flex flex-col">
+      ${SC.Topbar()}
+      ${Content()}
+    </div>
+    ${SC.TweaksPanel()}
+  `;
+  SC.wireChrome();
+
+  // Tabs
+  document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => {
+    const v = b.getAttribute('data-tab');
+    if (state.tab === v) return;
+    state.tab = v;
+    const group = b.closest('.ds-tabs');
+    group.querySelectorAll('.ds-tab').forEach(t => t.setAttribute('aria-selected', String(t === b)));
+    positionTabPills();
+    setTimeout(render, 200);
+  });
+
+  // Chart toggle
+  const ct = document.getElementById('chart-toggle');
+  if (ct) ct.onclick = () => { state.chartType = state.chartType === 'bar' ? 'donut' : 'bar'; render(); };
+
+  // Details show/hide toggle
+  const dt = document.getElementById('details-toggle');
+  if (dt) dt.onclick = () => { state.showDetails = !state.showDetails; render(); };
+
+  // Sortable table headers (Port Calls / Region tabs)
+  document.querySelectorAll('[data-sort-grp]').forEach(b => b.onclick = () => {
+    const grp = b.dataset.sortGrp, key = b.dataset.sortKey, s = state.sort[grp];
+    if (s.key === key) s.dir *= -1; else { s.key = key; s.dir = 1; }
+    render();
+  });
+
+  // Event search — live filter without full re-render (keeps focus)
+  const si = document.getElementById('event-search');
+  if (si) {
+    si.oninput = () => {
+      state.search = si.value;
+      const q = si.value.trim().toLowerCase();
+      let shown = 0;
+      document.querySelectorAll('[data-event-row]').forEach(row => {
+        const match = !q || row.getAttribute('data-search').includes(q);
+        row.style.display = match ? '' : 'none';
+        if (match) shown++;
+      });
+      const cnt = document.getElementById('events-count');
+      if (cnt) cnt.textContent = `${shown} total items`;
+    };
+  }
+  const pp = document.getElementById('per-page');
+  if (pp) pp.onchange = () => { state.perPage = parseInt(pp.value); };
+
+  requestAnimationFrame(positionTabPills);
+  window.addEventListener('resize', positionTabPills, { passive:true });
+  setTimeout(initMap, 60);
+};
+window.render();
+</script>
+</body>
+</html>
